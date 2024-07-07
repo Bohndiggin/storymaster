@@ -1,0 +1,77 @@
+"""Database for storio. all the submodules"""
+
+from storio.model.database.schema.base import (
+    Users,
+    Projects
+)
+
+from storio.model.database.schema.lito_database import (
+    PlotSectionType,
+    NodeType,
+    NoteType,
+)
+
+from storio.model.database.schema.lore_database import (
+    Class_,
+    Background,
+    Race,
+    SubRace,
+    Actor,
+    ActorAOnBRelations,
+    Skills,
+    ActorToSkills,
+    Faction,
+    FactionAOnBRelations,
+    FactionMembers,
+    Location,
+    LocationToFaction,
+    LocationDungeon,
+    LocationCity,
+    LocationCityDistricts,
+    Resident,
+    LocationFloraFauna,
+    History,
+    HistoryActor,
+    HistoryLocation,
+    HistoryFaction,
+    HistoryObject,
+    HistoryWorldData,
+    Object_,
+    ObjectToOwner,
+    WorldData,
+)
+
+__all__ = [
+    "Users",
+    "Projects",
+    "PlotSectionType",
+    "NoteType",
+    "NodeType",
+    "Class_",
+    "Background",
+    "Race",
+    "SubRace",
+    "Actor",
+    "ActorAOnBRelations",
+    "Skills",
+    "ActorToSkills",
+    "Faction",
+    "FactionAOnBRelations",
+    "FactionMembers",
+    "Location",
+    "LocationToFaction",
+    "LocationDungeon",
+    "LocationCity",
+    "LocationCityDistricts",
+    "Resident",
+    "LocationFloraFauna",
+    "History",
+    "HistoryActor",
+    "HistoryLocation",
+    "HistoryFaction",
+    "HistoryObject",
+    "HistoryWorldData",
+    "Object_",
+    "ObjectToOwner",
+    "WorldData",
+]
