@@ -1,9 +1,6 @@
 """Database for storio. all the submodules"""
 
-from storio.model.database.schema.base import (
-    Users,
-    Projects
-)
+from storio.model.database.schema.base import Users, Projects
 
 from storio.model.database.schema.lito_database import (
     PlotSectionType,

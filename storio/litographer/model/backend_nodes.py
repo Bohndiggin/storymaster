@@ -27,7 +27,9 @@ class BaseNode(utilities.LinkableClass):
     def __init__(self) -> None:
         self.notes: list[NodeNotes | None] = []
 
-    def add_node_notes(self, notes: str, note_type: schema.NoteType = schema.NoteType.WHAT) -> None:
+    def add_node_notes(
+        self, notes: str, note_type: schema.NoteType = schema.NoteType.WHAT
+    ) -> None:
         """Method to add a note to the node"""
         self.notes.append(NodeNotes(notes, note_type))
 
