@@ -101,4 +101,4 @@ class ArcToActor(Base):
     actor_id = Column(Integer, ForeignKey("actor.id"), nullable=False, name="actor_id")
     arc_id = Column(Integer, ForeignKey("arc.id"), nullable=False, name="arc_id")
 
-    actor = relationship("")
+    actor = relationship("Actor", foreign_keys=[actor_id])
