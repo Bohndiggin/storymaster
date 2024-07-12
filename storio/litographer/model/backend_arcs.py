@@ -1,6 +1,7 @@
 """File contains character arc classes"""
 
 import enum
+
 from storio.litographer.model import backend_nodes, utilities
 
 

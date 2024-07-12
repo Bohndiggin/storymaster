@@ -1,40 +1,47 @@
 """Database for storio. all the submodules"""
 
-from storio.model.database.schema.base import Users, Projects
-
+from storio.model.database.schema.base import Projects, Users
+from storio.model.database.schema.connective_database import (
+    LitographyNoteToLorekeeperActor,
+    LitographyNoteToLorekeeperBackground,
+    LitographyNoteToLorekeeperFaction,
+    LitographyNoteToLorekeeperHistory,
+    LitographyNoteToLorekeeperLocation,
+    LitographyNoteToLorekeeperObject,
+    LitographyNoteToLorekeeperWorldData,
+)
 from storio.model.database.schema.lito_database import (
-    PlotSectionType,
     NodeType,
     NoteType,
+    PlotSectionType,
 )
-
 from storio.model.database.schema.lore_database import (
-    Class_,
-    Background,
-    Race,
-    SubRace,
     Actor,
     ActorAOnBRelations,
-    Skills,
     ActorToSkills,
+    Background,
+    Class_,
     Faction,
     FactionAOnBRelations,
     FactionMembers,
-    Location,
-    LocationToFaction,
-    LocationDungeon,
-    LocationCity,
-    LocationCityDistricts,
-    Resident,
-    LocationFloraFauna,
     History,
     HistoryActor,
-    HistoryLocation,
     HistoryFaction,
+    HistoryLocation,
     HistoryObject,
     HistoryWorldData,
+    Location,
+    LocationCity,
+    LocationCityDistricts,
+    LocationDungeon,
+    LocationFloraFauna,
+    LocationToFaction,
     Object_,
     ObjectToOwner,
+    Race,
+    Resident,
+    Skills,
+    SubRace,
     WorldData,
 )
 
@@ -71,4 +78,11 @@ __all__ = [
     "Object_",
     "ObjectToOwner",
     "WorldData",
+    "LitographyNoteToLorekeeperActor",
+    "LitographyNoteToLorekeeperBackground",
+    "LitographyNoteToLorekeeperFaction",
+    "LitographyNoteToLorekeeperLocation",
+    "LitographyNoteToLorekeeperHistory",
+    "LitographyNoteToLorekeeperObject",
+    "LitographyNoteToLorekeeperWorldData",
 ]

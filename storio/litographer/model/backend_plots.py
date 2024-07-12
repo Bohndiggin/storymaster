@@ -2,8 +2,8 @@
 
 import enum
 
-from storio.model.database import schema
 from storio.litographer.model import backend_nodes, utilities
+from storio.model.database import schema
 
 
 class PlotSection(utilities.LinkableClass):
