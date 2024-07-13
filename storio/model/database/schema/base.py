@@ -6,12 +6,13 @@ from sqlalchemy.orm import declarative_base, relationship
 Base = declarative_base()
 
 
-class Users(Base):
+class User(Base):
     """Class to represent the users table"""
 
-    __tablename__ = "users"
+    __tablename__ = "user"
 
     id = Column(Integer, nullable=False, primary_key=True, name="id")
+    username = Column(String(150), nullable=False, name="username")
 
 
 class Project(Base):
@@ -20,5 +21,8 @@ class Project(Base):
     __tablename__ = "project"
 
     id = Column(Integer, nullable=False, primary_key=True, name="id")
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False, name="user_id")
+    
+    user = relationship("User", foreign_keys=[user_id])
 
 
