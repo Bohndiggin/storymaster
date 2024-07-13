@@ -2,13 +2,13 @@
 
 from storio.model.database.schema.base import Projects, Users
 from storio.model.database.schema.connective_database import (
-    LitographyNoteToLorekeeperActor,
-    LitographyNoteToLorekeeperBackground,
-    LitographyNoteToLorekeeperFaction,
-    LitographyNoteToLorekeeperHistory,
-    LitographyNoteToLorekeeperLocation,
-    LitographyNoteToLorekeeperObject,
-    LitographyNoteToLorekeeperWorldData,
+    LitographyNoteToActor,
+    LitographyNoteToBackground,
+    LitographyNoteToFaction,
+    LitographyNoteToHistory,
+    LitographyNoteToLocation,
+    LitographyNoteToObject,
+    LitographyNoteToWorldData,
 )
 from storio.model.database.schema.lito_database import (
     NodeType,
@@ -78,11 +78,11 @@ __all__ = [
     "Object_",
     "ObjectToOwner",
     "WorldData",
-    "LitographyNoteToLorekeeperActor",
-    "LitographyNoteToLorekeeperBackground",
-    "LitographyNoteToLorekeeperFaction",
-    "LitographyNoteToLorekeeperLocation",
-    "LitographyNoteToLorekeeperHistory",
-    "LitographyNoteToLorekeeperObject",
-    "LitographyNoteToLorekeeperWorldData",
+    "LitographyNoteToActor",
+    "LitographyNoteToBackground",
+    "LitographyNoteToFaction",
+    "LitographyNoteToLocation",
+    "LitographyNoteToHistory",
+    "LitographyNoteToObject",
+    "LitographyNoteToWorldData",
 ]

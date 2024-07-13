@@ -48,6 +48,10 @@ class LitographyNode(Base):
     node_height = Column(Float, nullable=False, name="node_height")
     previous_node = Column(Integer, nullable=True, name="previous_node")
     next_node = Column(Integer, nullable=True, name="next_node")
+    project_id = Column(Integer, ForeignKey("project.id"), nullable=False, name="project_id")
+
+    project = relationship("Project", foreign_keys=[project_id])
+
 
 
 class LitographyNotes(Base):
@@ -61,6 +65,22 @@ class LitographyNotes(Base):
     )
     title = Column(String(250), nullable=False, name="title")
     description = Column(Text, nullable=True, name="description")
+    project_id = Column(Integer, ForeignKey("project.id"), nullable=False, name="project_id")
+
+    project = relationship("Project", foreign_keys=[project_id])
+
+
+
+class LitographyPlot(Base):
+    """Represents litography_plot table"""
+
+    __tablename__ = "litography_plot"
+
+    id = Column(Integer, nullable=False, primary_key=True, name="id")
+    project_id = Column(Integer, ForeignKey("project.id"), nullable=False, name="project_id")
+
+    project = relationship("Project", foreign_keys=[project_id])
+
 
 
 class LitographyPlotSection(Base):
@@ -73,14 +93,9 @@ class LitographyPlotSection(Base):
         Enum(PlotSectionType), nullable=False, name="plot_section_type"
     )
     section_nodes = Column(Integer, nullable=False)
-
-
-class LitographyPlot(Base):
-    """Represents litography_plot table"""
-
-    __tablename__ = "litography_plot"
-
-    id = Column(Integer, nullable=False, primary_key=True, name="id")
+    section_plot_id = Column(Integer, ForeignKey("litography_plot.id"), nullable=False, name='section_plot_id')
+    
+    section_plot = relationship("LitographyPlot", foreign_keys=[section_plot_id])
 
 
 class LitographyArc(Base):
@@ -89,3 +104,7 @@ class LitographyArc(Base):
     __tablename__ = "litography_arc"
 
     id = Column(Integer, nullable=True, primary_key=True, name="id")
+    project_id = Column(Integer, ForeignKey("project.id"), nullable=False, name="project_id")
+
+    project = relationship("Project", foreign_keys=[project_id])
+

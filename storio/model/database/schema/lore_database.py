@@ -77,11 +77,13 @@ class Actor(Base):
     strengths = Column(Text, nullable=True, name="strengths")
     weaknesses = Column(Text, nullable=True, name="weaknesses")
     notes = Column(Text, nullable=True, name="notes")
+    project_id = Column(Integer, ForeignKey("project.id"), nullable=False, name="project_id")
 
     class_ = relationship("Class_", foreign_keys=[class_id])
     background = relationship("Background", foreign_keys=[background_id])
     race = relationship("Race", foreign_keys=[race_id])
     sub_race = relationship("SubRace", foreign_keys=[sub_race_id])
+    project = relationship("Project", foreign_keys=[project_id])
 
 
 class ActorAOnBRelations(Base):
@@ -126,6 +128,9 @@ class Faction(Base):
     faction_values = Column(Text)
     faction_income_sources = Column(Text)
     faction_expenses = Column(Text)
+    project_id = Column(Integer, ForeignKey("project.id"), nullable=False, name="project_id")
+
+    project = relationship("Project", foreign_keys=[project_id])
 
 
 class FactionAOnBRelations(Base):
@@ -171,6 +176,10 @@ class Location(Base):
     location_flora_fauna = relationship(
         "LocationFloraFauna", back_populates="location_"
     )
+    project_id = Column(Integer, ForeignKey("project.id"), nullable=False, name="project_id")
+
+    project = relationship("Project", foreign_keys=[project_id])
+
 
 
 class LocationToFaction(Base):
@@ -250,6 +259,10 @@ class History(Base):
     event_name = Column(String(255))
     event_year = Column(Integer)
     event_description = Column(Text)
+    project_id = Column(Integer, ForeignKey("project.id"), nullable=False, name="project_id")
+
+    project = relationship("Project", foreign_keys=[project_id])
+
 
 
 class HistoryActor(Base):
@@ -293,6 +306,10 @@ class Object_(Base):
     object_description = Column(Text)
     object_value = Column(Integer)
     rarity = Column(String(255))
+    project_id = Column(Integer, ForeignKey("project.id"), nullable=False, name="project_id")
+
+    project = relationship("Project", foreign_keys=[project_id])
+
 
 
 class HistoryObject(Base):
@@ -323,6 +340,10 @@ class WorldData(Base):
     id = Column(Integer, primary_key=True)
     data_name = Column(String(255))
     data_description = Column(Text)
+    project_id = Column(Integer, ForeignKey("project.id"), nullable=False, name="project_id")
+
+    project = relationship("Project", foreign_keys=[project_id])
+
 
 
 class HistoryWorldData(Base):

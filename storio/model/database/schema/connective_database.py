@@ -8,10 +8,10 @@ from sqlalchemy.orm import declarative_base, relationship
 Base = declarative_base()
 
 
-class LitographyNoteToLorekeeperActor(Base):
-    """Represents litography_note_to_lorekeeper_actor table"""
+class LitographyNoteToActor(Base):
+    """Represents litography_note_to_actor table"""
 
-    __tablename__ = "litography_note_to_lorekeeper_actor"
+    __tablename__ = "litography_note_to_actor"
 
     id = Column(Integer, nullable=False, primary_key=True, name="id")
     note_id = Column(Integer, ForeignKey("litography_notes.id"))
@@ -20,10 +20,10 @@ class LitographyNoteToLorekeeperActor(Base):
     note = relationship("LitographyNotes", foreign_keys=[note_id])
 
 
-class LitographyNoteToLorekeeperBackground(Base):
-    """Represents litography_note_to_lorekeeper_background table"""
+class LitographyNoteToBackground(Base):
+    """Represents litography_note_to_background table"""
 
-    __tablename__ = "litography_note_to_lorekeeper_background"
+    __tablename__ = "litography_note_to_background"
 
     id = Column(Integer, nullable=False, primary_key=True, name="id")
     note_id = Column(Integer, ForeignKey("litography_notes.id"))
@@ -32,10 +32,10 @@ class LitographyNoteToLorekeeperBackground(Base):
     note = relationship("LitographyNotes", foreign_keys=[note_id])
 
 
-class LitographyNoteToLorekeeperFaction(Base):
-    """Represents litography_note_to_lorekeeper_faction table"""
+class LitographyNoteToFaction(Base):
+    """Represents litography_note_to_faction table"""
 
-    __tablename__ = "litography_note_to_lorekeeper_faction"
+    __tablename__ = "litography_note_to_faction"
 
     id = Column(Integer, nullable=False, primary_key=True, name="id")
     note_id = Column(Integer, ForeignKey("litography_notes.id"))
@@ -44,10 +44,10 @@ class LitographyNoteToLorekeeperFaction(Base):
     note = relationship("LitographyNotes", foreign_keys=[note_id])
 
 
-class LitographyNoteToLorekeeperLocation(Base):
-    """Represents litography_note_to_lorekeeper_location table"""
+class LitographyNoteToLocation(Base):
+    """Represents litography_note_to_location table"""
 
-    __tablename__ = "litography_note_to_lorekeeper_location"
+    __tablename__ = "litography_note_to_location"
 
     id = Column(Integer, nullable=False, primary_key=True, name="id")
     note_id = Column(Integer, ForeignKey("litography_notes.id"))
@@ -56,10 +56,10 @@ class LitographyNoteToLorekeeperLocation(Base):
     note = relationship("LitographyNotes", foreign_keys=[note_id])
 
 
-class LitographyNoteToLorekeeperHistory(Base):
-    """Represents litography_note_to_lorekeeper_history table"""
+class LitographyNoteToHistory(Base):
+    """Represents litography_note_to_history table"""
 
-    __tablename__ = "litography_note_to_lorekeeper_history"
+    __tablename__ = "litography_note_to_history"
 
     id = Column(Integer, nullable=False, primary_key=True, name="id")
     note_id = Column(Integer, ForeignKey("litography_notes.id"))
@@ -68,10 +68,10 @@ class LitographyNoteToLorekeeperHistory(Base):
     note = relationship("LitographyNotes", foreign_keys=[note_id])
 
 
-class LitographyNoteToLorekeeperObject(Base):
-    """Represents litography_note_to_lorekeeper_object table"""
+class LitographyNoteToObject(Base):
+    """Represents litography_note_to_object table"""
 
-    __tablename__ = "litography_note_to_lorekeeper_object"
+    __tablename__ = "litography_note_to_object"
 
     id = Column(Integer, nullable=False, primary_key=True, name="id")
     note_id = Column(Integer, ForeignKey("litography_notes.id"))
@@ -80,10 +80,10 @@ class LitographyNoteToLorekeeperObject(Base):
     note = relationship("LitographyNotes", foreign_keys=[note_id])
 
 
-class LitographyNoteToLorekeeperWorldData(Base):
-    """Represents litography_note_to_lorekeeper_world_data table"""
+class LitographyNoteToWorldData(Base):
+    """Represents litography_note_to_world_data table"""
 
-    __tablename__ = "litography_note_to_lorekeeper_world_data"
+    __tablename__ = "litography_note_to_world_data"
 
     id = Column(Integer, nullable=False, primary_key=True, name="id")
     note_id = Column(Integer, ForeignKey("litography_notes.id"))
@@ -102,3 +102,5 @@ class ArcToActor(Base):
     arc_id = Column(Integer, ForeignKey("arc.id"), nullable=False, name="arc_id")
 
     actor = relationship("Actor", foreign_keys=[actor_id])
+
+
