@@ -22,7 +22,5 @@ class Project(Base):
 
     id = Column(Integer, nullable=False, primary_key=True, name="id")
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False, name="user_id")
-    
+
     user = relationship("User", foreign_keys=[user_id])
-
-
