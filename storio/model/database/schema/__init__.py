@@ -1,6 +1,11 @@
 """Database for storio. all the submodules"""
 
-from storio.model.database.schema.base import Projects, Users
+from storio.model.database.schema.base import (
+    LorekeeperGroup,
+    Project,
+    ProjectToGroup,
+    User,
+)
 from storio.model.database.schema.connective_database import (
     LitographyNoteToActor,
     LitographyNoteToBackground,
@@ -46,8 +51,8 @@ from storio.model.database.schema.lore_database import (
 )
 
 __all__ = [
-    "Users",
-    "Projects",
+    "User",
+    "Project",
     "PlotSectionType",
     "NoteType",
     "NodeType",
@@ -85,4 +90,6 @@ __all__ = [
     "LitographyNoteToHistory",
     "LitographyNoteToObject",
     "LitographyNoteToWorldData",
+    "LorekeeperGroup",
+    "ProjectToGroup",
 ]

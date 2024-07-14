@@ -12,6 +12,11 @@ class Class_(Base):
     id = Column(Integer, primary_key=True)
     class_name = Column(String(255))
     class_description = Column(Text)
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
+
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
 class Background(Base):
@@ -20,6 +25,11 @@ class Background(Base):
     id = Column(Integer, primary_key=True)
     background_name = Column(String(255))
     background_description = Column(Text)
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
+
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
 class Race(Base):
@@ -28,7 +38,11 @@ class Race(Base):
     id = Column(Integer, primary_key=True)
     race_name = Column(String(255))
     race_description = Column(Text)
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
 
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
     sub_race = relationship("SubRace", back_populates="race")
 
 
@@ -39,7 +53,11 @@ class SubRace(Base):
     parent_race_id = Column(Integer, ForeignKey("race.id"))
     sub_race_name = Column(String(255))
     sub_race_description = Column(Text)
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
 
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
     race = relationship("Race", back_populates="sub_race")
 
 
@@ -80,7 +98,11 @@ class Actor(Base):
     project_id = Column(
         Integer, ForeignKey("project.id"), nullable=False, name="project_id"
     )
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
 
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
     class_ = relationship("Class_", foreign_keys=[class_id])
     background = relationship("Background", foreign_keys=[background_id])
     race = relationship("Race", foreign_keys=[race_id])
@@ -97,7 +119,11 @@ class ActorAOnBRelations(Base):
     overall = Column(String)
     economically = Column(String)
     power_dynamic = Column(String)
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
 
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
     actor_a = relationship("Actor", foreign_keys=[item_a_id])
     actor_b = relationship("Actor", foreign_keys=[item_b_id])
 
@@ -109,6 +135,11 @@ class Skills(Base):
     skill_name = Column(String(255))
     skill_description = Column(Text)
     skill_trait = Column(String(255))
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
+
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
 class ActorToSkills(Base):
@@ -118,6 +149,11 @@ class ActorToSkills(Base):
     actor_id = Column(Integer, ForeignKey("actor.id"))
     skill_id = Column(Integer, ForeignKey("skills.id"))
     skill_level = Column(Integer)
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
+
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
 class Faction(Base):
@@ -133,7 +169,11 @@ class Faction(Base):
     project_id = Column(
         Integer, ForeignKey("project.id"), nullable=False, name="project_id"
     )
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
 
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
     project = relationship("Project", foreign_keys=[project_id])
 
 
@@ -147,7 +187,11 @@ class FactionAOnBRelations(Base):
     economically = Column(Text)
     politically = Column(Text)
     opinion = Column(Text)
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
 
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
     faction_a = relationship("Faction", foreign_keys=[item_a_id])
     faction_b = relationship("Faction", foreign_keys=[item_b_id])
 
@@ -162,6 +206,11 @@ class FactionMembers(Base):
     faction = relationship("Faction", foreign_keys=[faction_id])
     actor_role = Column(String(255))
     relative_power = Column(Integer)
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
+
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
 class Location(Base):
@@ -185,6 +234,11 @@ class Location(Base):
     )
 
     project = relationship("Project", foreign_keys=[project_id])
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
+
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
 class LocationToFaction(Base):
@@ -199,6 +253,11 @@ class LocationToFaction(Base):
 
     location = relationship("Location", foreign_keys=[location_id])
     faction = relationship("Faction", foreign_keys=[faction_id])
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
+
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
 class LocationDungeon(Base):
@@ -211,6 +270,11 @@ class LocationDungeon(Base):
     secrets = Column(Text)
 
     location = relationship("Location", foreign_keys=[location_id])
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
+
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
 class LocationCity(Base):
@@ -221,6 +285,11 @@ class LocationCity(Base):
     government = Column(Text)
 
     location = relationship("Location", foreign_keys=[location_id])
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
+
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
 class LocationCityDistricts(Base):
@@ -232,6 +301,11 @@ class LocationCityDistricts(Base):
 
     location = relationship("Location", foreign_keys=[location_id])
     district = relationship("Location", foreign_keys=[district_id])
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
+
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
 class Resident(Base):
@@ -243,6 +317,11 @@ class Resident(Base):
 
     actor = relationship("Actor", foreign_keys=[actor_id])
     location = relationship("Location", foreign_keys=[location_id])
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
+
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
 class LocationFloraFauna(Base):
@@ -255,6 +334,11 @@ class LocationFloraFauna(Base):
     living_type = Column(Text)
 
     location_ = relationship("Location", back_populates="location_flora_fauna")
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
+
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
 class History(Base):
@@ -269,6 +353,11 @@ class History(Base):
     )
 
     project = relationship("Project", foreign_keys=[project_id])
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
+
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
 class HistoryActor(Base):
@@ -277,9 +366,13 @@ class HistoryActor(Base):
     id = Column(Integer, primary_key=True)
     history_id = Column(Integer, ForeignKey("history.id"))
     actor_id = Column(Integer, ForeignKey("actor.id"))
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
 
     history = relationship("History", foreign_keys=[history_id])
     actor = relationship("Actor", foreign_keys=[actor_id])
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
 class HistoryLocation(Base):
@@ -288,7 +381,11 @@ class HistoryLocation(Base):
     id = Column(Integer, primary_key=True)
     history_id = Column(Integer, ForeignKey("history.id"))
     location_id = Column(Integer, ForeignKey("location_.id"))
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
 
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
     history = relationship("History", foreign_keys=[history_id])
     location = relationship("Location", foreign_keys=[location_id])
 
@@ -299,7 +396,11 @@ class HistoryFaction(Base):
     id = Column(Integer, primary_key=True)
     history_id = Column(Integer, ForeignKey("history.id"))
     faction_id = Column(Integer, ForeignKey("faction.id"))
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
 
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
     history = relationship("History", foreign_keys=[history_id])
     faction = relationship("Faction", foreign_keys=[faction_id])
 
@@ -315,7 +416,11 @@ class Object_(Base):
     project_id = Column(
         Integer, ForeignKey("project.id"), nullable=False, name="project_id"
     )
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
 
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
     project = relationship("Project", foreign_keys=[project_id])
 
 
@@ -325,7 +430,11 @@ class HistoryObject(Base):
     id = Column(Integer, primary_key=True)
     history_id = Column(Integer, ForeignKey("history.id"))
     object_id = Column(Integer, ForeignKey("object_.id"))
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
 
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
     history = relationship("History", foreign_keys=[history_id])
     object = relationship("Object_", foreign_keys=[object_id])
 
@@ -336,7 +445,11 @@ class ObjectToOwner(Base):
     id = Column(Integer, primary_key=True)
     object_id = Column(Integer, ForeignKey("object_.id"))
     actor_id = Column(Integer, ForeignKey("actor.id"))
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
 
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
     object = relationship("Object_", foreign_keys=[object_id])
     actor = relationship("Actor", foreign_keys=[actor_id])
 
@@ -350,7 +463,11 @@ class WorldData(Base):
     project_id = Column(
         Integer, ForeignKey("project.id"), nullable=False, name="project_id"
     )
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
 
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
     project = relationship("Project", foreign_keys=[project_id])
 
 
@@ -360,6 +477,10 @@ class HistoryWorldData(Base):
     id = Column(Integer, primary_key=True)
     history_id = Column(Integer, ForeignKey("history.id"))
     world_data_id = Column(Integer, ForeignKey("world_data.id"))
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
 
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
     history = relationship("History", foreign_keys=[history_id])
     world_data = relationship("WorldData", foreign_keys=[world_data_id])
