@@ -1,4 +1,4 @@
-"""Contains all the litographer tables"""
+"""Holds base database datatypes for Litographer"""
 
 import enum
 
