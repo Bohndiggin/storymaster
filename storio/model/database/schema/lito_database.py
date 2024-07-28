@@ -95,7 +95,6 @@ class LitographyPlotSection(Base):
     section_type = Column(
         Enum(PlotSectionType), nullable=False, name="plot_section_type"
     )
-    section_nodes = Column(Integer, nullable=False)
     section_plot_id = Column(
         Integer,
         ForeignKey("litography_plot.id"),
