@@ -56,4 +56,4 @@ class ProjectToGroup(Base):
     group_id = Column(Integer, ForeignKey("group.id"), nullable=False, name="group_id")
 
     project = relationship("Project", foreign_keys=[project_id])
-    project = relationship("LorekeeperGroup", foreign_keys=[group_id])
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
