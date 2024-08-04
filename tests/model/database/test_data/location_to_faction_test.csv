@@ -1,0 +1,5 @@
+location_id,faction_id,faction_presence,faction_power,notes
+1,1,1.01,0.1,
+1,2,0.78,0.78,
+2,1,1.01,1.01,Flowers are grown by magic
+3,2,1.01,1.01,

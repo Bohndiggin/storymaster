@@ -1,22 +1,24 @@
 """Holds base database datatypes for Lorekeeper"""
 
-from sqlalchemy import Column, Float, ForeignKey, Integer, String, Text
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy import Column, Float, ForeignKey, Integer, String, Text, ForeignKeyConstraint
+from sqlalchemy.orm import declarative_base, relationship, Mapped
+from storio.model.database import schema
 
-Base = declarative_base()
+
+from storio.model.database.base_connection import Base
 
 
 class Class_(Base):
     __tablename__ = "class"
 
-    id = Column(Integer, primary_key=True)
-    class_name = Column(String(255))
-    class_description = Column(Text)
+    id = Column(Integer, primary_key=True, name='id')
+    class_name = Column(String(255), name='class_name')
+    class_description = Column(Text, name='class_description')
     group_id = Column(
         Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
     )
 
-    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
+    group = relationship("LorekeeperGroup", back_populates='classes')
 
 
 class Background(Base):

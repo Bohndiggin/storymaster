@@ -1,0 +1,4 @@
+actor_id,faction_id,actor_role,relative_power
+1,1,Leader,100
+2,1,Advisor,50
+3,2,Leader,100

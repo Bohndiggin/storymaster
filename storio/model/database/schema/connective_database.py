@@ -5,8 +5,8 @@ import enum
 from sqlalchemy import Column, Enum, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import declarative_base, relationship
 
-Base = declarative_base()
 
+from storio.model.database.base_connection import Base
 
 class LitographyNoteToActor(Base):
     """Represents litography_note_to_actor table"""
@@ -105,7 +105,7 @@ class LitographyNodeToPlotSection(Base):
         name="litography_plot_section_id",
     )
 
-    node = relationship("LitographyNodes", foreign_keys=[node_id])
+    node = relationship("LitographyNode", foreign_keys=[node_id])
 
 
 class ArcToNode(Base):
@@ -117,7 +117,7 @@ class ArcToNode(Base):
     node_id = Column(Integer, ForeignKey("litography_node.id"), name="node_id")
     arc_id = Column(Integer, ForeignKey("litography_arc.id"), name="arc_id")
 
-    node = relationship("LitographyNodes", foreign_keys=[node_id])
+    node = relationship("LitographyNode", foreign_keys=[node_id])
     arc = relationship("LitographyArc", foreign_keys=[arc_id])
 
 

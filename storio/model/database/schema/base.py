@@ -2,8 +2,7 @@
 
 from sqlalchemy import Column, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import declarative_base, relationship
-
-Base = declarative_base()
+from storio.model.database.base_connection import Base
 
 
 class User(Base):
@@ -41,6 +40,9 @@ class LorekeeperGroup(Base):
 
     user = relationship("User", foreign_keys=[user_id])
 
+    classes = relationship("Class_", back_populates="group")
+    project_to_group = relationship('ProjectToGroup', back_populates="group")
+
 
 class ProjectToGroup(Base):
     """Class to represent the project_to_group table
@@ -49,11 +51,13 @@ class ProjectToGroup(Base):
 
     """
 
+    __tablename__ = 'project_to_group'
+
     id = Column(Integer, nullable=False, primary_key=True, name="id")
     project_id = Column(
         Integer, ForeignKey("project.id"), nullable=False, name="project_id"
     )
-    group_id = Column(Integer, ForeignKey("group.id"), nullable=False, name="group_id")
+    group_id = Column(Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id")
 
     project = relationship("Project", foreign_keys=[project_id])
     group = relationship("LorekeeperGroup", foreign_keys=[group_id])

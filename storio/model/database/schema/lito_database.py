@@ -5,8 +5,7 @@ import enum
 from sqlalchemy import Column, Enum, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import declarative_base, relationship
 
-Base = declarative_base()
-
+from storio.model.database.base_connection import Base
 
 class PlotSectionType(enum.Enum):
     """Enum of different Types of Plot Section"""

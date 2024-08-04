@@ -1,0 +1,4 @@
+first_name,middle_name,last_name,title,actor_age,class_id,actor_level,background_id,job,actor_role,race_id,sub_race_id,alignment,strength,dexterity,constitution,intelligence,wisdom,charisma,ideal,bond,flaw,appearance,strengths,weaknesses,notes
+Alfred,T,Wizzler,Dr.,506,13,20,9,Mage Guild Master ,quest giver,4,2,LN,10,10,10,18,10,10,Knowlege,The Guild,Greed,Old funny man with big beard,magic,beard,huh
+Elouise,C,Cole,,666,11,20,5,Mage Assistant,spy/bad guy,11,1,LE,10,10,10,10,10,18,Power,Herself,eeeevil,hawt,cunning,selfish,nah
+Barry,The,Grouch,Rumbler,22,2,20,19,Fighter Guild Master,quest giver,7,14,CG,18,10,10,10,10,10,Courage,The Guild,dumb,strong boi,strength,beer,none
