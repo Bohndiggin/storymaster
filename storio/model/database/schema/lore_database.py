@@ -1,6 +1,14 @@
 """Holds base database datatypes for Lorekeeper"""
 
-from sqlalchemy import Column, Float, ForeignKey, Integer, String, Text, ForeignKeyConstraint
+from sqlalchemy import (
+    Column,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    ForeignKeyConstraint,
+)
 from sqlalchemy.orm import declarative_base, relationship, Mapped
 from storio.model.database import schema
 
@@ -11,14 +19,14 @@ from storio.model.database.base_connection import Base
 class Class_(Base):
     __tablename__ = "class"
 
-    id = Column(Integer, primary_key=True, name='id')
-    class_name = Column(String(255), name='class_name')
-    class_description = Column(Text, name='class_description')
+    id = Column(Integer, primary_key=True, name="id")
+    class_name = Column(String(255), name="class_name")
+    class_description = Column(Text, name="class_description")
     group_id = Column(
         Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
     )
 
-    group = relationship("LorekeeperGroup", back_populates='classes')
+    group = relationship("LorekeeperGroup", back_populates="classes")
 
 
 class Background(Base):
@@ -97,9 +105,6 @@ class Actor(Base):
     strengths = Column(Text, nullable=True, name="strengths")
     weaknesses = Column(Text, nullable=True, name="weaknesses")
     notes = Column(Text, nullable=True, name="notes")
-    project_id = Column(
-        Integer, ForeignKey("project.id"), nullable=False, name="project_id"
-    )
     group_id = Column(
         Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
     )
@@ -109,7 +114,6 @@ class Actor(Base):
     background = relationship("Background", foreign_keys=[background_id])
     race = relationship("Race", foreign_keys=[race_id])
     sub_race = relationship("SubRace", foreign_keys=[sub_race_id])
-    project = relationship("Project", foreign_keys=[project_id])
 
 
 class ActorAOnBRelations(Base):
@@ -168,23 +172,19 @@ class Faction(Base):
     faction_values = Column(Text)
     faction_income_sources = Column(Text)
     faction_expenses = Column(Text)
-    project_id = Column(
-        Integer, ForeignKey("project.id"), nullable=False, name="project_id"
-    )
     group_id = Column(
         Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
     )
 
     group = relationship("LorekeeperGroup", foreign_keys=[group_id])
-    project = relationship("Project", foreign_keys=[project_id])
 
 
 class FactionAOnBRelations(Base):
     __tablename__ = "faction_a_on_b_relations"
 
     id = Column(Integer, primary_key=True)
-    item_a_id = Column(Integer, ForeignKey("faction.id"))
-    item_b_id = Column(Integer, ForeignKey("faction.id"))
+    faction_a_id = Column(Integer, ForeignKey("faction.id"))
+    faction_b_id = Column(Integer, ForeignKey("faction.id"))
     overall = Column(Text)
     economically = Column(Text)
     politically = Column(Text)
@@ -194,8 +194,8 @@ class FactionAOnBRelations(Base):
     )
 
     group = relationship("LorekeeperGroup", foreign_keys=[group_id])
-    faction_a = relationship("Faction", foreign_keys=[item_a_id])
-    faction_b = relationship("Faction", foreign_keys=[item_b_id])
+    faction_a = relationship("Faction", foreign_keys=[faction_a_id])
+    faction_b = relationship("Faction", foreign_keys=[faction_b_id])
 
 
 class FactionMembers(Base):
@@ -231,11 +231,6 @@ class Location(Base):
     location_flora_fauna = relationship(
         "LocationFloraFauna", back_populates="location_"
     )
-    project_id = Column(
-        Integer, ForeignKey("project.id"), nullable=False, name="project_id"
-    )
-
-    project = relationship("Project", foreign_keys=[project_id])
     group_id = Column(
         Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
     )
@@ -350,11 +345,6 @@ class History(Base):
     event_name = Column(String(255))
     event_year = Column(Integer)
     event_description = Column(Text)
-    project_id = Column(
-        Integer, ForeignKey("project.id"), nullable=False, name="project_id"
-    )
-
-    project = relationship("Project", foreign_keys=[project_id])
     group_id = Column(
         Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
     )
@@ -415,15 +405,11 @@ class Object_(Base):
     object_description = Column(Text)
     object_value = Column(Integer)
     rarity = Column(String(255))
-    project_id = Column(
-        Integer, ForeignKey("project.id"), nullable=False, name="project_id"
-    )
     group_id = Column(
         Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
     )
 
     group = relationship("LorekeeperGroup", foreign_keys=[group_id])
-    project = relationship("Project", foreign_keys=[project_id])
 
 
 class HistoryObject(Base):
@@ -462,15 +448,11 @@ class WorldData(Base):
     id = Column(Integer, primary_key=True)
     data_name = Column(String(255))
     data_description = Column(Text)
-    project_id = Column(
-        Integer, ForeignKey("project.id"), nullable=False, name="project_id"
-    )
     group_id = Column(
         Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
     )
 
     group = relationship("LorekeeperGroup", foreign_keys=[group_id])
-    project = relationship("Project", foreign_keys=[project_id])
 
 
 class HistoryWorldData(Base):

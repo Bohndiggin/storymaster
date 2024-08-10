@@ -7,6 +7,7 @@ from sqlalchemy.orm import declarative_base, relationship
 
 from storio.model.database.base_connection import Base
 
+
 class PlotSectionType(enum.Enum):
     """Enum of different Types of Plot Section"""
 

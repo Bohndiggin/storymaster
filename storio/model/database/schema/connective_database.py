@@ -8,6 +8,7 @@ from sqlalchemy.orm import declarative_base, relationship
 
 from storio.model.database.base_connection import Base
 
+
 class LitographyNoteToActor(Base):
     """Represents litography_note_to_actor table"""
 

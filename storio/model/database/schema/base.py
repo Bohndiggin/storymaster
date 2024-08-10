@@ -36,12 +36,14 @@ class LorekeeperGroup(Base):
     __tablename__ = "lorekeeper_group"
 
     id = Column(Integer, nullable=False, primary_key=True, name="id")
+    name = Column(String(120), nullable=True, name="name")
+    description = Column(Text, nullable=True, name="description")
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False, name="user_id")
 
     user = relationship("User", foreign_keys=[user_id])
 
     classes = relationship("Class_", back_populates="group")
-    project_to_group = relationship('ProjectToGroup', back_populates="group")
+    project_to_group = relationship("ProjectToGroup", back_populates="group")
 
 
 class ProjectToGroup(Base):
@@ -51,13 +53,15 @@ class ProjectToGroup(Base):
 
     """
 
-    __tablename__ = 'project_to_group'
+    __tablename__ = "project_to_group"
 
     id = Column(Integer, nullable=False, primary_key=True, name="id")
     project_id = Column(
         Integer, ForeignKey("project.id"), nullable=False, name="project_id"
     )
-    group_id = Column(Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id")
+    group_id = Column(
+        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    )
 
     project = relationship("Project", foreign_keys=[project_id])
     group = relationship("LorekeeperGroup", foreign_keys=[group_id])
