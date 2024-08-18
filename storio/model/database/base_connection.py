@@ -1,6 +1,18 @@
 """Holds base connection and engine"""
 
-from sqlalchemy import Column, Float, ForeignKey, Integer, String, Text
-from sqlalchemy.orm import declarative_base, relationship
+import os
 
-Base = declarative_base()
+from dotenv import load_dotenv
+from sqlalchemy import Column, Float, ForeignKey, Integer, String, Text, create_engine
+from sqlalchemy.orm import Session
+
+from storio.model.database.common_queries import get_lorekeeper_classes_from_group
+
+load_dotenv()
+
+
+engine = create_engine(os.getenv("DATABASE_CONNECTION"))
+
+with Session(engine) as session:
+    classes = session.execute(get_lorekeeper_classes_from_group(1)).scalar()
+    print(classes)

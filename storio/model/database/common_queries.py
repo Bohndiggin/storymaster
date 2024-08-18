@@ -1,7 +1,7 @@
 """Contains queries that are needed frequently"""
 
-from sqlalchemy.orm import Session
 from sqlalchemy import sql
+
 from storio.model.database import schema
 
 
@@ -68,6 +68,7 @@ def get_lorekeeper_sub_races_from_group(group_id: int) -> sql.Executable:
     """
 
     return sql.select(schema.SubRace).where(schema.SubRace.group_id == group_id)
+
 
 def get_lorekeeper_actors_from_group(group_id: int) -> sql.Executable:
     """Gets lorekeeper actors from a group id

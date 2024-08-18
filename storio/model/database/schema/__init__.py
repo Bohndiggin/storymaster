@@ -5,8 +5,6 @@ from storio.model.database.schema.base import (
     Project,
     ProjectToGroup,
     User,
-)
-from storio.model.database.schema.connective_database import (
     LitographyNoteToActor,
     LitographyNoteToBackground,
     LitographyNoteToFaction,
@@ -14,13 +12,9 @@ from storio.model.database.schema.connective_database import (
     LitographyNoteToLocation,
     LitographyNoteToObject,
     LitographyNoteToWorldData,
-)
-from storio.model.database.schema.lito_database import (
     NodeType,
     NoteType,
     PlotSectionType,
-)
-from storio.model.database.schema.lore_database import (
     Actor,
     ActorAOnBRelations,
     ActorToSkills,
