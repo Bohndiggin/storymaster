@@ -1,7 +1,8 @@
 """Holds base database datatypes for Lorekeeper"""
 
 import enum
-from sqlalchemy import Column, Float, ForeignKey, Integer, String, Text, Enum
+
+from sqlalchemy import Column, Enum, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, declarative_base, mapped_column, relationship
 
 Base = declarative_base()
@@ -191,9 +192,7 @@ class Class_(Base):
         Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
     )
 
-    group = relationship(
-        "LorekeeperGroup", foreign_keys=[group_id]
-    )
+    group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
 class Background(Base):
