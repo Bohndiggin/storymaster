@@ -14,5 +14,7 @@ load_dotenv()
 engine = create_engine(os.getenv("DATABASE_CONNECTION"))
 
 with Session(engine) as session:
-    classes = session.execute(common_queries.get_lorekeeper_classes_from_group(1)).scalar()
+    classes = session.execute(
+        common_queries.get_lorekeeper_classes_from_group(1)
+    ).scalar()
     print(classes)
