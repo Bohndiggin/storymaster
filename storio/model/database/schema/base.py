@@ -5,10 +5,10 @@ import enum
 from sqlalchemy import Column, Enum, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, declarative_base, mapped_column, relationship
 
-Base = declarative_base()
+BaseTable = declarative_base()
 
 
-class User(Base):
+class User(BaseTable):
     """Class to represent the users table"""
 
     __tablename__ = "user"
@@ -17,7 +17,7 @@ class User(Base):
     username = mapped_column(String(150), nullable=False, name="username")
 
 
-class Project(Base):
+class Project(BaseTable):
     """Class to represent the project table"""
 
     __tablename__ = "project"
@@ -32,7 +32,7 @@ class Project(Base):
     user = relationship("User", foreign_keys=[user_id])
 
 
-class LorekeeperGroup(Base):
+class LorekeeperGroup(BaseTable):
     """Class to represent the lorekeeper_group table
 
     This table is meant to keep lorekeeper tables together.
@@ -51,7 +51,7 @@ class LorekeeperGroup(Base):
     project_to_group = relationship("ProjectToGroup", back_populates="group")
 
 
-class ProjectToGroup(Base):
+class ProjectToGroup(BaseTable):
     """Class to represent the project_to_group table
 
     Table is here so that projects can have many groups and groups can have many projects
@@ -102,7 +102,7 @@ class NoteType(enum.Enum):
     OTHER = "other"
 
 
-class LitographyNode(Base):
+class LitographyNode(BaseTable):
     """Represents litography_node table"""
 
     __tablename__ = "litography_node"
@@ -119,7 +119,7 @@ class LitographyNode(Base):
     project = relationship("Project", foreign_keys=[project_id])
 
 
-class LitographyNotes(Base):
+class LitographyNotes(BaseTable):
     """Represents litography_notes table"""
 
     __tablename__ = "litography_notes"
@@ -137,7 +137,7 @@ class LitographyNotes(Base):
     project = relationship("Project", foreign_keys=[project_id])
 
 
-class LitographyPlot(Base):
+class LitographyPlot(BaseTable):
     """Represents litography_plot table"""
 
     __tablename__ = "litography_plot"
@@ -150,7 +150,7 @@ class LitographyPlot(Base):
     project = relationship("Project", foreign_keys=[project_id])
 
 
-class LitographyPlotSection(Base):
+class LitographyPlotSection(BaseTable):
     """Represents litography_plot_section table"""
 
     __tablename__ = "litography_plot_section"
@@ -169,7 +169,7 @@ class LitographyPlotSection(Base):
     section_plot = relationship("LitographyPlot", foreign_keys=[section_plot_id])
 
 
-class LitographyArc(Base):
+class LitographyArc(BaseTable):
     """Represents the litography_arc table"""
 
     __tablename__ = "litography_arc"
@@ -182,7 +182,7 @@ class LitographyArc(Base):
     project = relationship("Project", foreign_keys=[project_id])
 
 
-class Class_(Base):
+class Class_(BaseTable):
     __tablename__ = "class"
 
     id = mapped_column(Integer, primary_key=True, name="id")
@@ -195,7 +195,7 @@ class Class_(Base):
     group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
-class Background(Base):
+class Background(BaseTable):
     __tablename__ = "background"
 
     id = mapped_column(Integer, primary_key=True)
@@ -208,7 +208,7 @@ class Background(Base):
     group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
-class Race(Base):
+class Race(BaseTable):
     __tablename__ = "race"
 
     id = mapped_column(Integer, primary_key=True)
@@ -222,7 +222,7 @@ class Race(Base):
     sub_race = relationship("SubRace", back_populates="race")
 
 
-class SubRace(Base):
+class SubRace(BaseTable):
     __tablename__ = "sub_race"
 
     id = mapped_column(Integer, primary_key=True)
@@ -237,7 +237,7 @@ class SubRace(Base):
     race = relationship("Race", back_populates="sub_race")
 
 
-class Actor(Base):
+class Actor(BaseTable):
     __tablename__ = "actor"
 
     id = mapped_column(Integer, primary_key=True, nullable=False, name="id")
@@ -286,7 +286,7 @@ class Actor(Base):
     sub_race = relationship("SubRace", foreign_keys=[sub_race_id])
 
 
-class ActorAOnBRelations(Base):
+class ActorAOnBRelations(BaseTable):
     __tablename__ = "actor_a_on_b_relations"
 
     id = mapped_column(Integer, primary_key=True)
@@ -304,7 +304,7 @@ class ActorAOnBRelations(Base):
     actor_b = relationship("Actor", foreign_keys=[item_b_id])
 
 
-class Skills(Base):
+class Skills(BaseTable):
     __tablename__ = "skills"
 
     id = mapped_column(Integer, primary_key=True)
@@ -318,7 +318,7 @@ class Skills(Base):
     group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
-class ActorToSkills(Base):
+class ActorToSkills(BaseTable):
     __tablename__ = "actor_to_skills"
 
     id = mapped_column(Integer, primary_key=True)
@@ -332,7 +332,7 @@ class ActorToSkills(Base):
     group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
-class Faction(Base):
+class Faction(BaseTable):
     __tablename__ = "faction"
 
     id = mapped_column(Integer, primary_key=True)
@@ -349,7 +349,7 @@ class Faction(Base):
     group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
-class FactionAOnBRelations(Base):
+class FactionAOnBRelations(BaseTable):
     __tablename__ = "faction_a_on_b_relations"
 
     id = mapped_column(Integer, primary_key=True)
@@ -368,7 +368,7 @@ class FactionAOnBRelations(Base):
     faction_b = relationship("Faction", foreign_keys=[faction_b_id])
 
 
-class FactionMembers(Base):
+class FactionMembers(BaseTable):
     __tablename__ = "faction_members"
 
     id = mapped_column(Integer, primary_key=True)
@@ -385,7 +385,7 @@ class FactionMembers(Base):
     group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
-class Location(Base):
+class Location(BaseTable):
     __tablename__ = "location_"
 
     id = mapped_column(Integer, primary_key=True)
@@ -408,7 +408,7 @@ class Location(Base):
     group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
-class LocationToFaction(Base):
+class LocationToFaction(BaseTable):
     __tablename__ = "location_to_faction"
 
     id = mapped_column(Integer, primary_key=True)
@@ -427,7 +427,7 @@ class LocationToFaction(Base):
     group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
-class LocationDungeon(Base):
+class LocationDungeon(BaseTable):
     __tablename__ = "location_dungeon"
 
     id = mapped_column(Integer, primary_key=True)
@@ -444,7 +444,7 @@ class LocationDungeon(Base):
     group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
-class LocationCity(Base):
+class LocationCity(BaseTable):
     __tablename__ = "location_city"
 
     id = mapped_column(Integer, primary_key=True)
@@ -459,7 +459,7 @@ class LocationCity(Base):
     group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
-class LocationCityDistricts(Base):
+class LocationCityDistricts(BaseTable):
     __tablename__ = "location_city_districts"
 
     id = mapped_column(Integer, primary_key=True)
@@ -475,7 +475,7 @@ class LocationCityDistricts(Base):
     group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
-class Resident(Base):
+class Resident(BaseTable):
     __tablename__ = "residents"
 
     id = mapped_column(Integer, primary_key=True)
@@ -491,7 +491,7 @@ class Resident(Base):
     group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
-class LocationFloraFauna(Base):
+class LocationFloraFauna(BaseTable):
     __tablename__ = "location_flora_fauna"
 
     id = mapped_column(Integer, primary_key=True)
@@ -508,7 +508,7 @@ class LocationFloraFauna(Base):
     group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
-class History(Base):
+class History(BaseTable):
     __tablename__ = "history"
 
     id = mapped_column(Integer, primary_key=True)
@@ -522,7 +522,7 @@ class History(Base):
     group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
-class HistoryActor(Base):
+class HistoryActor(BaseTable):
     __tablename__ = "history_actor"
 
     id = mapped_column(Integer, primary_key=True)
@@ -537,7 +537,7 @@ class HistoryActor(Base):
     group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
-class HistoryLocation(Base):
+class HistoryLocation(BaseTable):
     __tablename__ = "history_location"
 
     id = mapped_column(Integer, primary_key=True)
@@ -552,7 +552,7 @@ class HistoryLocation(Base):
     location = relationship("Location", foreign_keys=[location_id])
 
 
-class HistoryFaction(Base):
+class HistoryFaction(BaseTable):
     __tablename__ = "history_faction"
 
     id = mapped_column(Integer, primary_key=True)
@@ -567,7 +567,7 @@ class HistoryFaction(Base):
     faction = relationship("Faction", foreign_keys=[faction_id])
 
 
-class Object_(Base):
+class Object_(BaseTable):
     __tablename__ = "object_"
 
     id = mapped_column(Integer, primary_key=True)
@@ -582,7 +582,7 @@ class Object_(Base):
     group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
-class HistoryObject(Base):
+class HistoryObject(BaseTable):
     __tablename__ = "history_object"
 
     id = mapped_column(Integer, primary_key=True)
@@ -597,7 +597,7 @@ class HistoryObject(Base):
     object = relationship("Object_", foreign_keys=[object_id])
 
 
-class ObjectToOwner(Base):
+class ObjectToOwner(BaseTable):
     __tablename__ = "object_to_owner"
 
     id = mapped_column(Integer, primary_key=True)
@@ -612,7 +612,7 @@ class ObjectToOwner(Base):
     actor = relationship("Actor", foreign_keys=[actor_id])
 
 
-class WorldData(Base):
+class WorldData(BaseTable):
     __tablename__ = "world_data"
 
     id = mapped_column(Integer, primary_key=True)
@@ -625,7 +625,7 @@ class WorldData(Base):
     group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
-class HistoryWorldData(Base):
+class HistoryWorldData(BaseTable):
     __tablename__ = "history_world_data"
 
     id = mapped_column(Integer, primary_key=True)
@@ -640,7 +640,7 @@ class HistoryWorldData(Base):
     world_data = relationship("WorldData", foreign_keys=[world_data_id])
 
 
-class LitographyNoteToActor(Base):
+class LitographyNoteToActor(BaseTable):
     """Represents litography_note_to_actor table"""
 
     __tablename__ = "litography_note_to_actor"
@@ -652,7 +652,7 @@ class LitographyNoteToActor(Base):
     note = relationship("LitographyNotes", foreign_keys=[note_id])
 
 
-class LitographyNoteToBackground(Base):
+class LitographyNoteToBackground(BaseTable):
     """Represents litography_note_to_background table"""
 
     __tablename__ = "litography_note_to_background"
@@ -664,7 +664,7 @@ class LitographyNoteToBackground(Base):
     note = relationship("LitographyNotes", foreign_keys=[note_id])
 
 
-class LitographyNoteToFaction(Base):
+class LitographyNoteToFaction(BaseTable):
     """Represents litography_note_to_faction table"""
 
     __tablename__ = "litography_note_to_faction"
@@ -676,7 +676,7 @@ class LitographyNoteToFaction(Base):
     note = relationship("LitographyNotes", foreign_keys=[note_id])
 
 
-class LitographyNoteToLocation(Base):
+class LitographyNoteToLocation(BaseTable):
     """Represents litography_note_to_location table"""
 
     __tablename__ = "litography_note_to_location"
@@ -688,7 +688,7 @@ class LitographyNoteToLocation(Base):
     note = relationship("LitographyNotes", foreign_keys=[note_id])
 
 
-class LitographyNoteToHistory(Base):
+class LitographyNoteToHistory(BaseTable):
     """Represents litography_note_to_history table"""
 
     __tablename__ = "litography_note_to_history"
@@ -700,7 +700,7 @@ class LitographyNoteToHistory(Base):
     note = relationship("LitographyNotes", foreign_keys=[note_id])
 
 
-class LitographyNoteToObject(Base):
+class LitographyNoteToObject(BaseTable):
     """Represents litography_note_to_object table"""
 
     __tablename__ = "litography_note_to_object"
@@ -712,7 +712,7 @@ class LitographyNoteToObject(Base):
     note = relationship("LitographyNotes", foreign_keys=[note_id])
 
 
-class LitographyNoteToWorldData(Base):
+class LitographyNoteToWorldData(BaseTable):
     """Represents litography_note_to_world_data table"""
 
     __tablename__ = "litography_note_to_world_data"
@@ -724,7 +724,7 @@ class LitographyNoteToWorldData(Base):
     note = relationship("LitographyNotes", foreign_keys=[note_id])
 
 
-class LitographyNodeToPlotSection(Base):
+class LitographyNodeToPlotSection(BaseTable):
     """Represents litography_note_to_world_data table"""
 
     __tablename__ = "litography_node_to_plot_section"
@@ -740,7 +740,7 @@ class LitographyNodeToPlotSection(Base):
     node = relationship("LitographyNode", foreign_keys=[node_id])
 
 
-class ArcToNode(Base):
+class ArcToNode(BaseTable):
     """Represents the arc_to_node table"""
 
     __tablename__ = "arc_to_node"
@@ -753,7 +753,7 @@ class ArcToNode(Base):
     arc = relationship("LitographyArc", foreign_keys=[arc_id])
 
 
-class ArcToActor(Base):
+class ArcToActor(BaseTable):
     """Represents the arc_to_actor table"""
 
     __tablename__ = "arc_to_actor"

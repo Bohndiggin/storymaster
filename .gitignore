@@ -4,3 +4,4 @@
 **/.vscode*
 seed.py
 **.env
+**/.mypy_cache

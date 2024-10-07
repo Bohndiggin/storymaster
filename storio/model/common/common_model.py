@@ -1,9 +1,15 @@
 """Holds common model classes"""
 
+import dataclasses
+from enum import Enum
+
+
+class StorioModes(Enum):
+    """The modes in storio"""
+
+    LOREKEEPER = "Lorekeeper"
+    LITOGRAPHER = "Litographer"
+
 
 class BaseModel:
-    def __init__(self) -> None:
-        self.message: str = "First Test"
-
-    def get_message(self) -> str:
-        return self.message
+    """The base model class for Models"""

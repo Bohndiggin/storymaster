@@ -5,6 +5,30 @@ from sqlalchemy import sql
 from storio.model.database import schema
 
 
+def get_project_ids_for_user(user_id: int) -> sql.Executable:
+    """Gets all the project ids for a specific user
+
+    Args:
+        user_id: the id of the user in question
+
+    Returns:
+        a sql executable
+    """
+
+    return sql.select(schema.Project.id).where(schema.Project.user_id == user_id)
+
+
+def get_group_ids_for_project(project_id: int) -> sql.Executable:
+    """Gets all group ids for a project
+
+    Args:
+        project_id: the id of the targeted project
+
+    Returns:
+        sql executable
+    """
+
+
 def get_lorekeeper_all_from_group(group_id: int) -> sql.Executable:
     """Gets a lorekeeper db from a group_id
 
@@ -114,14 +138,6 @@ def get_lorekeeper_objects_from_group(group_id: int) -> sql.Executable:
 
 def get_lorekeeper_world_data_from_group(group_id: int) -> sql.Executable:
     """Gets lorekeeper actors from a group id
-
-    Args:
-        group_id: the id of the group related to the actors
-    """
-
-
-def get_lorekeeper_world_data_from_group(group_id: int) -> sql.Executable:
-    """Gets lorekeeper world data from a group id
 
     Args:
         group_id: the id of the group related to the actors
