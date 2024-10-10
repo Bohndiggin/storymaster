@@ -28,29 +28,10 @@ def get_group_ids_for_project(project_id: int) -> sql.Executable:
         sql executable
     """
 
-
-def get_lorekeeper_all_from_group(group_id: int) -> sql.Executable:
-    """Gets a lorekeeper db from a group_id
-
-    Args:
-        group_id: the id of the group of the lorekeeper data
-
-    """
-
-    return sql.select(
-        schema.Actor,
-        schema.Faction,
-        schema.Location,
-        schema.History,
-        schema.Object_,
-        schema.WorldData,
-    ).where(
-        schema.Actor.group_id == group_id,
-        schema.Faction.group_id == group_id,
-        schema.Location.group_id == group_id,
-        schema.History.group_id == group_id,
-        schema.Object_.group_id == group_id,
-        schema.WorldData.group_id == group_id,
+    return (
+        sql.select(schema.LorekeeperGroup.id)
+        .join(schema.ProjectToGroup)
+        .where(schema.ProjectToGroup.project_id == project_id)
     )
 
 
@@ -104,12 +85,26 @@ def get_lorekeeper_actors_from_group(group_id: int) -> sql.Executable:
     return sql.select(schema.Actor).where(schema.Actor.group_id == group_id)
 
 
+def get_single_actor(actor: schema.Actor) -> sql.Executable:
+    """Gets all related data for a single actor
+
+    Args:
+        actor: the actor in question
+    """
+
+    return sql.select(schema.ActorAOnBRelations).where(
+        schema.ActorAOnBRelations.actor_a == actor
+    )
+
+
 def get_lorekeeper_factions_from_group(group_id: int) -> sql.Executable:
     """Gets lorekeeper factions from a group id
 
     Args:
         group_id: the id of the group related to the actors
     """
+
+    return sql.select(schema.Faction).where(schema.Faction.group_id == group_id)
 
 
 def get_lorekeeper_locations_from_group(group_id: int) -> sql.Executable:
@@ -118,6 +113,7 @@ def get_lorekeeper_locations_from_group(group_id: int) -> sql.Executable:
     Args:
         group_id: the id of the group related to the actors
     """
+    return sql.select(schema.Location).where(schema.Location.group_id == group_id)
 
 
 def get_lorekeeper_history_from_group(group_id: int) -> sql.Executable:
@@ -126,6 +122,7 @@ def get_lorekeeper_history_from_group(group_id: int) -> sql.Executable:
     Args:
         group_id: the id of the group related to the actors
     """
+    return sql.select(schema.History).where(schema.History.group_id == group_id)
 
 
 def get_lorekeeper_objects_from_group(group_id: int) -> sql.Executable:
@@ -134,6 +131,7 @@ def get_lorekeeper_objects_from_group(group_id: int) -> sql.Executable:
     Args:
         group_id: the id of the group related to the actors
     """
+    return sql.select(schema.Object_).where(schema.Object_.group_id == group_id)
 
 
 def get_lorekeeper_world_data_from_group(group_id: int) -> sql.Executable:
@@ -142,3 +140,4 @@ def get_lorekeeper_world_data_from_group(group_id: int) -> sql.Executable:
     Args:
         group_id: the id of the group related to the actors
     """
+    return sql.select(schema.WorldData).where(schema.WorldData.group_id == group_id)
