@@ -1,5 +1,6 @@
 """Holds the classes for the lorekeeper model"""
 
+import enum
 import typing
 
 from sqlalchemy import Engine
@@ -8,9 +9,18 @@ from sqlalchemy.orm import Session
 from storio.model.common.common_model import BaseModel, StorioModes
 from storio.model.database import base_connection, common_queries, schema
 
+class LorekeeperTab(enum.Enum):
+    """Enumerator for the different tabs in lorekeeper"""
+
+    ACTOR = schema.Actor
+    FACTION = schema.Faction
+    LOCATION = schema.Location
+    HISTORY = schema.History
+    OBJECT_ = schema.Object_
+    WORLD_DATA = schema.WorldData
 
 class LorekeeperDataModel:
-    """Class for the lorekeeper data"""
+    """Class for lorekeeper data"""
 
     class_list: list[schema.Class_]
     background_list: list[schema.Background]
@@ -100,6 +110,9 @@ class LorekeeperDataModel:
                 .scalars()
                 .all()
             )
+    
+    def upload_data(self, engine: Engine) -> None:
+        """Uploads self to database"""
 
 
 class BaseLorekeeperModel(BaseModel):
@@ -112,8 +125,8 @@ class BaseLorekeeperModel(BaseModel):
         self.user = 1
 
 
-class LorekeeperPage(BaseLorekeeperModel):
-    """Model for individual pages on the lorekeeper side"""
+class LorekeeperModel(BaseLorekeeperModel):
+    """Model for the lorekeeper side"""
 
     project_data: LorekeeperDataModel
 
@@ -129,7 +142,24 @@ class LorekeeperPage(BaseLorekeeperModel):
     def load_individual_project(self, target_project: int) -> None:
         """Loads the data for an individual project"""
         self.project_data = LorekeeperDataModel(self.engine, target_project)
-        print(";")
+
+class LorekeeperTabModel(BaseLorekeeperModel):
+    """Model for a tab in lorekeeper i.e. actor/faction/location"""
+
+    tab_type: LorekeeperTab
+
+    def __init__(self, tab_type: LorekeeperTab):
+        super().__init__()
+        self.tab_type = tab_type
+
+    def load_rows(self) -> None:
+        """Loads the rows"""
+
+
+    def get_individual_row_data(self) -> None:
+        """Loads one row"""
+
+    
 
 
 class LorekeeperIndividualItem(BaseLorekeeperModel):
