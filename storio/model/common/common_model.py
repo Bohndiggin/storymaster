@@ -3,6 +3,11 @@
 import dataclasses
 from enum import Enum
 
+from sqlalchemy import Engine
+from sqlalchemy.orm import Session
+
+from storio.model.database import base_connection, common_queries, schema
+
 
 class StorioModes(Enum):
     """The modes in storio"""
@@ -13,3 +18,8 @@ class StorioModes(Enum):
 
 class BaseModel:
     """The base model class for Models"""
+
+    engine: Engine
+
+    def __init__(self):
+        self.engine = base_connection.engine

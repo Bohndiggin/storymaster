@@ -3,11 +3,12 @@
 import enum
 import typing
 
-from sqlalchemy import Engine
+from sqlalchemy import Engine, sql
 from sqlalchemy.orm import Session
 
 from storio.model.common.common_model import BaseModel, StorioModes
 from storio.model.database import base_connection, common_queries, schema
+
 
 class LorekeeperTab(enum.Enum):
     """Enumerator for the different tabs in lorekeeper"""
@@ -18,6 +19,7 @@ class LorekeeperTab(enum.Enum):
     HISTORY = schema.History
     OBJECT_ = schema.Object_
     WORLD_DATA = schema.WorldData
+
 
 class LorekeeperDataModel:
     """Class for lorekeeper data"""
@@ -110,25 +112,19 @@ class LorekeeperDataModel:
                 .scalars()
                 .all()
             )
-    
+
     def upload_data(self, engine: Engine) -> None:
         """Uploads self to database"""
 
 
-class BaseLorekeeperModel(BaseModel):
+class BaseLorekeeperPageModel(BaseModel):
     """Base model for Lorekeeper"""
 
     def __init__(self) -> None:
         super().__init__()
         self.mode = StorioModes.LOREKEEPER
-        self.engine = base_connection.engine
-        self.user = 1
-
-
-class LorekeeperModel(BaseLorekeeperModel):
-    """Model for the lorekeeper side"""
-
-    project_data: LorekeeperDataModel
+        self.user = 1  # TEMP
+        self.group = 1  # TEMP
 
     def load_user_projects(self) -> list[int]:
         """Loads all the project_ids for a user"""
@@ -139,31 +135,80 @@ class LorekeeperModel(BaseLorekeeperModel):
 
         return [project.id for project in project_id_list]
 
-    def load_individual_project(self, target_project: int) -> None:
-        """Loads the data for an individual project"""
-        self.project_data = LorekeeperDataModel(self.engine, target_project)
 
-class LorekeeperTabModel(BaseLorekeeperModel):
-    """Model for a tab in lorekeeper i.e. actor/faction/location"""
+class LorekeeperTabModel(BaseLorekeeperPageModel):
+    """Parent Model for the lorekeeper tabs"""
 
     tab_type: LorekeeperTab
 
-    def __init__(self, tab_type: LorekeeperTab):
+    def __init__(self):
         super().__init__()
-        self.tab_type = tab_type
+        self.table = self.populate_table()
 
-    def load_rows(self) -> None:
-        """Loads the rows"""
+    def populate_table(
+        self,
+    ) -> list[
+        schema.Actor
+        | schema.Faction
+        | schema.Location
+        | schema.History
+        | schema.Object_
+        | schema.WorldData
+    ]:
+        """Method to populate table with lorekeeper items of the correct type."""
+        with Session(self.engine) as session:
+            tab_list = (
+                session.execute(
+                    sql.select(self.tab_type.value).where(
+                        self.tab_type.value.group_id == self.group
+                    )
+                )
+                .scalars()
+                .all()
+            )
+
+        return tab_list
 
 
-    def get_individual_row_data(self) -> None:
-        """Loads one row"""
+class ActorTab(LorekeeperTabModel):
+    """Model for the actor tab"""
 
+    table: list[schema.Actor]
+    tab_type = LorekeeperTab.ACTOR
+
+class FactionTab(LorekeeperTabModel):
+    """Model for the faction tab"""
+
+    table: list[schema.Faction]
+    tab_type = LorekeeperTab.FACTION
+
+class LocationTab(LorekeeperTabModel):
+    """Model for the location tab"""
+
+    table: list[schema.Location]
+    tab_type = LorekeeperTab.LOCATION
+
+class HistoryTab(LorekeeperTabModel):
+    """Model for the history tab"""
     
+    table: list[schema.History]
+    tab_type = LorekeeperTab.HISTORY
+
+class ObjectTab(LorekeeperTabModel):
+    """Model for the object_ tab"""
+
+    table: list[schema.Object_]
+    tab_type = LorekeeperTab.OBJECT_
+
+class WorldDataTab(LorekeeperTabModel):
+    """Model for the world data tab"""
+
+    table: list[schema.WorldData]
+    tab_type = LorekeeperTab.WORLD_DATA
 
 
-class LorekeeperIndividualItem(BaseLorekeeperModel):
-    """Class for individual items on the lorekeeper page"""
+class LorekeeperItemModel(BaseLorekeeperPageModel):
+    """Parent Class for individual items on the lorekeeper page"""
 
-    def display_self(self) -> None:
-        """Function to make an individual item show itself on the side panel"""
+    def gather_related(self) -> None:
+        """Method to gather related table's data. To Be overwritten"""
