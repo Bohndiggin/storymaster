@@ -184,11 +184,13 @@ class LorekeeperItemModel(BaseLorekeeperPageModel):
     def gather_related(self) -> None:
         """Method to gather related table's data. To Be overwritten"""
 
+
 class ActorTab(LorekeeperTabModel):
     """Model for the actor tab"""
 
     table: list[schema.Actor]
     tab_type = LorekeeperTab.ACTOR
+
 
 class ActorItem(LorekeeperItemModel):
     """Model for a single actor"""
@@ -199,29 +201,52 @@ class ActorItem(LorekeeperItemModel):
         """Method to gather related table's data for the Actor Table"""
 
         with Session(self.engine) as session:
-            self.actor_relations = session.execute(
-                sql.select(schema.ActorAOnBRelations).where(schema.ActorAOnBRelations.actor_a_id == self.item_table_object.id)
-            ).scalars().all()
-            self.actor_factions = session.execute(
-                sql.select(schema.Faction)
-                .join(schema.FactionMembers)
-                .where(schema.FactionMembers.actor_id == self.item_table_object.id)
-            ).scalars().all()
-            self.actor_residence = session.execute(
-                sql.select(schema.Location)
-                .join(schema.Resident)
-                .where(schema.Resident.actor_id == self.item_table_object.id)
-            ).scalars().all()
-            self.actor_history = session.execute(
-                sql.select(schema.History)
-                .join(schema.HistoryActor)
-                .where(schema.HistoryActor.actor_id == self.item_table_object.id)
-            ).scalars().all()
-            self.actor_objects = session.execute(
-                sql.select(schema.Object_)
-                .join(schema.ObjectToOwner)
-                .where(schema.ObjectToOwner.actor_id == self.item_table_object.id)
-            ).scalars().all()
+            self.actor_relations = (
+                session.execute(
+                    sql.select(schema.ActorAOnBRelations).where(
+                        schema.ActorAOnBRelations.actor_a_id
+                        == self.item_table_object.id
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            self.actor_factions = (
+                session.execute(
+                    sql.select(schema.Faction)
+                    .join(schema.FactionMembers)
+                    .where(schema.FactionMembers.actor_id == self.item_table_object.id)
+                )
+                .scalars()
+                .all()
+            )
+            self.actor_residence = (
+                session.execute(
+                    sql.select(schema.Location)
+                    .join(schema.Resident)
+                    .where(schema.Resident.actor_id == self.item_table_object.id)
+                )
+                .scalars()
+                .all()
+            )
+            self.actor_history = (
+                session.execute(
+                    sql.select(schema.History)
+                    .join(schema.HistoryActor)
+                    .where(schema.HistoryActor.actor_id == self.item_table_object.id)
+                )
+                .scalars()
+                .all()
+            )
+            self.actor_objects = (
+                session.execute(
+                    sql.select(schema.Object_)
+                    .join(schema.ObjectToOwner)
+                    .where(schema.ObjectToOwner.actor_id == self.item_table_object.id)
+                )
+                .scalars()
+                .all()
+            )
 
 
 class FactionTab(LorekeeperTabModel):
@@ -291,4 +316,3 @@ class LorekeeperTabModelFactory:
                 return ObjectTab()
             case LorekeeperTab.WORLD_DATA:
                 return WorldDataTab()
-
