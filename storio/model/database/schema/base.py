@@ -290,8 +290,8 @@ class ActorAOnBRelations(BaseTable):
     __tablename__ = "actor_a_on_b_relations"
 
     id = mapped_column(Integer, primary_key=True)
-    item_a_id = mapped_column(Integer, ForeignKey("actor.id"))
-    item_b_id = mapped_column(Integer, ForeignKey("actor.id"))
+    actor_a_id = mapped_column(Integer, ForeignKey("actor.id"))
+    actor_b_id = mapped_column(Integer, ForeignKey("actor.id"))
     overall = mapped_column(String)
     economically = mapped_column(String)
     power_dynamic = mapped_column(String)
@@ -300,8 +300,8 @@ class ActorAOnBRelations(BaseTable):
     )
 
     group = relationship("LorekeeperGroup", foreign_keys=[group_id])
-    actor_a = relationship("Actor", foreign_keys=[item_a_id])
-    actor_b = relationship("Actor", foreign_keys=[item_b_id])
+    actor_a = relationship("Actor", foreign_keys=[actor_a_id])
+    actor_b = relationship("Actor", foreign_keys=[actor_b_id])
 
 
 class Skills(BaseTable):

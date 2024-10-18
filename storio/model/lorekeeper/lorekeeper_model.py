@@ -1,13 +1,22 @@
 """Holds the classes for the lorekeeper model"""
 
 import enum
-import typing
+from typing import Optional, TypeAlias, Union
 
 from sqlalchemy import Engine, sql
 from sqlalchemy.orm import Session
 
 from storio.model.common.common_model import BaseModel, StorioModes
 from storio.model.database import base_connection, common_queries, schema
+
+LoreTable: TypeAlias = Union[
+    schema.Actor,
+    schema.Faction,
+    schema.Location,
+    schema.History,
+    schema.Object_,
+    schema.WorldData,
+]
 
 
 class LorekeeperTab(enum.Enum):
@@ -147,14 +156,7 @@ class LorekeeperTabModel(BaseLorekeeperPageModel):
 
     def populate_table(
         self,
-    ) -> list[
-        schema.Actor
-        | schema.Faction
-        | schema.Location
-        | schema.History
-        | schema.Object_
-        | schema.WorldData
-    ]:
+    ) -> list[LoreTable]:
         """Method to populate table with lorekeeper items of the correct type."""
         with Session(self.engine) as session:
             tab_list = (
@@ -170,11 +172,57 @@ class LorekeeperTabModel(BaseLorekeeperPageModel):
         return tab_list
 
 
+class LorekeeperItemModel(BaseLorekeeperPageModel):
+    """Parent Class for individual items on the lorekeeper page"""
+
+    item_table_object: LoreTable
+
+    def __init__(self, item_table_object: LoreTable):
+        super().__init__()
+        self.item_table_object = item_table_object
+
+    def gather_related(self) -> None:
+        """Method to gather related table's data. To Be overwritten"""
+
 class ActorTab(LorekeeperTabModel):
     """Model for the actor tab"""
 
     table: list[schema.Actor]
     tab_type = LorekeeperTab.ACTOR
+
+class ActorItem(LorekeeperItemModel):
+    """Model for a single actor"""
+
+    item_table_object: schema.Actor
+
+    def gather_related(self) -> None:
+        """Method to gather related table's data for the Actor Table"""
+
+        with Session(self.engine) as session:
+            self.actor_relations = session.execute(
+                sql.select(schema.ActorAOnBRelations).where(schema.ActorAOnBRelations.actor_a_id == self.item_table_object.id)
+            ).scalars().all()
+            self.actor_factions = session.execute(
+                sql.select(schema.Faction)
+                .join(schema.FactionMembers)
+                .where(schema.FactionMembers.actor_id == self.item_table_object.id)
+            ).scalars().all()
+            self.actor_residence = session.execute(
+                sql.select(schema.Location)
+                .join(schema.Resident)
+                .where(schema.Resident.actor_id == self.item_table_object.id)
+            ).scalars().all()
+            self.actor_history = session.execute(
+                sql.select(schema.History)
+                .join(schema.HistoryActor)
+                .where(schema.HistoryActor.actor_id == self.item_table_object.id)
+            ).scalars().all()
+            self.actor_objects = session.execute(
+                sql.select(schema.Object_)
+                .join(schema.ObjectToOwner)
+                .where(schema.ObjectToOwner.actor_id == self.item_table_object.id)
+            ).scalars().all()
+
 
 class FactionTab(LorekeeperTabModel):
     """Model for the faction tab"""
@@ -182,23 +230,27 @@ class FactionTab(LorekeeperTabModel):
     table: list[schema.Faction]
     tab_type = LorekeeperTab.FACTION
 
+
 class LocationTab(LorekeeperTabModel):
     """Model for the location tab"""
 
     table: list[schema.Location]
     tab_type = LorekeeperTab.LOCATION
 
+
 class HistoryTab(LorekeeperTabModel):
     """Model for the history tab"""
-    
+
     table: list[schema.History]
     tab_type = LorekeeperTab.HISTORY
+
 
 class ObjectTab(LorekeeperTabModel):
     """Model for the object_ tab"""
 
     table: list[schema.Object_]
     tab_type = LorekeeperTab.OBJECT_
+
 
 class WorldDataTab(LorekeeperTabModel):
     """Model for the world data tab"""
@@ -207,8 +259,36 @@ class WorldDataTab(LorekeeperTabModel):
     tab_type = LorekeeperTab.WORLD_DATA
 
 
-class LorekeeperItemModel(BaseLorekeeperPageModel):
-    """Parent Class for individual items on the lorekeeper page"""
+LorekeeperTabModelTypes: TypeAlias = Union[
+    ActorTab, FactionTab, LocationTab, HistoryTab, ObjectTab, WorldDataTab
+]
 
-    def gather_related(self) -> None:
-        """Method to gather related table's data. To Be overwritten"""
+
+class LorekeeperTabModelFactory:
+    """Factory to make LorekeeperTabModel children"""
+
+    def open_tab(self, tab_type: LorekeeperTab) -> LorekeeperTabModelTypes:
+        """Opens the corresponding tab based on tab_type
+
+        Args:
+            tab_type: the lorekeeper tab you want to open
+
+        Returns:
+            LorekeeperTabModelTypes: an instance of the lorekeeper tab model
+
+        """
+
+        match tab_type:
+            case LorekeeperTab.ACTOR:
+                return ActorTab()
+            case LorekeeperTab.FACTION:
+                return FactionTab()
+            case LorekeeperTab.LOCATION:
+                return LocationTab()
+            case LorekeeperTab.HISTORY:
+                return HistoryTab()
+            case LorekeeperTab.OBJECT_:
+                return ObjectTab()
+            case LorekeeperTab.WORLD_DATA:
+                return WorldDataTab()
+
