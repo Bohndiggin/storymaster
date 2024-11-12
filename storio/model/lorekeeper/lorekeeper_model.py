@@ -183,6 +183,7 @@ class LorekeeperItemModel(BaseLorekeeperPageModel):
 
     def gather_related(self) -> None:
         """Method to gather related table's data. To Be overwritten"""
+        return
 
 
 class ActorTab(LorekeeperTabModel):
@@ -213,8 +214,7 @@ class ActorItem(LorekeeperItemModel):
             )
             self.actor_factions = (
                 session.execute(
-                    sql.select(schema.Faction)
-                    .join(schema.FactionMembers)
+                    sql.select(schema.FactionMembers)
                     .where(schema.FactionMembers.actor_id == self.item_table_object.id)
                 )
                 .scalars()
@@ -222,8 +222,7 @@ class ActorItem(LorekeeperItemModel):
             )
             self.actor_residence = (
                 session.execute(
-                    sql.select(schema.Location)
-                    .join(schema.Resident)
+                    sql.select(schema.Resident)
                     .where(schema.Resident.actor_id == self.item_table_object.id)
                 )
                 .scalars()
@@ -240,8 +239,7 @@ class ActorItem(LorekeeperItemModel):
             )
             self.actor_objects = (
                 session.execute(
-                    sql.select(schema.Object_)
-                    .join(schema.ObjectToOwner)
+                    sql.select(schema.ObjectToOwner)
                     .where(schema.ObjectToOwner.actor_id == self.item_table_object.id)
                 )
                 .scalars()
@@ -255,6 +253,32 @@ class FactionTab(LorekeeperTabModel):
     table: list[schema.Faction]
     tab_type = LorekeeperTab.FACTION
 
+class FactionItem(LorekeeperItemModel):
+    """Model for a single Faction"""
+
+    item_table_object: schema.Faction
+
+    def gather_related(self) -> None:
+        """Gathers related data related to the faction tab"""
+
+        with Session(self.engine) as session:
+            self.faction_relations = (
+                session.execute(
+                    sql.select(schema.FactionAOnBRelations)
+                    .where(schema.FactionAOnBRelations.faction_a_id == self.item_table_object.id)
+                )
+                .scalars()
+                .all()
+            )
+            self.faction_members = (
+                session.execute(
+                    sql.select(schema.Actor.first_name, schema.Actor.last_name, schema.FactionMembers)
+                    .join(schema.FactionMembers)
+                    .where(schema.FactionMembers.faction_id == self.item_table_object.id)
+                )
+                .scalars()
+                .all()
+            )
 
 class LocationTab(LorekeeperTabModel):
     """Model for the location tab"""

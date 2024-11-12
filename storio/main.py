@@ -2,7 +2,7 @@
 
 import sys
 
-from PyQt6.QtWidgets import QApplication, QLabel
+from PyQt5.QtWidgets import QApplication, QLabel
 
 from storio.model.common.common_model import BaseModel
 from storio.view.common.common_view import BaseView
