@@ -251,8 +251,7 @@ class ActorItem(LorekeeperItemModel):
                 .all()
             )
             self.actor_residence = [
-                {"location": i.location.location_name}
-                for i in self.actor_residence
+                {"location": i.location.location_name} for i in self.actor_residence
             ]
             self.actor_history = (
                 session.execute(
@@ -263,10 +262,7 @@ class ActorItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.actor_history = [
-                {"history": i}
-                for i in self.actor_history
-            ]
+            self.actor_history = [{"history": i} for i in self.actor_history]
             self.actor_objects = (
                 session.execute(
                     sql.select(schema.ObjectToOwner).where(
@@ -276,16 +272,13 @@ class ActorItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.actor_objects = [
-                {"object": i}
-                for i in self.actor_objects
-            ]
+            self.actor_objects = [{"object": i} for i in self.actor_objects]
             self.related = {
                 "relations": self.actor_relations,
                 "factions": self.actor_factions,
                 "locations": self.actor_residence,
                 "history": self.actor_history,
-                "objects": self.actor_objects
+                "objects": self.actor_objects,
             }
 
 
