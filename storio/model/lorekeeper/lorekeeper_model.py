@@ -1,8 +1,8 @@
 """Holds the classes for the lorekeeper model"""
 
 import enum
-from typing import Optional, TypeAlias, Union
 import typing
+from typing import Optional, TypeAlias, Union
 
 from sqlalchemy import Engine, sql
 from sqlalchemy.orm import Session
@@ -308,18 +308,30 @@ class FactionItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.faction_members = session.execute(
-                sql.select(
-                    schema.Actor.first_name,
-                    schema.Actor.last_name,
-                    schema.FactionMembers,
+            self.faction_relations = [
+                {"other_faction": i.faction_b.faction_name, "relation": i}
+                for i in self.faction_relations
+            ]
+            self.faction_members = (
+                session.execute(
+                    sql.select(
+                        schema.FactionMembers,
+                    ).where(
+                        schema.FactionMembers.faction_id == self.item_table_object.id
+                    )
                 )
-                .join(schema.FactionMembers)
-                .where(schema.FactionMembers.faction_id == self.item_table_object.id)
-            ).all()
+                .scalars()
+                .all()
+            )
+            self.faction_members = [
+                {"actor": i.actor.first_name, "membership": i}
+                for i in self.faction_members
+            ]
             self.faction_history = (
                 session.execute(
-                    sql.select(schema.History).join(
+                    sql.select(schema.History)
+                    .join(schema.HistoryFaction)
+                    .where(
                         schema.HistoryFaction.faction_id == self.item_table_object.id
                     )
                 )
@@ -337,6 +349,12 @@ class FactionItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
+            self.related = {
+                "relations": self.faction_relations,
+                "members": self.faction_members,
+                "history": self.faction_members,
+                "locations": self.faction_locations,
+            }
 
 
 class LocationTab(LorekeeperTabModel):
@@ -351,19 +369,111 @@ class LocationItem(LorekeeperItemModel):
 
     item_table_object: schema.Location
 
-    def gather_related(self):
+    def gather_related(self) -> None:
         """Gathers data related to the location"""
 
         with Session(self.engine) as session:
             self.location_residents = (
                 session.execute(
-                    sql.select(schema.Actor)
-                    .join(schema.Resident)
-                    .where(schema.Resident.location_id == self.item_table_object.id)
+                    sql.select(schema.Resident).where(
+                        schema.Resident.location_id == self.item_table_object.id
+                    )
                 )
                 .scalars()
                 .all()
             )
+            self.location_residents = [
+                {"resident": i.actor.first_name} for i in self.location_residents
+            ]
+            self.location_factions = (
+                session.execute(
+                    sql.select(schema.LocationToFaction).where(
+                        schema.LocationToFaction.location_id
+                        == self.item_table_object.id
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            self.location_factions = [
+                {"faction": i.faction.faction_name, "location_faction": i}
+                for i in self.location_factions
+            ]
+            self.location_dungeons = (
+                session.execute(
+                    sql.select(schema.LocationDungeon).where(
+                        schema.LocationDungeon.location_id == self.item_table_object.id
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            self.location_dungeons = [
+                {"location": i.location.location_name, "dungeon": i}
+                for i in self.location_dungeons
+            ]
+            self.location_cities = (
+                session.execute(
+                    sql.select(schema.LocationCity).where(
+                        schema.LocationCity.location_id == self.item_table_object.id
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            self.location_cities = [
+                {"location": i.location.location_name, "city": i}
+                for i in self.location_cities
+            ]
+            self.location_city_districts = (
+                session.execute(
+                    sql.select(schema.LocationCityDistricts).where(
+                        schema.LocationCityDistricts.location_id
+                        == self.item_table_object.id
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            self.location_city_districts = [
+                {"location": i.location.location_name, "district": i}
+                for i in self.location_city_districts
+            ]
+            self.location_flora_fauna = (
+                session.execute(
+                    sql.select(schema.LocationFloraFauna).where(
+                        schema.LocationFloraFauna.location_id
+                        == self.item_table_object.id
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            self.location_flora_fauna = [
+                {"location": i.location_.location_name, "flora_fauna": i}
+                for i in self.location_flora_fauna
+            ]
+            self.location_history = (
+                session.execute(
+                    sql.select(schema.HistoryLocation).where(
+                        schema.HistoryLocation.location_id == self.item_table_object.id
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            self.location_history = [
+                {"history": i.history.event_name} for i in self.location_history
+            ]
+            self.related = {
+                "residents": self.location_residents,
+                "factions": self.location_factions,
+                "dungeons": self.location_dungeons,
+                "cities": self.location_cities,
+                "districts": self.location_city_districts,
+                "flora_fauna": self.location_flora_fauna,
+                "history": self.location_history,
+            }
 
 
 class HistoryTab(LorekeeperTabModel):
@@ -373,6 +483,72 @@ class HistoryTab(LorekeeperTabModel):
     tab_type = LorekeeperTab.HISTORY
 
 
+class HistoryItem(LorekeeperItemModel):
+    """Model for a history Item"""
+
+    item_table_object: schema.History
+
+    def gather_related(self) -> None:
+        """Gathers related table data"""
+
+        with Session(self.engine) as session:
+            self.history_actors = (
+                session.execute(
+                    sql.select(schema.HistoryActor).where(
+                        schema.HistoryActor.history_id == self.item_table_object.id
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            self.history_actors = [
+                {"actor": i.actor.first_name} for i in self.history_actors
+            ]
+            self.history_locations = (
+                session.execute(
+                    sql.select(schema.HistoryLocation).where(
+                        schema.HistoryLocation.history_id == self.item_table_object.id
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            self.history_locations = [
+                {"location": i.location.location_name} for i in self.history_locations
+            ]
+            self.history_factions = (
+                session.execute(
+                    sql.select(schema.HistoryFaction).where(
+                        schema.HistoryFaction.history_id == self.item_table_object.id
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            self.history_factions = [
+                {"faction": i.faction.faction_name} for i in self.history_factions
+            ]
+            self.history_objects = (
+                session.execute(
+                    sql.select(schema.HistoryObject).where(
+                        schema.HistoryObject.history_id == self.item_table_object.id
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            self.history_objects = [
+                {"object": i.object.object_name} for i in self.history_objects
+            ]
+
+            self.related = {
+                "actors": self.history_actors,
+                "locations": self.history_locations,
+                "factions": self.history_factions,
+                "objects": self.history_objects,
+            }
+
+
 class ObjectTab(LorekeeperTabModel):
     """Model for the object_ tab"""
 
@@ -380,11 +556,76 @@ class ObjectTab(LorekeeperTabModel):
     tab_type = LorekeeperTab.OBJECT_
 
 
+class ObjectItem(LorekeeperItemModel):
+    """Model for a single object_ item"""
+
+    item_table_object: schema.Object_
+
+    def gather_related(self) -> None:
+        """Gathers Related table Data"""
+
+        with Session(self.engine) as session:
+            self.object_owners = (
+                session.execute(
+                    sql.select(schema.ObjectToOwner).where(
+                        schema.ObjectToOwner.object_id == self.item_table_object.id
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            self.object_owners = [
+                {"owner": i.actor.first_name} for i in self.object_owners
+            ]
+            self.object_history = (
+                session.execute(
+                    sql.select(schema.HistoryObject).where(
+                        schema.HistoryObject.object_id == self.item_table_object.id
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            self.object_history = [
+                {"history": i.history.event_name} for i in self.object_history
+            ]
+            self.related = {
+                "owners": self.object_owners,
+                "history": self.object_history,
+            }
+
+
 class WorldDataTab(LorekeeperTabModel):
     """Model for the world data tab"""
 
     table: list[schema.WorldData]
     tab_type = LorekeeperTab.WORLD_DATA
+
+
+class WorldDataItem(LorekeeperItemModel):
+    """Model for a single item of world data"""
+
+    item_table_object: schema.WorldData
+
+    def gather_related(self) -> None:
+        """Gathers data related to this world data"""
+
+        with Session(self.engine) as session:
+            self.world_data_history = (
+                session.execute(
+                    sql.select(schema.HistoryWorldData).where(
+                        schema.HistoryWorldData.world_data_id
+                        == self.item_table_object.id
+                    )
+                )
+                .scalars()
+                .all()
+            )
+            self.world_data_history = [
+                {"history": i.history.event_name} for i in self.world_data_history
+            ]
+
+            self.related = {"history": self.world_data_history}
 
 
 LorekeeperTabModelTypes: TypeAlias = Union[

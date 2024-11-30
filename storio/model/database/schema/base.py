@@ -373,15 +373,15 @@ class FactionMembers(BaseTable):
 
     id = mapped_column(Integer, primary_key=True)
     actor_id = mapped_column(Integer, ForeignKey("actor.id"))
-    actor = relationship("Actor", foreign_keys=[actor_id])
     faction_id = mapped_column(Integer, ForeignKey("faction.id"))
-    faction = relationship("Faction", foreign_keys=[faction_id])
     actor_role = mapped_column(String(255))
     relative_power = mapped_column(Integer)
     group_id = mapped_column(
         Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
     )
 
+    actor = relationship("Actor", foreign_keys=[actor_id])
+    faction = relationship("Faction", foreign_keys=[faction_id])
     group = relationship("LorekeeperGroup", foreign_keys=[group_id])
 
 
