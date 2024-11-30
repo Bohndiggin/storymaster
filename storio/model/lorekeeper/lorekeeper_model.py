@@ -273,7 +273,7 @@ class ActorItem(LorekeeperItemModel):
                 .all()
             )
             self.actor_objects = [{"object": i} for i in self.actor_objects]
-            
+
             self.related = {
                 "relations": self.actor_relations,
                 "factions": self.actor_factions,
@@ -444,7 +444,7 @@ class LocationItem(LorekeeperItemModel):
                 .all()
             )
             self.location_city_districts = [
-                {"location": i.location.location_name, "district": i}
+                {"location": i.district.location_name, "district": i}
                 for i in self.location_city_districts
             ]
             self.location_flora_fauna = (
