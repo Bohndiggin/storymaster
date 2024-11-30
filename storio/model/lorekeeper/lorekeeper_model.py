@@ -273,6 +273,7 @@ class ActorItem(LorekeeperItemModel):
                 .all()
             )
             self.actor_objects = [{"object": i} for i in self.actor_objects]
+            
             self.related = {
                 "relations": self.actor_relations,
                 "factions": self.actor_factions,
@@ -329,8 +330,7 @@ class FactionItem(LorekeeperItemModel):
             ]
             self.faction_history = (
                 session.execute(
-                    sql.select(schema.History)
-                    .join(schema.HistoryFaction)
+                    sql.select(schema.HistoryFaction)
                     .where(
                         schema.HistoryFaction.faction_id == self.item_table_object.id
                     )
@@ -338,10 +338,13 @@ class FactionItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
+            self.faction_history = [
+                {"history": i.history.event_name}
+                for i in self.faction_history
+            ]
             self.faction_locations = (
                 session.execute(
-                    sql.select(schema.Location)
-                    .join(schema.LocationToFaction)
+                    sql.select(schema.LocationToFaction)
                     .where(
                         schema.LocationToFaction.faction_id == self.item_table_object.id
                     )
@@ -349,6 +352,11 @@ class FactionItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
+            self.faction_locations = [
+                {"location": i.location.location_name}
+                for i in self.faction_locations
+            ]
+
             self.related = {
                 "relations": self.faction_relations,
                 "members": self.faction_members,
@@ -465,6 +473,7 @@ class LocationItem(LorekeeperItemModel):
             self.location_history = [
                 {"history": i.history.event_name} for i in self.location_history
             ]
+
             self.related = {
                 "residents": self.location_residents,
                 "factions": self.location_factions,
@@ -589,6 +598,7 @@ class ObjectItem(LorekeeperItemModel):
             self.object_history = [
                 {"history": i.history.event_name} for i in self.object_history
             ]
+
             self.related = {
                 "owners": self.object_owners,
                 "history": self.object_history,
