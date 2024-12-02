@@ -157,17 +157,22 @@ class LorekeeperTabModel(BaseLorekeeperPageModel):
     """Parent Model for the lorekeeper tabs"""
 
     tab_type: LorekeeperTab
+    table: dict[int, LorekeeperMainTable]
 
     def __init__(self):
         super().__init__()
         self.table = self.populate_table()
 
+    def refresh(self) -> None:
+        """Pulls data again"""
+        self.table = self.populate_table()
+
     def populate_table(
         self,
-    ) -> list[LorekeeperMainTable]:
+    ) -> dict[int, LorekeeperMainTable]:
         """Method to populate table with lorekeeper items of the correct type."""
         with Session(self.engine) as session:
-            tab_list = (
+            table_list = (
                 session.execute(
                     sql.select(self.tab_type.value).where(
                         self.tab_type.value.group_id == self.group
@@ -176,8 +181,15 @@ class LorekeeperTabModel(BaseLorekeeperPageModel):
                 .scalars()
                 .all()
             )
+            table_dict = {item.id: item for item in table_list}
 
-        return tab_list
+        return table_dict
+    
+    def update_database(self) -> None:
+        """Updates the database with changed data for all entries"""
+
+    def load_item(self, item_number: int) -> typing.Any:
+        """Creates a single item from the table. TO BE OVERWRITTEN"""
 
 
 class LorekeeperItemModel(BaseLorekeeperPageModel):
@@ -196,13 +208,18 @@ class LorekeeperItemModel(BaseLorekeeperPageModel):
     def gather_related(self) -> None:
         """Method to gather related table's data. To Be overwritten"""
         return
+    
+    def _update_self_database(self) -> None:
+        """Updates the item_table_object in the database"""
 
+        with Session(self.engine) as session:
+            session.merge(self.item_table_object)
+            session.commit()
+    
+    def update_database(self) -> None:
+        """Method to update the database with any changed data. TO BE OVERWRITTEN"""
+        return
 
-class ActorTab(LorekeeperTabModel):
-    """Model for the actor tab"""
-
-    table: list[schema.Actor]
-    tab_type = LorekeeperTab.ACTOR
 
 
 class ActorItem(LorekeeperItemModel):
@@ -255,14 +272,13 @@ class ActorItem(LorekeeperItemModel):
             ]
             self.actor_history = (
                 session.execute(
-                    sql.select(schema.History)
-                    .join(schema.HistoryActor)
+                    sql.select(schema.HistoryActor)
                     .where(schema.HistoryActor.actor_id == self.item_table_object.id)
                 )
                 .scalars()
                 .all()
             )
-            self.actor_history = [{"history": i} for i in self.actor_history]
+            self.actor_history = [{"history": i.history.event_name} for i in self.actor_history]
             self.actor_objects = (
                 session.execute(
                     sql.select(schema.ObjectToOwner).where(
@@ -272,7 +288,7 @@ class ActorItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.actor_objects = [{"object": i} for i in self.actor_objects]
+            self.actor_objects = [{"object": i.object.object_name} for i in self.actor_objects]
 
             self.related = {
                 "relations": self.actor_relations,
@@ -281,13 +297,40 @@ class ActorItem(LorekeeperItemModel):
                 "history": self.actor_history,
                 "objects": self.actor_objects,
             }
+        
+    def update_database(self) -> None:
+        """Updated the database with any changed data."""
+
+        self._update_self_database()
+
+        with Session(self.engine) as session:
+
+            for relation in self.actor_relations:
+                session.merge(relation["relation"])
+
+            for faction in self.actor_factions:
+                session.merge(faction["actor_faction"])
+
+class ActorTab(LorekeeperTabModel):
+    """Model for the actor tab"""
+
+    table: dict[int, schema.Actor]
+    tab_type = LorekeeperTab.ACTOR
+
+    def load_item(self, item_number: int) -> ActorItem:
+        """Creates an ActorItem
+        
+        Args:
+            item_number: non-zero indexed id of the item being requested
+
+        Returns:
+            ActorItem instance of the item requested
+        
+        """
+
+        return ActorItem(self.table[item_number])
 
 
-class FactionTab(LorekeeperTabModel):
-    """Model for the faction tab"""
-
-    table: list[schema.Faction]
-    tab_type = LorekeeperTab.FACTION
 
 
 class FactionItem(LorekeeperItemModel):
@@ -365,11 +408,22 @@ class FactionItem(LorekeeperItemModel):
             }
 
 
-class LocationTab(LorekeeperTabModel):
-    """Model for the location tab"""
+class FactionTab(LorekeeperTabModel):
+    """Model for the faction tab"""
 
-    table: list[schema.Location]
-    tab_type = LorekeeperTab.LOCATION
+    table: dict[int, schema.Faction]
+    tab_type = LorekeeperTab.FACTION
+
+    def load_item(self, item_number: int) -> FactionItem:
+        """Creates Faction Item
+        
+        Args:
+            item_number: int of the item from the table
+
+        Returns:
+            FactionItem of the request        
+        """
+        return FactionItem(self.table[item_number])
 
 
 class LocationItem(LorekeeperItemModel):
@@ -484,13 +538,22 @@ class LocationItem(LorekeeperItemModel):
                 "history": self.location_history,
             }
 
+class LocationTab(LorekeeperTabModel):
+    """Model for the location tab"""
 
-class HistoryTab(LorekeeperTabModel):
-    """Model for the history tab"""
+    table: dict[int, schema.Location]
+    tab_type = LorekeeperTab.LOCATION
 
-    table: list[schema.History]
-    tab_type = LorekeeperTab.HISTORY
+    def load_item(self, item_number:int) -> LocationItem:
+        """Creates LocationItem
+        
+        Args:
+            item_number: int of the item from the table
 
+        Returns:
+            LocationItem of the request        
+        """
+        return LocationItem(self.table[item_number])
 
 class HistoryItem(LorekeeperItemModel):
     """Model for a history Item"""
@@ -557,13 +620,22 @@ class HistoryItem(LorekeeperItemModel):
                 "objects": self.history_objects,
             }
 
+class HistoryTab(LorekeeperTabModel):
+    """Model for the history tab"""
 
-class ObjectTab(LorekeeperTabModel):
-    """Model for the object_ tab"""
+    table: dict[int, schema.History]
+    tab_type = LorekeeperTab.HISTORY
 
-    table: list[schema.Object_]
-    tab_type = LorekeeperTab.OBJECT_
+    def load_item(self, item_number:int) -> HistoryItem:
+        """Creates HistoryItem
+        
+        Args:
+            item_number: int of the item from the table
 
+        Returns:
+            HistoryItem of the request        
+        """
+        return HistoryItem(self.table[item_number])
 
 class ObjectItem(LorekeeperItemModel):
     """Model for a single object_ item"""
@@ -605,12 +677,22 @@ class ObjectItem(LorekeeperItemModel):
             }
 
 
-class WorldDataTab(LorekeeperTabModel):
-    """Model for the world data tab"""
+class ObjectTab(LorekeeperTabModel):
+    """Model for the object_ tab"""
 
-    table: list[schema.WorldData]
-    tab_type = LorekeeperTab.WORLD_DATA
+    table: dict[int, schema.Object_]
+    tab_type = LorekeeperTab.OBJECT_
 
+    def load_item(self, item_number: int) -> ObjectItem:
+        """Creates ObjectItem
+        
+        Args:
+            item_number: int of the item from the table
+
+        Returns:
+            ObjectItem of the request        
+        """
+        return ObjectItem(self.table[item_number])
 
 class WorldDataItem(LorekeeperItemModel):
     """Model for a single item of world data"""
@@ -636,6 +718,24 @@ class WorldDataItem(LorekeeperItemModel):
             ]
 
             self.related = {"history": self.world_data_history}
+
+class WorldDataTab(LorekeeperTabModel):
+    """Model for the world data tab"""
+
+    table: dict[int, schema.WorldData]
+    tab_type = LorekeeperTab.WORLD_DATA
+
+    def load_item(self, item_number: int) -> WorldDataItem:
+        """Creates WorldDataItem
+        
+        Args:
+            item_number: int of the item from the table
+
+        Returns:
+            WorldDataItem of the request        
+        """
+        return WorldDataItem(self.table[item_number])
+
 
 
 LorekeeperTabModelTypes: TypeAlias = Union[

@@ -3,9 +3,17 @@
 import enum
 
 from sqlalchemy import Column, Enum, Float, ForeignKey, Integer, String, Text
-from sqlalchemy.orm import Mapped, declarative_base, mapped_column, relationship
+from sqlalchemy.orm import Mapped, DeclarativeBase, mapped_column, relationship
 
-BaseTable = declarative_base()
+class BaseTable(DeclarativeBase):
+    __abstract__ = True
+
+    def as_dict(self):
+        """
+        Converts the instance into a dictionary.
+        """
+        return {column.name: getattr(self, column.name) for column in self.__table__.columns}
+
 
 
 class User(BaseTable):
