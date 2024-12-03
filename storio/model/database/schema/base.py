@@ -11,7 +11,7 @@ class BaseTable(DeclarativeBase):
 
     def as_dict(self):
         """
-        Converts the instance into a dictionary.
+        Converts the instance into a dictionary. Used for display only.
         """
         return {
             column.name: getattr(self, column.name) for column in self.__table__.columns
