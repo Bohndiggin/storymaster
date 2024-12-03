@@ -19,6 +19,7 @@ LorekeeperMainTable: TypeAlias = Union[
     schema.WorldData,
 ]
 
+
 class LorekeeperTab(enum.Enum):
     """Enumerator for the different tabs in lorekeeper"""
 
@@ -215,7 +216,7 @@ class LorekeeperItemModel(BaseLorekeeperPageModel):
     def update_database(self) -> None:
         """Method to update the database with any changed data. TO BE OVERWRITTEN"""
         return
-    
+
     def add_to_database(self) -> None:
         """Method to add an entry to the database. TO BE OVERWRITTEN"""
         return
@@ -227,8 +228,9 @@ LorekeeperActorRelatedTable: TypeAlias = Union[
     schema.HistoryActor,
     schema.Resident,
     schema.ObjectToOwner,
-    schema.FactionMembers
+    schema.FactionMembers,
 ]
+
 
 class ActorItem(LorekeeperItemModel):
     """Model for a single actor"""
@@ -241,48 +243,44 @@ class ActorItem(LorekeeperItemModel):
         with Session(self.engine) as session:
             self.actor_classes = (
                 session.execute(
-                    sql.select(schema.Class_)
-                    .where(schema.Class_.id == self.item_table_object.class_id)
+                    sql.select(schema.Class_).where(
+                        schema.Class_.id == self.item_table_object.class_id
+                    )
                 )
                 .scalars()
                 .all()
             )
-            self.actor_classes = [
-                {"class": i} for i in self.actor_classes
-            ]
+            self.actor_classes = [{"class": i} for i in self.actor_classes]
             self.actor_backgrounds = (
                 session.execute(
-                    sql.select(schema.Background)
-                    .where(schema.Background.id == self.item_table_object.background_id)
+                    sql.select(schema.Background).where(
+                        schema.Background.id == self.item_table_object.background_id
+                    )
                 )
                 .scalars()
                 .all()
             )
-            self.actor_backgrounds = [
-                {"background": i} for i in self.actor_backgrounds
-            ]
+            self.actor_backgrounds = [{"background": i} for i in self.actor_backgrounds]
             self.actor_race = (
                 session.execute(
-                    sql.select(schema.Race)
-                    .where(schema.Race.id == self.item_table_object.race_id)
+                    sql.select(schema.Race).where(
+                        schema.Race.id == self.item_table_object.race_id
+                    )
                 )
                 .scalars()
                 .all()
             )
-            self.actor_race = [
-                {"race": i} for i in self.actor_race
-            ]
+            self.actor_race = [{"race": i} for i in self.actor_race]
             self.actor_subrace = (
                 session.execute(
-                    sql.select(schema.SubRace)
-                    .where(schema.SubRace == self.item_table_object.sub_race_id)
+                    sql.select(schema.SubRace).where(
+                        schema.SubRace == self.item_table_object.sub_race_id
+                    )
                 )
                 .scalars()
                 .all()
             )
-            self.actor_subrace = [
-                {"subrace": i} for i in self.actor_subrace
-            ]
+            self.actor_subrace = [{"subrace": i} for i in self.actor_subrace]
             self.actor_relations = (
                 session.execute(
                     sql.select(schema.ActorAOnBRelations).where(
@@ -355,9 +353,7 @@ class ActorItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.actor_skills = [
-                {"skill": i} for i in self.actor_skills
-            ]
+            self.actor_skills = [{"skill": i} for i in self.actor_skills]
 
             self.related = {
                 "relations": self.actor_relations,
@@ -369,7 +365,7 @@ class ActorItem(LorekeeperItemModel):
                 "classes": self.actor_classes,
                 "backgrounds": self.actor_backgrounds,
                 "race": self.actor_race,
-                "subrace": self.actor_subrace
+                "subrace": self.actor_subrace,
             }
 
     def update_database(self) -> None:
@@ -387,7 +383,9 @@ class ActorItem(LorekeeperItemModel):
 
             session.commit()
 
-    def add_to_database(self, target_table: LorekeeperActorRelatedTable): # ADD TO FRONT END???
+    def add_to_database(
+        self, target_table: LorekeeperActorRelatedTable
+    ):  # ADD TO FRONT END???
         """Adds to database"""
 
 
@@ -770,7 +768,7 @@ class HistoryTab(LorekeeperTabModel):
         self.table_items[item_number] = HistoryItem(self.table[item_number])
 
         return self.table_items[item_number]
-    
+
 
 class ObjectItem(LorekeeperItemModel):
     """Model for a single object_ item"""
@@ -816,6 +814,7 @@ class ObjectItem(LorekeeperItemModel):
 
         self._update_self_database()
 
+
 class ObjectTab(LorekeeperTabModel):
     """Model for the object_ tab"""
 
@@ -836,7 +835,7 @@ class ObjectTab(LorekeeperTabModel):
         self.table_items[item_number] = ObjectItem(self.table[item_number])
 
         return self.table_items[item_number]
-    
+
 
 class WorldDataItem(LorekeeperItemModel):
     """Model for a single item of world data"""
@@ -862,7 +861,7 @@ class WorldDataItem(LorekeeperItemModel):
             ]
 
             self.related = {"history": self.world_data_history}
-            
+
     def update_database(self) -> None:
         """Updates database for self only, since others aren't needed"""
 
