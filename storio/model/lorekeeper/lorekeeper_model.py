@@ -150,6 +150,7 @@ class LorekeeperTabModel(BaseLorekeeperPageModel):
 
     tab_type: LorekeeperTab
     table: dict[int, LorekeeperMainTable]
+    table_items: dict[int, "LorekeeperItemModel"]
 
     def __init__(self):
         super().__init__()
@@ -179,6 +180,9 @@ class LorekeeperTabModel(BaseLorekeeperPageModel):
 
     def update_database(self) -> None:
         """Updates the database with changed data for all entries"""
+
+        for item in self.table_items.values():
+            item.update_database()
 
     def load_item(self, item_number: int) -> typing.Any:
         """Creates a single item from the table. TO BE OVERWRITTEN"""
@@ -480,7 +484,7 @@ class FactionItem(LorekeeperItemModel):
                 "locations": self.faction_locations,
             }
 
-    def update_database(self):
+    def update_database(self) -> None:
         """Updates the database with any changed data"""
 
         self._update_self_database()
@@ -491,6 +495,8 @@ class FactionItem(LorekeeperItemModel):
 
             for member in self.faction_members:
                 session.merge(member["membership"])
+
+            session.commit()
 
 
 class FactionTab(LorekeeperTabModel):
@@ -627,6 +633,29 @@ class LocationItem(LorekeeperItemModel):
                 "history": self.location_history,
             }
 
+    def update_database(self) -> None:
+        """Updates database for self and other tables"""
+
+        self._update_self_database()
+
+        with Session(self.engine) as session:
+            for location_faction in self.location_factions:
+                session.merge(location_faction["location_faction"])
+
+            for location_dungeon in self.location_dungeons:
+                session.merge(location_dungeon["dungeon"])
+
+            for location_city in self.location_cities:
+                session.merge(location_city["city"])
+
+            for location_district in self.location_city_districts:
+                session.merge(location_district["district"])
+
+            for flora_fauna in self.location_flora_fauna:
+                session.merge(flora_fauna["flora_fauna"])
+
+            session.commit()
+
 
 class LocationTab(LorekeeperTabModel):
     """Model for the location tab"""
@@ -715,6 +744,11 @@ class HistoryItem(LorekeeperItemModel):
                 "objects": self.history_objects,
             }
 
+    def update_database(self) -> None:
+        """Updates database for self only, since others aren't needed"""
+
+        self._update_self_database()
+
 
 class HistoryTab(LorekeeperTabModel):
     """Model for the history tab"""
@@ -777,6 +811,10 @@ class ObjectItem(LorekeeperItemModel):
                 "history": self.object_history,
             }
 
+    def update_database(self) -> None:
+        """Updates database for self only, since others aren't needed"""
+
+        self._update_self_database()
 
 class ObjectTab(LorekeeperTabModel):
     """Model for the object_ tab"""
@@ -824,6 +862,11 @@ class WorldDataItem(LorekeeperItemModel):
             ]
 
             self.related = {"history": self.world_data_history}
+            
+    def update_database(self) -> None:
+        """Updates database for self only, since others aren't needed"""
+
+        self._update_self_database()
 
 
 class WorldDataTab(LorekeeperTabModel):
