@@ -243,6 +243,10 @@ class ActorRelatedTablesEnum(BaseRelatedTablesEnum):
     RESIDENT = schema.Resident
     OBJECT_TO_OWNER = schema.ObjectToOwner
     FACTION_MEMBERS = schema.FactionMembers
+    CLASS_ = schema.Class_
+    BACKGROUND = schema.Background
+    RACE = schema.Race
+    SUB_RACE = schema.SubRace
 
 class ActorItem(LorekeeperItemModel):
     """Model for a single actor"""
