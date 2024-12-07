@@ -23,3 +23,12 @@ class BaseModel:
 
     def __init__(self):
         self.engine = base_connection.engine
+
+    def load_user_projects(self) -> list[int]:
+        """Loads all the project_ids for a user"""
+        with Session(self.engine) as session:
+            project_id_list = session.execute(
+                common_queries.get_project_ids_for_user(self.user)
+            ).all()
+
+        return [project.id for project in project_id_list]

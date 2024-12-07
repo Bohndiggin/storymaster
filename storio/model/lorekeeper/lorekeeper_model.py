@@ -136,18 +136,10 @@ class BaseLorekeeperPageModel(BaseModel):
         self.user = 1  # TEMP
         self.group = 1  # TEMP
 
-    def load_user_projects(self) -> list[int]:
-        """Loads all the project_ids for a user"""
-        with Session(self.engine) as session:
-            project_id_list = session.execute(
-                common_queries.get_project_ids_for_user(self.user)
-            ).all()
-
-        return [project.id for project in project_id_list]
-
 
 class BaseRelatedTablesEnum(enum.Enum):
     """Enum base for tables related to other tables"""
+
 
 class LorekeeperTabModel(BaseLorekeeperPageModel):
     """Parent Model for the lorekeeper tabs"""
@@ -201,7 +193,6 @@ class LorekeeperTabModel(BaseLorekeeperPageModel):
             session.commit()
 
 
-
 class LorekeeperItemModel(BaseLorekeeperPageModel):
     """Parent Class for individual items on the lorekeeper page"""
 
@@ -234,6 +225,7 @@ class LorekeeperItemModel(BaseLorekeeperPageModel):
         """Method to add an entry to the database. TO BE OVERWRITTEN"""
         return
 
+
 class ActorRelatedTablesEnum(BaseRelatedTablesEnum):
     """BaseRelatedTablesEnum for Actors"""
 
@@ -247,6 +239,7 @@ class ActorRelatedTablesEnum(BaseRelatedTablesEnum):
     BACKGROUND = schema.Background
     RACE = schema.Race
     SUB_RACE = schema.SubRace
+
 
 class ActorItem(LorekeeperItemModel):
     """Model for a single actor"""
@@ -410,8 +403,6 @@ class ActorItem(LorekeeperItemModel):
             session.add(new_table_row)
             session.commit()
 
-        
-
 
 class ActorTab(LorekeeperTabModel):
     """Model for the actor tab"""
@@ -434,6 +425,7 @@ class ActorTab(LorekeeperTabModel):
         self.table_items[item_number] = ActorItem(self.table[item_number])
 
         return self.table_items[item_number]
+
 
 class FactionRelatedTablesEnum(BaseRelatedTablesEnum):
     """Tables related to factions"""
@@ -528,7 +520,9 @@ class FactionItem(LorekeeperItemModel):
 
             session.commit()
 
-    def add_to_database(self, target_table: FactionRelatedTablesEnum, arguments: dict[str, typing.Any]) -> None:
+    def add_to_database(
+        self, target_table: FactionRelatedTablesEnum, arguments: dict[str, typing.Any]
+    ) -> None:
         """Adds new tables to database"""
 
         new_table = target_table.value(**arguments)
@@ -559,6 +553,7 @@ class FactionTab(LorekeeperTabModel):
 
         return self.table_items[item_number]
 
+
 class LocationRelatedTablesEnum(BaseRelatedTablesEnum):
     """Tables related to location"""
 
@@ -569,6 +564,7 @@ class LocationRelatedTablesEnum(BaseRelatedTablesEnum):
     LOCATION_CITY_DISTRICTS = schema.LocationCityDistricts
     LOCATION_FLORA_FAUNA = schema.LocationFloraFauna
     HISTORY_LOCATION = schema.HistoryLocation
+
 
 class LocationItem(LorekeeperItemModel):
     """Model for single location"""
@@ -705,7 +701,9 @@ class LocationItem(LorekeeperItemModel):
 
             session.commit()
 
-    def add_to_database(self, target_table: LocationRelatedTablesEnum, arguments: dict[str, typing.Any]) -> None:
+    def add_to_database(
+        self, target_table: LocationRelatedTablesEnum, arguments: dict[str, typing.Any]
+    ) -> None:
         """Adds new tables to database"""
 
         new_table = target_table.value(**arguments)
@@ -816,7 +814,9 @@ class HistoryItem(LorekeeperItemModel):
 
         self._update_self_database()
 
-    def add_to_database(self, target_table: HistoryRelatedTablesEnum, arguments: dict[str, typing.Any]) -> None:
+    def add_to_database(
+        self, target_table: HistoryRelatedTablesEnum, arguments: dict[str, typing.Any]
+    ) -> None:
         """Adds new tables to database"""
 
         new_table = target_table.value(**arguments)
@@ -824,7 +824,6 @@ class HistoryItem(LorekeeperItemModel):
         with Session(self.engine) as session:
             session.add(new_table)
             session.commit()
-
 
 
 class HistoryTab(LorekeeperTabModel):
@@ -847,6 +846,7 @@ class HistoryTab(LorekeeperTabModel):
         self.table_items[item_number] = HistoryItem(self.table[item_number])
 
         return self.table_items[item_number]
+
 
 class ObjectRelatedTablesEnum(BaseRelatedTablesEnum):
     """Tables Related to Objects"""
@@ -899,8 +899,9 @@ class ObjectItem(LorekeeperItemModel):
 
         self._update_self_database()
 
-
-    def add_to_database(self, target_table: ObjectRelatedTablesEnum, arguments: dict[str, typing.Any]) -> None:
+    def add_to_database(
+        self, target_table: ObjectRelatedTablesEnum, arguments: dict[str, typing.Any]
+    ) -> None:
         """Adds new tables to database"""
 
         new_table = target_table.value(**arguments)
@@ -908,7 +909,6 @@ class ObjectItem(LorekeeperItemModel):
         with Session(self.engine) as session:
             session.add(new_table)
             session.commit()
-
 
 
 class ObjectTab(LorekeeperTabModel):
@@ -931,6 +931,7 @@ class ObjectTab(LorekeeperTabModel):
         self.table_items[item_number] = ObjectItem(self.table[item_number])
 
         return self.table_items[item_number]
+
 
 class WorldDataRelatedTablesEnum(BaseRelatedTablesEnum):
     """Tables Related to World Data"""
@@ -968,7 +969,9 @@ class WorldDataItem(LorekeeperItemModel):
 
         self._update_self_database()
 
-    def add_to_database(self, target_table: WorldDataRelatedTablesEnum, arguments: dict[str, typing.Any]) -> None:
+    def add_to_database(
+        self, target_table: WorldDataRelatedTablesEnum, arguments: dict[str, typing.Any]
+    ) -> None:
         """Adds new tables to database"""
 
         new_table = target_table.value(**arguments)
@@ -976,7 +979,6 @@ class WorldDataItem(LorekeeperItemModel):
         with Session(self.engine) as session:
             session.add(new_table)
             session.commit()
-
 
 
 class WorldDataTab(LorekeeperTabModel):

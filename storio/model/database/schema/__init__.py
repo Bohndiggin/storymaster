@@ -15,6 +15,7 @@ from storio.model.database.schema.base import (
     HistoryLocation,
     HistoryObject,
     HistoryWorldData,
+    LitographyNotes,
     LitographyNoteToActor,
     LitographyNoteToBackground,
     LitographyNoteToFaction,
@@ -86,4 +87,5 @@ __all__ = [
     "LitographyNoteToWorldData",
     "LorekeeperGroup",
     "ProjectToGroup",
+    "LitographyNotes",
 ]

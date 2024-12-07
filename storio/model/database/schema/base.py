@@ -135,15 +135,16 @@ class LitographyNotes(BaseTable):
     __tablename__ = "litography_notes"
 
     id = mapped_column(Integer, nullable=False, primary_key=True, name="id")
-    linked_node = mapped_column(
-        Integer, ForeignKey("litography_node.id"), nullable=False, name="linked_node"
-    )
     title = mapped_column(String(250), nullable=False, name="title")
     description = mapped_column(Text, nullable=True, name="description")
+    linked_node_id = mapped_column(
+        Integer, ForeignKey("litography_node.id"), nullable=False, name="linked_node"
+    )
     project_id = mapped_column(
         Integer, ForeignKey("project.id"), nullable=False, name="project_id"
     )
 
+    linked_node = relationship("LitographyNode", foreign_keys=[linked_node_id])
     project = relationship("Project", foreign_keys=[project_id])
 
 
