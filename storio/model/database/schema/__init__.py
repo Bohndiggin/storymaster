@@ -23,6 +23,7 @@ from storio.model.database.schema.base import (
     LitographyNoteToLocation,
     LitographyNoteToObject,
     LitographyNoteToWorldData,
+    LitographyNodeToPlotSection,
     Location,
     LocationCity,
     LocationCityDistricts,
@@ -88,4 +89,5 @@ __all__ = [
     "LorekeeperGroup",
     "ProjectToGroup",
     "LitographyNotes",
+    "LitographyNodeToPlotSection",
 ]

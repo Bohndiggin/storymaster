@@ -24,6 +24,12 @@ class LitographerNodeNote(BaseLitographerPageModel):
     description: str
     note_type: schema.NoteType
 
+    def __init__(self, title: str, description: str, note_type: schema.NoteType):
+        super().__init__()
+        self.title = title
+        self.description = description
+        self.note_type = note_type
+
 
 class LitographerPlotNodeModel(BaseLitographerPageModel):
     """Model for Plot Nodes"""
@@ -46,11 +52,22 @@ class LitographerPlotNodeModel(BaseLitographerPageModel):
         """Gathers all related LitographerNodeNotes"""
 
         with Session(self.engine) as session:
-            session.execute(
-                sql.select(schema.LitographyNotes).where(
-                    schema.LitographyNotes.linked_node_id == self.node_id
+            notes = (
+                session.execute(
+                    sql.select(schema.LitographyNotes).where(
+                        schema.LitographyNotes.linked_node_id == self.node_id
+                    )
                 )
+                .scalars()
+                .all()
             )
+
+            note_list = [
+                LitographerNodeNote(note.title, note.description, note.note_type)
+                for note in notes
+            ]
+
+        return note_list
 
 
 class LitographerLinkedList:
@@ -63,6 +80,10 @@ class LitographerLinkedList:
         super().__init__()
         self.head = None
         self.tail = None
+
+    def load_up(self) -> None:
+        """Loads whole list"""
+
 
     def append(self, node_id: int) -> None:
         """Add a new node at the end of the list"""
@@ -91,6 +112,27 @@ class LitographerLinkedList:
             new_node.next_node = self.head
             self.head.previous_node = new_node
             self.head = new_node
+
+    def insert_node(self, node_id: int, prev_id: int) -> None:
+        """Inserts node after specified id"""
+
+        new_node = LitographerPlotNodeModel(node_id)
+
+        if not self.tail:
+            self.head = new_node
+            self.tail = new_node
+        else:
+            current = self.head
+            while current:
+                if current.node_id == prev_id:
+                    if current.next_node:
+                        current.next_node.previous_node = new_node
+                        current.next_node = new_node
+                        new_node.previous_node = current
+                    else:
+                        current.next_node = new_node
+                        new_node.previous_node = current
+                        self.tail = new_node
 
     def delete(self, node_id: int) -> None:
         """Deletes node of specified id"""

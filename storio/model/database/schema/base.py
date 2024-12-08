@@ -137,6 +137,7 @@ class LitographyNotes(BaseTable):
     id = mapped_column(Integer, nullable=False, primary_key=True, name="id")
     title = mapped_column(String(250), nullable=False, name="title")
     description = mapped_column(Text, nullable=True, name="description")
+    note_type = mapped_column(Enum(NoteType), nullable=False, name="note_type")
     linked_node_id = mapped_column(
         Integer, ForeignKey("litography_node.id"), nullable=False, name="linked_node"
     )
@@ -178,6 +179,23 @@ class LitographyPlotSection(BaseTable):
     )
 
     section_plot = relationship("LitographyPlot", foreign_keys=[section_plot_id])
+
+
+class LitographyNodeToPlotSection(BaseTable):
+    """Represents the litography_node_to_plot_section"""
+
+    __tablename__ = "litography_node_to_plot_section"
+
+    id = mapped_column(Integer, nullable=False, primary_key=True, name="id")
+    node_id = mapped_column(Integer, nullable=False, name="node_id")
+    litography_plot_section_id = mapped_column(
+        Integer, nullable=False, name="litography_plot_section_id"
+    )
+
+    node = relationship("LitographyNode", foreign_keys=[node_id])
+    litography_plot_section = relationship(
+        "LitographyPlotSection", foreign_keys=[litography_plot_section_id]
+    )
 
 
 class LitographyArc(BaseTable):
