@@ -182,20 +182,19 @@ class LitographyPlotSection(BaseTable):
 
 
 class LitographyNodeToPlotSection(BaseTable):
-    """Represents the litography_node_to_plot_section"""
+    """Represents litography_note_to_world_data table"""
 
     __tablename__ = "litography_node_to_plot_section"
 
-    id = mapped_column(Integer, nullable=False, primary_key=True, name="id")
-    node_id = mapped_column(Integer, nullable=False, name="node_id")
-    litography_plot_section_id = mapped_column(
-        Integer, nullable=False, name="litography_plot_section_id"
+    id = Column(Integer, nullable=False, primary_key=True, name="id")
+    node_id = Column(Integer, ForeignKey("litography_node.id"), name="node_id")
+    litography_plot_section_id = Column(
+        Integer,
+        ForeignKey("litography_plot_section.id"),
+        name="litography_plot_section_id",
     )
 
     node = relationship("LitographyNode", foreign_keys=[node_id])
-    litography_plot_section = relationship(
-        "LitographyPlotSection", foreign_keys=[litography_plot_section_id]
-    )
 
 
 class LitographyArc(BaseTable):
@@ -751,22 +750,6 @@ class LitographyNoteToWorldData(BaseTable):
     world_data_id = Column(Integer, ForeignKey("world_data.id"), name="world_data_id")
 
     note = relationship("LitographyNotes", foreign_keys=[note_id])
-
-
-class LitographyNodeToPlotSection(BaseTable):
-    """Represents litography_note_to_world_data table"""
-
-    __tablename__ = "litography_node_to_plot_section"
-
-    id = Column(Integer, nullable=False, primary_key=True, name="id")
-    node_id = Column(Integer, ForeignKey("litography_node.id"), name="node_id")
-    litography_plot_section_id = Column(
-        Integer,
-        ForeignKey("litography_plot_section.id"),
-        name="litography_plot_section_id",
-    )
-
-    node = relationship("LitographyNode", foreign_keys=[node_id])
 
 
 class ArcToNode(BaseTable):

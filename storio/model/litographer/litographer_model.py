@@ -1,5 +1,6 @@
 """Holds the classes for the litographer model"""
 
+import typing
 from sqlalchemy import sql
 from sqlalchemy.orm import Session
 
@@ -34,19 +35,31 @@ class LitographerNodeNote(BaseLitographerPageModel):
 class LitographerPlotNodeModel(BaseLitographerPageModel):
     """Model for Plot Nodes"""
 
-    height: float
-    node_type: schema.NodeType
     notes: list[LitographerNodeNote]
-    previous_node: "LitographerPlotNodeModel" | None
-    next_node: "LitographerPlotNodeModel" | None
-    node_id: int
+    previous_node: typing.Self | None
+    next_node: typing.Self | None
+    node_table_object: schema.LitographyNode
 
-    def __init__(self, node_id: int):
+    def __init__(self, node_id: int) -> None:
         super().__init__()
-        self.node_id = node_id
+        self.gather_self(node_id)
         self.notes = self.gather_notes(node_id)
         self.previous_node = None
         self.next_node = None
+        self.fill_in_previous_next()
+
+    def gather_self(self, node_id: int) -> None:
+        """Gathers self-relevant data from db"""
+
+        with Session(self.engine) as session:
+            node = session.execute(
+                sql.select(schema.LitographyNode)
+                .where(schema.LitographyNode.id == node_id)
+            ).scalar_one()
+
+            self.node_table_object = node
+
+
 
     def gather_notes(self, node_id: int) -> list[LitographerNodeNote]:
         """Gathers all related LitographerNodeNotes"""
@@ -55,7 +68,7 @@ class LitographerPlotNodeModel(BaseLitographerPageModel):
             notes = (
                 session.execute(
                     sql.select(schema.LitographyNotes).where(
-                        schema.LitographyNotes.linked_node_id == self.node_id
+                        schema.LitographyNotes.linked_node_id == node_id
                     )
                 )
                 .scalars()
@@ -69,8 +82,11 @@ class LitographerPlotNodeModel(BaseLitographerPageModel):
 
         return note_list
 
+    def fill_in_previous_next(self) -> None:
+        """"""
 
-class LitographerLinkedList:
+
+class LitographerLinkedList(BaseLitographerPageModel):
     """Linked list"""
 
     head: LitographerPlotNodeModel
@@ -81,9 +97,27 @@ class LitographerLinkedList:
         self.head = None
         self.tail = None
 
-    def load_up(self) -> None:
-        """Loads whole list"""
+    def load_up(self, plot_section_id: int) -> None:
+        """Loads whole list Finds one then searches to beginning then to end"""
 
+        with Session(self.engine) as session:
+            temp_node_list = session.execute(
+                sql.select(schema.LitographyNode)
+                .join(schema.LitographyNodeToPlotSection)
+                .where(schema.LitographyNodeToPlotSection.litography_plot_section_id == plot_section_id)
+            ).scalars().all()
+
+            self.insert_node(temp_node_list[0].id, None)
+            current = self.head
+            while current.node_table_object.previous_node:
+                if current.node_table_object.previous_node:
+                    self.prepend(current.node_table_object.previous_node)
+                current = self.head
+
+            current = self.tail
+            while current.node_table_object.next_node:
+                self.append(current.node_table_object.next_node)
+                current = self.tail
 
     def append(self, node_id: int) -> None:
         """Add a new node at the end of the list"""
@@ -113,10 +147,15 @@ class LitographerLinkedList:
             self.head.previous_node = new_node
             self.head = new_node
 
-    def insert_node(self, node_id: int, prev_id: int) -> None:
+    def insert_node(self, node_id: int, prev_id: int | None) -> None:
         """Inserts node after specified id"""
 
         new_node = LitographerPlotNodeModel(node_id)
+
+        if not prev_id:
+            self.head = new_node
+            self.tail = new_node
+            return
 
         if not self.tail:
             self.head = new_node
@@ -124,22 +163,26 @@ class LitographerLinkedList:
         else:
             current = self.head
             while current:
-                if current.node_id == prev_id:
+                if current.node_table_object.id == prev_id:
                     if current.next_node:
                         current.next_node.previous_node = new_node
                         current.next_node = new_node
                         new_node.previous_node = current
                     else:
                         current.next_node = new_node
-                        new_node.previous_node = current
                         self.tail = new_node
+                        new_node.previous_node = current
+                elif current == self.tail:
+                    current.next_node = new_node
+                    self.tail = new_node
+                    new_node.previous_node = current
 
     def delete(self, node_id: int) -> None:
         """Deletes node of specified id"""
 
         current = self.head
         while current:
-            if current.node_id == node_id:
+            if current.node_table_object.id == node_id:
                 if current.previous_node:
                     current.previous_node.next_node = current.next_node
                 else:
@@ -156,7 +199,7 @@ class LitographerLinkedList:
         nodes = []
         current = self.head
         while current:
-            nodes.append(current.node_id)
+            nodes.append(current.node_table_object.id)
             current = current.next_node
         return nodes
 
@@ -164,7 +207,15 @@ class LitographerLinkedList:
 class LitographerPlotSectionModel(BaseLitographerPageModel):
     """Model for Litographer Plot Sections"""
 
-    nodes: LitographerPlotNodeModel
+    nodes: LitographerLinkedList
+    section_id: int
+
+    def __init__(self, section_id: int) -> None:
+        super().__init__()
+        self.section_id = section_id
+        self.nodes = LitographerLinkedList()
+        self.nodes.load_up(self.section_id)
+
 
 
 class LitographerPlotModel(BaseLitographerPageModel):
