@@ -16,74 +16,88 @@ class BaseLitographerPageModel(BaseModel):
         self.mode = StorioModes.LITOGRAPHER
         self.user = 1  # TEMP
         self.group = 1  # TEMP
-
-
-class LitographerNodeNote(BaseLitographerPageModel):
-    """Model for notes attached to nodes"""
-
-    title: str
-    description: str
-    note_type: schema.NoteType
-
-    def __init__(self, title: str, description: str, note_type: schema.NoteType):
-        super().__init__()
-        self.title = title
-        self.description = description
-        self.note_type = note_type
+        self.project_id = 1
 
 
 class LitographerPlotNodeModel(BaseLitographerPageModel):
     """Model for Plot Nodes"""
 
-    notes: list[LitographerNodeNote]
+    notes: dict[int, schema.LitographyNotes]
     previous_node: typing.Self | None
     next_node: typing.Self | None
     node_table_object: schema.LitographyNode
 
     def __init__(self, node_id: int) -> None:
         super().__init__()
-        self.gather_self(node_id)
-        self.notes = self.gather_notes(node_id)
+        try:
+            self._gather_self(node_id)
+        except:
+            self._create_self()
+        self.notes = self.gather_notes()
         self.previous_node = None
         self.next_node = None
-        self.fill_in_previous_next()
 
-    def gather_self(self, node_id: int) -> None:
+    def _gather_self(self, node_id: int) -> None:
         """Gathers self-relevant data from db"""
 
         with Session(self.engine) as session:
             node = session.execute(
-                sql.select(schema.LitographyNode)
-                .where(schema.LitographyNode.id == node_id)
+                sql.select(schema.LitographyNode).where(
+                    schema.LitographyNode.id == node_id,
+                    schema.LitographyNode.project_id == self.project_id,
+                )
             ).scalar_one()
 
             self.node_table_object = node
 
+    def _create_self(self) -> None:
+        """Creates a node if one doesn't exist"""
 
+        new_node = schema.LitographyNode(
+            node_type=schema.NodeType.OTHER, node_height=0.1, project_id=self.project_id
+        )
 
-    def gather_notes(self, node_id: int) -> list[LitographerNodeNote]:
+        with Session(self.engine) as session:
+            session.add(new_node)
+            session.commit()
+
+        self._gather_self(new_node.id)
+
+    def gather_notes(self) -> dict[int, schema.LitographyNotes]:
         """Gathers all related LitographerNodeNotes"""
 
         with Session(self.engine) as session:
             notes = (
                 session.execute(
                     sql.select(schema.LitographyNotes).where(
-                        schema.LitographyNotes.linked_node_id == node_id
+                        schema.LitographyNotes.linked_node_id
+                        == self.node_table_object.id
                     )
                 )
                 .scalars()
                 .all()
             )
 
-            note_list = [
-                LitographerNodeNote(note.title, note.description, note.note_type)
-                for note in notes
-            ]
+            note_list = {note.id: note for note in notes}
 
         return note_list
 
-    def fill_in_previous_next(self) -> None:
-        """"""
+    def add_note(self, note_type: schema.NoteType) -> None:
+        """Adds a note to the node"""
+
+        new_note = schema.LitographyNotes(
+            title="new_note",
+            description="",
+            note_type=note_type,
+            linked_node_id=self.node_table_object.id,
+            project_id=self.project_id,
+        )
+
+        with Session(self.engine) as session:
+            session.add(new_note)
+            session.commit()
+
+        self.notes = self.gather_notes()
 
 
 class LitographerLinkedList(BaseLitographerPageModel):
@@ -101,11 +115,18 @@ class LitographerLinkedList(BaseLitographerPageModel):
         """Loads whole list Finds one then searches to beginning then to end"""
 
         with Session(self.engine) as session:
-            temp_node_list = session.execute(
-                sql.select(schema.LitographyNode)
-                .join(schema.LitographyNodeToPlotSection)
-                .where(schema.LitographyNodeToPlotSection.litography_plot_section_id == plot_section_id)
-            ).scalars().all()
+            temp_node_list = (
+                session.execute(
+                    sql.select(schema.LitographyNode)
+                    .join(schema.LitographyNodeToPlotSection)
+                    .where(
+                        schema.LitographyNodeToPlotSection.litography_plot_section_id
+                        == plot_section_id
+                    )
+                )
+                .scalars()
+                .all()
+            )
 
             self.insert_node(temp_node_list[0].id, None)
             current = self.head
@@ -147,6 +168,18 @@ class LitographerLinkedList(BaseLitographerPageModel):
             self.head.previous_node = new_node
             self.head = new_node
 
+    def get_node(self, node_id: int) -> LitographerPlotNodeModel:
+        """Returns node of id specified"""
+
+        current = self.head
+
+        while current:
+            if current.node_table_object.id == node_id:
+                return current
+            current = current.next_node
+
+        raise IndexError(f"Node {node_id} not in linked list")
+
     def insert_node(self, node_id: int, prev_id: int | None) -> None:
         """Inserts node after specified id"""
 
@@ -178,7 +211,7 @@ class LitographerLinkedList(BaseLitographerPageModel):
                     new_node.previous_node = current
 
     def delete(self, node_id: int) -> None:
-        """Deletes node of specified id"""
+        """Removes node of specified id from the linked list"""
 
         current = self.head
         while current:
@@ -194,14 +227,113 @@ class LitographerLinkedList(BaseLitographerPageModel):
                 return
             current = current.next_node
 
-    def display(self) -> list:
-        """Prints list of nodes in order"""
+    def move_node_aft(self, node_id: int, destination_node_id: int) -> None:
+        """Moves node to be after specified node"""
+
+        target_node = self.get_node(node_id)
+
+        if target_node.previous_node and target_node.next_node:
+            target_node.previous_node.next_node = target_node.next_node
+            target_node.next_node.previous_node = target_node.previous_node
+        if target_node.previous_node and not target_node.next_node:
+            self.tail = target_node.previous_node
+            target_node.previous_node.next_node = None
+        if not target_node.previous_node and target_node.next_node:
+            self.head = target_node.next_node
+            target_node.next_node.previous_node = None
+
+        destination_node = self.get_node(destination_node_id)
+
+        if not destination_node.next_node:
+            destination_node.next_node = target_node
+            target_node.previous_node = destination_node
+            target_node.next_node = None
+            self.tail = target_node
+
+        else:
+            target_node.previous_node = destination_node
+            target_node.next_node = destination_node.next_node
+            destination_node.next_node.previous_node = target_node
+            destination_node.next_node = target_node
+
+    def move_node_pre(self, node_id: int, destination_node_id: int) -> None:
+        """Moves node before specified node"""
+
+        target_node = self.get_node(node_id)
+        destination_node = self.get_node(destination_node_id)
+
+        if target_node.previous_node and target_node.next_node:
+            target_node.previous_node.next_node = target_node.next_node
+            target_node.next_node.previous_node = target_node.previous_node
+        if target_node.previous_node and not target_node.next_node:
+            self.tail = target_node.previous_node
+            target_node.previous_node.next_node = None
+        if not target_node.previous_node and target_node.next_node:
+            self.head = target_node.next_node
+            target_node.next_node.previous_node = None
+
+        if not destination_node.previous_node:
+            destination_node.previous_node = target_node
+            target_node.next_node = destination_node
+            target_node.previous_node = None
+            self.head = target_node
+
+        else:
+            target_node.next_node = destination_node
+            target_node.previous_node = destination_node.previous_node
+            destination_node.previous_node.next_node = target_node
+            destination_node.previous_node = target_node
+
+    def display(self) -> list[int]:
+        """Returns a list of node_ids in order"""
         nodes = []
         current = self.head
         while current:
             nodes.append(current.node_table_object.id)
             current = current.next_node
         return nodes
+
+    def apply_order_to_tables(self) -> None:
+        """Applies current order to table objects"""
+
+        current = self.head
+
+        while current:
+            if current.next_node:
+                current.node_table_object.next_node = (
+                    current.next_node.node_table_object.id
+                )
+            else:
+                current.node_table_object.next_node = None
+            if current.previous_node:
+                current.node_table_object.previous_node = (
+                    current.previous_node.node_table_object.id
+                )
+            else:
+                current.node_table_object.previous_node = None
+            current = current.next_node
+
+    def get_tables(self) -> list[schema.LitographyNode]:
+        """Returns all the table objects in a list"""
+
+        self.apply_order_to_tables()
+
+        tables: list[schema.LitographyNode] = []
+        current = self.head
+        while current:
+            tables.append(current.node_table_object)
+            current = current.next_node
+        return tables
+
+    def get_notes(self) -> list[schema.LitographyNotes]:
+        """Returns all the notes associated with the linked list"""
+
+        notes: list[schema.LitographyNotes] = []
+        current = self.head
+        while current:
+            notes += current.notes
+            current = current.next_node
+        return notes
 
 
 class LitographerPlotSectionModel(BaseLitographerPageModel):
@@ -216,6 +348,12 @@ class LitographerPlotSectionModel(BaseLitographerPageModel):
         self.nodes = LitographerLinkedList()
         self.nodes.load_up(self.section_id)
 
+    def update_database(self) -> None:
+        """Sends all the data to the database"""
+        with Session(self.engine) as session:
+            session.add_all(self.nodes.get_tables())
+            session.add_all(self.nodes.get_notes())
+            session.commit()
 
 
 class LitographerPlotModel(BaseLitographerPageModel):
