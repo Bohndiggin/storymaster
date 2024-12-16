@@ -156,6 +156,8 @@ class LitographyPlot(BaseTable):
     __tablename__ = "litography_plot"
 
     id = mapped_column(Integer, Identity(), nullable=False, primary_key=True, name="id")
+    title = mapped_column(String(250), nullable=False, name="title")
+    description = mapped_column(Text, nullable=True, name="description")
     project_id = mapped_column(
         Integer, ForeignKey("project.id"), nullable=False, name="project_id"
     )
@@ -176,7 +178,7 @@ class LitographyPlotSection(BaseTable):
         Integer,
         ForeignKey("litography_plot.id"),
         nullable=False,
-        name="section_plot_id",
+        name="plot_id",
     )
 
     section_plot = relationship("LitographyPlot", foreign_keys=[section_plot_id])

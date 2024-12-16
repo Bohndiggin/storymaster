@@ -1,7 +1,9 @@
 """Holds the classes for the litographer model"""
 
 import typing
+
 from sqlalchemy import sql
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from storio.model.common.common_model import BaseModel, StorioModes
@@ -31,7 +33,7 @@ class LitographerPlotNodeModel(BaseLitographerPageModel):
         super().__init__()
         try:
             self._gather_self(node_id)
-        except:
+        except NoResultFound:
             self._create_self()
         self.notes = self.gather_notes()
         self.previous_node = None
@@ -60,6 +62,7 @@ class LitographerPlotNodeModel(BaseLitographerPageModel):
         with Session(self.engine) as session:
             session.add(new_node)
             session.commit()
+            session.refresh(new_node)
 
         self._gather_self(new_node.id)
 
@@ -358,3 +361,73 @@ class LitographerPlotSectionModel(BaseLitographerPageModel):
 
 class LitographerPlotModel(BaseLitographerPageModel):
     """Model for a whole plot, contains plot sections"""
+
+    plot_table: schema.LitographyPlot
+    section_dict: dict[int, LitographerPlotSectionModel]
+
+    def __init__(self, plot_id: int) -> None:
+        super().__init__()
+        self.plot_id = plot_id
+        try:
+            self.load_self()
+        except NoResultFound:
+            self._create_self()
+        self.load_plot_sections()
+
+    def load_self(self) -> None:
+        """Loads the table object"""
+
+        with Session(self.engine) as session:
+            self.plot_table = session.execute(
+                sql.select(schema.LitographyPlot).where(
+                    schema.LitographyPlot.id == self.plot_id
+                )
+            ).scalar_one()
+
+    def load_plot_sections(self) -> None:
+        """Loads the plot's sections"""
+
+        with Session(self.engine) as session:
+            plot_sections = (
+                session.execute(
+                    sql.select(schema.LitographyPlotSection).where(
+                        schema.LitographyPlotSection.section_plot_id == self.plot_id,
+                    )
+                )
+                .scalars()
+                .all()
+            )
+
+            self.section_dict: dict[int, LitographerPlotSectionModel] = {
+                plot_section.id: LitographerPlotSectionModel(plot_section.id)
+                for plot_section in plot_sections
+            }
+
+    def _create_self(self) -> None:
+        """Creates a new plot. Used when one doesn't exist"""
+
+        new_plot = schema.LitographyPlot(
+            title="NewPlot", description="", project_id=self.project_id
+        )
+
+        with Session(self.engine) as session:
+            session.add(new_plot)
+            session.commit()
+            session.refresh(new_plot)
+
+        self.load_self(new_plot.id)
+
+    def _save_self(self) -> None:
+        """Saves the table object associated with this plot"""
+
+        with Session(self.engine) as session:
+            session.add(self.plot_table)
+            session.commit()
+
+    def save_all(self) -> None:
+        """Saves self and all underlying objects"""
+
+        self._save_self()
+
+        for section in self.section_dict.values():
+            section.update_database()
