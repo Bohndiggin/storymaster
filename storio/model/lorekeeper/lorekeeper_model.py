@@ -130,11 +130,12 @@ class LorekeeperDataModel:
 class BaseLorekeeperPageModel(BaseModel):
     """Base model for Lorekeeper"""
 
-    def __init__(self) -> None:
+    def __init__(self, user: int, group: int, project_id: int) -> None:
         super().__init__()
         self.mode = StorioModes.LOREKEEPER
-        self.user = 1  # TEMP
-        self.group = 1  # TEMP
+        self.user = user
+        self.group = group
+        self.project_id = project_id
 
 
 class BaseRelatedTablesEnum(enum.Enum):
@@ -148,8 +149,8 @@ class LorekeeperTabModel(BaseLorekeeperPageModel):
     table: dict[int, LorekeeperMainTable]
     table_items: dict[int, "LorekeeperItemModel"]
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, user: int, group: int, project_id: int):
+        super().__init__(user, group, project_id)
         self.table = self.populate_table()
 
     def refresh(self) -> None:
@@ -201,8 +202,8 @@ class LorekeeperItemModel(BaseLorekeeperPageModel):
         str, list[dict[str, typing.Any]]
     ]  # Contains data from intersticial tables along with the proper name
 
-    def __init__(self, item_table_object: LorekeeperMainTable):
-        super().__init__()
+    def __init__(self, user: int, group: int, project_id: int, item_table_object: LorekeeperMainTable):
+        super().__init__(user, group, project_id)
         self.item_table_object = item_table_object
         self.gather_related()
 
@@ -245,6 +246,9 @@ class ActorItem(LorekeeperItemModel):
     """Model for a single actor"""
 
     item_table_object: schema.Actor
+
+    def __init__(self, user: int, group: int, project_id: int, item_table_object: schema.Actor):
+        super().__init__(user, group, project_id, item_table_object)
 
     def gather_related(self) -> None:
         """Method to gather related table's data for the Actor Table"""
@@ -411,6 +415,9 @@ class ActorTab(LorekeeperTabModel):
     tab_type = LorekeeperTab.ACTOR
     table_items: dict[int, ActorItem] = {}
 
+    def __init__(self, user: int, group: int, project_id: int):
+        super().__init__(user, group, project_id)
+
     def load_item(self, item_number: int) -> ActorItem:
         """Creates an ActorItem
 
@@ -422,7 +429,7 @@ class ActorTab(LorekeeperTabModel):
 
         """
 
-        self.table_items[item_number] = ActorItem(self.table[item_number])
+        self.table_items[item_number] = ActorItem(self.user, self.group, self.project_id, self.table[item_number])
 
         return self.table_items[item_number]
 
@@ -440,6 +447,9 @@ class FactionItem(LorekeeperItemModel):
     """Model for a single Faction"""
 
     item_table_object: schema.Faction
+
+    def __init__(self, user: int, group: int, project_id: int, item_table_object: schema.Faction):
+        super().__init__(user, group, project_id, item_table_object)
 
     def gather_related(self) -> None:
         """Gathers related data related to the faction tab"""
@@ -539,6 +549,9 @@ class FactionTab(LorekeeperTabModel):
     tab_type = LorekeeperTab.FACTION
     table_items: dict[int, FactionItem] = {}
 
+    def __init__(self, user: int, group: int, project_id: int):
+        super().__init__(user, group, project_id)
+
     def load_item(self, item_number: int) -> FactionItem:
         """Creates Faction Item
 
@@ -549,7 +562,7 @@ class FactionTab(LorekeeperTabModel):
             FactionItem of the request
         """
 
-        self.table_items[item_number] = FactionItem(self.table[item_number])
+        self.table_items[item_number] = FactionItem(self.user, self.group, self.project_id, self.table[item_number])
 
         return self.table_items[item_number]
 
@@ -570,6 +583,9 @@ class LocationItem(LorekeeperItemModel):
     """Model for single location"""
 
     item_table_object: schema.Location
+
+    def __init__(self, user: int, group: int, project_id: int, item_table_object:schema.Location):
+        super().__init__(user, group, project_id, item_table_object)
 
     def gather_related(self) -> None:
         """Gathers data related to the location"""
@@ -720,6 +736,9 @@ class LocationTab(LorekeeperTabModel):
     tab_type = LorekeeperTab.LOCATION
     table_items: dict[int, LocationItem] = {}
 
+    def __init__(self, user: int, group: int, project_id: int):
+        super().__init__(user, group, project_id)
+
     def load_item(self, item_number: int) -> LocationItem:
         """Creates LocationItem
 
@@ -730,7 +749,7 @@ class LocationTab(LorekeeperTabModel):
             LocationItem of the request
         """
 
-        self.table_items[item_number] = LocationItem(self.table[item_number])
+        self.table_items[item_number] = LocationItem(self.user, self.group, self.project_id, self.table[item_number])
 
         return self.table_items[item_number]
 
@@ -748,6 +767,9 @@ class HistoryItem(LorekeeperItemModel):
     """Model for a history Item"""
 
     item_table_object: schema.History
+
+    def __init__(self, user: int, group: int, project_id: int, item_table_object:schema.History):
+        super().__init__(user, group, project_id, item_table_object)
 
     def gather_related(self) -> None:
         """Gathers related table data"""
@@ -833,6 +855,9 @@ class HistoryTab(LorekeeperTabModel):
     tab_type = LorekeeperTab.HISTORY
     table_items: dict[int, HistoryItem] = {}
 
+    def __init__(self, user:int, group:int, project_id:int):
+        super().__init__(user, group, project_id)
+
     def load_item(self, item_number: int) -> HistoryItem:
         """Creates HistoryItem
 
@@ -843,7 +868,7 @@ class HistoryTab(LorekeeperTabModel):
             HistoryItem of the request
         """
 
-        self.table_items[item_number] = HistoryItem(self.table[item_number])
+        self.table_items[item_number] = HistoryItem(self.user, self.group, self.project_id, self.table[item_number])
 
         return self.table_items[item_number]
 
@@ -859,6 +884,9 @@ class ObjectItem(LorekeeperItemModel):
     """Model for a single object_ item"""
 
     item_table_object: schema.Object_
+
+    def __init__(self, user:int, group:int, project_id:int, item_table_object: schema.Object_):
+        super().__init__(user, group, project_id, item_table_object)
 
     def gather_related(self) -> None:
         """Gathers Related table Data"""
@@ -918,6 +946,9 @@ class ObjectTab(LorekeeperTabModel):
     tab_type = LorekeeperTab.OBJECT_
     table_items: dict[int, ObjectItem] = {}
 
+    def __init__(self, user:int, group:int, project_id:int):
+        super().__init__(user, group, project_id)
+
     def load_item(self, item_number: int) -> ObjectItem:
         """Creates ObjectItem
 
@@ -928,7 +959,7 @@ class ObjectTab(LorekeeperTabModel):
             ObjectItem of the request
         """
 
-        self.table_items[item_number] = ObjectItem(self.table[item_number])
+        self.table_items[item_number] = ObjectItem(self.user, self.group, self.project_id, self.table[item_number])
 
         return self.table_items[item_number]
 
@@ -943,6 +974,9 @@ class WorldDataItem(LorekeeperItemModel):
     """Model for a single item of world data"""
 
     item_table_object: schema.WorldData
+
+    def __init__(self, user:int, group:int, project_id:int, item_table_object: schema.WorldData):
+        super().__init__(user, group, project_id, item_table_object)
 
     def gather_related(self) -> None:
         """Gathers data related to this world data"""
@@ -988,6 +1022,9 @@ class WorldDataTab(LorekeeperTabModel):
     tab_type = LorekeeperTab.WORLD_DATA
     table_items: dict[int, WorldDataItem] = {}
 
+    def __init__(self, user:int, group:int, project_id:int):
+        super().__init__(user, group, project_id)
+
     def load_item(self, item_number: int) -> WorldDataItem:
         """Creates WorldDataItem
 
@@ -998,7 +1035,7 @@ class WorldDataTab(LorekeeperTabModel):
             WorldDataItem of the request
         """
 
-        self.table_items[item_number] = WorldDataItem(self.table[item_number])
+        self.table_items[item_number] = WorldDataItem(self.user, self.group, self.project_id, self.table[item_number])
 
         return self.table_items[item_number]
 
@@ -1010,6 +1047,11 @@ LorekeeperTabModelTypes: TypeAlias = Union[
 
 class LorekeeperTabModelFactory:
     """Factory to make LorekeeperTabModel children"""
+
+    def __init__(self, user: int, group: int, project_id: int):
+        self.user = user
+        self.group = group
+        self.project_id = project_id
 
     def open_tab(self, tab_type: LorekeeperTab) -> LorekeeperTabModelTypes:
         """Opens the corresponding tab based on tab_type
@@ -1024,14 +1066,14 @@ class LorekeeperTabModelFactory:
 
         match tab_type:
             case LorekeeperTab.ACTOR:
-                return ActorTab()
+                return ActorTab(self.user, self.group, self.project_id)
             case LorekeeperTab.FACTION:
-                return FactionTab()
+                return FactionTab(self.user, self.group, self.project_id)
             case LorekeeperTab.LOCATION:
-                return LocationTab()
+                return LocationTab(self.user, self.group, self.project_id)
             case LorekeeperTab.HISTORY:
-                return HistoryTab()
+                return HistoryTab(self.user, self.group, self.project_id)
             case LorekeeperTab.OBJECT_:
-                return ObjectTab()
+                return ObjectTab(self.user, self.group, self.project_id)
             case LorekeeperTab.WORLD_DATA:
-                return WorldDataTab()
+                return WorldDataTab(self.user, self.group, self.project_id)

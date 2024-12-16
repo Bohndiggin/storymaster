@@ -65,7 +65,7 @@ def get_lorekeeper_races_from_group(group_id: int) -> sql.Executable:
     """Gets lorekeeper race from a group id
 
     Args:
-        group_id: the id of the group related to the tsvrd
+        group_id: the id of the group related to the races
 
     Returns:
         sql executable
