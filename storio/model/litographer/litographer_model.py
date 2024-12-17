@@ -13,12 +13,12 @@ from storio.model.database import schema
 class BaseLitographerPageModel(BaseModel):
     """Base model for litographer"""
 
-    def __init__(self):
+    def __init__(self, user:int, group:int, project_id: int):
         super().__init__()
         self.mode = StorioModes.LITOGRAPHER
-        self.user = 1  # TEMP
-        self.group = 1  # TEMP
-        self.project_id = 1
+        self.user = user
+        self.group = group
+        self.project_id = project_id
 
 
 class LitographerPlotNodeModel(BaseLitographerPageModel):
@@ -29,8 +29,8 @@ class LitographerPlotNodeModel(BaseLitographerPageModel):
     next_node: typing.Self | None
     node_table_object: schema.LitographyNode
 
-    def __init__(self, node_id: int) -> None:
-        super().__init__()
+    def __init__(self, user:int, group:int, project_id:int, node_id: int) -> None:
+        super().__init__(user, group, project_id)
         try:
             self._gather_self(node_id)
         except NoResultFound:
@@ -109,8 +109,8 @@ class LitographerLinkedList(BaseLitographerPageModel):
     head: LitographerPlotNodeModel
     tail: LitographerPlotNodeModel | None
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, user: int, group: int, project_id: int) -> None:
+        super().__init__(user, group, project_id)
         self.head = None
         self.tail = None
 
@@ -146,7 +146,7 @@ class LitographerLinkedList(BaseLitographerPageModel):
     def append(self, node_id: int) -> None:
         """Add a new node at the end of the list"""
 
-        new_node = LitographerPlotNodeModel(node_id)
+        new_node = LitographerPlotNodeModel(self.user, self.group, self.project_id, node_id)
 
         if not self.head:
             self.head = new_node
@@ -160,7 +160,7 @@ class LitographerLinkedList(BaseLitographerPageModel):
     def prepend(self, node_id: int) -> None:
         """Add a node to the beginning of the list"""
 
-        new_node = LitographerPlotNodeModel(node_id)
+        new_node = LitographerPlotNodeModel(self.user, self.group, self.project_id, node_id)
 
         if not self.head:
             self.head = new_node
@@ -186,7 +186,7 @@ class LitographerLinkedList(BaseLitographerPageModel):
     def insert_node(self, node_id: int, prev_id: int | None) -> None:
         """Inserts node after specified id"""
 
-        new_node = LitographerPlotNodeModel(node_id)
+        new_node = LitographerPlotNodeModel(self.user, self.group, self.project_id, node_id)
 
         if not prev_id:
             self.head = new_node
@@ -345,10 +345,10 @@ class LitographerPlotSectionModel(BaseLitographerPageModel):
     nodes: LitographerLinkedList
     section_id: int
 
-    def __init__(self, section_id: int) -> None:
-        super().__init__()
+    def __init__(self, user: int, group: int, project_id: int, section_id: int) -> None:
+        super().__init__(user, group, project_id)
         self.section_id = section_id
-        self.nodes = LitographerLinkedList()
+        self.nodes = LitographerLinkedList(self.user, self.group, self.project_id)
         self.nodes.load_up(self.section_id)
 
     def update_database(self) -> None:
@@ -365,8 +365,8 @@ class LitographerPlotModel(BaseLitographerPageModel):
     plot_table: schema.LitographyPlot
     section_dict: dict[int, LitographerPlotSectionModel]
 
-    def __init__(self, plot_id: int) -> None:
-        super().__init__()
+    def __init__(self, user:int, group:int, project_id:int, plot_id:int):
+        super().__init__(user, group, project_id)
         self.plot_id = plot_id
         try:
             self.load_self()
@@ -399,7 +399,7 @@ class LitographerPlotModel(BaseLitographerPageModel):
             )
 
             self.section_dict: dict[int, LitographerPlotSectionModel] = {
-                plot_section.id: LitographerPlotSectionModel(plot_section.id)
+                plot_section.id: LitographerPlotSectionModel(self.user, self.group, self.project_id, plot_section.id)
                 for plot_section in plot_sections
             }
 
