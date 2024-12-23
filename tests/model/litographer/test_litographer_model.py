@@ -64,3 +64,29 @@ class TestLitographerPlotNodeModel:
                 ).scalar_one()
 
                 assert result_node.id == new_node.node_table_object.id
+
+    def test_add_note(self, model: LitographerPlotNodeModel) -> None:
+        """tests adding notes and editing them"""
+
+        model.add_note(NoteType.OTHER)
+
+        assert model.notes[1].title == "new_note"
+
+        model.add_note(NoteType.WHAT)
+        
+        assert list(model.notes.keys()) == [1, 2]
+
+        test = schema.LitographyNotes(
+            id=1,
+            title="new_note",
+            description="",
+            note_type=NoteType.OTHER,
+            linked_node_id=model.node_table_object.id,
+            project_id=model.project_id,
+        )
+
+        assert model.notes[1].title == test.title
+        assert model.notes[1].description == test.description
+        assert model.notes[1].note_type == test.note_type
+
+        
