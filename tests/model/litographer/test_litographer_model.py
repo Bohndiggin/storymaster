@@ -10,7 +10,10 @@ from sqlalchemy.orm import Session
 from storio.model.database import schema
 from storio.model.database.base_connection import get_test_engine
 from storio.model.database.schema.base import NoteType
-from storio.model.litographer.litographer_model import LitographerPlotNodeModel
+from storio.model.litographer.litographer_model import (
+    LitographerLinkedList,
+    LitographerPlotNodeModel,
+)
 
 fake = Faker()
 
@@ -73,7 +76,7 @@ class TestLitographerPlotNodeModel:
         assert model.notes[1].title == "new_note"
 
         model.add_note(NoteType.WHAT)
-        
+
         assert list(model.notes.keys()) == [1, 2]
 
         test = schema.LitographyNotes(
@@ -89,4 +92,16 @@ class TestLitographerPlotNodeModel:
         assert model.notes[1].description == test.description
         assert model.notes[1].note_type == test.note_type
 
-        
+
+class TestLitographerLinkedList:
+    """test class for LitographerLinkedList"""
+
+    @pytest.fixture(scope="class")
+    @patch(
+        "storio.model.litographer.litographer_model.BaseModel.generate_connection",
+        new=get_test_engine,
+    )
+    def model(self) -> LitographerLinkedList:
+        return LitographerLinkedList(1, 1, 1)
+
+    # def test_load_up(self)

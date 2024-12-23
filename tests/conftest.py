@@ -45,7 +45,7 @@ def global_setup():
         session = clear_old_data(session, 1)
         session.commit()
         with tqdm(
-            total=15, leave=False, desc="Adding Default Data to Database"
+            total=17, leave=False, desc="Adding Default Data to Database"
         ) as pbar:
             session.add(schema.User(id=1, username="test"))
 
@@ -227,6 +227,22 @@ def global_setup():
 
             session.add_all([schema.HistoryWorldData(**i) for i in history_world_data])
 
+            session.commit()
+            pbar.update(1)
+
+            node_data_list = load_from_csv(
+                "tests/model/database/test_data/node_data_test.csv", 1
+            )
+
+            session.add_all([schema.LitographyNode(**i) for i in node_data_list])
+            session.commit()
+            pbar.update(1)
+
+            note_data_list = load_from_csv(
+                "tests/model/database/test_data/note_data_test.csv", 1
+            )
+
+            session.add_all([schema.LitographyNotes(**i) for i in note_data_list])
             session.commit()
             pbar.update(1)
 

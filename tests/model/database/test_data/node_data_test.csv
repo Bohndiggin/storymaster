@@ -1,0 +1,4 @@
+node_type,node_height,previous_node,next_node
+exposition,0.1,,2
+action,0.2,1,3
+reaction,0.75,2,
