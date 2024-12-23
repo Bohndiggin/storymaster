@@ -4,13 +4,12 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from faker import Faker
-
 from sqlalchemy import sql
 from sqlalchemy.orm import Session
 
+from storio.model.database import schema
 from storio.model.database.base_connection import get_test_engine
 from storio.model.database.schema.base import NoteType
-from storio.model.database import schema
 from storio.model.litographer.litographer_model import LitographerPlotNodeModel
 
 fake = Faker()
@@ -38,24 +37,30 @@ class TestLitographerPlotNodeModel:
 
             assert model.node_table_object.id == result_node.id
 
-
-        with patch("storio.model.litographer.litographer_model.BaseModel.generate_connection", new=get_test_engine):
+        with patch(
+            "storio.model.litographer.litographer_model.BaseModel.generate_connection",
+            new=get_test_engine,
+        ):
             new_node = LitographerPlotNodeModel(1, 1, 1, 1)
 
             assert new_node.node_table_object.id == model.node_table_object.id
 
     def test_gather_self_failing(self):
         """Tests when gather_self returns NoResultFound by asking for a node that doesn't exist"""
-        
-        with patch("storio.model.litographer.litographer_model.BaseModel.generate_connection", new=get_test_engine):
+
+        with patch(
+            "storio.model.litographer.litographer_model.BaseModel.generate_connection",
+            new=get_test_engine,
+        ):
             new_node = LitographerPlotNodeModel(1, 1, 1, 2)
 
             assert new_node.node_table_object.id != 1
 
             with Session(new_node.engine) as session:
                 result_node = session.execute(
-                    sql.select(schema.LitographyNode)
-                    .where(schema.LitographyNode.id == new_node.node_table_object.id)
+                    sql.select(schema.LitographyNode).where(
+                        schema.LitographyNode.id == new_node.node_table_object.id
+                    )
                 ).scalar_one()
 
                 assert result_node.id == new_node.node_table_object.id
