@@ -3,18 +3,15 @@
 import os
 
 from dotenv import load_dotenv
-from sqlalchemy import Column, Float, ForeignKey, Integer, String, Text, create_engine
-from sqlalchemy.orm import Session
-
-from storio.model.database import common_queries
+from sqlalchemy import Engine, create_engine
 
 load_dotenv()
 
 
 engine = create_engine(os.getenv("DATABASE_CONNECTION"))
+test_engine = create_engine(os.getenv("TEST_DATABASE_CONNECTION"))
 
-# with Session(engine) as session:
-#     classes = session.execute(
-#         common_queries.get_lorekeeper_classes_from_group(1)
-#     ).scalar()
-#     print(classes)
+
+def get_test_engine(_) -> Engine:
+    """returns the test engine"""
+    return test_engine

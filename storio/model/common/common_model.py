@@ -22,7 +22,11 @@ class BaseModel:
     engine: Engine
 
     def __init__(self):
-        self.engine = base_connection.engine
+        self.engine = self.generate_connection()
+
+    def generate_connection(self) -> Engine:
+        """Generates the connection used to test"""
+        return base_connection.engine
 
     def load_user_projects(self) -> list[int]:
         """Loads all the project_ids for a user"""

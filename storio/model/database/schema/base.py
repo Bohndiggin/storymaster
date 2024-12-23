@@ -216,7 +216,7 @@ class LitographyArc(BaseTable):
 class Class_(BaseTable):
     __tablename__ = "class"
 
-    id = mapped_column(Integer, nullable=True, primary_key=True, name="id")
+    id = mapped_column(Integer, Identity(), nullable=True, primary_key=True, name="id")
     class_name = mapped_column(String(255), name="class_name")
     class_description = mapped_column(Text, name="class_description")
     group_id = mapped_column(
@@ -229,7 +229,7 @@ class Class_(BaseTable):
 class Background(BaseTable):
     __tablename__ = "background"
 
-    id = mapped_column(Integer, Identity(), primary_key=True)
+    id = mapped_column(Integer, Identity(), nullable=False, primary_key=True)
     background_name = mapped_column(String(255))
     background_description = mapped_column(Text)
     group_id = mapped_column(
@@ -242,7 +242,7 @@ class Background(BaseTable):
 class Race(BaseTable):
     __tablename__ = "race"
 
-    id = mapped_column(Integer, Identity(), primary_key=True)
+    id = mapped_column(Integer, Identity(), nullable=False, primary_key=True)
     race_name = mapped_column(String(255))
     race_description = mapped_column(Text)
     group_id = mapped_column(
@@ -256,7 +256,7 @@ class Race(BaseTable):
 class SubRace(BaseTable):
     __tablename__ = "sub_race"
 
-    id = mapped_column(Integer, Identity(), primary_key=True)
+    id = mapped_column(Integer, Identity(), nullable=False, primary_key=True)
     parent_race_id = mapped_column(Integer, ForeignKey("race.id"))
     sub_race_name = mapped_column(String(255))
     sub_race_description = mapped_column(Text)
@@ -320,7 +320,7 @@ class Actor(BaseTable):
 class ActorAOnBRelations(BaseTable):
     __tablename__ = "actor_a_on_b_relations"
 
-    id = mapped_column(Integer, Identity(), primary_key=True)
+    id = mapped_column(Integer, Identity(), nullable=False, primary_key=True)
     actor_a_id = mapped_column(Integer, ForeignKey("actor.id"))
     actor_b_id = mapped_column(Integer, ForeignKey("actor.id"))
     overall = mapped_column(String)
@@ -338,7 +338,7 @@ class ActorAOnBRelations(BaseTable):
 class Skills(BaseTable):
     __tablename__ = "skills"
 
-    id = mapped_column(Integer, Identity(), primary_key=True)
+    id = mapped_column(Integer, Identity(), nullable=False, primary_key=True)
     skill_name = mapped_column(String(255))
     skill_description = mapped_column(Text)
     skill_trait = mapped_column(String(255))
@@ -352,7 +352,7 @@ class Skills(BaseTable):
 class ActorToSkills(BaseTable):
     __tablename__ = "actor_to_skills"
 
-    id = mapped_column(Integer, Identity(), primary_key=True)
+    id = mapped_column(Integer, Identity(), nullable=False, primary_key=True)
     actor_id = mapped_column(Integer, ForeignKey("actor.id"))
     skill_id = mapped_column(Integer, ForeignKey("skills.id"))
     skill_level = mapped_column(Integer)
@@ -366,7 +366,7 @@ class ActorToSkills(BaseTable):
 class Faction(BaseTable):
     __tablename__ = "faction"
 
-    id = mapped_column(Integer, Identity(), primary_key=True)
+    id = mapped_column(Integer, Identity(), nullable=False, primary_key=True)
     faction_name = mapped_column(String(255))
     faction_description = mapped_column(Text)
     goals = mapped_column(Text)
@@ -383,7 +383,7 @@ class Faction(BaseTable):
 class FactionAOnBRelations(BaseTable):
     __tablename__ = "faction_a_on_b_relations"
 
-    id = mapped_column(Integer, Identity(), primary_key=True)
+    id = mapped_column(Integer, Identity(), nullable=False, primary_key=True)
     faction_a_id = mapped_column(Integer, ForeignKey("faction.id"))
     faction_b_id = mapped_column(Integer, ForeignKey("faction.id"))
     overall = mapped_column(Text)
@@ -402,7 +402,7 @@ class FactionAOnBRelations(BaseTable):
 class FactionMembers(BaseTable):
     __tablename__ = "faction_members"
 
-    id = mapped_column(Integer, Identity(), primary_key=True)
+    id = mapped_column(Integer, Identity(), nullable=False, primary_key=True)
     actor_id = mapped_column(Integer, ForeignKey("actor.id"))
     faction_id = mapped_column(Integer, ForeignKey("faction.id"))
     actor_role = mapped_column(String(255))
@@ -419,7 +419,7 @@ class FactionMembers(BaseTable):
 class Location(BaseTable):
     __tablename__ = "location_"
 
-    id = mapped_column(Integer, Identity(), primary_key=True)
+    id = mapped_column(Integer, Identity(), nullable=False, primary_key=True)
     location_name = mapped_column(String(255))
     location_type = mapped_column(String(255))
     location_description = mapped_column(Text)
@@ -442,7 +442,7 @@ class Location(BaseTable):
 class LocationToFaction(BaseTable):
     __tablename__ = "location_to_faction"
 
-    id = mapped_column(Integer, Identity(), primary_key=True)
+    id = mapped_column(Integer, Identity(), nullable=False, primary_key=True)
     location_id = mapped_column(Integer, ForeignKey("location_.id"))
     faction_id = mapped_column(Integer, ForeignKey("faction.id"))
     faction_presence = mapped_column(Float)
@@ -461,7 +461,7 @@ class LocationToFaction(BaseTable):
 class LocationDungeon(BaseTable):
     __tablename__ = "location_dungeon"
 
-    id = mapped_column(Integer, Identity(), primary_key=True)
+    id = mapped_column(Integer, Identity(), nullable=False, primary_key=True)
     location_id = mapped_column(Integer, ForeignKey("location_.id"))
     dangers = mapped_column(Text)
     traps = mapped_column(Text)
@@ -478,7 +478,7 @@ class LocationDungeon(BaseTable):
 class LocationCity(BaseTable):
     __tablename__ = "location_city"
 
-    id = mapped_column(Integer, Identity(), primary_key=True)
+    id = mapped_column(Integer, Identity(), nullable=False, primary_key=True)
     location_id = mapped_column(Integer, ForeignKey("location_.id"))
     government = mapped_column(Text)
 
@@ -493,7 +493,7 @@ class LocationCity(BaseTable):
 class LocationCityDistricts(BaseTable):
     __tablename__ = "location_city_districts"
 
-    id = mapped_column(Integer, Identity(), primary_key=True)
+    id = mapped_column(Integer, Identity(), nullable=False, primary_key=True)
     location_id = mapped_column(Integer, ForeignKey("location_.id"))
     district_id = mapped_column(Integer, ForeignKey("location_.id"))
 
@@ -509,7 +509,7 @@ class LocationCityDistricts(BaseTable):
 class Resident(BaseTable):
     __tablename__ = "residents"
 
-    id = mapped_column(Integer, Identity(), primary_key=True)
+    id = mapped_column(Integer, Identity(), nullable=False, primary_key=True)
     actor_id = mapped_column(Integer, ForeignKey("actor.id"))
     location_id = mapped_column(Integer, ForeignKey("location_.id"))
 
@@ -525,7 +525,7 @@ class Resident(BaseTable):
 class LocationFloraFauna(BaseTable):
     __tablename__ = "location_flora_fauna"
 
-    id = mapped_column(Integer, Identity(), primary_key=True)
+    id = mapped_column(Integer, Identity(), nullable=False, primary_key=True)
     location_id = mapped_column(Integer, ForeignKey("location_.id"))
     living_name = mapped_column(String(255))
     living_description = mapped_column(Text)
@@ -542,7 +542,7 @@ class LocationFloraFauna(BaseTable):
 class History(BaseTable):
     __tablename__ = "history"
 
-    id = mapped_column(Integer, Identity(), primary_key=True)
+    id = mapped_column(Integer, Identity(), nullable=False, primary_key=True)
     event_name = mapped_column(String(255))
     event_year = mapped_column(Integer)
     event_description = mapped_column(Text)
@@ -556,7 +556,7 @@ class History(BaseTable):
 class HistoryActor(BaseTable):
     __tablename__ = "history_actor"
 
-    id = mapped_column(Integer, Identity(), primary_key=True)
+    id = mapped_column(Integer, Identity(), nullable=False, primary_key=True)
     history_id = mapped_column(Integer, ForeignKey("history.id"))
     actor_id = mapped_column(Integer, ForeignKey("actor.id"))
     group_id = mapped_column(
@@ -571,7 +571,7 @@ class HistoryActor(BaseTable):
 class HistoryLocation(BaseTable):
     __tablename__ = "history_location"
 
-    id = mapped_column(Integer, Identity(), primary_key=True)
+    id = mapped_column(Integer, Identity(), nullable=False, primary_key=True)
     history_id = mapped_column(Integer, ForeignKey("history.id"))
     location_id = mapped_column(Integer, ForeignKey("location_.id"))
     group_id = mapped_column(
@@ -586,7 +586,7 @@ class HistoryLocation(BaseTable):
 class HistoryFaction(BaseTable):
     __tablename__ = "history_faction"
 
-    id = mapped_column(Integer, Identity(), primary_key=True)
+    id = mapped_column(Integer, Identity(), nullable=False, primary_key=True)
     history_id = mapped_column(Integer, ForeignKey("history.id"))
     faction_id = mapped_column(Integer, ForeignKey("faction.id"))
     group_id = mapped_column(
@@ -601,7 +601,7 @@ class HistoryFaction(BaseTable):
 class Object_(BaseTable):
     __tablename__ = "object_"
 
-    id = mapped_column(Integer, Identity(), primary_key=True)
+    id = mapped_column(Integer, Identity(), nullable=False, primary_key=True)
     object_name = mapped_column(String(255))
     object_description = mapped_column(Text)
     object_value = mapped_column(Integer)
@@ -616,7 +616,7 @@ class Object_(BaseTable):
 class HistoryObject(BaseTable):
     __tablename__ = "history_object"
 
-    id = mapped_column(Integer, Identity(), primary_key=True)
+    id = mapped_column(Integer, Identity(), nullable=False, primary_key=True)
     history_id = mapped_column(Integer, ForeignKey("history.id"))
     object_id = mapped_column(Integer, ForeignKey("object_.id"))
     group_id = mapped_column(
@@ -631,7 +631,7 @@ class HistoryObject(BaseTable):
 class ObjectToOwner(BaseTable):
     __tablename__ = "object_to_owner"
 
-    id = mapped_column(Integer, Identity(), primary_key=True)
+    id = mapped_column(Integer, Identity(), nullable=False, primary_key=True)
     object_id = mapped_column(Integer, ForeignKey("object_.id"))
     actor_id = mapped_column(Integer, ForeignKey("actor.id"))
     group_id = mapped_column(
@@ -646,7 +646,7 @@ class ObjectToOwner(BaseTable):
 class WorldData(BaseTable):
     __tablename__ = "world_data"
 
-    id = mapped_column(Integer, Identity(), primary_key=True)
+    id = mapped_column(Integer, Identity(), nullable=False, primary_key=True)
     data_name = mapped_column(String(255))
     data_description = mapped_column(Text)
     group_id = mapped_column(
@@ -659,7 +659,7 @@ class WorldData(BaseTable):
 class HistoryWorldData(BaseTable):
     __tablename__ = "history_world_data"
 
-    id = mapped_column(Integer, Identity(), primary_key=True)
+    id = mapped_column(Integer, Identity(), nullable=False, primary_key=True)
     history_id = mapped_column(Integer, ForeignKey("history.id"))
     world_data_id = mapped_column(Integer, ForeignKey("world_data.id"))
     group_id = mapped_column(
