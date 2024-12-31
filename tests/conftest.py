@@ -15,7 +15,7 @@ from storio.model.database.base_connection import test_engine
 def global_setup():
     """Generates / refreshes a test database for testing"""
 
-    def load_from_csv(path: str, group_id: int) -> list[dict[str, str | int]]:
+    def load_from_csv(path: str, group_id: int | None = None) -> list[dict[str, str | int]]:
         """loads the csv based on path and returns a list of dictionaries"""
 
         with open(path, "r", encoding="utf-8") as file:
@@ -24,6 +24,8 @@ def global_setup():
             for row in reader:
                 result_list.append(row)
 
+            if not group_id:
+                return result_list
             for result in result_list:
                 result["group_id"] = group_id
 
@@ -45,7 +47,7 @@ def global_setup():
         session = clear_old_data(session, 1)
         session.commit()
         with tqdm(
-            total=17, leave=False, desc="Adding Default Data to Database"
+            total=20, leave=False, desc="Adding Default Data to Database"
         ) as pbar:
             session.add(schema.User(id=1, username="test"))
 
@@ -231,20 +233,45 @@ def global_setup():
             pbar.update(1)
 
             node_data_list = load_from_csv(
-                "tests/model/database/test_data/node_data_test.csv", 1
+                "tests/model/database/test_data/node_data_test.csv"
             )
 
-            session.add_all([schema.LitographyNode(**i) for i in node_data_list])
+            node_data_list[0]['previous_node'] = None
+            node_data_list[-1]['next_node'] = None
+
+            schema_list = [schema.LitographyNode(**i, project_id=1) for i in node_data_list]
+
+            session.add_all(schema_list)
             session.commit()
             pbar.update(1)
 
             note_data_list = load_from_csv(
-                "tests/model/database/test_data/note_data_test.csv", 1
+                "tests/model/database/test_data/note_data_test.csv"
             )
 
             session.add_all([schema.LitographyNotes(**i) for i in note_data_list])
             session.commit()
             pbar.update(1)
+
+            plot_list = load_from_csv("tests/model/database/test_data/plot.csv")
+
+            session.add_all([schema.LitographyPlot(**i) for i in plot_list])
+            session.commit()
+            pbar.update(1)
+
+            plot_section_list = load_from_csv('tests/model/database/test_data/plot_section.csv')
+
+            session.add_all([schema.LitographyPlotSection(**i) for i in plot_section_list])
+            session.commit()
+            pbar.update(1)
+
+            node_to_section_list = load_from_csv("tests/model/database/test_data/node_to_plot_section.csv")
+            
+            session.add_all([schema.LitographyNodeToPlotSection(**i) for i in node_to_section_list])
+            session.commit()
+            pbar.update(1)
+
+            
 
     yield
 

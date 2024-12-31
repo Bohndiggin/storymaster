@@ -119,7 +119,7 @@ class LitographyNode(BaseTable):
     __tablename__ = "litography_node"
 
     id = mapped_column(Integer, Identity(), nullable=False, primary_key=True, name="id")
-    node_type = mapped_column(Enum(NodeType), nullable=False, name="node_type")
+    node_type = mapped_column(String, Enum(NodeType), nullable=False, name="node_type")
     node_height = mapped_column(Float, nullable=False, name="node_height")
     previous_node = mapped_column(Integer, nullable=True, name="previous_node")
     next_node = mapped_column(Integer, nullable=True, name="next_node")

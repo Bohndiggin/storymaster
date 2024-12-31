@@ -56,7 +56,7 @@ class LitographerPlotNodeModel(BaseLitographerPageModel):
         """Creates a node if one doesn't exist"""
 
         new_node = schema.LitographyNode(
-            node_type=schema.NodeType.OTHER, node_height=0.1, project_id=self.project_id
+            node_type=schema.NodeType.OTHER.value, node_height=0.1, project_id=self.project_id
         )
 
         with Session(self.engine) as session:
@@ -109,12 +109,13 @@ class LitographerLinkedList(BaseLitographerPageModel):
     head: LitographerPlotNodeModel
     tail: LitographerPlotNodeModel | None
 
-    def __init__(self, user: int, group: int, project_id: int) -> None:
+    def __init__(self, user: int, group: int, project_id: int, section_id: int) -> None:
         super().__init__(user, group, project_id)
+        self.section_id = section_id
         self.head = None
         self.tail = None
 
-    def load_up(self, plot_section_id: int) -> None:
+    def load_up(self) -> None:
         """Loads whole list Finds one then searches to beginning then to end"""
 
         with Session(self.engine) as session:
@@ -124,7 +125,7 @@ class LitographerLinkedList(BaseLitographerPageModel):
                     .join(schema.LitographyNodeToPlotSection)
                     .where(
                         schema.LitographyNodeToPlotSection.litography_plot_section_id
-                        == plot_section_id
+                        == self.section_id
                     )
                 )
                 .scalars()
@@ -194,7 +195,7 @@ class LitographerLinkedList(BaseLitographerPageModel):
             self.user, self.group, self.project_id, node_id
         )
 
-        if not prev_id:
+        if not self.head:
             self.head = new_node
             self.tail = new_node
             return
@@ -208,16 +209,21 @@ class LitographerLinkedList(BaseLitographerPageModel):
                 if current.node_table_object.id == prev_id:
                     if current.next_node:
                         current.next_node.previous_node = new_node
+                        new_node.next_node = current.next_node
                         current.next_node = new_node
                         new_node.previous_node = current
+                        break
                     else:
                         current.next_node = new_node
                         self.tail = new_node
                         new_node.previous_node = current
+                        break
                 elif current == self.tail:
                     current.next_node = new_node
                     self.tail = new_node
                     new_node.previous_node = current
+                    break
+                current = current.next_node
 
     def delete(self, node_id: int) -> None:
         """Removes node of specified id from the linked list"""
@@ -235,6 +241,19 @@ class LitographerLinkedList(BaseLitographerPageModel):
                     self.tail = current.previous_node
                 return
             current = current.next_node
+
+        raise IndexError(f"Node {node_id} not in linked list")
+
+    def refresh(self) -> None:
+        """Deletes loaded data and reloads from database"""
+
+        current = self.head
+
+        while current:
+            self.delete(current.node_table_object.id)
+            current = self.head
+
+        self.load_up()
 
     def move_node_aft(self, node_id: int, destination_node_id: int) -> None:
         """Moves node to be after specified node"""
@@ -354,8 +373,8 @@ class LitographerPlotSectionModel(BaseLitographerPageModel):
     def __init__(self, user: int, group: int, project_id: int, section_id: int) -> None:
         super().__init__(user, group, project_id)
         self.section_id = section_id
-        self.nodes = LitographerLinkedList(self.user, self.group, self.project_id)
-        self.nodes.load_up(self.section_id)
+        self.nodes = LitographerLinkedList(self.user, self.group, self.project_id, self.section_id)
+        self.nodes.load_up()
 
     def update_database(self) -> None:
         """Sends all the data to the database"""
