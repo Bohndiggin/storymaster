@@ -56,7 +56,9 @@ class LitographerPlotNodeModel(BaseLitographerPageModel):
         """Creates a node if one doesn't exist"""
 
         new_node = schema.LitographyNode(
-            node_type=schema.NodeType.OTHER.value, node_height=0.1, project_id=self.project_id
+            node_type=schema.NodeType.OTHER.value,
+            node_height=0.1,
+            project_id=self.project_id,
         )
 
         with Session(self.engine) as session:
@@ -373,7 +375,9 @@ class LitographerPlotSectionModel(BaseLitographerPageModel):
     def __init__(self, user: int, group: int, project_id: int, section_id: int) -> None:
         super().__init__(user, group, project_id)
         self.section_id = section_id
-        self.nodes = LitographerLinkedList(self.user, self.group, self.project_id, self.section_id)
+        self.nodes = LitographerLinkedList(
+            self.user, self.group, self.project_id, self.section_id
+        )
         self.nodes.load_up()
 
     def update_database(self) -> None:

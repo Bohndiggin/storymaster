@@ -5,12 +5,12 @@ from unittest.mock import MagicMock, patch
 import pytest
 from faker import Faker
 from sqlalchemy import sql
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from storio.model.database import schema
 from storio.model.database.base_connection import get_test_engine
 from storio.model.database.schema.base import NoteType
-from sqlalchemy.exc import NoResultFound
 from storio.model.litographer.litographer_model import (
     LitographerLinkedList,
     LitographerPlotModel,
@@ -37,9 +37,9 @@ class TestLitographerPlotNodeModel:
 
         assert model.node_table_object
         with Session(model.engine) as session:
-            result_node = session.execute(
-                sql.select(schema.LitographyNode)
-            ).scalars().all()
+            result_node = (
+                session.execute(sql.select(schema.LitographyNode)).scalars().all()
+            )
 
             assert model.node_table_object.id == result_node[0].id
 
@@ -113,20 +113,20 @@ class TestLitographerLinkedList:
         assert model.head.next_node.node_table_object.id == 2
         assert model.tail.node_table_object.id == 3
         assert model.display() == [1, 2, 3]
-    
+
     def test_append(self, model: LitographerLinkedList) -> None:
         model.load_up()
 
         model.append(4)
 
-        assert model.display() == [1,2,3,4]
+        assert model.display() == [1, 2, 3, 4]
 
     def test_prepend(self, model: LitographerLinkedList) -> None:
         model.load_up()
 
         model.prepend(5)
 
-        assert model.display() == [5,1,2,3]
+        assert model.display() == [5, 1, 2, 3]
 
     def test_get_node(self, model: LitographerLinkedList) -> None:
         model.load_up()
@@ -157,9 +157,9 @@ class TestLitographerLinkedList:
 
         model.delete(2)
 
-        assert model.display() == [1,3]
+        assert model.display() == [1, 3]
 
-    def test_delete_fail(self, model:LitographerLinkedList) -> None:
+    def test_delete_fail(self, model: LitographerLinkedList) -> None:
         model.load_up()
         with pytest.raises(IndexError):
             model.delete(4)
@@ -175,36 +175,34 @@ class TestLitographerLinkedList:
 
         assert not first_node is refreshed_node
 
-
     def test_move_node_aft(self, model: LitographerLinkedList) -> None:
         model.load_up()
         model.move_node_aft(2, 3)
-        
-        assert model.display() == [1,3,2]
+
+        assert model.display() == [1, 3, 2]
 
         model.move_node_aft(1, 3)
 
-        assert model.display() == [3,1,2]
+        assert model.display() == [3, 1, 2]
 
     def test_move_node_pre(self, model: LitographerLinkedList) -> None:
         model.load_up()
-        model.move_node_pre(3,1)
+        model.move_node_pre(3, 1)
 
-        assert model.display() == [3,1,2]
+        assert model.display() == [3, 1, 2]
 
-        model.move_node_pre(2,1)
+        model.move_node_pre(2, 1)
 
-        assert model.display() == [3,2,1]
+        assert model.display() == [3, 2, 1]
 
     def test_display(self, model: LitographerLinkedList) -> None:
         model.load_up()
 
-        assert model.display() == [1,2,3]
-
+        assert model.display() == [1, 2, 3]
 
     def test_apply_order_to_tables(self, model: LitographerLinkedList) -> None:
         model.load_up()
-        model.move_node_pre(1,3)
+        model.move_node_pre(1, 3)
 
         assert model.head.node_table_object.id == 2
         assert model.head.next_node.node_table_object.id == 1
@@ -218,7 +216,7 @@ class TestLitographerLinkedList:
 
     def test_get_tables(self, model: LitographerLinkedList) -> None:
         model.load_up()
-        model.move_node_pre(1,3)
+        model.move_node_pre(1, 3)
 
         assert model.head.node_table_object.id == 2
         assert model.head.next_node.node_table_object.id == 1
@@ -228,7 +226,6 @@ class TestLitographerLinkedList:
 
         assert result[0].id == 2
         assert type(result[0]) == schema.LitographyNode
-
 
     def test_get_notes(self, model: LitographerLinkedList) -> None:
         model.load_up()
@@ -248,27 +245,30 @@ class TestLitographerPlotSectionModel:
     def model(self) -> LitographerPlotSectionModel:
         return LitographerPlotSectionModel(1, 1, 1, 1)
 
-
     def test_init(self, model: LitographerPlotSectionModel) -> None:
-        assert model.nodes.display() == [1,2,3]
-    
+        assert model.nodes.display() == [1, 2, 3]
+
+
 class TestLitographerPlotModel:
     """Class to test LitographerPlotModel"""
 
     @pytest.fixture(scope="function")
     def model(self) -> LitographerPlotModel:
         return LitographerPlotModel(1, 1, 1, 1)
-    
+
     def test_init(self, model: LitographerPlotModel) -> None:
         assert model.plot_table.id == 1
 
-
-    @patch('storio.model.litographer.litographer_model.LitographerPlotModel._create_self')
-    @patch('storio.model.litographer.litographer_model.LitographerPlotModel.load_self')
-    def test_init_fail(self, mock_load_self: MagicMock, mock_create_self: MagicMock) -> None:
+    @patch(
+        "storio.model.litographer.litographer_model.LitographerPlotModel._create_self"
+    )
+    @patch("storio.model.litographer.litographer_model.LitographerPlotModel.load_self")
+    def test_init_fail(
+        self, mock_load_self: MagicMock, mock_create_self: MagicMock
+    ) -> None:
         def fail_load():
             raise NoResultFound
-        
+
         mock_load_self.side_effect = fail_load
 
         test_model = LitographerPlotModel(1, 1, 1, 1)
@@ -283,10 +283,10 @@ class TestLitographerPlotModel:
         result = model.plot_table.as_dict()
 
         assert result == {
-            'id': 1,
-            'title': "test_plot",
-            'description': 'this is the test plot',
-            'project_id': 1
+            "id": 1,
+            "title": "test_plot",
+            "description": "this is the test plot",
+            "project_id": 1,
         }
 
     def test_load_plot_sections(self, model: LitographerPlotModel) -> None:
@@ -298,17 +298,14 @@ class TestLitographerPlotModel:
 
         with Session(test_model.engine) as session:
             result_table = session.execute(
-                sql.select(
-                    schema.LitographyPlot
-                ).where(schema.LitographyPlot.id == 2)
+                sql.select(schema.LitographyPlot).where(schema.LitographyPlot.id == 2)
             ).scalar_one()
 
         result_table_dict = result_table.as_dict()
 
         assert result_table_dict == {
-            'id': 2,
-            'title': "NewPlot",
+            "id": 2,
+            "title": "NewPlot",
             "description": "",
-            'project_id': 1
+            "project_id": 1,
         }
-        

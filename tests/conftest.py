@@ -16,7 +16,9 @@ from storio.model.database.base_connection import get_test_engine, test_engine
 def global_setup():
     """Generates / refreshes a test database for testing"""
 
-    def load_from_csv(path: str, group_id: int | None = None) -> list[dict[str, str | int]]:
+    def load_from_csv(
+        path: str, group_id: int | None = None
+    ) -> list[dict[str, str | int]]:
         """loads the csv based on path and returns a list of dictionaries"""
 
         with open(path, "r", encoding="utf-8") as file:
@@ -237,10 +239,12 @@ def global_setup():
                 "tests/model/database/test_data/node_data_test.csv"
             )
 
-            node_data_list[0]['previous_node'] = None
-            node_data_list[-1]['next_node'] = None
+            node_data_list[0]["previous_node"] = None
+            node_data_list[-1]["next_node"] = None
 
-            schema_list = [schema.LitographyNode(**i, project_id=1) for i in node_data_list]
+            schema_list = [
+                schema.LitographyNode(**i, project_id=1) for i in node_data_list
+            ]
 
             session.add_all(schema_list)
             session.commit()
@@ -260,19 +264,26 @@ def global_setup():
             session.commit()
             pbar.update(1)
 
-            plot_section_list = load_from_csv('tests/model/database/test_data/plot_section.csv')
+            plot_section_list = load_from_csv(
+                "tests/model/database/test_data/plot_section.csv"
+            )
 
-            session.add_all([schema.LitographyPlotSection(**i) for i in plot_section_list])
+            session.add_all(
+                [schema.LitographyPlotSection(**i) for i in plot_section_list]
+            )
             session.commit()
             pbar.update(1)
 
-            node_to_section_list = load_from_csv("tests/model/database/test_data/node_to_plot_section.csv")
-            
-            session.add_all([schema.LitographyNodeToPlotSection(**i) for i in node_to_section_list])
+            node_to_section_list = load_from_csv(
+                "tests/model/database/test_data/node_to_plot_section.csv"
+            )
+
+            session.add_all(
+                [schema.LitographyNodeToPlotSection(**i) for i in node_to_section_list]
+            )
             session.commit()
             pbar.update(1)
 
-            
     with patch(
         "storio.model.litographer.litographer_model.BaseModel.generate_connection",
         new=get_test_engine,
