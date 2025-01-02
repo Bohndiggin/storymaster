@@ -1,6 +1,7 @@
 """conftest setup"""
 
 import csv
+from unittest.mock import patch
 
 import pytest
 from sqlalchemy import text
@@ -8,7 +9,7 @@ from sqlalchemy.orm import Session
 from tqdm import tqdm
 
 from storio.model.database import schema
-from storio.model.database.base_connection import test_engine
+from storio.model.database.base_connection import get_test_engine, test_engine
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -272,8 +273,12 @@ def global_setup():
             pbar.update(1)
 
             
+    with patch(
+        "storio.model.litographer.litographer_model.BaseModel.generate_connection",
+        new=get_test_engine,
+    ):
 
-    yield
+        yield
 
     print("Tearing down test environment...")
 

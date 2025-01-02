@@ -442,7 +442,9 @@ class LitographerPlotModel(BaseLitographerPageModel):
             session.commit()
             session.refresh(new_plot)
 
-        self.load_self(new_plot.id)
+        self.plot_id = new_plot.id
+
+        self.load_self()
 
     def _save_self(self) -> None:
         """Saves the table object associated with this plot"""
