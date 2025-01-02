@@ -50,7 +50,7 @@ def global_setup():
         session = clear_old_data(session, 1)
         session.commit()
         with tqdm(
-            total=20, leave=False, desc="Adding Default Data to Database"
+            total=21, leave=False, desc="Adding Default Data to Database"
         ) as pbar:
             session.add(schema.User(id=1, username="test"))
 
@@ -281,6 +281,14 @@ def global_setup():
             session.add_all(
                 [schema.LitographyNodeToPlotSection(**i) for i in node_to_section_list]
             )
+            session.commit()
+            pbar.update(1)
+
+            actor_relations = load_from_csv(
+                "tests/model/database/test_data/actor_a_on_b.csv"
+            )
+
+            session.add_all([schema.ActorAOnBRelations(**i) for i in actor_relations])
             session.commit()
             pbar.update(1)
 

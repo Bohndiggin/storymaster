@@ -271,7 +271,9 @@ class ActorItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.actor_classes = [{"class": i} for i in self.actor_classes]
+            self.actor_classes = [
+                {"class": i, "class_name": i.class_name} for i in self.actor_classes
+            ]
             self.actor_backgrounds = (
                 session.execute(
                     sql.select(schema.Background).where(
@@ -281,7 +283,10 @@ class ActorItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.actor_backgrounds = [{"background": i} for i in self.actor_backgrounds]
+            self.actor_backgrounds = [
+                {"background": i, "background_name": i.background_name}
+                for i in self.actor_backgrounds
+            ]
             self.actor_race = (
                 session.execute(
                     sql.select(schema.Race).where(
@@ -390,7 +395,7 @@ class ActorItem(LorekeeperItemModel):
             }
 
     def update_database(self) -> None:
-        """Updated the database with any changed data."""
+        """Updates the database with any changed data. Only includes tables directly editable"""
 
         self._update_self_database()
 

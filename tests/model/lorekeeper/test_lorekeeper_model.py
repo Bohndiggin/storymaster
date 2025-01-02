@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from storio.model.database import schema
 from storio.model.database.base_connection import get_test_engine
-from storio.model.lorekeeper.lorekeeper_model import ActorTab, LorekeeperTab
+from storio.model.lorekeeper.lorekeeper_model import ActorItem, ActorTab, LorekeeperTab
 
 fake = Faker()
 
@@ -57,3 +57,49 @@ class TestActorTab:
             "notes": "huh",
             "group_id": 1,
         }
+
+    def test_load_item(self, model: ActorTab) -> None:
+        result = model.load_item(1)
+        assert model.table_items[1] == result
+        assert result.item_table_object.as_dict() == {
+            "id": 1,
+            "first_name": "Alfred",
+            "middle_name": "T",
+            "last_name": "Wizzler",
+            "title": "Dr.",
+            "actor_age": 506,
+            "class_id": 13,
+            "actor_level": 20,
+            "background_id": 9,
+            "job": "Mage Guild Master ",
+            "actor_role": "quest giver",
+            "race_id": 4,
+            "sub_race_id": 2,
+            "alignment": "LN",
+            "strength": 10,
+            "dexterity": 10,
+            "constitution": 10,
+            "intelligence": 18,
+            "wisdom": 10,
+            "charisma": 10,
+            "ideal": "Knowlege",
+            "bond": "The Guild",
+            "flaw": "Greed",
+            "appearance": "Old funny man with big beard",
+            "strengths": "magic",
+            "weaknesses": "beard",
+            "notes": "huh",
+            "group_id": 1,
+        }
+
+        assert result.user == 1
+
+    def test_actor_item_gather_related(self, model: ActorTab) -> None:
+        test_actor = model.load_item(1)
+
+        test_actor.gather_related()
+
+        assert test_actor.actor_classes[0]["class_name"] == "Wizard"
+        assert test_actor.actor_backgrounds[0]["background_name"] == "Guild Artisan"
+        assert test_actor.actor_race
+        assert test_actor.related
