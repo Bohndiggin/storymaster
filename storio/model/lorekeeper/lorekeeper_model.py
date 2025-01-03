@@ -228,9 +228,16 @@ class LorekeeperItemModel(BaseLorekeeperPageModel):
         """Method to update the database with any changed data. TO BE OVERWRITTEN"""
         return
 
-    def add_to_database(self) -> None:
+    def add_to_database(
+        self, target_table: BaseRelatedTablesEnum, arguments: dict[str, typing.Any]
+    ) -> None:
         """Method to add an entry to the database. TO BE OVERWRITTEN"""
-        return
+
+        new_table_row = target_table.value(**arguments)
+
+        with Session(self.engine) as session:
+            session.add(new_table_row)
+            session.commit()
 
 
 class ActorRelatedTablesEnum(BaseRelatedTablesEnum):
@@ -413,12 +420,7 @@ class ActorItem(LorekeeperItemModel):
         self, target_table: ActorRelatedTablesEnum, arguments: dict[str, typing.Any]
     ) -> None:
         """Adds to database"""
-
-        new_table_row = target_table.value(**arguments)
-
-        with Session(self.engine) as session:
-            session.add(new_table_row)
-            session.commit()
+        return super().add_to_database(target_table, arguments)
 
 
 class ActorTab(LorekeeperTabModel):
@@ -551,12 +553,7 @@ class FactionItem(LorekeeperItemModel):
         self, target_table: FactionRelatedTablesEnum, arguments: dict[str, typing.Any]
     ) -> None:
         """Adds new tables to database"""
-
-        new_table = target_table.value(**arguments)
-
-        with Session(self.engine) as session:
-            session.add(new_table)
-            session.commit()
+        return super().add_to_database(target_table, arguments)
 
 
 class FactionTab(LorekeeperTabModel):
@@ -742,12 +739,7 @@ class LocationItem(LorekeeperItemModel):
         self, target_table: LocationRelatedTablesEnum, arguments: dict[str, typing.Any]
     ) -> None:
         """Adds new tables to database"""
-
-        new_table = target_table.value(**arguments)
-
-        with Session(self.engine) as session:
-            session.add(new_table)
-            session.commit()
+        return super().add_to_database(target_table, arguments)
 
 
 class LocationTab(LorekeeperTabModel):
@@ -865,12 +857,7 @@ class HistoryItem(LorekeeperItemModel):
         self, target_table: HistoryRelatedTablesEnum, arguments: dict[str, typing.Any]
     ) -> None:
         """Adds new tables to database"""
-
-        new_table = target_table.value(**arguments)
-
-        with Session(self.engine) as session:
-            session.add(new_table)
-            session.commit()
+        return super().add_to_database(target_table, arguments)
 
 
 class HistoryTab(LorekeeperTabModel):
@@ -960,12 +947,7 @@ class ObjectItem(LorekeeperItemModel):
         self, target_table: ObjectRelatedTablesEnum, arguments: dict[str, typing.Any]
     ) -> None:
         """Adds new tables to database"""
-
-        new_table = target_table.value(**arguments)
-
-        with Session(self.engine) as session:
-            session.add(new_table)
-            session.commit()
+        return super().add_to_database(target_table, arguments)
 
 
 class ObjectTab(LorekeeperTabModel):
@@ -1044,12 +1026,7 @@ class WorldDataItem(LorekeeperItemModel):
         self, target_table: WorldDataRelatedTablesEnum, arguments: dict[str, typing.Any]
     ) -> None:
         """Adds new tables to database"""
-
-        new_table = target_table.value(**arguments)
-
-        with Session(self.engine) as session:
-            session.add(new_table)
-            session.commit()
+        return super().add_to_database(target_table, arguments)
 
 
 class WorldDataTab(LorekeeperTabModel):

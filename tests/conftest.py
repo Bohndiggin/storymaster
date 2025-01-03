@@ -49,9 +49,7 @@ def global_setup():
         print("Clearing old data")
         session = clear_old_data(session, 1)
         session.commit()
-        with tqdm(
-            total=21, leave=False, desc="Adding Default Data to Database"
-        ) as pbar:
+        with tqdm(total=21, desc="Adding Default Data to Database") as pbar:
             session.add(schema.User(id=1, username="test"))
 
             session.commit()

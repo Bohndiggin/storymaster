@@ -7,3 +7,4 @@ seed.py
 **/.mypy_cache
 test.py
 .pytest_cache
+.coverage
