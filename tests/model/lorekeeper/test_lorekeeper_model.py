@@ -8,7 +8,6 @@ from sqlalchemy import sql
 from sqlalchemy.orm import Session
 
 from storio.model.database import schema
-from storio.model.database.base_connection import get_test_engine
 from storio.model.lorekeeper.lorekeeper_model import (
     ActorItem,
     ActorRelatedTablesEnum,

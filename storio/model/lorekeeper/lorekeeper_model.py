@@ -199,7 +199,7 @@ class LorekeeperItemModel(BaseLorekeeperPageModel):
 
     item_table_object: LorekeeperMainTable
     related: dict[
-        str, list[dict[str, typing.Any]]
+        str, dict[int, dict[str, typing.Any]]
     ]  # Contains data from intersticial tables along with the proper name
 
     def __init__(
@@ -237,6 +237,18 @@ class LorekeeperItemModel(BaseLorekeeperPageModel):
 
         with Session(self.engine) as session:
             session.add(new_table_row)
+            session.commit()
+
+    def remove_from_database(
+        self, target_table: BaseRelatedTablesEnum, row_id: int
+    ) -> None:
+        """Method to remove row from database. TO BE OVERWRITTEN FOR SPECIFICITY"""
+        with Session(self.engine) as session:
+            target_row = session.execute(
+                sql.select(target_table.value).where(target_table.value.id == row_id)
+            ).scalar_one()
+
+            session.delete(target_row)
             session.commit()
 
 
@@ -278,9 +290,10 @@ class ActorItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.actor_classes = [
-                {"class": i, "class_name": i.class_name} for i in self.actor_classes
-            ]
+            self.actor_classes = {
+                i.id: {"class": i, "class_name": i.class_name}
+                for i in self.actor_classes
+            }
             self.actor_backgrounds = (
                 session.execute(
                     sql.select(schema.Background).where(
@@ -290,10 +303,10 @@ class ActorItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.actor_backgrounds = [
-                {"background": i, "background_name": i.background_name}
+            self.actor_backgrounds = {
+                i.id: {"background": i, "background_name": i.background_name}
                 for i in self.actor_backgrounds
-            ]
+            }
             self.actor_race = (
                 session.execute(
                     sql.select(schema.Race).where(
@@ -303,7 +316,7 @@ class ActorItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.actor_race = [{"race": i} for i in self.actor_race]
+            self.actor_race = {i.id: {"race": i} for i in self.actor_race}
             self.actor_subrace = (
                 session.execute(
                     sql.select(schema.SubRace).where(
@@ -313,7 +326,7 @@ class ActorItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.actor_subrace = [{"subrace": i} for i in self.actor_subrace]
+            self.actor_subrace = {i.id: {"subrace": i} for i in self.actor_subrace}
             self.actor_relations = (
                 session.execute(
                     sql.select(schema.ActorAOnBRelations).where(
@@ -324,10 +337,10 @@ class ActorItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.actor_relations = [
-                {"other_actor": i.actor_b.first_name, "relation": i}
+            self.actor_relations = {
+                i.id: {"other_actor": i.actor_b.first_name, "relation": i}
                 for i in self.actor_relations
-            ]
+            }
             self.actor_factions = (
                 session.execute(
                     sql.select(schema.FactionMembers).where(
@@ -337,10 +350,10 @@ class ActorItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.actor_factions = [
-                {"faction": i.faction.faction_name, "actor_faction": i}
+            self.actor_factions = {
+                i.id: {"faction": i.faction.faction_name, "actor_faction": i}
                 for i in self.actor_factions
-            ]
+            }
             self.actor_residence = (
                 session.execute(
                     sql.select(schema.Resident).where(
@@ -350,9 +363,10 @@ class ActorItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.actor_residence = [
-                {"location": i.location.location_name} for i in self.actor_residence
-            ]
+            self.actor_residence = {
+                i.id: {"location": i.location.location_name}
+                for i in self.actor_residence
+            }
             self.actor_history = (
                 session.execute(
                     sql.select(schema.HistoryActor).where(
@@ -362,9 +376,9 @@ class ActorItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.actor_history = [
-                {"history": i.history.event_name} for i in self.actor_history
-            ]
+            self.actor_history = {
+                i.id: {"history": i.history.event_name} for i in self.actor_history
+            }
             self.actor_objects = (
                 session.execute(
                     sql.select(schema.ObjectToOwner).where(
@@ -374,9 +388,9 @@ class ActorItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.actor_objects = [
-                {"object": i.object.object_name} for i in self.actor_objects
-            ]
+            self.actor_objects = {
+                i.id: {"object": i.object.object_name} for i in self.actor_objects
+            }
             self.actor_skills = (
                 session.execute(
                     sql.select(schema.Skills)
@@ -386,7 +400,7 @@ class ActorItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.actor_skills = [{"skill": i} for i in self.actor_skills]
+            self.actor_skills = {i.id: {"skill": i} for i in self.actor_skills}
 
             self.related = {
                 "relations": self.actor_relations,
@@ -421,6 +435,17 @@ class ActorItem(LorekeeperItemModel):
     ) -> None:
         """Adds to database"""
         return super().add_to_database(target_table, arguments)
+
+    def remove_from_database(
+        self, target_table: ActorRelatedTablesEnum, row_id: int
+    ) -> None:
+        """Removes from database
+
+        Args:
+            target_table: ActorRelatedTablesEnum (the table to remove from)
+            row_id: int the id of the table to remove
+        """
+        return super().remove_from_database(target_table, row_id)
 
 
 class ActorTab(LorekeeperTabModel):
@@ -484,10 +509,10 @@ class FactionItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.faction_relations = [
-                {"other_faction": i.faction_b.faction_name, "relation": i}
+            self.faction_relations = {
+                i.id: {"other_faction": i.faction_b.faction_name, "relation": i}
                 for i in self.faction_relations
-            ]
+            }
             self.faction_members = (
                 session.execute(
                     sql.select(
@@ -499,10 +524,10 @@ class FactionItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.faction_members = [
-                {"actor": i.actor.first_name, "membership": i}
+            self.faction_members = {
+                i.id: {"actor": i.actor.first_name, "membership": i}
                 for i in self.faction_members
-            ]
+            }
             self.faction_history = (
                 session.execute(
                     sql.select(schema.HistoryFaction).where(
@@ -512,9 +537,9 @@ class FactionItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.faction_history = [
-                {"history": i.history.event_name} for i in self.faction_history
-            ]
+            self.faction_history = {
+                i.id: {"history": i.history.event_name} for i in self.faction_history
+            }
             self.faction_locations = (
                 session.execute(
                     sql.select(schema.LocationToFaction).where(
@@ -524,9 +549,10 @@ class FactionItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.faction_locations = [
-                {"location": i.location.location_name} for i in self.faction_locations
-            ]
+            self.faction_locations = {
+                i.id: {"location": i.location.location_name}
+                for i in self.faction_locations
+            }
 
             self.related = {
                 "relations": self.faction_relations,
@@ -554,6 +580,17 @@ class FactionItem(LorekeeperItemModel):
     ) -> None:
         """Adds new tables to database"""
         return super().add_to_database(target_table, arguments)
+
+    def remove_from_database(
+        self, target_table: FactionRelatedTablesEnum, row_id: int
+    ) -> None:
+        """Removes from database
+
+        Args:
+            target_table: FactionRelatedTablesEnum (the table to remove from)
+            row_id: int the id of the table to remove
+        """
+        return super().remove_from_database(target_table, row_id)
 
 
 class FactionTab(LorekeeperTabModel):
@@ -618,9 +655,9 @@ class LocationItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.location_residents = [
-                {"resident": i.actor.first_name} for i in self.location_residents
-            ]
+            self.location_residents = {
+                i.id: {"resident": i.actor.first_name} for i in self.location_residents
+            }
             self.location_factions = (
                 session.execute(
                     sql.select(schema.LocationToFaction).where(
@@ -631,10 +668,10 @@ class LocationItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.location_factions = [
-                {"faction": i.faction.faction_name, "location_faction": i}
+            self.location_factions = {
+                i.id: {"faction": i.faction.faction_name, "location_faction": i}
                 for i in self.location_factions
-            ]
+            }
             self.location_dungeons = (
                 session.execute(
                     sql.select(schema.LocationDungeon).where(
@@ -644,10 +681,10 @@ class LocationItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.location_dungeons = [
-                {"location": i.location.location_name, "dungeon": i}
+            self.location_dungeons = {
+                i.id: {"location": i.location.location_name, "dungeon": i}
                 for i in self.location_dungeons
-            ]
+            }
             self.location_cities = (
                 session.execute(
                     sql.select(schema.LocationCity).where(
@@ -657,10 +694,10 @@ class LocationItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.location_cities = [
-                {"location": i.location.location_name, "city": i}
+            self.location_cities = {
+                i.id: {"location": i.location.location_name, "city": i}
                 for i in self.location_cities
-            ]
+            }
             self.location_city_districts = (
                 session.execute(
                     sql.select(schema.LocationCityDistricts).where(
@@ -671,10 +708,10 @@ class LocationItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.location_city_districts = [
-                {"location": i.district.location_name, "district": i}
+            self.location_city_districts = {
+                i.id: {"location": i.district.location_name, "district": i}
                 for i in self.location_city_districts
-            ]
+            }
             self.location_flora_fauna = (
                 session.execute(
                     sql.select(schema.LocationFloraFauna).where(
@@ -685,10 +722,10 @@ class LocationItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.location_flora_fauna = [
-                {"location": i.location_.location_name, "flora_fauna": i}
+            self.location_flora_fauna = {
+                i.id: {"location": i.location_.location_name, "flora_fauna": i}
                 for i in self.location_flora_fauna
-            ]
+            }
             self.location_history = (
                 session.execute(
                     sql.select(schema.HistoryLocation).where(
@@ -698,9 +735,9 @@ class LocationItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.location_history = [
-                {"history": i.history.event_name} for i in self.location_history
-            ]
+            self.location_history = {
+                i.id: {"history": i.history.event_name} for i in self.location_history
+            }
 
             self.related = {
                 "residents": self.location_residents,
@@ -740,6 +777,17 @@ class LocationItem(LorekeeperItemModel):
     ) -> None:
         """Adds new tables to database"""
         return super().add_to_database(target_table, arguments)
+
+    def remove_from_database(
+        self, target_table: LocationRelatedTablesEnum, row_id: int
+    ) -> None:
+        """Removes from database
+
+        Args:
+            target_table: LocationRelatedTablesEnum (the table to remove from)
+            row_id: int the id of the table to remove
+        """
+        return super().remove_from_database(target_table, row_id)
 
 
 class LocationTab(LorekeeperTabModel):
@@ -801,9 +849,9 @@ class HistoryItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.history_actors = [
-                {"actor": i.actor.first_name} for i in self.history_actors
-            ]
+            self.history_actors = {
+                i.id: {"actor": i.actor.first_name} for i in self.history_actors
+            }
             self.history_locations = (
                 session.execute(
                     sql.select(schema.HistoryLocation).where(
@@ -813,9 +861,10 @@ class HistoryItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.history_locations = [
-                {"location": i.location.location_name} for i in self.history_locations
-            ]
+            self.history_locations = {
+                i.id: {"location": i.location.location_name}
+                for i in self.history_locations
+            }
             self.history_factions = (
                 session.execute(
                     sql.select(schema.HistoryFaction).where(
@@ -825,9 +874,9 @@ class HistoryItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.history_factions = [
-                {"faction": i.faction.faction_name} for i in self.history_factions
-            ]
+            self.history_factions = {
+                i.id: {"faction": i.faction.faction_name} for i in self.history_factions
+            }
             self.history_objects = (
                 session.execute(
                     sql.select(schema.HistoryObject).where(
@@ -837,9 +886,9 @@ class HistoryItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.history_objects = [
-                {"object": i.object.object_name} for i in self.history_objects
-            ]
+            self.history_objects = {
+                i.id: {"object": i.object.object_name} for i in self.history_objects
+            }
 
             self.related = {
                 "actors": self.history_actors,
@@ -858,6 +907,17 @@ class HistoryItem(LorekeeperItemModel):
     ) -> None:
         """Adds new tables to database"""
         return super().add_to_database(target_table, arguments)
+
+    def remove_from_database(
+        self, target_table: HistoryRelatedTablesEnum, row_id: int
+    ) -> None:
+        """Removes from database
+
+        Args:
+            target_table: HistoryRelatedTablesEnum (the table to remove from)
+            row_id: int the id of the table to remove
+        """
+        return super().remove_from_database(target_table, row_id)
 
 
 class HistoryTab(LorekeeperTabModel):
@@ -917,9 +977,9 @@ class ObjectItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.object_owners = [
-                {"owner": i.actor.first_name} for i in self.object_owners
-            ]
+            self.object_owners = {
+                i.id: {"owner": i.actor.first_name} for i in self.object_owners
+            }
             self.object_history = (
                 session.execute(
                     sql.select(schema.HistoryObject).where(
@@ -929,9 +989,9 @@ class ObjectItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.object_history = [
-                {"history": i.history.event_name} for i in self.object_history
-            ]
+            self.object_history = {
+                i.id: {"history": i.history.event_name} for i in self.object_history
+            }
 
             self.related = {
                 "owners": self.object_owners,
@@ -948,6 +1008,17 @@ class ObjectItem(LorekeeperItemModel):
     ) -> None:
         """Adds new tables to database"""
         return super().add_to_database(target_table, arguments)
+
+    def remove_from_database(
+        self, target_table: ObjectRelatedTablesEnum, row_id: int
+    ) -> None:
+        """Removes from database
+
+        Args:
+            target_table: ObjectRelatedTablesEnum (the table to remove from)
+            row_id: int the id of the table to remove
+        """
+        return super().remove_from_database(target_table, row_id)
 
 
 class ObjectTab(LorekeeperTabModel):
@@ -1011,9 +1082,9 @@ class WorldDataItem(LorekeeperItemModel):
                 .scalars()
                 .all()
             )
-            self.world_data_history = [
-                {"history": i.history.event_name} for i in self.world_data_history
-            ]
+            self.world_data_history = {
+                i.id: {"history": i.history.event_name} for i in self.world_data_history
+            }
 
             self.related = {"history": self.world_data_history}
 
@@ -1027,6 +1098,17 @@ class WorldDataItem(LorekeeperItemModel):
     ) -> None:
         """Adds new tables to database"""
         return super().add_to_database(target_table, arguments)
+
+    def remove_from_database(
+        self, target_table: WorldDataRelatedTablesEnum, row_id: int
+    ) -> None:
+        """Removes from database
+
+        Args:
+            target_table: WorldDataRelatedTablesEnum (the table to remove from)
+            row_id: int the id of the table to remove
+        """
+        return super().remove_from_database(target_table, row_id)
 
 
 class WorldDataTab(LorekeeperTabModel):
