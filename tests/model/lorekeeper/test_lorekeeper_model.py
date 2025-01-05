@@ -102,8 +102,13 @@ class TestActorTab:
     def test_actor_item_gather_related(self, model: ActorTab) -> None:
         test_actor = model.load_item(1)
 
-        assert test_actor.actor_classes[0]["class_name"] == "Wizard"
-        assert test_actor.actor_backgrounds[0]["background_name"] == "Guild Artisan"
+        assert (
+            test_actor.actor_classes[list(test_actor.actor_classes.keys())[0]][
+                "class_name"
+            ]
+            == "Wizard"
+        )
+        assert test_actor.actor_backgrounds[9]["background_name"] == "Guild Artisan"
         assert test_actor.actor_race
         assert test_actor.related
 
@@ -121,7 +126,7 @@ class TestActorTab:
 
             assert result.actor_age == 15
 
-        test_actor.actor_factions[0]["actor_faction"].actor_role = "test_role"
+        test_actor.actor_factions[1]["actor_faction"].actor_role = "test_role"
 
         test_actor.update_database()
 
@@ -129,7 +134,7 @@ class TestActorTab:
             result_faction = session.execute(
                 sql.select(schema.FactionMembers).where(
                     schema.FactionMembers.id
-                    == test_actor.actor_factions[0]["actor_faction"].id
+                    == test_actor.actor_factions[1]["actor_faction"].id
                 )
             ).scalar_one()
 
@@ -163,6 +168,10 @@ class TestActorTab:
 
             assert result_target.location_id == 1
 
+    # def test_remove_from_database(self, model: ActorTab) -> None:
+    #     test_actor = model.load_item(1)
+    #     test_actor.remove_from_database(ActorRelatedTablesEnum.RESIDENT, test_actor.actor_residence[1].keys()[0])
+
 
 class TestFactionTab:
     """Class to test FactionTab and FactionItem"""
@@ -191,9 +200,9 @@ class TestFactionTab:
 
         assert model.table_items[1].item_table_object.id == 1
 
-        assert model.table_items[1].related["members"][0]["actor"] == "Alfred"
+        assert model.table_items[1].related["members"][1]["actor"] == "Alfred"
         assert (
-            model.table_items[1].related["members"][0]["membership"].actor_role
+            model.table_items[1].related["members"][1]["membership"].actor_role
             == "Leader"
         )
 
@@ -202,7 +211,7 @@ class TestFactionTab:
 
         test_faction.item_table_object.faction_description = "test_text"
 
-        test_faction.faction_relations[0]["relation"].economically = "test_economy"
+        test_faction.faction_relations[1]["relation"].economically = "test_economy"
 
         test_faction.update_database()
 

@@ -31,102 +31,6 @@ class LorekeeperTab(enum.Enum):
     WORLD_DATA = schema.WorldData
 
 
-class LorekeeperDataModel:
-    """Class for lorekeeper data"""
-
-    class_list: list[schema.Class_]
-    background_list: list[schema.Background]
-    race_list: list[schema.Race]
-    sub_race_list: list[schema.SubRace]
-    actor_list: list[schema.Actor]
-    faction_list: list[schema.Faction]
-    location_list: list[schema.Location]
-    history_list: list[schema.History]
-    object_list: list[schema.Object_]
-    world_data_list: list[schema.WorldData]
-
-    def __init__(self, engine: Engine, target_project: int) -> None:
-        """Queries db and returns a self"""
-
-        with Session(engine) as session:
-            group = session.execute(
-                common_queries.get_group_ids_for_project(target_project)
-            ).one()
-            self.class_list = list(
-                session.execute(
-                    common_queries.get_lorekeeper_classes_from_group(group.id)
-                )
-                .scalars()
-                .all()
-            )
-            self.background_list = list(
-                session.execute(
-                    common_queries.get_lorekeeper_backgrounds_from_group(group.id)
-                )
-                .scalars()
-                .all()
-            )
-            self.race_list = list(
-                session.execute(
-                    common_queries.get_lorekeeper_races_from_group(group.id)
-                )
-                .scalars()
-                .all()
-            )
-            self.sub_race_list = list(
-                session.execute(
-                    common_queries.get_lorekeeper_sub_races_from_group(group.id)
-                )
-                .scalars()
-                .all()
-            )
-            self.actor_list = list(
-                session.execute(
-                    common_queries.get_lorekeeper_actors_from_group(group.id)
-                )
-                .scalars()
-                .all()
-            )
-            self.faction_list = list(
-                session.execute(
-                    common_queries.get_lorekeeper_factions_from_group(group.id)
-                )
-                .scalars()
-                .all()
-            )
-            self.location_list = list(
-                session.execute(
-                    common_queries.get_lorekeeper_locations_from_group(group.id)
-                )
-                .scalars()
-                .all()
-            )
-            self.history_list = list(
-                session.execute(
-                    common_queries.get_lorekeeper_history_from_group(group.id)
-                )
-                .scalars()
-                .all()
-            )
-            self.object_list = list(
-                session.execute(
-                    common_queries.get_lorekeeper_objects_from_group(group.id)
-                )
-                .scalars()
-                .all()
-            )
-            self.world_data_list = list(
-                session.execute(
-                    common_queries.get_lorekeeper_world_data_from_group(group.id)
-                )
-                .scalars()
-                .all()
-            )
-
-    def upload_data(self, engine: Engine) -> None:
-        """Uploads self to database"""
-
-
 class BaseLorekeeperPageModel(BaseModel):
     """Base model for Lorekeeper"""
 
@@ -422,10 +326,10 @@ class ActorItem(LorekeeperItemModel):
 
         with Session(self.engine) as session:
 
-            for relation in self.actor_relations:
+            for relation in self.actor_relations.values():
                 session.merge(relation["relation"])
 
-            for faction in self.actor_factions:
+            for faction in self.actor_factions.values():
                 session.merge(faction["actor_faction"])
 
             session.commit()
@@ -567,10 +471,10 @@ class FactionItem(LorekeeperItemModel):
         self._update_self_database()
 
         with Session(self.engine) as session:
-            for relation in self.faction_relations:
+            for relation in self.faction_relations.values():
                 session.merge(relation["relation"])
 
-            for member in self.faction_members:
+            for member in self.faction_members.values():
                 session.merge(member["membership"])
 
             session.commit()
@@ -755,19 +659,19 @@ class LocationItem(LorekeeperItemModel):
         self._update_self_database()
 
         with Session(self.engine) as session:
-            for location_faction in self.location_factions:
+            for location_faction in self.location_factions.values():
                 session.merge(location_faction["location_faction"])
 
-            for location_dungeon in self.location_dungeons:
+            for location_dungeon in self.location_dungeons.values():
                 session.merge(location_dungeon["dungeon"])
 
-            for location_city in self.location_cities:
+            for location_city in self.location_cities.values():
                 session.merge(location_city["city"])
 
-            for location_district in self.location_city_districts:
+            for location_district in self.location_city_districts.values():
                 session.merge(location_district["district"])
 
-            for flora_fauna in self.location_flora_fauna:
+            for flora_fauna in self.location_flora_fauna.values():
                 session.merge(flora_fauna["flora_fauna"])
 
             session.commit()
