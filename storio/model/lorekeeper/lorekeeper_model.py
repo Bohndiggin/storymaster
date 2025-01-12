@@ -154,6 +154,7 @@ class LorekeeperItemModel(BaseLorekeeperPageModel):
 
             session.delete(target_row)
             session.commit()
+        self.gather_related()
 
 
 class ActorRelatedTablesEnum(BaseRelatedTablesEnum):
