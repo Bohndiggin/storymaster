@@ -8,8 +8,8 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 from tqdm import tqdm
 
-from storio.model.database import schema
-from storio.model.database.base_connection import get_test_engine, test_engine
+from storymaster.model.database import schema
+from storymaster.model.database.base_connection import get_test_engine, test_engine
 
 
 @pytest.fixture(scope="session", autouse=True)

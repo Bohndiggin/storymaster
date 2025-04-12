@@ -2,7 +2,7 @@
 
 from sqlalchemy import sql
 
-from storio.model.database import schema
+from storymaster.model.database import schema
 
 
 def get_project_ids_for_user(user_id: int) -> sql.Executable:

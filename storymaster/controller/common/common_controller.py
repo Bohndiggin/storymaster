@@ -1,6 +1,6 @@
 """Holds the common classes for the controller"""
 
-from storio.view.common.common_view import BaseView
+from storymaster.view.common.common_view import BaseView
 
 
 class BaseController:

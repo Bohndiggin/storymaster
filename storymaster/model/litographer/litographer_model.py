@@ -6,8 +6,8 @@ from sqlalchemy import sql
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
-from storio.model.common.common_model import BaseModel, StorioModes
-from storio.model.database import schema
+from storymaster.model.common.common_model import BaseModel, StorioModes
+from storymaster.model.database import schema
 
 
 class BaseLitographerPageModel(BaseModel):

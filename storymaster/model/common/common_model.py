@@ -6,7 +6,7 @@ from enum import Enum
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 
-from storio.model.database import base_connection, common_queries, schema
+from storymaster.model.database import base_connection, common_queries, schema
 
 
 class StorioModes(Enum):

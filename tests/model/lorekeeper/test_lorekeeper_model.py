@@ -7,8 +7,8 @@ from faker import Faker
 from sqlalchemy import sql
 from sqlalchemy.orm import Session
 
-from storio.model.database import schema
-from storio.model.lorekeeper.lorekeeper_model import (
+from storymaster.model.database import schema
+from storymaster.model.lorekeeper.lorekeeper_model import (
     ActorItem,
     ActorRelatedTablesEnum,
     ActorTab,

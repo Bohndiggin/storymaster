@@ -1,6 +1,6 @@
 """Database for storio. all the submodules"""
 
-from storio.model.database.schema.base import (
+from storymaster.model.database.schema.base import (
     Actor,
     ActorAOnBRelations,
     ActorToSkills,

@@ -4,8 +4,8 @@ import sys
 
 from PyQt5.QtWidgets import QApplication, QLabel
 
-from storio.model.common.common_model import BaseModel
-from storio.view.common.common_view import BaseView
+from storymaster.model.common.common_model import BaseModel
+from storymaster.view.common.common_view import BaseView
 
 app = QApplication(sys.argv)
 

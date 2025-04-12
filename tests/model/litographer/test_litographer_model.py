@@ -8,10 +8,10 @@ from sqlalchemy import sql
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
-from storio.model.database import schema
-from storio.model.database.base_connection import get_test_engine
-from storio.model.database.schema.base import NoteType
-from storio.model.litographer.litographer_model import (
+from storymaster.model.database import schema
+from storymaster.model.database.base_connection import get_test_engine
+from storymaster.model.database.schema.base import NoteType
+from storymaster.model.litographer.litographer_model import (
     LitographerLinkedList,
     LitographerPlotModel,
     LitographerPlotNodeModel,

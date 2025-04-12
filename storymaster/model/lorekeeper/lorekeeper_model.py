@@ -7,8 +7,8 @@ from typing import Optional, TypeAlias, Union
 from sqlalchemy import Engine, sql
 from sqlalchemy.orm import Session
 
-from storio.model.common.common_model import BaseModel, StorioModes
-from storio.model.database import base_connection, common_queries, schema
+from storymaster.model.common.common_model import BaseModel, StorioModes
+from storymaster.model.database import base_connection, common_queries, schema
 
 LorekeeperMainTable: TypeAlias = Union[
     schema.Actor,
