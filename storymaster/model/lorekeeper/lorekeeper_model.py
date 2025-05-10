@@ -72,7 +72,7 @@ class LorekeeperTabModel(BaseLorekeeperPageModel):
                         self.tab_type.value.group_id == self.group
                     )
                 )
-                .scalars()
+                .scalar
                 .all()
             )
             table_dict = {item.id: item for item in table_list}
@@ -1056,11 +1056,14 @@ class LorekeeperTabModelFactory:
         self.group = group
         self.project_id = project_id
 
-    def open_tab(self, tab_type: LorekeeperTab) -> LorekeeperTabModelTypes:
+    def open_tab(self, tab_type: LorekeeperTab) -> LorekeeperTabModel:
         """Opens the corresponding tab based on tab_type
 
         Args:
             tab_type: the lorekeeper tab you want to open
+
+        Raises:
+            ValueError: If tab type is invalid
 
         Returns:
             LorekeeperTabModelTypes: an instance of the lorekeeper tab model
@@ -1080,3 +1083,4 @@ class LorekeeperTabModelFactory:
                 return ObjectTab(self.user, self.group, self.project_id)
             case LorekeeperTab.WORLD_DATA:
                 return WorldDataTab(self.user, self.group, self.project_id)
+        raise ValueError(f"Invalid Tab Type: {tab_type}")

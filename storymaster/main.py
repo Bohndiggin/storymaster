@@ -4,18 +4,21 @@ import sys
 
 from PyQt5.QtWidgets import QApplication, QLabel
 
+from pathlib import Path
+
+current_dir = Path(__file__).parent.parent
+sys.path.append(str(current_dir.resolve()))
+
 from storymaster.model.common.common_model import BaseModel
 from storymaster.view.common.common_view import BaseView
+from storymaster.view.main_page import Ui_MainWindow
 
-app = QApplication(sys.argv)
 
-window = BaseView()
-window.setWindowTitle("Junk")
-window.setGeometry(100, 100, 280, 80)
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
 
-label = QLabel("Yo whaddup", parent=window)
-label.move(60, 15)
+    window = BaseView()
+    window.show()
 
-window.show()
+    sys.exit(app.exec())
 
-sys.exit(app.exec())
