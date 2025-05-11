@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import (
     QMainWindow
 )
 
-from storymaster.view.main_page import Ui_MainWindow
+from storymaster.view.common.main_page import Ui_MainWindow
 
 
 class BaseView(QMainWindow):

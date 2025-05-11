@@ -11,7 +11,7 @@ sys.path.append(str(current_dir.resolve()))
 
 from storymaster.model.common.common_model import BaseModel
 from storymaster.view.common.common_view import BaseView
-from storymaster.view.main_page import Ui_MainWindow
+from storymaster.view.common.main_page import Ui_MainWindow
 
 
 if __name__ == "__main__":
