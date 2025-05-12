@@ -72,7 +72,7 @@ class LorekeeperTabModel(BaseLorekeeperPageModel):
                         self.tab_type.value.group_id == self.group
                     )
                 )
-                .scalar
+                .scalars()
                 .all()
             )
             table_dict = {item.id: item for item in table_list}

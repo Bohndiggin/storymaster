@@ -1,7 +1,7 @@
 """Holds the common classes for views"""
 
-from PyQt5.QtCore import QPoint, QPropertyAnimation
-from PyQt5.QtWidgets import (
+from PyQt6.QtCore import QPoint, QPropertyAnimation
+from PyQt6.QtWidgets import (
     QApplication,
     QLineEdit,
     QListWidget,
@@ -20,5 +20,12 @@ class BaseView(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Story Master")
+
+
+class MainView(BaseView):
+    """Main window"""
+
+    def __init__(self):
+        super().__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
