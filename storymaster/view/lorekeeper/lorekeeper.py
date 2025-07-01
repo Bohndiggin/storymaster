@@ -27,10 +27,14 @@ class Ui_LorekeeperWindow(object):
         self.listView_2 = QtWidgets.QListView(parent=self.centralwidget)
         self.listView_2.setObjectName("listView_2")
         self.verticalLayout_4.addWidget(self.listView_2)
-        self.formLayout.setLayout(0, QtWidgets.QFormLayout.ItemRole.LabelRole, self.verticalLayout_4)
+        self.formLayout.setLayout(
+            0, QtWidgets.QFormLayout.ItemRole.LabelRole, self.verticalLayout_4
+        )
         self.tableView = QtWidgets.QTableView(parent=self.centralwidget)
         self.tableView.setObjectName("tableView")
-        self.formLayout.setWidget(0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.tableView)
+        self.formLayout.setWidget(
+            0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.tableView
+        )
         self.gridLayout_2.addLayout(self.formLayout, 0, 0, 1, 1)
         LorekeeperWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(parent=LorekeeperWindow)

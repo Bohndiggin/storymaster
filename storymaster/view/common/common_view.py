@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QVBoxLayout,
     QWidget,
-    QMainWindow
+    QMainWindow,
 )
 
 from storymaster.view.common.main_page import Ui_MainWindow

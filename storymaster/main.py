@@ -18,9 +18,8 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     view = MainView()
-    model = BaseModel()
+    model = BaseModel(1)
     controller = MainWindowController(view, model)
     view.show()
 
     sys.exit(app.exec())
-

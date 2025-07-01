@@ -5,6 +5,7 @@ from storymaster.model.database.schema.base import (
     ActorAOnBRelations,
     ActorToSkills,
     Background,
+    BaseTable,
     Class_,
     Faction,
     FactionAOnBRelations,
@@ -96,4 +97,5 @@ __all__ = [
     "LitographyNode",
     "LitographyPlotSection",
     "LitographyPlot",
+    "BaseTable",
 ]
