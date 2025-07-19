@@ -32,16 +32,16 @@ class GroupListTypes(Enum):
 class GroupData:
     """Structure of data grouped"""
 
-    actors: list[schema.Actor]
-    backgrounds: list[schema.Background]
-    classes: list[schema.Class_]
-    factions: list[schema.Faction]
-    history: list[schema.History]
-    locations: list[schema.Location]
-    objects: list[schema.Object_]
-    races: list[schema.Race]
-    sub_races: list[schema.SubRace]
-    world_datas: list[schema.WorldData]
+    actors: list[schema.Actor] | list[None]
+    backgrounds: list[schema.Background] | list[None]
+    classes: list[schema.Class_] | list[None]
+    factions: list[schema.Faction] | list[None]
+    history: list[schema.History] | list[None]
+    locations: list[schema.Location] | list[None]
+    objects: list[schema.Object_] | list[None]
+    races: list[schema.Race] | list[None]
+    sub_races: list[schema.SubRace] | list[None]
+    world_datas: list[schema.WorldData] | list[None]
 
     def __init__(
         self,
@@ -71,6 +71,9 @@ class GroupData:
         """Get a list of an attribute"""
 
         return_list: list[schema.BaseTable] = getattr(self, list_name.value)
+
+        if not return_list:
+            return []
 
         return [item.as_dict() for item in return_list]
 
@@ -112,70 +115,70 @@ class BaseModel:
             )
 
             for group in group_list:
-                actors = (
+                actors = list(
                     session.execute(
                         common_queries.get_lorekeeper_actors_from_group(group)
                     )
                     .scalars()
                     .all()
                 )
-                backgrounds = (
+                backgrounds = list(
                     session.execute(
                         common_queries.get_lorekeeper_backgrounds_from_group(group)
                     )
                     .scalars()
                     .all()
                 )
-                classes = (
+                classes = list(
                     session.execute(
                         common_queries.get_lorekeeper_classes_from_group(group)
                     )
                     .scalars()
                     .all()
                 )
-                factions = (
+                factions = list(
                     session.execute(
                         common_queries.get_lorekeeper_factions_from_group(group)
                     )
                     .scalars()
                     .all()
                 )
-                history = (
+                history = list(
                     session.execute(
                         common_queries.get_lorekeeper_history_from_group(group)
                     )
                     .scalars()
                     .all()
                 )
-                locations = (
+                locations = list(
                     session.execute(
                         common_queries.get_lorekeeper_locations_from_group(group)
                     )
                     .scalars()
                     .all()
                 )
-                objects = (
+                objects = list(
                     session.execute(
                         common_queries.get_lorekeeper_objects_from_group(group)
                     )
                     .scalars()
                     .all()
                 )
-                races = (
+                races = list(
                     session.execute(
                         common_queries.get_lorekeeper_races_from_group(group)
                     )
                     .scalars()
                     .all()
                 )
-                sub_races = (
+                sub_races = list(
                     session.execute(
                         common_queries.get_lorekeeper_sub_races_from_group(group)
                     )
                     .scalars()
                     .all()
                 )
-                world_datas = (
+                world_datas = list(
                     session.execute(
                         common_queries.get_lorekeeper_world_data_from_group(group)
                     )
