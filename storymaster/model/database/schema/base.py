@@ -26,6 +26,8 @@ class User(BaseTable):
     id = mapped_column(Integer, Identity(), nullable=False, primary_key=True, name="id")
     username = mapped_column(String(150), nullable=False, name="username")
 
+    projects: Mapped[list["Project"]] = relationship("Project", back_populates="user")
+
 
 class Project(BaseTable):
     """Class to represent the project table"""

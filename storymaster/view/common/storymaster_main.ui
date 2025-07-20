@@ -153,11 +153,44 @@ QTreeView::item:hover {
     background-color: #4a4a4a;
 }
 
-QTextEdit#cellContentDisplay {
+/* --- Edit Form Styling --- */
+QScrollArea {
+    border: none;
+}
+
+#editFormWidget {
     background-color: #222222;
     border: 1px solid #424242;
-    padding: 5px;
     border-radius: 4px;
+}
+
+#editFormWidget QLabel {
+    font-weight: bold;
+    color: #a0a0a0;
+}
+
+#editFormWidget QLineEdit, #editFormWidget QTextEdit {
+    background-color: #2e2e2e;
+    border: 1px solid #424242;
+    border-radius: 3px;
+    padding: 4px;
+}
+
+#editFormWidget QLineEdit:focus, #editFormWidget QTextEdit:focus {
+    border: 1px solid #af80f8;
+}
+
+#editFormWidget QPushButton {
+    background-color: #5c4a8e;
+    color: #ffffff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+#editFormWidget QPushButton:hover {
+    background-color: #6c5ab8;
 }
 
 
@@ -213,7 +246,7 @@ QLabel#pageTitleLabel {
        </layout>
       </widget>
       <widget class="QWidget" name="lorekeeperPage">
-       <layout class="QVBoxLayout" name="verticalLayout_3">
+       <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
          <widget class="QLabel" name="pageTitleLabel_2">
           <property name="text">
@@ -225,8 +258,6 @@ QLabel#pageTitleLabel {
          </widget>
         </item>
         <item>
-         <!-- A splitter is great for database views.
-                      Left side can be a list of tables/items, right side shows content. -->
          <widget class="QSplitter" name="lorekeeperSplitter">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
@@ -264,7 +295,7 @@ QLabel#pageTitleLabel {
             </property>
            </widget>
           </widget>
-          <widget class="QTextEdit" name="cellContentDisplay">
+          <widget class="QScrollArea" name="editFormScrollArea">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
              <horstretch>0</horstretch>
@@ -274,15 +305,50 @@ QLabel#pageTitleLabel {
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>100</height>
+             <height>150</height>
             </size>
            </property>
-           <property name="readOnly">
+           <property name="widgetResizable">
             <bool>true</bool>
            </property>
-           <property name="placeholderText">
-            <string>Select a cell to view its full content...</string>
-           </property>
+           <widget class="QWidget" name="editFormWidget">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>1278</width>
+              <height>148</height>
+             </rect>
+            </property>
+            <property name="objectName">
+             <string>editFormWidget</string>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_5">
+             <item>
+              <layout class="QFormLayout" name="editFormLayout"/>
+             </item>
+             <item>
+              <spacer name="verticalSpacer">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="saveChangesButton">
+               <property name="text">
+                <string>Save Changes</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
           </widget>
          </widget>
         </item>

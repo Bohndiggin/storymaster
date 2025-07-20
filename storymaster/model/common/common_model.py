@@ -5,6 +5,8 @@ from enum import Enum
 
 from sqlalchemy import Engine, inspect
 from sqlalchemy.orm import Session
+from sqlalchemy import Column, Enum, Float, ForeignKey, Identity, Integer, String, Text
+
 
 from storymaster.model.database import base_connection, common_queries, schema
 
@@ -163,14 +165,6 @@ class BaseModel:
     def get_table_data(self, table_name: str) -> tuple[list[str], list[tuple]]:
         """
         Fetches all data from a specific table using the ORM.
-
-        Args:
-            table_name: The name of the table to query.
-
-        Returns:
-            A tuple containing:
-            - A list of column headers (strings).
-            - A list of rows, where each row is a tuple of its values.
         """
         orm_class = self._table_to_class_map.get(table_name)
         
@@ -178,104 +172,75 @@ class BaseModel:
             print(f"Warning: No ORM class found for table '{table_name}'")
             return [], []
 
-        # Get headers directly from the ORM class definition
         headers = [c.name for c in orm_class.__table__.columns]
         
         data = []
         with Session(self.engine) as session:
-            # Query the database using the ORM class
             results = session.query(orm_class).all()
-            
-            # Convert each ORM object into a tuple of its values
             for row_object in results:
                 row_data = tuple(getattr(row_object, header) for header in headers)
                 data.append(row_data)
             
         return headers, data
 
+    def update_row(self, table_name: str, data_dict: dict):
+        """
+        Updates a single row in the database.
+        """
+        orm_class = self._table_to_class_map.get(table_name)
+        if not orm_class:
+            raise ValueError(f"No ORM class found for table '{table_name}'")
+
+        # Get the primary key from the data, assuming it's named 'id'
+        pk_value = data_dict.get('id')
+        if pk_value is None:
+            raise ValueError("Data for update must include an 'id' field.")
+
+        with Session(self.engine) as session:
+            # Fetch the existing object from the database
+            item_to_update = session.query(orm_class).filter_by(id=int(pk_value)).first()
+
+            if not item_to_update:
+                raise ValueError(f"No item found in '{table_name}' with id {pk_value}")
+
+            # Update the object's attributes with the new data
+            for key, value in data_dict.items():
+                # Skip the primary key, as it should not be changed
+                if key == 'id':
+                    continue
+                
+                # Handle empty strings for integer/float fields
+                if value == '' and key in orm_class.__table__.columns:
+                    col_type = orm_class.__table__.columns[key].type
+                    if isinstance(col_type, (Integer, Float)):
+                        value = None
+
+                setattr(item_to_update, key, value)
+
+            # Commit the changes to the database
+            session.commit()
+            print(f"Successfully updated row {pk_value} in {table_name}")
+
     def load_user_data(self) -> list[GroupData]:
         """Loads all data attributed to a single user"""
-
         group_return: list[GroupData] = []
-
         with Session(self.engine) as session:
             group_list = (
                 session.execute(common_queries.get_group_ids_for_project(1))
                 .scalars()
                 .all()
             )
-
             for group in group_list:
-                actors = list(
-                    session.execute(
-                        common_queries.get_lorekeeper_actors_from_group(group)
-                    )
-                    .scalars()
-                    .all()
-                )
-                backgrounds = list(
-                    session.execute(
-                        common_queries.get_lorekeeper_backgrounds_from_group(group)
-                    )
-                    .scalars()
-                    .all()
-                )
-                classes = list(
-                    session.execute(
-                        common_queries.get_lorekeeper_classes_from_group(group)
-                    )
-                    .scalars()
-                    .all()
-                )
-                factions = list(
-                    session.execute(
-                        common_queries.get_lorekeeper_factions_from_group(group)
-                    )
-                    .scalars()
-                    .all()
-                )
-                history = list(
-                    session.execute(
-                        common_queries.get_lorekeeper_history_from_group(group)
-                    )
-                    .scalars()
-                    .all()
-                )
-                locations = list(
-                    session.execute(
-                        common_queries.get_lorekeeper_locations_from_group(group)
-                    )
-                    .scalars()
-                    .all()
-                )
-                objects = list(
-                    session.execute(
-                        common_queries.get_lorekeeper_objects_from_group(group)
-                    )
-                    .scalars()
-                    .all()
-                )
-                races = list(
-                    session.execute(
-                        common_queries.get_lorekeeper_races_from_group(group)
-                    )
-                    .scalars()
-                    .all()
-                )
-                sub_races = list(
-                    session.execute(
-                        common_queries.get_lorekeeper_sub_races_from_group(group)
-                    )
-                    .scalars()
-                    .all()
-                )
-                world_datas = list(
-                    session.execute(
-                        common_queries.get_lorekeeper_world_data_from_group(group)
-                    )
-                    .scalars()
-                    .all()
-                )
+                actors = list(session.execute(common_queries.get_lorekeeper_actors_from_group(group)).scalars().all())
+                backgrounds = list(session.execute(common_queries.get_lorekeeper_backgrounds_from_group(group)).scalars().all())
+                classes = list(session.execute(common_queries.get_lorekeeper_classes_from_group(group)).scalars().all())
+                factions = list(session.execute(common_queries.get_lorekeeper_factions_from_group(group)).scalars().all())
+                history = list(session.execute(common_queries.get_lorekeeper_history_from_group(group)).scalars().all())
+                locations = list(session.execute(common_queries.get_lorekeeper_locations_from_group(group)).scalars().all())
+                objects = list(session.execute(common_queries.get_lorekeeper_objects_from_group(group)).scalars().all())
+                races = list(session.execute(common_queries.get_lorekeeper_races_from_group(group)).scalars().all())
+                sub_races = list(session.execute(common_queries.get_lorekeeper_sub_races_from_group(group)).scalars().all())
+                world_datas = list(session.execute(common_queries.get_lorekeeper_world_data_from_group(group)).scalars().all())
                 group_return.append(
                     GroupData(
                         actors=actors,
@@ -290,34 +255,5 @@ class BaseModel:
                         world_datas=world_datas,
                     )
                 )
-
             self.group_data = group_return
-
             return group_return
-        
-
-    # Add to your BaseModel class in common_model.py
-
-    def get_foreign_key_info(self, table_name: str) -> dict[str, tuple[str, str]]:
-        """Gets foreign key relationships for a given table."""
-        inspector = inspect(self.engine)
-        fks = inspector.get_foreign_keys(table_name)
-        fk_info = {}
-        for fk in fks:
-            local_column = fk['constrained_columns'][0]
-            referred_table = fk['referred_table']
-            referred_column = fk['referred_columns'][0]
-            fk_info[local_column] = (referred_table, referred_column)
-        return fk_info
-
-    def get_row_by_id(self, table_name: str, row_id: int) -> dict | None:
-        """Fetches a single row from a table by its primary key."""
-        orm_class = self._table_to_class_map.get(table_name)
-        if not orm_class:
-            return None
-
-        with Session(self.engine) as session:
-            # This assumes the primary key column is named 'id'.
-            result = session.query(orm_class).filter_by(id=row_id).first()
-
-        return result.as_dict() if result else None
