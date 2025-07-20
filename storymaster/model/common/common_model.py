@@ -155,6 +155,16 @@ class BaseModel:
 
         return [project.id for project in project_id_list]
     
+    # --- Litographer Methods ---
+
+    def get_litography_nodes(self, project_id: int) -> list[schema.LitographyNode]:
+        """Fetches all litography nodes for a given project."""
+        with Session(self.engine) as session:
+            nodes = session.query(schema.LitographyNode).filter_by(project_id=project_id).all()
+        return nodes
+
+    # --- Lorekeeper Methods ---
+
     def get_all_table_names(self) -> list[str]:
         """
         Inspects the database and returns a list of all table names.
@@ -162,21 +172,30 @@ class BaseModel:
         inspector = inspect(self.engine)
         return inspector.get_table_names()
     
-    def get_table_data(self, table_name: str) -> tuple[list[str], list[tuple]]:
+    def get_table_data(self, table_name: str, project_id: int | None = None) -> tuple[list[str], list[tuple]]:
         """
-        Fetches all data from a specific table using the ORM.
+        Fetches all data from a specific table, optionally filtered by project_id.
         """
         orm_class = self._table_to_class_map.get(table_name)
         
         if not orm_class:
-            print(f"Warning: No ORM class found for table '{table_name}'")
             return [], []
 
         headers = [c.name for c in orm_class.__table__.columns]
         
-        data = []
         with Session(self.engine) as session:
-            results = session.query(orm_class).all()
+            query = session.query(orm_class)
+            
+            # If a project_id is provided and the table has a group_id, filter the results
+            if project_id and hasattr(orm_class, 'group_id'):
+                # Find the group_id associated with the project_id
+                project_group_link = session.query(schema.ProjectToGroup).filter_by(project_id=project_id).first()
+                if project_group_link:
+                    query = query.filter_by(group_id=project_group_link.group_id)
+
+            results = query.all()
+            
+            data = []
             for row_object in results:
                 row_data = tuple(getattr(row_object, header) for header in headers)
                 data.append(row_data)
@@ -206,16 +225,29 @@ class BaseModel:
 
         return result.as_dict() if result else None
 
-    def get_all_rows_as_dicts(self, table_name: str) -> list[dict]:
-        """Fetches all rows from a table and returns them as a list of dicts."""
+    def get_all_rows_as_dicts(self, table_name: str, project_id: int | None = None) -> list[dict]:
+        """Fetches all rows from a table as dicts, optionally filtered by project."""
         orm_class = self._table_to_class_map.get(table_name)
         if not orm_class:
             return []
 
         with Session(self.engine) as session:
-            results = session.query(orm_class).all()
+            query = session.query(orm_class)
+            if project_id and hasattr(orm_class, 'group_id'):
+                project_group_link = session.query(schema.ProjectToGroup).filter_by(project_id=project_id).first()
+                if project_group_link:
+                    query = query.filter_by(group_id=project_group_link.group_id)
+            
+            results = query.all()
         
         return [row.as_dict() for row in results]
+    
+    def get_all_projects(self) -> list[schema.Project]:
+        """Fetches all projects from the database."""
+        with Session(self.engine) as session:
+            projects = session.query(schema.Project).all()
+            return projects
+ 
 
     def update_row(self, table_name: str, data_dict: dict):
         """
@@ -249,31 +281,33 @@ class BaseModel:
             session.commit()
             print(f"Successfully updated row {pk_value} in {table_name}")
 
-    def add_row(self, table_name: str, data_dict: dict):
+    def add_row(self, table_name: str, data_dict: dict, project_id: int | None = None):
         """
-        Adds a new row to the database.
+        Adds a new row to the database, associating it with the correct project group.
         """
         orm_class = self._table_to_class_map.get(table_name)
         if not orm_class:
             raise ValueError(f"No ORM class found for table '{table_name}'")
 
-        # Clean up the data for insertion
-        # Remove the 'id' field as it's auto-generated
         if 'id' in data_dict:
             del data_dict['id']
 
-        # Convert empty strings to None for numeric types
-        for key, value in data_dict.items():
-            if value == '' and key in orm_class.__table__.columns:
-                col_type = orm_class.__table__.columns[key].type
-                if isinstance(col_type, (Integer, Float)):
-                    data_dict[key] = None
-
         with Session(self.engine) as session:
-            # Create a new instance of the ORM class with the form data
-            new_item = orm_class(**data_dict)
+            # If the table is project-specific (has a group_id), find the correct group
+            if project_id and hasattr(orm_class, 'group_id'):
+                project_group_link = session.query(schema.ProjectToGroup).filter_by(project_id=project_id).first()
+                if not project_group_link:
+                    raise ValueError(f"No Lorekeeper group found for Project ID {project_id}")
+                data_dict['group_id'] = project_group_link.group_id
             
-            # Add the new item to the session and commit
+            # Convert empty strings to None for numeric types
+            for key, value in data_dict.items():
+                if value == '' and key in orm_class.__table__.columns:
+                    col_type = orm_class.__table__.columns[key].type
+                    if isinstance(col_type, (Integer, Float)):
+                        data_dict[key] = None
+
+            new_item = orm_class(**data_dict)
             session.add(new_item)
             session.commit()
             print(f"Successfully added new row to {table_name}")

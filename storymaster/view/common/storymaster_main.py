@@ -240,10 +240,12 @@ class Ui_StorymasterMainWindow(object):
         self.litographerPage = QtWidgets.QWidget()
         self.litographerPage.setObjectName("litographerPage")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.litographerPage)
+        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_2.setSpacing(0)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.pageTitleLabel = QtWidgets.QLabel(parent=self.litographerPage)
-        self.pageTitleLabel.setObjectName("pageTitleLabel")
-        self.verticalLayout_2.addWidget(self.pageTitleLabel)
+        self.litographerToolbar = QtWidgets.QToolBar(parent=self.litographerPage)
+        self.litographerToolbar.setObjectName("litographerToolbar")
+        self.verticalLayout_2.addWidget(self.litographerToolbar)
         self.nodeGraphView = QtWidgets.QGraphicsView(parent=self.litographerPage)
         self.nodeGraphView.setObjectName("nodeGraphView")
         self.verticalLayout_2.addWidget(self.nodeGraphView)
@@ -387,6 +389,9 @@ class Ui_StorymasterMainWindow(object):
         self.actionRedo.setObjectName("actionRedo")
         self.actionAbout = QtGui.QAction(parent=StorymasterMainWindow)
         self.actionAbout.setObjectName("actionAbout")
+        self.actionAddNode = QtGui.QAction(parent=StorymasterMainWindow)
+        self.actionAddNode.setObjectName("actionAddNode")
+        self.litographerToolbar.addAction(self.actionAddNode)
         self.menuFile.addAction(self.actionNew)
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addSeparator()
@@ -402,14 +407,14 @@ class Ui_StorymasterMainWindow(object):
         self.menubar.addAction(self.menuHelp.menuAction())
 
         self.retranslateUi(StorymasterMainWindow)
-        self.pageStack.setCurrentIndex(1)
+        self.pageStack.setCurrentIndex(0)
         self.formTabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(StorymasterMainWindow)
 
     def retranslateUi(self, StorymasterMainWindow):
         _translate = QtCore.QCoreApplication.translate
         StorymasterMainWindow.setWindowTitle(_translate("StorymasterMainWindow", "Storymaster"))
-        self.pageTitleLabel.setText(_translate("StorymasterMainWindow", "Litographer - Node Editor"))
+        self.litographerToolbar.setWindowTitle(_translate("StorymasterMainWindow", "toolBar"))
         self.pageTitleLabel_2.setText(_translate("StorymasterMainWindow", "Lorekeeper - Database"))
         self.saveChangesButton.setText(_translate("StorymasterMainWindow", "Save Changes"))
         self.formTabWidget.setTabText(self.formTabWidget.indexOf(self.editTab), _translate("StorymasterMainWindow", "Edit Selected Row"))
@@ -428,6 +433,8 @@ class Ui_StorymasterMainWindow(object):
         self.actionUndo.setText(_translate("StorymasterMainWindow", "Undo"))
         self.actionRedo.setText(_translate("StorymasterMainWindow", "Redo"))
         self.actionAbout.setText(_translate("StorymasterMainWindow", "About"))
+        self.actionAddNode.setText(_translate("StorymasterMainWindow", "Add Node"))
+        self.actionAddNode.setToolTip(_translate("StorymasterMainWindow", "Add a new node to the canvas"))
 
 
 if __name__ == "__main__":

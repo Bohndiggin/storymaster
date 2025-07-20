@@ -251,20 +251,34 @@ QLabel#pageTitleLabel {
     <item>
      <widget class="QStackedWidget" name="pageStack">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="litographerPage">
        <layout class="QVBoxLayout" name="verticalLayout_2">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item>
-         <widget class="QLabel" name="pageTitleLabel">
-          <property name="text">
-           <string>Litographer - Node Editor</string>
+         <widget class="QToolBar" name="litographerToolbar">
+          <property name="windowTitle">
+           <string>toolBar</string>
           </property>
+          <addaction name="actionAddNode"/>
          </widget>
         </item>
         <item>
-         <!-- This is where your node graph will go.
-                      QGraphicsView is the standard widget for this. -->
          <widget class="QGraphicsView" name="nodeGraphView"/>
         </item>
        </layout>
@@ -602,6 +616,14 @@ QLabel#pageTitleLabel {
   <action name="actionAbout">
    <property name="text">
     <string>About</string>
+   </property>
+  </action>
+  <action name="actionAddNode">
+   <property name="text">
+    <string>Add Node</string>
+   </property>
+   <property name="toolTip">
+    <string>Add a new node to the canvas</string>
    </property>
   </action>
  </widget>

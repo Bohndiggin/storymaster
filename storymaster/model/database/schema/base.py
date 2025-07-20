@@ -181,8 +181,8 @@ class LitographyPlotSection(BaseTable):
     __tablename__ = "litography_plot_section"
 
     id: Mapped[int] = mapped_column(Integer, Identity(), nullable=False, primary_key=True, name="id")
-    section_type: Mapped[PlotSectionType] = mapped_column(Enum(PlotSectionType, values_callable=lambda obj: [e.value for e in obj]), nullable=False, name="plot_section_type")
-    section_plot_id: Mapped[int] = mapped_column(Integer, ForeignKey("litography_plot.id"), nullable=False, name="plot_id")
+    plot_section_type: Mapped[PlotSectionType] = mapped_column(Enum(PlotSectionType, values_callable=lambda obj: [e.value for e in obj]), nullable=False, name="plot_section_type")
+    plot_id: Mapped[int] = mapped_column(Integer, ForeignKey("litography_plot.id"), nullable=False, name="plot_id")
 
     section_plot: Mapped["LitographyPlot"] = relationship(back_populates="plot_sections")
     nodes: Mapped[list["LitographyNodeToPlotSection"]] = relationship(back_populates="plot_section")

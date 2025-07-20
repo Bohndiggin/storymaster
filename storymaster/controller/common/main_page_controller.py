@@ -1,9 +1,12 @@
 """Holds the controller for the main page"""
-from PyQt6.QtWidgets import QWidget, QLabel, QLineEdit, QTextEdit, QComboBox
-from PyQt6.QtGui import QStandardItemModel, QStandardItem
+from PyQt6.QtWidgets import QWidget, QLabel, QLineEdit, QTextEdit, QComboBox, QGraphicsScene, QGraphicsRectItem
+from PyQt6.QtGui import QStandardItemModel, QStandardItem, QBrush, QColor
 from PyQt6.QtCore import Qt
 from storymaster.model.common.common_model import BaseModel
 from storymaster.view.common.common_view import MainView
+# Import the dialogs
+from storymaster.view.litographer.add_node_dialog import AddNodeDialog
+from storymaster.view.common.open_project_dialog import OpenProjectDialog
 
 
 class MainWindowController:
@@ -12,41 +15,107 @@ class MainWindowController:
     def __init__(self, view: MainView, model: BaseModel):
         self.view = view
         self.model = model
+        self.current_project_id = 1 # Default to project 1
         self.current_table_name = None
         self.current_row_data = None
         self.current_foreign_keys = {}
-        self.edit_form_widgets = {}  # Holds widgets for the 'Edit' form
-        self.add_form_widgets = {}   # Holds widgets for the 'Add' form
+        self.edit_form_widgets = {}
+        self.add_form_widgets = {}
 
-        # --- Set up data models for the Lorekeeper page ---
+        # --- Set up Lorekeeper models ---
         self.db_tree_model = QStandardItemModel()
         self.view.ui.databaseTreeView.setModel(self.db_tree_model)
-
         self.db_table_model = QStandardItemModel()
         self.view.ui.databaseTableView.setModel(self.db_table_model)
 
-        # Connect UI signals to controller methods
+        # --- Set up Litographer scene ---
+        self.node_scene = QGraphicsScene()
+        self.view.ui.nodeGraphView.setScene(self.node_scene)
+
         self.connect_signals()
+        self.on_litographer_selected() # Start on the litographer page
 
     def connect_signals(self):
         """Connect all UI signals to their handler methods."""
-        self.view.ui.litographerNavButton.released.connect(
-            lambda: self.view.ui.pageStack.setCurrentIndex(0)
-        )
+        # --- Page Navigation ---
+        self.view.ui.litographerNavButton.released.connect(self.on_litographer_selected)
         self.view.ui.lorekeeperNavButton.released.connect(self.on_lorekeeper_selected)
+        
+        # --- File Menu ---
+        self.view.ui.actionOpen.triggered.connect(self.on_open_project_clicked)
+
+        # --- Litographer Toolbar ---
+        self.view.ui.actionAddNode.triggered.connect(self.on_add_node_clicked)
+
+        # --- Lorekeeper View Signals ---
         self.view.ui.databaseTreeView.clicked.connect(self.on_db_tree_item_clicked)
         self.view.ui.databaseTableView.clicked.connect(self.on_table_row_clicked)
         
-        # Connect form buttons
+        # --- Lorekeeper Form Buttons ---
         self.view.ui.saveChangesButton.clicked.connect(self.on_save_changes_clicked)
         self.view.ui.addNewRowButton.clicked.connect(self.on_add_new_row_clicked)
-        
-        # Connect tab switching to populate the 'Add' form
         self.view.ui.formTabWidget.currentChanged.connect(self.on_tab_changed)
+
+    # --- Project Handling ---
+    def on_open_project_clicked(self):
+        """Opens a dialog to select a project."""
+        dialog = OpenProjectDialog(self.model, self.view)
+        project_id = dialog.get_selected_project_id()
+        if project_id is not None:
+            self.current_project_id = project_id
+            print(f"Switched to Project ID: {self.current_project_id}")
+            self.view.ui.statusbar.showMessage(f"Opened Project ID: {self.current_project_id}", 5000)
+            
+            # Refresh the current view with the new project's data
+            if self.view.ui.pageStack.currentIndex() == 0:
+                self.load_and_draw_nodes()
+            else:
+                self._refresh_current_table_view()
+
+
+    # --- Litographer Methods ---
+
+    def on_litographer_selected(self):
+        """Handle switching to the Litographer page and loading nodes."""
+        self.view.ui.pageStack.setCurrentIndex(0)
+        self.load_and_draw_nodes()
+
+    def on_add_node_clicked(self):
+        """Handles the 'Add Node' action by opening a dialog."""
+        dialog = AddNodeDialog(self.view)
+        new_node_data = dialog.get_data()
+
+        if new_node_data:
+            new_node_data['project_id'] = self.current_project_id
+            
+            try:
+                self.model.add_row('litography_node', new_node_data)
+                self.view.ui.statusbar.showMessage("Successfully added new node.", 5000)
+                self.load_and_draw_nodes()
+            except Exception as e:
+                print(f"Error adding new node: {e}")
+                self.view.ui.statusbar.showMessage(f"Error: {e}", 5000)
+
+
+    def load_and_draw_nodes(self):
+        """Fetches node data from the model and draws them on the scene."""
+        self.node_scene.clear()
+        
+        nodes = self.model.get_litography_nodes(project_id=self.current_project_id)
+        
+        x_pos = 0
+        for i, node in enumerate(nodes):
+            y_pos = self.view.ui.nodeGraphView.height() - (node.node_height * 200) - 100
+            rect_item = QGraphicsRectItem(x_pos, y_pos, 100, 60)
+            rect_item.setBrush(QBrush(QColor("#5c4a8e")))
+            self.node_scene.addItem(rect_item)
+            x_pos += 120
+
+
+    # --- Lorekeeper Methods ---
 
     def on_tab_changed(self, index: int):
         """Handle tab switching to populate the 'Add New Row' form when selected."""
-        # Index 1 corresponds to the 'Add New Row' tab
         if index == 1:
             self.populate_add_form()
 
@@ -60,15 +129,15 @@ class MainWindowController:
         
         if self.current_row_data:
             self._populate_form(self.view.ui.editFormLayout, self.edit_form_widgets, self.current_row_data)
-            self.view.ui.formTabWidget.setCurrentIndex(0) # Switch to edit tab
+            self.view.ui.formTabWidget.setCurrentIndex(0)
 
     def populate_add_form(self):
         """Populates the 'Add New Row' tab with a blank form for the current table."""
         if not self.current_table_name:
             return
         
-        # Get column names to build the form, but no data
-        headers, _ = self.model.get_table_data(self.current_table_name)
+        # NOTE: Assumes get_table_data can accept a project_id to get correct headers
+        headers, _ = self.model.get_table_data(self.current_table_name, project_id=self.current_project_id)
         blank_data = {header: "" for header in headers}
         self._populate_form(self.view.ui.addFormLayout, self.add_form_widgets, blank_data, is_add_form=True)
 
@@ -78,8 +147,7 @@ class MainWindowController:
         widget_dict.clear()
 
         for key, value in row_data.items():
-            # Don't create a field for 'id' in the 'Add New Row' form
-            if is_add_form and key.lower() == 'id':
+            if is_add_form and key.lower() in ['id', 'group_id', 'project_id']:
                 continue
 
             label = QLabel(f"{key.replace('_', ' ').title()}:")
@@ -101,7 +169,8 @@ class MainWindowController:
         referenced_table, _ = self.current_foreign_keys[key]
         
         try:
-            dropdown_items = self.model.get_all_rows_as_dicts(referenced_table)
+            # NOTE: Assumes get_all_rows_as_dicts can be filtered by project
+            dropdown_items = self.model.get_all_rows_as_dicts(referenced_table, project_id=self.current_project_id)
             field.addItem("None", None)
             
             current_combo_index = 0
@@ -151,17 +220,14 @@ class MainWindowController:
         
         try:
             if is_update:
-                print(f"Saving changes for table '{self.current_table_name}':")
-                print(form_data)
+                # The ID is already in the form_data for updates
                 self.model.update_row(self.current_table_name, form_data)
                 self.view.ui.statusbar.showMessage(f"Successfully saved changes to '{self.current_table_name}'.", 5000)
             else:
-                print(f"Adding new row to table '{self.current_table_name}':")
-                print(form_data)
-                # NOTE: This requires an `add_row` method in your model
-                self.model.add_row(self.current_table_name, form_data)
+                # NOTE: Assumes add_row can accept a project_id to find the correct group
+                self.model.add_row(self.current_table_name, form_data, project_id=self.current_project_id)
                 self.view.ui.statusbar.showMessage(f"Successfully added new row to '{self.current_table_name}'.", 5000)
-                self.populate_add_form() # Clear the form after adding
+                self.populate_add_form()
 
             self._refresh_current_table_view()
         except Exception as e:
@@ -210,11 +276,11 @@ class MainWindowController:
         if not self.current_table_name:
             return
             
-        print(f"Loading data for table: {self.current_table_name}")
         self.db_table_model.clear()
 
         try:
-            headers, data_rows = self.model.get_table_data(self.current_table_name)
+            # Pass the current project ID to filter the data
+            headers, data_rows = self.model.get_table_data(self.current_table_name, project_id=self.current_project_id)
             self.db_table_model.setHorizontalHeaderLabels(headers)
 
             for row_tuple in data_rows:
