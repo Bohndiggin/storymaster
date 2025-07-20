@@ -1,5 +1,5 @@
 """Holds the controller for the main page"""
-from PyQt6.QtWidgets import QWidget, QLabel, QLineEdit, QTextEdit
+from PyQt6.QtWidgets import QWidget, QLabel, QLineEdit, QTextEdit, QComboBox
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtCore import Qt
 from storymaster.model.common.common_model import BaseModel
@@ -14,7 +14,9 @@ class MainWindowController:
         self.model = model
         self.current_table_name = None
         self.current_row_data = None
-        self.form_widgets = {}  # To hold references to the generated input fields
+        self.current_foreign_keys = {}
+        self.edit_form_widgets = {}  # Holds widgets for the 'Edit' form
+        self.add_form_widgets = {}   # Holds widgets for the 'Add' form
 
         # --- Set up data models for the Lorekeeper page ---
         self.db_tree_model = QStandardItemModel()
@@ -34,7 +36,19 @@ class MainWindowController:
         self.view.ui.lorekeeperNavButton.released.connect(self.on_lorekeeper_selected)
         self.view.ui.databaseTreeView.clicked.connect(self.on_db_tree_item_clicked)
         self.view.ui.databaseTableView.clicked.connect(self.on_table_row_clicked)
+        
+        # Connect form buttons
         self.view.ui.saveChangesButton.clicked.connect(self.on_save_changes_clicked)
+        self.view.ui.addNewRowButton.clicked.connect(self.on_add_new_row_clicked)
+        
+        # Connect tab switching to populate the 'Add' form
+        self.view.ui.formTabWidget.currentChanged.connect(self.on_tab_changed)
+
+    def on_tab_changed(self, index: int):
+        """Handle tab switching to populate the 'Add New Row' form when selected."""
+        # Index 1 corresponds to the 'Add New Row' tab
+        if index == 1:
+            self.populate_add_form()
 
     def on_table_row_clicked(self, index):
         """Populates the edit form with the data from the selected row."""
@@ -42,63 +56,117 @@ class MainWindowController:
         if not first_item_in_row:
             return
 
-        # Retrieve the full row data dictionary stored in the item
         self.current_row_data = first_item_in_row.data(Qt.ItemDataRole.UserRole)
         
         if self.current_row_data:
-            self.populate_edit_form(self.current_row_data)
+            self._populate_form(self.view.ui.editFormLayout, self.edit_form_widgets, self.current_row_data)
+            self.view.ui.formTabWidget.setCurrentIndex(0) # Switch to edit tab
 
-    def populate_edit_form(self, row_data: dict):
-        """Dynamically creates an editable form based on the row data."""
-        self._clear_layout(self.view.ui.editFormLayout)
-        self.form_widgets.clear()
+    def populate_add_form(self):
+        """Populates the 'Add New Row' tab with a blank form for the current table."""
+        if not self.current_table_name:
+            return
+        
+        # Get column names to build the form, but no data
+        headers, _ = self.model.get_table_data(self.current_table_name)
+        blank_data = {header: "" for header in headers}
+        self._populate_form(self.view.ui.addFormLayout, self.add_form_widgets, blank_data, is_add_form=True)
+
+    def _populate_form(self, layout: QWidget, widget_dict: dict, row_data: dict, is_add_form: bool = False):
+        """Generic helper to dynamically create an editable form."""
+        self._clear_layout(layout)
+        widget_dict.clear()
 
         for key, value in row_data.items():
+            # Don't create a field for 'id' in the 'Add New Row' form
+            if is_add_form and key.lower() == 'id':
+                continue
+
             label = QLabel(f"{key.replace('_', ' ').title()}:")
             
-            # Use QTextEdit for long text, QLineEdit for others
-            str_value = str(value) if value is not None else ""
-            if "\n" in str_value or len(str_value) > 60:
-                field = QTextEdit(str_value)
-                field.setMinimumHeight(80)
+            if key in self.current_foreign_keys:
+                field = self._create_dropdown(key, value)
             else:
-                field = QLineEdit(str_value)
+                field = self._create_text_field(value)
 
-            # Make the 'id' field read-only
             if key.lower() == 'id':
                 field.setReadOnly(True)
 
-            self.view.ui.editFormLayout.addRow(label, field)
-            self.form_widgets[key] = field
+            layout.addRow(label, field)
+            widget_dict[key] = field
+
+    def _create_dropdown(self, key, value):
+        """Helper to create and populate a QComboBox for a foreign key."""
+        field = QComboBox()
+        referenced_table, _ = self.current_foreign_keys[key]
+        
+        try:
+            dropdown_items = self.model.get_all_rows_as_dicts(referenced_table)
+            field.addItem("None", None)
+            
+            current_combo_index = 0
+            for i, item_dict in enumerate(dropdown_items):
+                display_text = str(item_dict.get('name') or item_dict.get('first_name') or item_dict.get("faction_name") or item_dict.get("event_name") or item_dict.get('class_name') or f"ID: {item_dict['id']}")
+                field.addItem(display_text, item_dict['id'])
+                if item_dict['id'] == value:
+                    current_combo_index = i + 1
+            
+            field.setCurrentIndex(current_combo_index)
+        except Exception as e:
+            print(f"Could not populate dropdown for {key}: {e}")
+        return field
+
+    def _create_text_field(self, value):
+        """Helper to create a QLineEdit or QTextEdit based on content length."""
+        str_value = str(value) if value is not None else ""
+        if "\n" in str_value or len(str_value) > 60:
+            field = QTextEdit(str_value)
+            field.setMinimumHeight(80)
+        else:
+            field = QLineEdit(str_value)
+        return field
 
     def on_save_changes_clicked(self):
-        """Gathers data from the form and tells the model to save it."""
-        if not self.current_row_data or not self.form_widgets:
-            print("No data selected to save.")
+        """Gathers data from the 'Edit' form and tells the model to save it."""
+        self._save_form_data(self.edit_form_widgets, is_update=True)
+        
+    def on_add_new_row_clicked(self):
+        """Gathers data from the 'Add' form and tells the model to create a new row."""
+        self._save_form_data(self.add_form_widgets, is_update=False)
+
+    def _save_form_data(self, widget_dict: dict, is_update: bool):
+        """Generic helper to gather data from a form and call the model."""
+        if not self.current_table_name or not widget_dict:
+            print("No data to save.")
             return
 
-        updated_data = {}
-        for key, widget in self.form_widgets.items():
-            if isinstance(widget, QLineEdit):
-                updated_data[key] = widget.text()
+        form_data = {}
+        for key, widget in widget_dict.items():
+            if isinstance(widget, QComboBox):
+                form_data[key] = widget.currentData()
+            elif isinstance(widget, QLineEdit):
+                form_data[key] = widget.text()
             elif isinstance(widget, QTextEdit):
-                updated_data[key] = widget.toPlainText()
+                form_data[key] = widget.toPlainText()
         
-        print(f"Saving changes for table '{self.current_table_name}':")
-        print(updated_data)
-
-        # Call the model to update the database
         try:
-            if not self.current_table_name:
-                return
-            self.model.update_row(self.current_table_name, updated_data)
-            # Refresh the table view to show changes
-            self._refresh_current_table_view()
-            self.view.ui.statusbar.showMessage(f"Successfully saved changes to '{self.current_table_name}'.", 5000)
-        except Exception as e:
-            print(f"Error updating row: {e}")
-            self.view.ui.statusbar.showMessage(f"Error saving changes: {e}", 5000)
+            if is_update:
+                print(f"Saving changes for table '{self.current_table_name}':")
+                print(form_data)
+                self.model.update_row(self.current_table_name, form_data)
+                self.view.ui.statusbar.showMessage(f"Successfully saved changes to '{self.current_table_name}'.", 5000)
+            else:
+                print(f"Adding new row to table '{self.current_table_name}':")
+                print(form_data)
+                # NOTE: This requires an `add_row` method in your model
+                self.model.add_row(self.current_table_name, form_data)
+                self.view.ui.statusbar.showMessage(f"Successfully added new row to '{self.current_table_name}'.", 5000)
+                self.populate_add_form() # Clear the form after adding
 
+            self._refresh_current_table_view()
+        except Exception as e:
+            print(f"Error saving data: {e}")
+            self.view.ui.statusbar.showMessage(f"Error saving data: {e}", 5000)
 
     def on_lorekeeper_selected(self):
         """Handle switching to the Lorekeeper page."""
@@ -122,7 +190,19 @@ class MainWindowController:
     def on_db_tree_item_clicked(self, index):
         """Fetches and displays the content of the selected table when clicked."""
         self.current_table_name = self.db_tree_model.itemFromIndex(index).text()
-        self._clear_layout(self.view.ui.editFormLayout) # Clear form when table changes
+        
+        try:
+            self.current_foreign_keys = self.model.get_foreign_key_info(self.current_table_name)
+        except Exception as e:
+            print(f"Could not get FK info for {self.current_table_name}: {e}")
+            self.current_foreign_keys = {}
+
+        self._clear_layout(self.view.ui.editFormLayout)
+        self._clear_layout(self.view.ui.addFormLayout)
+        
+        if self.view.ui.formTabWidget.currentIndex() == 1:
+            self.populate_add_form()
+
         self._refresh_current_table_view()
 
     def _refresh_current_table_view(self):
@@ -141,7 +221,6 @@ class MainWindowController:
                 row_dict = dict(zip(headers, row_tuple))
                 row_items = [QStandardItem(str(field)) for field in row_tuple]
                 
-                # Store the full dictionary in the first item of the row
                 row_items[0].setData(row_dict, Qt.ItemDataRole.UserRole)
 
                 for item in row_items:

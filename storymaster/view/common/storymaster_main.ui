@@ -153,34 +153,58 @@ QTreeView::item:hover {
     background-color: #4a4a4a;
 }
 
+/* --- Tab Widget Styling --- */
+QTabWidget::pane {
+    border: 1px solid #424242;
+    border-top: none;
+}
+QTabBar::tab {
+    background-color: #2e2e2e;
+    color: #a0a0a0;
+    padding: 8px 20px;
+    border: 1px solid #424242;
+    border-bottom: none;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+}
+QTabBar::tab:selected {
+    background-color: #222222;
+    color: #ffffff;
+}
+QTabBar::tab:!selected:hover {
+    background-color: #3a3a3a;
+}
+
 /* --- Edit Form Styling --- */
 QScrollArea {
     border: none;
 }
 
-#editFormWidget {
+#editFormWidget, #addFormWidget {
     background-color: #222222;
-    border: 1px solid #424242;
-    border-radius: 4px;
 }
 
-#editFormWidget QLabel {
+#editFormWidget QLabel, #addFormWidget QLabel {
     font-weight: bold;
     color: #a0a0a0;
 }
 
-#editFormWidget QLineEdit, #editFormWidget QTextEdit {
+#editFormWidget QLineEdit, #editFormWidget QTextEdit,
+#addFormWidget QLineEdit, #addFormWidget QTextEdit,
+#addFormWidget QComboBox {
     background-color: #2e2e2e;
     border: 1px solid #424242;
     border-radius: 3px;
     padding: 4px;
 }
 
-#editFormWidget QLineEdit:focus, #editFormWidget QTextEdit:focus {
+#editFormWidget QLineEdit:focus, #editFormWidget QTextEdit:focus,
+#addFormWidget QLineEdit:focus, #addFormWidget QTextEdit:focus,
+#addFormWidget QComboBox:focus {
     border: 1px solid #af80f8;
 }
 
-#editFormWidget QPushButton {
+#editFormWidget QPushButton, #addFormWidget QPushButton {
     background-color: #5c4a8e;
     color: #ffffff;
     border: none;
@@ -189,7 +213,7 @@ QScrollArea {
     font-weight: bold;
 }
 
-#editFormWidget QPushButton:hover {
+#editFormWidget QPushButton:hover, #addFormWidget QPushButton:hover {
     background-color: #6c5ab8;
 }
 
@@ -295,56 +319,104 @@ QLabel#pageTitleLabel {
             </property>
            </widget>
           </widget>
-          <widget class="QScrollArea" name="editFormScrollArea">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>1</verstretch>
-            </sizepolicy>
+          <widget class="QTabWidget" name="formTabWidget">
+           <property name="currentIndex">
+            <number>0</number>
            </property>
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>150</height>
-            </size>
-           </property>
-           <property name="widgetResizable">
-            <bool>true</bool>
-           </property>
-           <widget class="QWidget" name="editFormWidget">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>1278</width>
-              <height>148</height>
-             </rect>
-            </property>
-            <property name="objectName">
-             <string>editFormWidget</string>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_5">
+           <widget class="QWidget" name="editTab">
+            <attribute name="title">
+             <string>Edit Selected Row</string>
+            </attribute>
+            <layout class="QVBoxLayout" name="verticalLayout_6">
              <item>
-              <layout class="QFormLayout" name="editFormLayout"/>
+              <widget class="QScrollArea" name="editFormScrollArea">
+               <property name="widgetResizable">
+                <bool>true</bool>
+               </property>
+               <widget class="QWidget" name="editFormWidget">
+                <property name="geometry">
+                 <rect>
+                  <x>0</x>
+                  <y>0</y>
+                  <width>1270</width>
+                  <height>123</height>
+                 </rect>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_5">
+                 <item>
+                  <layout class="QFormLayout" name="editFormLayout"/>
+                 </item>
+                 <item>
+                  <spacer name="verticalSpacer">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>40</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="saveChangesButton">
+                   <property name="text">
+                    <string>Save Changes</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </widget>
              </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="addTab">
+            <attribute name="title">
+             <string>Add New Row</string>
+            </attribute>
+            <layout class="QVBoxLayout" name="verticalLayout_8">
              <item>
-              <spacer name="verticalSpacer">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
+              <widget class="QScrollArea" name="addFormScrollArea">
+               <property name="widgetResizable">
+                <bool>true</bool>
                </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>40</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QPushButton" name="saveChangesButton">
-               <property name="text">
-                <string>Save Changes</string>
-               </property>
+               <widget class="QWidget" name="addFormWidget">
+                <property name="geometry">
+                 <rect>
+                  <x>0</x>
+                  <y>0</y>
+                  <width>1270</width>
+                  <height>123</height>
+                 </rect>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_7">
+                 <item>
+                  <layout class="QFormLayout" name="addFormLayout"/>
+                 </item>
+                 <item>
+                  <spacer name="verticalSpacer_2">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>20</width>
+                     <height>40</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="addNewRowButton">
+                   <property name="text">
+                    <string>Add New Row</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
               </widget>
              </item>
             </layout>

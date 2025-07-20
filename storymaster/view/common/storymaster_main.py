@@ -152,34 +152,58 @@ class Ui_StorymasterMainWindow(object):
 "    background-color: #4a4a4a;\n"
 "}\n"
 "\n"
+"/* --- Tab Widget Styling --- */\n"
+"QTabWidget::pane {\n"
+"    border: 1px solid #424242;\n"
+"    border-top: none;\n"
+"}\n"
+"QTabBar::tab {\n"
+"    background-color: #2e2e2e;\n"
+"    color: #a0a0a0;\n"
+"    padding: 8px 20px;\n"
+"    border: 1px solid #424242;\n"
+"    border-bottom: none;\n"
+"    border-top-left-radius: 4px;\n"
+"    border-top-right-radius: 4px;\n"
+"}\n"
+"QTabBar::tab:selected {\n"
+"    background-color: #222222;\n"
+"    color: #ffffff;\n"
+"}\n"
+"QTabBar::tab:!selected:hover {\n"
+"    background-color: #3a3a3a;\n"
+"}\n"
+"\n"
 "/* --- Edit Form Styling --- */\n"
 "QScrollArea {\n"
 "    border: none;\n"
 "}\n"
 "\n"
-"#editFormWidget {\n"
+"#editFormWidget, #addFormWidget {\n"
 "    background-color: #222222;\n"
-"    border: 1px solid #424242;\n"
-"    border-radius: 4px;\n"
 "}\n"
 "\n"
-"#editFormWidget QLabel {\n"
+"#editFormWidget QLabel, #addFormWidget QLabel {\n"
 "    font-weight: bold;\n"
 "    color: #a0a0a0;\n"
 "}\n"
 "\n"
-"#editFormWidget QLineEdit, #editFormWidget QTextEdit {\n"
+"#editFormWidget QLineEdit, #editFormWidget QTextEdit,\n"
+"#addFormWidget QLineEdit, #addFormWidget QTextEdit,\n"
+"#addFormWidget QComboBox {\n"
 "    background-color: #2e2e2e;\n"
 "    border: 1px solid #424242;\n"
 "    border-radius: 3px;\n"
 "    padding: 4px;\n"
 "}\n"
 "\n"
-"#editFormWidget QLineEdit:focus, #editFormWidget QTextEdit:focus {\n"
+"#editFormWidget QLineEdit:focus, #editFormWidget QTextEdit:focus,\n"
+"#addFormWidget QLineEdit:focus, #addFormWidget QTextEdit:focus,\n"
+"#addFormWidget QComboBox:focus {\n"
 "    border: 1px solid #af80f8;\n"
 "}\n"
 "\n"
-"#editFormWidget QPushButton {\n"
+"#editFormWidget QPushButton, #addFormWidget QPushButton {\n"
 "    background-color: #5c4a8e;\n"
 "    color: #ffffff;\n"
 "    border: none;\n"
@@ -188,7 +212,7 @@ class Ui_StorymasterMainWindow(object):
 "    font-weight: bold;\n"
 "}\n"
 "\n"
-"#editFormWidget QPushButton:hover {\n"
+"#editFormWidget QPushButton:hover, #addFormWidget QPushButton:hover {\n"
 "    background-color: #6c5ab8;\n"
 "}\n"
 "\n"
@@ -254,17 +278,17 @@ class Ui_StorymasterMainWindow(object):
         self.databaseTableView.setSizePolicy(sizePolicy)
         self.databaseTableView.setAlternatingRowColors(True)
         self.databaseTableView.setObjectName("databaseTableView")
-        self.editFormScrollArea = QtWidgets.QScrollArea(parent=self.lorekeeperSplitter)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(1)
-        sizePolicy.setHeightForWidth(self.editFormScrollArea.sizePolicy().hasHeightForWidth())
-        self.editFormScrollArea.setSizePolicy(sizePolicy)
-        self.editFormScrollArea.setMinimumSize(QtCore.QSize(0, 150))
+        self.formTabWidget = QtWidgets.QTabWidget(parent=self.lorekeeperSplitter)
+        self.formTabWidget.setObjectName("formTabWidget")
+        self.editTab = QtWidgets.QWidget()
+        self.editTab.setObjectName("editTab")
+        self.verticalLayout_6 = QtWidgets.QVBoxLayout(self.editTab)
+        self.verticalLayout_6.setObjectName("verticalLayout_6")
+        self.editFormScrollArea = QtWidgets.QScrollArea(parent=self.editTab)
         self.editFormScrollArea.setWidgetResizable(True)
         self.editFormScrollArea.setObjectName("editFormScrollArea")
         self.editFormWidget = QtWidgets.QWidget()
-        self.editFormWidget.setGeometry(QtCore.QRect(0, 0, 1278, 148))
+        self.editFormWidget.setGeometry(QtCore.QRect(0, 0, 1270, 123))
         self.editFormWidget.setObjectName("editFormWidget")
         self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.editFormWidget)
         self.verticalLayout_5.setObjectName("verticalLayout_5")
@@ -277,6 +301,31 @@ class Ui_StorymasterMainWindow(object):
         self.saveChangesButton.setObjectName("saveChangesButton")
         self.verticalLayout_5.addWidget(self.saveChangesButton)
         self.editFormScrollArea.setWidget(self.editFormWidget)
+        self.verticalLayout_6.addWidget(self.editFormScrollArea)
+        self.formTabWidget.addTab(self.editTab, "")
+        self.addTab = QtWidgets.QWidget()
+        self.addTab.setObjectName("addTab")
+        self.verticalLayout_8 = QtWidgets.QVBoxLayout(self.addTab)
+        self.verticalLayout_8.setObjectName("verticalLayout_8")
+        self.addFormScrollArea = QtWidgets.QScrollArea(parent=self.addTab)
+        self.addFormScrollArea.setWidgetResizable(True)
+        self.addFormScrollArea.setObjectName("addFormScrollArea")
+        self.addFormWidget = QtWidgets.QWidget()
+        self.addFormWidget.setGeometry(QtCore.QRect(0, 0, 1270, 123))
+        self.addFormWidget.setObjectName("addFormWidget")
+        self.verticalLayout_7 = QtWidgets.QVBoxLayout(self.addFormWidget)
+        self.verticalLayout_7.setObjectName("verticalLayout_7")
+        self.addFormLayout = QtWidgets.QFormLayout()
+        self.addFormLayout.setObjectName("addFormLayout")
+        self.verticalLayout_7.addLayout(self.addFormLayout)
+        spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.verticalLayout_7.addItem(spacerItem1)
+        self.addNewRowButton = QtWidgets.QPushButton(parent=self.addFormWidget)
+        self.addNewRowButton.setObjectName("addNewRowButton")
+        self.verticalLayout_7.addWidget(self.addNewRowButton)
+        self.addFormScrollArea.setWidget(self.addFormWidget)
+        self.verticalLayout_8.addWidget(self.addFormScrollArea)
+        self.formTabWidget.addTab(self.addTab, "")
         self.verticalLayout_4.addWidget(self.lorekeeperSplitter)
         self.pageStack.addWidget(self.lorekeeperPage)
         self.verticalLayout.addWidget(self.pageStack)
@@ -288,8 +337,8 @@ class Ui_StorymasterMainWindow(object):
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout.setSpacing(0)
         self.horizontalLayout.setObjectName("horizontalLayout")
-        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
-        self.horizontalLayout.addItem(spacerItem1)
+        spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.horizontalLayout.addItem(spacerItem2)
         self.litographerNavButton = QtWidgets.QPushButton(parent=self.bottomNavBar)
         self.litographerNavButton.setCheckable(True)
         self.litographerNavButton.setChecked(True)
@@ -305,8 +354,8 @@ class Ui_StorymasterMainWindow(object):
         self.lorekeeperNavButton.setObjectName("lorekeeperNavButton")
         self.navButtonGroup.addButton(self.lorekeeperNavButton)
         self.horizontalLayout.addWidget(self.lorekeeperNavButton)
-        spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
-        self.horizontalLayout.addItem(spacerItem2)
+        spacerItem3 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.horizontalLayout.addItem(spacerItem3)
         self.verticalLayout.addWidget(self.bottomNavBar)
         StorymasterMainWindow.setCentralWidget(self.centralWidget)
         self.menubar = QtWidgets.QMenuBar(parent=StorymasterMainWindow)
@@ -354,6 +403,7 @@ class Ui_StorymasterMainWindow(object):
 
         self.retranslateUi(StorymasterMainWindow)
         self.pageStack.setCurrentIndex(1)
+        self.formTabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(StorymasterMainWindow)
 
     def retranslateUi(self, StorymasterMainWindow):
@@ -362,6 +412,9 @@ class Ui_StorymasterMainWindow(object):
         self.pageTitleLabel.setText(_translate("StorymasterMainWindow", "Litographer - Node Editor"))
         self.pageTitleLabel_2.setText(_translate("StorymasterMainWindow", "Lorekeeper - Database"))
         self.saveChangesButton.setText(_translate("StorymasterMainWindow", "Save Changes"))
+        self.formTabWidget.setTabText(self.formTabWidget.indexOf(self.editTab), _translate("StorymasterMainWindow", "Edit Selected Row"))
+        self.addNewRowButton.setText(_translate("StorymasterMainWindow", "Add New Row"))
+        self.formTabWidget.setTabText(self.formTabWidget.indexOf(self.addTab), _translate("StorymasterMainWindow", "Add New Row"))
         self.litographerNavButton.setText(_translate("StorymasterMainWindow", "Litographer"))
         self.lorekeeperNavButton.setText(_translate("StorymasterMainWindow", "Lorekeeper"))
         self.menuFile.setTitle(_translate("StorymasterMainWindow", "File"))

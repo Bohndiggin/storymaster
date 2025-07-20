@@ -5,7 +5,7 @@ from enum import Enum
 
 from sqlalchemy import Engine, inspect
 from sqlalchemy.orm import Session
-from sqlalchemy import Column, Enum, Float, ForeignKey, Identity, Integer, String, Text
+from sqlalchemy import Column, Float, ForeignKey, Identity, Integer, String, Text
 
 
 from storymaster.model.database import base_connection, common_queries, schema
@@ -183,6 +183,40 @@ class BaseModel:
             
         return headers, data
 
+    def get_foreign_key_info(self, table_name: str) -> dict[str, tuple[str, str]]:
+        """Gets foreign key relationships for a given table."""
+        inspector = inspect(self.engine)
+        fks = inspector.get_foreign_keys(table_name)
+        fk_info = {}
+        for fk in fks:
+            local_column = fk['constrained_columns'][0]
+            referred_table = fk['referred_table']
+            referred_column = fk['referred_columns'][0]
+            fk_info[local_column] = (referred_table, referred_column)
+        return fk_info
+
+    def get_row_by_id(self, table_name: str, row_id: int) -> dict | None:
+        """Fetches a single row from a table by its primary key."""
+        orm_class = self._table_to_class_map.get(table_name)
+        if not orm_class:
+            return None
+
+        with Session(self.engine) as session:
+            result = session.query(orm_class).filter_by(id=row_id).first()
+
+        return result.as_dict() if result else None
+
+    def get_all_rows_as_dicts(self, table_name: str) -> list[dict]:
+        """Fetches all rows from a table and returns them as a list of dicts."""
+        orm_class = self._table_to_class_map.get(table_name)
+        if not orm_class:
+            return []
+
+        with Session(self.engine) as session:
+            results = session.query(orm_class).all()
+        
+        return [row.as_dict() for row in results]
+
     def update_row(self, table_name: str, data_dict: dict):
         """
         Updates a single row in the database.
@@ -191,25 +225,20 @@ class BaseModel:
         if not orm_class:
             raise ValueError(f"No ORM class found for table '{table_name}'")
 
-        # Get the primary key from the data, assuming it's named 'id'
         pk_value = data_dict.get('id')
         if pk_value is None:
             raise ValueError("Data for update must include an 'id' field.")
 
         with Session(self.engine) as session:
-            # Fetch the existing object from the database
             item_to_update = session.query(orm_class).filter_by(id=int(pk_value)).first()
 
             if not item_to_update:
                 raise ValueError(f"No item found in '{table_name}' with id {pk_value}")
 
-            # Update the object's attributes with the new data
             for key, value in data_dict.items():
-                # Skip the primary key, as it should not be changed
                 if key == 'id':
                     continue
                 
-                # Handle empty strings for integer/float fields
                 if value == '' and key in orm_class.__table__.columns:
                     col_type = orm_class.__table__.columns[key].type
                     if isinstance(col_type, (Integer, Float)):
@@ -217,9 +246,38 @@ class BaseModel:
 
                 setattr(item_to_update, key, value)
 
-            # Commit the changes to the database
             session.commit()
             print(f"Successfully updated row {pk_value} in {table_name}")
+
+    def add_row(self, table_name: str, data_dict: dict):
+        """
+        Adds a new row to the database.
+        """
+        orm_class = self._table_to_class_map.get(table_name)
+        if not orm_class:
+            raise ValueError(f"No ORM class found for table '{table_name}'")
+
+        # Clean up the data for insertion
+        # Remove the 'id' field as it's auto-generated
+        if 'id' in data_dict:
+            del data_dict['id']
+
+        # Convert empty strings to None for numeric types
+        for key, value in data_dict.items():
+            if value == '' and key in orm_class.__table__.columns:
+                col_type = orm_class.__table__.columns[key].type
+                if isinstance(col_type, (Integer, Float)):
+                    data_dict[key] = None
+
+        with Session(self.engine) as session:
+            # Create a new instance of the ORM class with the form data
+            new_item = orm_class(**data_dict)
+            
+            # Add the new item to the session and commit
+            session.add(new_item)
+            session.commit()
+            print(f"Successfully added new row to {table_name}")
+
 
     def load_user_data(self) -> list[GroupData]:
         """Loads all data attributed to a single user"""
