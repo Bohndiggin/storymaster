@@ -8,3 +8,4 @@ seed.py
 test.py
 .pytest_cache
 .coverage
+.venv

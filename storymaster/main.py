@@ -13,6 +13,10 @@ from storymaster.view.common.common_view import MainView
 from storymaster.model.common.common_model import BaseModel
 from storymaster.controller.common.main_page_controller import MainWindowController
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

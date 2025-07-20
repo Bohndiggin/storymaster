@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import (
     QMainWindow,
 )
 
-from storymaster.view.common.main_page import Ui_MainWindow
+from storymaster.view.common.storymaster_main import Ui_StorymasterMainWindow
 
 
 class BaseView(QMainWindow):
@@ -27,5 +27,5 @@ class MainView(BaseView):
 
     def __init__(self):
         super().__init__()
-        self.ui = Ui_MainWindow()
+        self.ui = Ui_StorymasterMainWindow()
         self.ui.setupUi(self)

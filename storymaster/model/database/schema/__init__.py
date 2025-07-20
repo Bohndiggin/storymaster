@@ -48,6 +48,9 @@ from storymaster.model.database.schema.base import (
     SubRace,
     User,
     WorldData,
+    ArcToActor,
+    ArcToNode,
+    LitographyArc
 )
 
 __all__ = [
@@ -98,4 +101,7 @@ __all__ = [
     "LitographyPlotSection",
     "LitographyPlot",
     "BaseTable",
+    "ArcToActor",
+    "ArcToNode",
+    "LitographyArc",
 ]
