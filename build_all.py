@@ -20,19 +20,19 @@ from pathlib import Path
 def print_header():
     """Print build header"""
     print("=" * 70)
-    print("🏭 Storymaster Master Builder")
+    print("[FACTORY] Storymaster Master Builder")
     print("   Complete distribution package creation")
     print("=" * 70)
     print()
-    print(f"🖥️  Platform: {platform.system()} {platform.machine()}")
-    print(f"🐍 Python: {sys.version.split()[0]}")
+    print(f"[DESKTOP]  Platform: {platform.system()} {platform.machine()}")
+    print(f"[PYTHON] Python: {sys.version.split()[0]}")
     print()
 
 
 def run_build_script(script_name, description):
     """Run a build script and return success status"""
     print("=" * 50)
-    print(f"🔨 Building: {description}")
+    print(f"[COMPILE] Building: {description}")
     print("=" * 50)
     
     try:
@@ -41,13 +41,13 @@ def run_build_script(script_name, description):
         script_cmd = [sys.executable] + script_parts
         
         result = subprocess.run(script_cmd, check=True)
-        print(f"✅ {description} completed successfully!")
+        print(f"[OK] {description} completed successfully!")
         return True
     except subprocess.CalledProcessError as e:
-        print(f"❌ {description} failed with code {e.returncode}")
+        print(f"[ERROR] {description} failed with code {e.returncode}")
         return False
     except FileNotFoundError:
-        print(f"❌ Build script not found: {script_name}")
+        print(f"[ERROR] Build script not found: {script_name}")
         return False
 
 
@@ -84,7 +84,7 @@ def main():
         build_targets.append(("build_macos.py --non-interactive", "macOS App Bundle (Cross-compile)"))
     
     if not build_targets:
-        print("❌ No build targets available for this platform")
+        print("[ERROR] No build targets available for this platform")
         return False
     
     if non_interactive:
@@ -92,7 +92,7 @@ def main():
         selected_targets = build_targets
         print("Non-interactive mode: Building all available targets")
     else:
-        print("📋 Available build targets:")
+        print("[CHECK] Available build targets:")
         for i, (script, description) in enumerate(build_targets, 1):
             print(f"   {i}. {description}")
         print(f"   {len(build_targets) + 1}. Build all")
@@ -117,7 +117,7 @@ def main():
             except ValueError:
                 print("Please enter a valid number")
             except KeyboardInterrupt:
-                print("\n❌ Build cancelled by user")
+                print("\n[ERROR] Build cancelled by user")
                 return False
     
     print()
@@ -133,15 +133,15 @@ def main():
     
     # Summary
     print("=" * 70)
-    print("📊 Build Summary")
+    print("[STATS] Build Summary")
     print("=" * 70)
-    print(f"✅ Successful builds: {success_count}/{total_count}")
+    print(f"[OK] Successful builds: {success_count}/{total_count}")
     
     if success_count == total_count:
-        print("\n🎉 All builds completed successfully!")
+        print("\n[SUCCESS] All builds completed successfully!")
         
         # List created files
-        print("\n📁 Distribution files created:")
+        print("\n[FILES] Distribution files created:")
         distribution_files = [
             ("dist/storymaster/", "Executable directory"),
             ("storymaster-*.tar.gz", "Executable archive"),
@@ -154,7 +154,7 @@ def main():
             if any(Path(".").glob(file_pattern.replace("~/", str(Path.home()) + "/"))):
                 print(f"   • {file_pattern} - {description}")
         
-        print("\n📋 Next steps:")
+        print("\n[CHECK] Next steps:")
         print("   1. Test the distribution packages on target systems")
         print("   2. Upload to release/download locations")
         print("   3. Update documentation with download links")
@@ -162,7 +162,7 @@ def main():
         
     else:
         failed_count = total_count - success_count
-        print(f"❌ {failed_count} build(s) failed")
+        print(f"[ERROR] {failed_count} build(s) failed")
         print("   Check the error messages above for details")
         return False
     
@@ -177,8 +177,8 @@ if __name__ == "__main__":
         else:
             sys.exit(1)
     except KeyboardInterrupt:
-        print("\n\n⚠️  Build cancelled by user.")
+        print("\n\n[WARNING]  Build cancelled by user.")
         sys.exit(1)
     except Exception as e:
-        print(f"\n❌ Unexpected error during build: {e}")
+        print(f"\n[ERROR] Unexpected error during build: {e}")
         sys.exit(1)

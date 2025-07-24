@@ -16,10 +16,7 @@ test_data_path = project_dir / 'tests' / 'model' / 'database' / 'test_data'
 if test_data_path.exists():
     datas.append((str(test_data_path), 'tests/model/database/test_data'))
 
-# Include .env file if it exists
-env_file = project_dir / '.env'
-if env_file.exists():
-    datas.append((str(env_file), '.'))
+# Note: .env file not needed - using hardcoded defaults in code
 
 # Include UI files using glob
 for ui_dir in ['common', 'litographer', 'lorekeeper']:

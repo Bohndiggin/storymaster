@@ -7,20 +7,14 @@ Run this before using the application for the first time.
 """
 
 import os
-from dotenv import load_dotenv
 from sqlalchemy import create_engine
 
 from storymaster.model.database.schema.base import BaseTable
 
 def init_database():
     """Initialize SQLite database with schema"""
-    # Load environment variables
-    load_dotenv()
-    
-    # Get database connection string
-    db_connection = os.getenv("DATABASE_CONNECTION")
-    if not db_connection:
-        raise ValueError("DATABASE_CONNECTION not found in .env file")
+    # Get database connection string with default
+    db_connection = os.getenv("DATABASE_CONNECTION", "sqlite:///storymaster.db")
     
     print(f"Initializing database: {db_connection}")
     

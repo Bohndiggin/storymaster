@@ -17,7 +17,7 @@ from pathlib import Path
 def print_header():
     """Print build header"""
     print("=" * 60)
-    print("📦 Storymaster RPM Builder")
+    print("[PACKAGE] Storymaster RPM Builder")
     print("   Linux RPM package creation")
     print("=" * 60)
     print()
@@ -25,16 +25,16 @@ def print_header():
 
 def check_rpm_build_tools():
     """Check if RPM build tools are available"""
-    print("📋 Checking RPM build tools...")
+    print("[CHECK] Checking RPM build tools...")
     
     required_tools = ['rpmbuild', 'tar', 'gzip']
     
     for tool in required_tools:
         try:
             subprocess.run([tool, '--version'], capture_output=True, check=True)
-            print(f"✅ {tool} found")
+            print(f"[OK] {tool} found")
         except (subprocess.CalledProcessError, FileNotFoundError):
-            print(f"❌ {tool} not found")
+            print(f"[ERROR] {tool} not found")
             print(f"   Install with: sudo dnf install rpm-build (Fedora/RHEL)")
             print(f"   or: sudo apt install rpm (Debian/Ubuntu)")
             return False
@@ -44,7 +44,7 @@ def check_rpm_build_tools():
 
 def create_source_tarball():
     """Create source tarball for RPM build"""
-    print("\n📁 Creating source tarball...")
+    print("\n[FILES] Creating source tarball...")
     
     try:
         # Create temporary directory for source
@@ -58,7 +58,6 @@ def create_source_tarball():
                 'tests/',
                 'init_database.py',
                 'seed.py',
-                '.env',
                 'README.md',
                 'CLAUDE.md',
                 'requirements.txt'
@@ -87,17 +86,17 @@ def create_source_tarball():
             
             os.chdir(original_dir)
             
-        print(f"✅ Source tarball created: {tarball_name}")
+        print(f"[OK] Source tarball created: {tarball_name}")
         return tarball_name
         
     except Exception as e:
-        print(f"❌ Failed to create source tarball: {e}")
+        print(f"[ERROR] Failed to create source tarball: {e}")
         return None
 
 
 def setup_rpm_build_tree():
     """Set up RPM build directory structure"""
-    print("\n🏗️  Setting up RPM build tree...")
+    print("\n[BUILD]  Setting up RPM build tree...")
     
     home_dir = Path.home()
     rpmbuild_dir = home_dir / "rpmbuild"
@@ -106,13 +105,13 @@ def setup_rpm_build_tree():
     for subdir in ['BUILD', 'RPMS', 'SOURCES', 'SPECS', 'SRPMS']:
         (rpmbuild_dir / subdir).mkdir(parents=True, exist_ok=True)
     
-    print(f"✅ RPM build tree created at {rpmbuild_dir}")
+    print(f"[OK] RPM build tree created at {rpmbuild_dir}")
     return rpmbuild_dir
 
 
 def build_rpm_package(tarball_name, rpmbuild_dir):
     """Build the RPM package"""
-    print("\n🔨 Building RPM package...")
+    print("\n[COMPILE] Building RPM package...")
     
     try:
         # Copy source tarball to SOURCES
@@ -131,13 +130,13 @@ def build_rpm_package(tarball_name, rpmbuild_dir):
         print(f"   Running: {' '.join(cmd)}")
         result = subprocess.run(cmd, check=True, capture_output=True, text=True)
         
-        print("✅ RPM package built successfully!")
+        print("[OK] RPM package built successfully!")
         
         # Find and report the created RPM files
         rpms_dir = rpmbuild_dir / "RPMS" / "noarch"
         srpms_dir = rpmbuild_dir / "SRPMS"
         
-        print("\n📦 Created packages:")
+        print("\n[PACKAGE] Created packages:")
         for rpm_file in rpms_dir.glob("storymaster*.rpm"):
             print(f"   • Binary RPM: {rpm_file}")
         
@@ -147,7 +146,7 @@ def build_rpm_package(tarball_name, rpmbuild_dir):
         return True
         
     except subprocess.CalledProcessError as e:
-        print(f"❌ RPM build failed: {e}")
+        print(f"[ERROR] RPM build failed: {e}")
         if e.stdout:
             print("STDOUT:", e.stdout)
         if e.stderr:
@@ -157,7 +156,7 @@ def build_rpm_package(tarball_name, rpmbuild_dir):
 
 def create_installation_instructions():
     """Create installation instructions for the RPM"""
-    print("\n📝 Creating installation instructions...")
+    print("\n[NOTE] Creating installation instructions...")
     
     instructions = """# Storymaster RPM Installation
 
@@ -219,7 +218,7 @@ To backup, simply copy this file.
     with open("RPM_INSTALL.md", "w") as f:
         f.write(instructions)
     
-    print("✅ Installation instructions created: RPM_INSTALL.md")
+    print("[OK] Installation instructions created: RPM_INSTALL.md")
 
 
 def print_completion_info():
@@ -228,19 +227,19 @@ def print_completion_info():
     rpmbuild_dir = home_dir / "rpmbuild"
     
     print("\n" + "=" * 60)
-    print("🎉 RPM Build Complete!")
+    print("[SUCCESS] RPM Build Complete!")
     print("=" * 60)
     print()
-    print("📁 Package locations:")
+    print("[FILES] Package locations:")
     print(f"   • Binary RPMs: {rpmbuild_dir}/RPMS/noarch/")
     print(f"   • Source RPMs: {rpmbuild_dir}/SRPMS/")
     print()
-    print("🚀 To distribute:")
+    print("[DEPLOY] To distribute:")
     print("   1. Share the .noarch.rpm file")
     print("   2. Users install with: sudo dnf/zypper/rpm install <file>")
     print("   3. Application appears in system menus")
     print()
-    print("📋 Installation:")
+    print("[CHECK] Installation:")
     print("   • System-wide installation in /usr/share/storymaster/")
     print("   • Launcher script in /usr/bin/storymaster")
     print("   • Desktop entry for GUI integration")
@@ -254,7 +253,7 @@ def main():
     
     # Check if we're on a system that can build RPMs
     if not Path("/etc/redhat-release").exists() and not Path("/etc/fedora-release").exists():
-        print("⚠️  This doesn't appear to be a Red Hat-based system.")
+        print("[WARNING]  This doesn't appear to be a Red Hat-based system.")
         print("   RPM building is optimized for Fedora/RHEL/CentOS.")
         print("   You can still try, but may encounter issues.")
         print()
@@ -277,7 +276,7 @@ def main():
     
     # Cleanup
     Path(tarball).unlink()
-    print(f"\n🧹 Cleaned up temporary files")
+    print(f"\n[CLEAN] Cleaned up temporary files")
     
     return True
 
@@ -289,8 +288,8 @@ if __name__ == "__main__":
         else:
             sys.exit(1)
     except KeyboardInterrupt:
-        print("\n\n⚠️  Build cancelled by user.")
+        print("\n\n[WARNING]  Build cancelled by user.")
         sys.exit(1)
     except Exception as e:
-        print(f"\n❌ Unexpected error during build: {e}")
+        print(f"\n[ERROR] Unexpected error during build: {e}")
         sys.exit(1)

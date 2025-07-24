@@ -18,7 +18,7 @@ from pathlib import Path
 def print_header():
     """Print build header"""
     print("=" * 60)
-    print("📱 Storymaster AppImage Builder")
+    print("[MOBILE] Storymaster AppImage Builder")
     print("   Universal Linux binary creation")
     print("=" * 60)
     print()
@@ -26,15 +26,15 @@ def print_header():
 
 def download_appimage_tool():
     """Download appimagetool if not present"""
-    print("📋 Checking AppImage tools...")
+    print("[CHECK] Checking AppImage tools...")
     
     tool_path = Path("appimagetool-x86_64.AppImage")
     
     if tool_path.exists():
-        print("✅ appimagetool found")
+        print("[OK] appimagetool found")
         return str(tool_path)
     
-    print("⬇️  Downloading appimagetool...")
+    print("[DOWNLOAD]  Downloading appimagetool...")
     
     try:
         url = "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"
@@ -43,17 +43,17 @@ def download_appimage_tool():
         # Make executable
         os.chmod(tool_path, 0o755)
         
-        print("✅ appimagetool downloaded")
+        print("[OK] appimagetool downloaded")
         return str(tool_path)
         
     except Exception as e:
-        print(f"❌ Failed to download appimagetool: {e}")
+        print(f"[ERROR] Failed to download appimagetool: {e}")
         return None
 
 
 def create_appdir_structure():
     """Create AppDir structure for AppImage"""
-    print("\n🏗️  Creating AppDir structure...")
+    print("\n[BUILD]  Creating AppDir structure...")
     
     appdir = Path("Storymaster.AppDir")
     
@@ -72,13 +72,13 @@ def create_appdir_structure():
     for dir_path in dirs:
         (appdir / dir_path).mkdir(parents=True)
     
-    print("✅ AppDir structure created")
+    print("[OK] AppDir structure created")
     return appdir
 
 
 def install_python_app(appdir):
     """Install Python application and dependencies into AppDir"""
-    print("\n📦 Installing application into AppDir...")
+    print("\n[PACKAGE] Installing application into AppDir...")
     
     try:
         # Copy application files
@@ -86,8 +86,7 @@ def install_python_app(appdir):
             'storymaster/',
             'tests/',
             'init_database.py',
-            'seed.py',
-            '.env'
+            'seed.py'
         ]
         
         for file_path in app_files:
@@ -178,7 +177,7 @@ StartupNotify=true
         icon_content = '''<?xml version="1.0" encoding="UTF-8"?>
 <svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
   <rect width="64" height="64" fill="#2e2e2e" rx="8"/>
-  <text x="32" y="25" text-anchor="middle" fill="#dcdcdc" font-size="16" font-family="Arial">🏰</text>
+  <text x="32" y="25" text-anchor="middle" fill="#dcdcdc" font-size="16" font-family="Arial">[CASTLE]</text>
   <text x="32" y="45" text-anchor="middle" fill="#af80f8" font-size="8" font-family="Arial">STORY</text>
   <text x="32" y="55" text-anchor="middle" fill="#af80f8" font-size="8" font-family="Arial">MASTER</text>
 </svg>'''
@@ -203,17 +202,17 @@ exec "$APPDIR/usr/bin/storymaster" "$@"
         
         os.chmod(apprun_script, 0o755)
         
-        print("✅ Application installed into AppDir")
+        print("[OK] Application installed into AppDir")
         return True
         
     except Exception as e:
-        print(f"❌ Failed to install application: {e}")
+        print(f"[ERROR] Failed to install application: {e}")
         return False
 
 
 def build_appimage(appdir, appimagetool_path):
     """Build the AppImage using appimagetool"""
-    print("\n🔨 Building AppImage...")
+    print("\n[COMPILE] Building AppImage...")
     
     try:
         # Set environment variable to skip desktop integration
@@ -226,14 +225,14 @@ def build_appimage(appdir, appimagetool_path):
         result = subprocess.run(cmd, env=env, capture_output=True, text=True)
         
         if result.returncode == 0:
-            print("✅ AppImage built successfully!")
+            print("[OK] AppImage built successfully!")
             return "Storymaster-x86_64.AppImage"
         else:
-            print(f"❌ AppImage build failed: {result.stderr}")
+            print(f"[ERROR] AppImage build failed: {result.stderr}")
             return None
             
     except Exception as e:
-        print(f"❌ Failed to build AppImage: {e}")
+        print(f"[ERROR] Failed to build AppImage: {e}")
         return None
 
 
@@ -304,35 +303,35 @@ If the AppImage doesn't run:
 
 ## Benefits of AppImage
 
-- ✅ No installation required
-- ✅ Works on any Linux distribution
-- ✅ No root privileges needed
-- ✅ No dependency conflicts
-- ✅ Easy to distribute and update
-- ✅ Sandboxed execution
+- [OK] No installation required
+- [OK] Works on any Linux distribution
+- [OK] No root privileges needed
+- [OK] No dependency conflicts
+- [OK] Easy to distribute and update
+- [OK] Sandboxed execution
 """
     
     with open("APPIMAGE_USAGE.md", "w") as f:
         f.write(instructions)
     
-    print("✅ Usage instructions created: APPIMAGE_USAGE.md")
+    print("[OK] Usage instructions created: APPIMAGE_USAGE.md")
 
 
 def print_completion_info():
     """Print build completion information"""
     print("\n" + "=" * 60)
-    print("📱 AppImage Build Complete!")
+    print("[MOBILE] AppImage Build Complete!")
     print("=" * 60)
     print()
-    print("📁 File created:")
+    print("[FILES] File created:")
     print("   • Storymaster-x86_64.AppImage")
     print()
-    print("🚀 To distribute:")
+    print("[DEPLOY] To distribute:")
     print("   1. Share the .AppImage file")
     print("   2. Users make it executable and run")
     print("   3. No installation required!")
     print()
-    print("✨ AppImage benefits:")
+    print("[FEATURE] AppImage benefits:")
     print("   • Universal Linux compatibility")
     print("   • No root privileges required")
     print("   • Portable - runs from any location")
@@ -347,7 +346,7 @@ def main():
     
     # Check if we're on Linux
     if not sys.platform.startswith('linux'):
-        print("❌ AppImage building is only supported on Linux")
+        print("[ERROR] AppImage building is only supported on Linux")
         return False
     
     # Download appimagetool
@@ -372,7 +371,7 @@ def main():
     
     # Cleanup
     shutil.rmtree(appdir)
-    print(f"\n🧹 Cleaned up build directory")
+    print(f"\n[CLEAN] Cleaned up build directory")
     
     print_completion_info()
     return True
@@ -385,8 +384,8 @@ if __name__ == "__main__":
         else:
             sys.exit(1)
     except KeyboardInterrupt:
-        print("\n\n⚠️  Build cancelled by user.")
+        print("\n\n[WARNING]  Build cancelled by user.")
         sys.exit(1)
     except Exception as e:
-        print(f"\n❌ Unexpected error during build: {e}")
+        print(f"\n[ERROR] Unexpected error during build: {e}")
         sys.exit(1)

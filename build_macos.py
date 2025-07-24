@@ -23,7 +23,7 @@ from pathlib import Path
 def print_header():
     """Print build header"""
     print("=" * 60)
-    print("🍎 Storymaster macOS Builder")
+    print("[APPLE] Storymaster macOS Builder")
     print("   macOS app bundle and DMG creation")
     print("=" * 60)
     print()
@@ -31,12 +31,12 @@ def print_header():
 
 def check_cross_compilation_support():
     """Check if cross-compilation to macOS is possible"""
-    print("📋 Checking macOS build capabilities...")
+    print("[CHECK] Checking macOS build capabilities...")
     
     is_macos = platform.system() == "Darwin"
     
     if is_macos:
-        print("✅ Running on macOS - native build supported")
+        print("[OK] Running on macOS - native build supported")
         return "native"
     
     # Check for osxcross toolchain
@@ -51,17 +51,17 @@ def check_cross_compilation_support():
         if Path(path).exists():
             osxcross_found = True
             osxcross_root = path
-            print(f"✅ osxcross found at {path}")
+            print(f"[OK] osxcross found at {path}")
             break
     
     if not osxcross_found:
-        print("⚠️  osxcross not found - cross-compilation not available")
-        print("\n📖 To enable macOS cross-compilation from Linux:")
+        print("[WARNING]  osxcross not found - cross-compilation not available")
+        print("\n[DOC] To enable macOS cross-compilation from Linux:")
         print("   1. Install osxcross: https://github.com/tpoechtrager/osxcross")
         print("   2. Obtain macOS SDK (legally - from Xcode)")
         print("   3. Build osxcross toolchain")
         print("   4. Set environment variables")
-        print("\n💡 Alternative: Use GitHub Actions or macOS VM for building")
+        print("\n[INFO] Alternative: Use GitHub Actions or macOS VM for building")
         return None
     
     # Check for required environment variables
@@ -73,21 +73,21 @@ def check_cross_compilation_support():
             missing_env.append(var)
     
     if missing_env:
-        print(f"⚠️  Missing environment variables: {', '.join(missing_env)}")
-        print("\n🔧 Quick setup for osxcross:")
+        print(f"[WARNING]  Missing environment variables: {', '.join(missing_env)}")
+        print("\n[CONFIG] Quick setup for osxcross:")
         print(f"   export OSXCROSS_ROOT={osxcross_root}")
         print("   export OSXCROSS_HOST=x86_64-apple-darwin20")
         print(f"   export OSXCROSS_TARGET_DIR={osxcross_root}/target")
         print(f"   export PATH={osxcross_root}/target/bin:$PATH")
         return None
     
-    print("✅ Cross-compilation environment configured")
+    print("[OK] Cross-compilation environment configured")
     return "cross"
 
 
 def create_app_bundle_structure():
     """Create macOS .app bundle directory structure"""
-    print("\n🏗️  Creating macOS app bundle structure...")
+    print("\n[BUILD]  Creating macOS app bundle structure...")
     
     app_name = "Storymaster.app"
     app_bundle = Path(app_name)
@@ -108,13 +108,13 @@ def create_app_bundle_structure():
     for dir_path in bundle_dirs:
         (app_bundle / dir_path).mkdir(parents=True)
     
-    print("✅ App bundle structure created")
+    print("[OK] App bundle structure created")
     return app_bundle
 
 
 def create_info_plist(app_bundle):
     """Create Info.plist for the app bundle"""
-    print("📄 Creating Info.plist...")
+    print("[DOC] Creating Info.plist...")
     
     plist_content = '''<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -165,12 +165,12 @@ def create_info_plist(app_bundle):
     with open(app_bundle / "Contents/Info.plist", 'w') as f:
         f.write(plist_content)
     
-    print("✅ Info.plist created")
+    print("[OK] Info.plist created")
 
 
 def install_app_contents(app_bundle, build_mode):
     """Install application contents into the bundle"""
-    print("\n📦 Installing application contents...")
+    print("\n[PACKAGE] Installing application contents...")
     
     try:
         # Copy application files
@@ -180,10 +180,6 @@ def install_app_contents(app_bundle, build_mode):
             'init_database.py', 
             'seed.py'
         ]
-        
-        # Add .env if it exists
-        if Path('.env').exists():
-            app_files.append('.env')
         
         resources_dir = app_bundle / "Contents/Resources/storymaster"
         
@@ -213,10 +209,7 @@ RESOURCES_DIR="$BUNDLE_DIR/Resources/storymaster"
 # Set up environment
 export PYTHONPATH="$RESOURCES_DIR:$PYTHONPATH"
 
-# Load .env file if it exists
-if [ -f "$RESOURCES_DIR/.env" ]; then
-    export $(grep -v '^#' "$RESOURCES_DIR/.env" | xargs)
-fi
+# Note: Using hardcoded database defaults - no .env needed
 
 # Use system Python3 (bundled Python would go in Frameworks/)
 PYTHON_CMD="python3"
@@ -262,18 +255,18 @@ exec $PYTHON_CMD storymaster/main.py "$@"
         # Note: Icon creation would require iconutil (macOS) or external tools
         # For production builds, create a proper .icns file and place it in Resources/
         
-        print("✅ Application contents installed")
-        print("⚠️  Note: Icon creation requires iconutil (macOS) or external tools")
+        print("[OK] Application contents installed")
+        print("[WARNING]  Note: Icon creation requires iconutil (macOS) or external tools")
         return True
         
     except Exception as e:
-        print(f"❌ Failed to install app contents: {e}")
+        print(f"[ERROR] Failed to install app contents: {e}")
         return False
 
 
 def create_with_pyinstaller(build_mode):
     """Create macOS app using PyInstaller"""
-    print("\n🔨 Building with PyInstaller...")
+    print("\n[COMPILE] Building with PyInstaller...")
     
     try:
         # PyInstaller command for macOS
@@ -284,7 +277,6 @@ def create_with_pyinstaller(build_mode):
             "--windowed",  # No console window
             "--name", "storymaster",
             "--add-data", "tests/model/database/test_data:tests/model/database/test_data",
-            "--add-data", ".env:.",
             "--hidden-import", "PyQt6.QtCore",
             "--hidden-import", "PyQt6.QtGui", 
             "--hidden-import", "PyQt6.QtWidgets",
@@ -318,7 +310,7 @@ def create_with_pyinstaller(build_mode):
         result = subprocess.run(cmd, env=env, capture_output=True, text=True)
         
         if result.returncode == 0:
-            print("✅ PyInstaller build completed")
+            print("[OK] PyInstaller build completed")
             
             # PyInstaller creates dist/storymaster/ - convert to .app bundle
             dist_dir = Path("dist/storymaster")
@@ -326,26 +318,26 @@ def create_with_pyinstaller(build_mode):
                 # Create proper .app bundle from PyInstaller output
                 app_bundle = create_app_bundle_from_dist(dist_dir)
                 if app_bundle:
-                    print(f"✅ App bundle created: {app_bundle}")
+                    print(f"[OK] App bundle created: {app_bundle}")
                     return True
                 else:
-                    print("❌ Failed to create app bundle")
+                    print("[ERROR] Failed to create app bundle")
                     return False
             else:
-                print("❌ Build artifacts not found")
+                print("[ERROR] Build artifacts not found")
                 return False
         else:
-            print(f"❌ PyInstaller failed: {result.stderr}")
+            print(f"[ERROR] PyInstaller failed: {result.stderr}")
             return False
             
     except Exception as e:
-        print(f"❌ PyInstaller build failed: {e}")
+        print(f"[ERROR] PyInstaller build failed: {e}")
         return False
 
 
 def create_app_bundle_from_dist(dist_dir):
     """Convert PyInstaller dist directory to proper .app bundle"""
-    print("📦 Converting PyInstaller output to .app bundle...")
+    print("[PACKAGE] Converting PyInstaller output to .app bundle...")
     
     try:
         app_bundle = create_app_bundle_structure()
@@ -366,21 +358,21 @@ def create_app_bundle_from_dist(dist_dir):
         # Create Info.plist
         create_info_plist(app_bundle)
         
-        print("✅ App bundle conversion completed")
+        print("[OK] App bundle conversion completed")
         return app_bundle
         
     except Exception as e:
-        print(f"❌ Failed to convert to app bundle: {e}")
+        print(f"[ERROR] Failed to convert to app bundle: {e}")
         return None
 
 
 def create_dmg_installer(app_bundle):
     """Create a DMG installer (requires macOS or additional tools)"""
-    print("\n💿 Creating DMG installer...")
+    print("\n[DISK] Creating DMG installer...")
     
     if platform.system() != "Darwin":
-        print("⚠️  DMG creation requires macOS or cross-compilation tools")
-        print("💡 Alternatives for Linux:")
+        print("[WARNING]  DMG creation requires macOS or cross-compilation tools")
+        print("[INFO] Alternatives for Linux:")
         print("   • Use genisoimage to create ISO")
         print("   • Use dmg2img/dmg2iso tools")
         print("   • Package as tar.gz for macOS users")
@@ -391,10 +383,10 @@ def create_dmg_installer(app_bundle):
                 "tar", "czf", "Storymaster-macOS.tar.gz", 
                 str(app_bundle)
             ], check=True)
-            print("✅ Created Storymaster-macOS.tar.gz instead")
+            print("[OK] Created Storymaster-macOS.tar.gz instead")
             return True
         except subprocess.CalledProcessError:
-            print("❌ Failed to create archive")
+            print("[ERROR] Failed to create archive")
             return False
     
     # Native macOS DMG creation
@@ -407,11 +399,11 @@ def create_dmg_installer(app_bundle):
             "-volname", "Storymaster", dmg_name
         ], check=True)
         
-        print(f"✅ DMG created: {dmg_name}")
+        print(f"[OK] DMG created: {dmg_name}")
         return True
         
     except subprocess.CalledProcessError as e:
-        print(f"❌ DMG creation failed: {e}")
+        print(f"[ERROR] DMG creation failed: {e}")
         return False
 
 
@@ -466,7 +458,7 @@ xattr -cr /Applications/Storymaster.app
 
 ### Dependencies missing:
 ```bash
-pip3 install PyQt6 SQLAlchemy python-dotenv
+pip3 install PyQt6 SQLAlchemy
 ```
 
 ## Uninstalling
@@ -487,33 +479,33 @@ This creates a native .app bundle and .dmg installer.
     with open("MACOS_INSTALL.md", "w") as f:
         f.write(instructions)
     
-    print("✅ Installation instructions created: MACOS_INSTALL.md")
+    print("[OK] Installation instructions created: MACOS_INSTALL.md")
 
 
 def print_completion_info(build_mode):
     """Print build completion information"""
     print("\n" + "=" * 60)
-    print("🍎 macOS Build Complete!")
+    print("[APPLE] macOS Build Complete!")
     print("=" * 60)
     print()
     
     if build_mode == "native":
-        print("📁 Files created:")
+        print("[FILES] Files created:")
         print("   • Storymaster.app - macOS application bundle")
         print("   • Storymaster-macOS.dmg - Installer disk image")
     elif build_mode == "cross":
-        print("📁 Files created:")
+        print("[FILES] Files created:")
         print("   • Storymaster.app - macOS application bundle")
         print("   • Storymaster-macOS.tar.gz - Archive for distribution")
     
     print()
-    print("🚀 To distribute:")
+    print("[DEPLOY] To distribute:")
     print("   1. Test on actual macOS systems")
     print("   2. Consider code signing for easier installation")
     print("   3. Upload to distribution platform")
     
     print()
-    print("📋 macOS Distribution Notes:")
+    print("[CHECK] macOS Distribution Notes:")
     print("   • Code signing recommended for easier installation")
     print("   • Notarization required for macOS 10.15+")
     print("   • Users may need to right-click → Open first time")
@@ -535,45 +527,45 @@ def main():
     if not build_mode:
         if non_interactive:
             # In CI/CD, try the fallback test bundle
-            print("\n🧪 Non-interactive mode: Creating test app bundle...")
+            print("\n[TEST] Non-interactive mode: Creating test app bundle...")
             app_bundle = create_app_bundle_structure()
             create_info_plist(app_bundle)
             if install_app_contents(app_bundle, "test"):
                 create_dmg_installer(app_bundle)
                 create_installation_instructions()
-                print("\n✅ Test app bundle created (requires manual Python setup)")
+                print("\n[OK] Test app bundle created (requires manual Python setup)")
                 return True
             return False
         
-        print("\n💡 Alternatives for macOS distribution:")
+        print("\n[INFO] Alternatives for macOS distribution:")
         print("   • Use GitHub Actions with macOS runner")
         print("   • Use macOS virtual machine")
         print("   • Ask macOS users to build from source")
         print("   • Use cloud build services")
         
         # Offer fallback for testing/development
-        print("\n🔧 Development options:")
+        print("\n[CONFIG] Development options:")
         print("   1. Test app bundle creation (without PyInstaller)")
         print("   2. Exit")
         
         try:
             choice = input("Select option (1 or 2): ").strip()
             if choice == "1":
-                print("\n🧪 Testing app bundle creation...")
+                print("\n[TEST] Testing app bundle creation...")
                 app_bundle = create_app_bundle_structure()
                 create_info_plist(app_bundle)
                 if install_app_contents(app_bundle, "test"):
                     create_dmg_installer(app_bundle)
                     create_installation_instructions()
-                    print("\n✅ Test app bundle created (requires manual Python setup)")
+                    print("\n[OK] Test app bundle created (requires manual Python setup)")
                     return True
         except KeyboardInterrupt:
-            print("\n❌ Build cancelled")
+            print("\n[ERROR] Build cancelled")
         
         return False
     
     # Choose build method
-    print(f"\n🔧 Build mode: {build_mode}")
+    print(f"\n[CONFIG] Build mode: {build_mode}")
     
     if non_interactive:
         # In CI/CD, use PyInstaller by default
@@ -587,7 +579,7 @@ def main():
         try:
             choice = input("Select method (1 or 2): ").strip()
         except KeyboardInterrupt:
-            print("\n❌ Build cancelled")
+            print("\n[ERROR] Build cancelled")
             return False
     
     success = False
@@ -600,7 +592,7 @@ def main():
         if install_app_contents(app_bundle, build_mode):
             success = create_dmg_installer(app_bundle)
     else:
-        print("❌ Invalid choice")
+        print("[ERROR] Invalid choice")
         return False
     
     if success:
@@ -617,8 +609,8 @@ if __name__ == "__main__":
         else:
             sys.exit(1)
     except KeyboardInterrupt:
-        print("\n\n⚠️  Build cancelled by user.")
+        print("\n\n[WARNING]  Build cancelled by user.")
         sys.exit(1)
     except Exception as e:
-        print(f"\n❌ Unexpected error during build: {e}")
+        print(f"\n[ERROR] Unexpected error during build: {e}")
         sys.exit(1)
