@@ -10,3 +10,6 @@ test.py
 .coverage
 .venv
 CLAUDE.md
+*.appimage
+*.AppImage
+*APPIMAGE_USAGE.md

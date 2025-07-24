@@ -28,7 +28,7 @@ def download_appimage_tool():
     """Download appimagetool if not present"""
     print("📋 Checking AppImage tools...")
     
-    tool_path = Path("appimagetool-x86_64.AppImage")
+    tool_path = Path("./appimagetool-x86_64.appimage").resolve()
     
     if tool_path.exists():
         print("✅ appimagetool found")
