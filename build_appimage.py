@@ -37,7 +37,7 @@ def download_appimage_tool():
     print("⬇️  Downloading appimagetool...")
     
     try:
-        url = "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
+        url = "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"
         urllib.request.urlretrieve(url, tool_path)
         
         # Make executable

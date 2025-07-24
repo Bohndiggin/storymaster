@@ -178,9 +178,12 @@ def install_app_contents(app_bundle, build_mode):
             'storymaster/',
             'tests/',
             'init_database.py', 
-            'seed.py',
-            '.env'
+            'seed.py'
         ]
+        
+        # Add .env if it exists
+        if Path('.env').exists():
+            app_files.append('.env')
         
         resources_dir = app_bundle / "Contents/Resources/storymaster"
         
@@ -189,10 +192,14 @@ def install_app_contents(app_bundle, build_mode):
             if src.exists():
                 dst = resources_dir / src.name
                 if src.is_dir():
+                    if dst.exists():
+                        shutil.rmtree(dst)
                     shutil.copytree(src, dst)
                 else:
                     shutil.copy2(src, dst)
                 print(f"   Copied {file_path}")
+            else:
+                print(f"   Skipped {file_path} (not found)")
         
         # Create launcher script
         launcher_script = app_bundle / "Contents/MacOS/storymaster"
@@ -205,6 +212,11 @@ RESOURCES_DIR="$BUNDLE_DIR/Resources/storymaster"
 
 # Set up environment
 export PYTHONPATH="$RESOURCES_DIR:$PYTHONPATH"
+
+# Load .env file if it exists
+if [ -f "$RESOURCES_DIR/.env" ]; then
+    export $(grep -v '^#' "$RESOURCES_DIR/.env" | xargs)
+fi
 
 # Use system Python3 (bundled Python would go in Frameworks/)
 PYTHON_CMD="python3"
@@ -247,12 +259,8 @@ exec $PYTHON_CMD storymaster/main.py "$@"
         
         os.chmod(launcher_script, 0o755)
         
-        # Create a simple icon (convert to .icns would require additional tools)
-        icon_script = '''#!/usr/bin/env python3
-# Simple icon creation - in production, use iconutil or similar
-import os
-print("Icon creation would require iconutil or external tools")
-'''
+        # Note: Icon creation would require iconutil (macOS) or external tools
+        # For production builds, create a proper .icns file and place it in Resources/
         
         print("✅ Application contents installed")
         print("⚠️  Note: Icon creation requires iconutil (macOS) or external tools")
@@ -287,6 +295,7 @@ def create_with_pyinstaller(build_mode):
         if build_mode == "cross":
             cmd.extend([
                 "--target-arch", "x86_64",
+                "--osx-bundle-identifier", "com.storymaster.app",
                 # Note: This requires PyInstaller 5.0+ and proper osxcross setup
             ])
         
@@ -297,9 +306,13 @@ def create_with_pyinstaller(build_mode):
         # Set environment for cross-compilation
         env = os.environ.copy()
         if build_mode == "cross":
+            # Use environment variables from osxcross setup
+            osxcross_host = env.get("OSXCROSS_HOST", "x86_64-apple-darwin20")
             env.update({
-                "CC": "x86_64-apple-darwin20-clang",
-                "CXX": "x86_64-apple-darwin20-clang++",
+                "CC": f"{osxcross_host}-clang",
+                "CXX": f"{osxcross_host}-clang++",
+                "AR": f"{osxcross_host}-ar",
+                "RANLIB": f"{osxcross_host}-ranlib",
             })
         
         result = subprocess.run(cmd, env=env, capture_output=True, text=True)
@@ -307,12 +320,17 @@ def create_with_pyinstaller(build_mode):
         if result.returncode == 0:
             print("✅ PyInstaller build completed")
             
-            # PyInstaller creates dist/storymaster/ - we need to package this as .app
+            # PyInstaller creates dist/storymaster/ - convert to .app bundle
             dist_dir = Path("dist/storymaster")
             if dist_dir.exists():
-                # Move to proper .app structure would go here
-                print("✅ Build artifacts created in dist/storymaster/")
-                return True
+                # Create proper .app bundle from PyInstaller output
+                app_bundle = create_app_bundle_from_dist(dist_dir)
+                if app_bundle:
+                    print(f"✅ App bundle created: {app_bundle}")
+                    return True
+                else:
+                    print("❌ Failed to create app bundle")
+                    return False
             else:
                 print("❌ Build artifacts not found")
                 return False
@@ -323,6 +341,37 @@ def create_with_pyinstaller(build_mode):
     except Exception as e:
         print(f"❌ PyInstaller build failed: {e}")
         return False
+
+
+def create_app_bundle_from_dist(dist_dir):
+    """Convert PyInstaller dist directory to proper .app bundle"""
+    print("📦 Converting PyInstaller output to .app bundle...")
+    
+    try:
+        app_bundle = create_app_bundle_structure()
+        
+        # Copy PyInstaller contents to MacOS directory
+        macos_dir = app_bundle / "Contents/MacOS"
+        for item in dist_dir.iterdir():
+            if item.is_dir():
+                shutil.copytree(item, macos_dir / item.name)
+            else:
+                shutil.copy2(item, macos_dir / item.name)
+        
+        # Make the main executable actually executable
+        main_exec = macos_dir / "storymaster"
+        if main_exec.exists():
+            os.chmod(main_exec, 0o755)
+        
+        # Create Info.plist
+        create_info_plist(app_bundle)
+        
+        print("✅ App bundle conversion completed")
+        return app_bundle
+        
+    except Exception as e:
+        print(f"❌ Failed to convert to app bundle: {e}")
+        return None
 
 
 def create_dmg_installer(app_bundle):
@@ -484,6 +533,26 @@ def main():
         print("   • Use macOS virtual machine")
         print("   • Ask macOS users to build from source")
         print("   • Use cloud build services")
+        
+        # Offer fallback for testing/development
+        print("\n🔧 Development options:")
+        print("   1. Test app bundle creation (without PyInstaller)")
+        print("   2. Exit")
+        
+        try:
+            choice = input("Select option (1 or 2): ").strip()
+            if choice == "1":
+                print("\n🧪 Testing app bundle creation...")
+                app_bundle = create_app_bundle_structure()
+                create_info_plist(app_bundle)
+                if install_app_contents(app_bundle, "test"):
+                    create_dmg_installer(app_bundle)
+                    create_installation_instructions()
+                    print("\n✅ Test app bundle created (requires manual Python setup)")
+                    return True
+        except KeyboardInterrupt:
+            print("\n❌ Build cancelled")
+        
         return False
     
     # Choose build method

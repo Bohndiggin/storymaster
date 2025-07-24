@@ -63,6 +63,7 @@ def clean_previous_builds():
             shutil.rmtree(pycache_dir)
     
     print("✅ Build cleanup complete")
+    return True
 
 
 def build_executable():
@@ -206,7 +207,7 @@ def print_completion_info():
     print("=" * 60)
     print()
     print("📁 Files created:")
-    print(f"   • Executable: dist/storymaster/storymaster{''.exe' if system == 'Windows' else ''}")
+    print(f"   • Executable: dist/storymaster/storymaster{'.exe' if system == 'Windows' else ''}")
     print(f"   • Archive: storymaster-{system.lower()}-{arch.lower()}.{'zip' if system == 'Windows' else 'tar.gz'}")
     print()
     print("🚀 To distribute:")

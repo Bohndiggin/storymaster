@@ -11,3 +11,8 @@ test.py
 .venv
 CLAUDE.md
 *.db
+MACOS_INSTALL.md
+*.tar.gz
+Storymaster.app/*
+build
+dist

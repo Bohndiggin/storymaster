@@ -4,19 +4,29 @@ import os
 from pathlib import Path
 
 # Get the absolute path to the project directory
-project_dir = Path(__file__).parent.absolute()
+project_dir = Path(os.getcwd())
 
 # Define data files to include
-datas = [
-    # Include test data CSVs for seeding
-    (str(project_dir / 'tests' / 'model' / 'database' / 'test_data'), 'tests/model/database/test_data'),
-    # Include .env file
-    (str(project_dir / '.env'), '.'),
-    # Include UI files
-    (str(project_dir / 'storymaster' / 'view' / 'common' / '*.ui'), 'storymaster/view/common'),
-    (str(project_dir / 'storymaster' / 'view' / 'litographer' / '*.ui'), 'storymaster/view/litographer'),
-    (str(project_dir / 'storymaster' / 'view' / 'lorekeeper' / '*.ui'), 'storymaster/view/lorekeeper'),
-]
+import glob
+
+datas = []
+
+# Include test data CSVs for seeding
+test_data_path = project_dir / 'tests' / 'model' / 'database' / 'test_data'
+if test_data_path.exists():
+    datas.append((str(test_data_path), 'tests/model/database/test_data'))
+
+# Include .env file if it exists
+env_file = project_dir / '.env'
+if env_file.exists():
+    datas.append((str(env_file), '.'))
+
+# Include UI files using glob
+for ui_dir in ['common', 'litographer', 'lorekeeper']:
+    ui_pattern = str(project_dir / 'storymaster' / 'view' / ui_dir / '*.ui')
+    ui_files = glob.glob(ui_pattern)
+    for ui_file in ui_files:
+        datas.append((ui_file, f'storymaster/view/{ui_dir}'))
 
 # Hidden imports needed for PyQt6 and SQLAlchemy
 hiddenimports = [
