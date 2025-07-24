@@ -1,82 +1,108 @@
-# Storymaster
+# 🏰 Storymaster
 
-A comprehensive creative writing tool that combines visual story plotting with detailed world-building capabilities.
+**Visual Story Plotting & World-Building Tool**
 
-## Overview
+Storymaster is a PyQt6-based creative writing application that combines visual story structure planning with comprehensive world-building capabilities.
 
-Storymaster is a PyQt6-based desktop application designed for writers who want to plan and organize complex stories. It provides two integrated modules:
+## 🚀 Quick Install
 
-- **Litographer**: Visual story structure planning using an interactive node-based graph
-- **Lorekeeper**: Comprehensive world-building database for managing characters, locations, factions, and their relationships
+**Prerequisites:**
+- Python 3.8 or higher
+- Works on Windows, macOS, and Linux
 
-## Features
-
-### Litographer (Story Plotting)
-- **Visual Story Structure**: Create story beats as connected nodes in a visual graph
-- **Node Types**: Different shapes represent story elements (Exposition, Action, Reaction, Twist, Development)
-- **Plot Sections**: Organize your story into sections with different tension types
-- **Linked Navigation**: Nodes connect in sequence, showing story flow
-- **Interactive Editing**: Click nodes to edit properties, add/delete with visual buttons
-
-### Lorekeeper (World Building)
-- **Character Management**: Detailed actor profiles with relationships and faction memberships
-- **Location Tracking**: Hierarchical location system (cities, districts, dungeons)
-- **Faction Systems**: Complex organization relationships and politics
-- **Historical Events**: Timeline management with multi-entity involvement
-- **Object Cataloging**: Items, artifacts, and world elements
-- **Dynamic Forms**: Database-driven interface adapts to your data structure
-
-## Requirements
-
-- Python 3.8+
-- PostgreSQL database
-- PyQt6
-
-## Installation
-
-1. Clone the repository:
+**One-command installation:**
 ```bash
-git clone <repository-url>
-cd writing-tools
+python install.py
 ```
 
-2. Install dependencies:
+The installer will:
+- ✅ Create a virtual environment
+- ✅ Install all dependencies  
+- ✅ Initialize SQLite database
+- ✅ Optionally seed with sample data
+
+## 🎯 Features
+
+### 📖 Litographer - Visual Story Plotting
+- **Node-based story structure** with linked-list navigation
+- **Multiple plot support** - create and switch between different storylines
+- **Plot sections** with tension types (Rising, Flat, Point, Lower)
+- **Custom node shapes** (rectangle, circle, diamond, star, hexagon, triangle)
+- **Visual connections** showing story flow
+- **Integrated notes** for each story beat
+
+### 🗂️ Lorekeeper - World Building Database
+- **Character management** - actors, backgrounds, classes, races
+- **Faction system** with complex relationships
+- **Location tracking** with detailed descriptions
+- **Historical events** with multi-entity involvement
+- **Object catalog** for items and artifacts
+- **Dynamic forms** with foreign key relationships
+
+### 🔧 Technical Features
+- **SQLite database** - fully offline, portable
+- **Project isolation** - multiple stories in one database
+- **Dark theme** UI inspired by professional tools
+- **Cross-platform** compatibility
+
+## 🏃‍♂️ Running Storymaster
+
+After installation:
+
 ```bash
-pip install -r requirements.txt
-```
+# Activate virtual environment
+source .venv/bin/activate    # Linux/Mac
+# or
+.venv\Scripts\activate      # Windows
 
-3. Set up environment variables:
-Create a `.env` file with your database connections:
-```
-DATABASE_CONNECTION="postgresql://username:password@host:port/database_name"
-TEST_DATABASE_CONNECTION="postgresql://username:password@host:port/test_database_name"
-```
-
-4. Initialize the database:
-```bash
-python seed.py
-```
-
-## Usage
-
-Run the application:
-```bash
+# Run the application
 python storymaster/main.py
 ```
 
-### Getting Started
+## 📁 Project Structure
 
-1. **Litographer Mode**: Start by creating your first story node using the "+" button
-2. **Plot Sections**: Organize your story into sections (Beginning, Middle, End, etc.)
-3. **Node Connections**: Link story beats in sequence to show narrative flow
-4. **Lorekeeper Mode**: Switch to build your world's characters, locations, and factions
-5. **Cross-References**: Use the relationship system to connect world elements
+```
+storymaster/
+├── storymaster/           # Main application code
+│   ├── model/            # Database models and business logic
+│   ├── view/             # PyQt6 UI components
+│   └── controller/       # Event handling and coordination
+├── tests/                # Test suite with sample data
+├── install.py           # One-click installer
+├── init_database.py     # Database initialization
+├── seed.py             # Sample data loading
+└── requirements.txt    # Python dependencies
+```
 
-## Development
+## 🛠️ Development
 
-### Running Tests
+### Manual Setup
+If you prefer to set up manually:
+
 ```bash
-pytest
+# Create virtual environment
+python -m venv .venv
+
+# Activate it
+source .venv/bin/activate  # Linux/Mac
+.venv\Scripts\activate     # Windows
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Initialize database
+python init_database.py
+
+# Seed with sample data (optional)
+python seed.py
+
+# Run application
+python storymaster/main.py
+```
+
+### Testing
+```bash
+pytest tests/
 ```
 
 ### Code Formatting
@@ -85,24 +111,38 @@ black .
 isort .
 ```
 
-### Database Management
-The application uses SQLAlchemy with PostgreSQL. Test data can be seeded using the provided CSV files in `tests/model/database/test_data/`.
+## 🎨 Plot Management
 
-## Architecture
+Use the **Plot** menu to:
+- **New Plot** - Create additional storylines
+- **Switch Plot** - Move between different plots
+- **Delete Plot** - Remove unused plots
+- **Open Project** - Switch between different story projects
 
-- **MVC Pattern**: Clean separation of Model (SQLAlchemy), View (PyQt6), and Controller layers
-- **Modular Design**: Separate modules for plotting (Litographer) and world-building (Lorekeeper)
-- **Database-Driven**: Comprehensive schema supporting complex relationships and story structures
+## 🗄️ Database
 
-## Contributing
+- **SQLite** - Single file database (`storymaster.db`)
+- **Portable** - Copy the .db file to backup/share your work
+- **Offline** - No internet connection required
+- **Sample data** - Includes example characters, locations, and story nodes
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Ensure code formatting with Black
-6. Submit a pull request
+## 🆘 Troubleshooting
 
-## License
+**Common Issues:**
 
-[Add your license information here]
+1. **"ModuleNotFoundError"** - Make sure virtual environment is activated
+2. **"Database connection failed"** - Run `python init_database.py`
+3. **"PyQt6 not found"** - Install with `pip install PyQt6`
+
+**Getting Help:**
+- Check the documentation
+- Create an issue on GitHub
+- Review the sample data to understand the data model
+
+## 📄 License
+
+This project is open source. See LICENSE file for details.
+
+---
+
+**Happy storytelling! 📚✨**

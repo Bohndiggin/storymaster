@@ -2,7 +2,7 @@
 
 import enum
 
-from sqlalchemy import Column, Enum, Float, ForeignKey, Identity, Integer, String, Text
+from sqlalchemy import Column, Enum, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -24,7 +24,7 @@ class User(BaseTable):
     __tablename__ = "user"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True, name="id"
+        Integer, primary_key=True, autoincrement=True, name="id"
     )
     username: Mapped[str] = mapped_column(String(150), nullable=False, name="username")
 
@@ -40,7 +40,7 @@ class Project(BaseTable):
     __tablename__ = "project"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True, name="id"
+        Integer, primary_key=True, autoincrement=True, name="id"
     )
     name: Mapped[str | None] = mapped_column(String(120), nullable=True, name="name")
     description: Mapped[str | None] = mapped_column(
@@ -74,7 +74,7 @@ class LorekeeperGroup(BaseTable):
     __tablename__ = "lorekeeper_group"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True, name="id"
+        Integer, primary_key=True, autoincrement=True, name="id"
     )
     name: Mapped[str | None] = mapped_column(String(120), nullable=True, name="name")
     description: Mapped[str | None] = mapped_column(
@@ -147,7 +147,7 @@ class ProjectToGroup(BaseTable):
     __tablename__ = "project_to_group"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True, name="id"
+        Integer, primary_key=True, autoincrement=True, name="id"
     )
     project_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("project.id"), nullable=False, name="project_id"
@@ -191,7 +191,7 @@ class LitographyNode(BaseTable):
     __tablename__ = "litography_node"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True, name="id"
+        Integer, primary_key=True, autoincrement=True, name="id"
     )
     node_type: Mapped[NodeType] = mapped_column(
         Enum(NodeType, values_callable=lambda obj: [e.value for e in obj]),
@@ -225,7 +225,7 @@ class LitographyNotes(BaseTable):
     __tablename__ = "litography_notes"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True, name="id"
+        Integer, primary_key=True, autoincrement=True, name="id"
     )
     title: Mapped[str] = mapped_column(String(250), nullable=False, name="title")
     description: Mapped[str | None] = mapped_column(
@@ -278,7 +278,7 @@ class LitographyPlot(BaseTable):
     __tablename__ = "litography_plot"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True, name="id"
+        Integer, primary_key=True, autoincrement=True, name="id"
     )
     title: Mapped[str] = mapped_column(String(250), nullable=False, name="title")
     description: Mapped[str | None] = mapped_column(
@@ -300,7 +300,7 @@ class LitographyPlotSection(BaseTable):
     __tablename__ = "litography_plot_section"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True, name="id"
+        Integer, primary_key=True, autoincrement=True, name="id"
     )
     plot_section_type: Mapped[PlotSectionType] = mapped_column(
         Enum(PlotSectionType, values_callable=lambda obj: [e.value for e in obj]),
@@ -325,7 +325,7 @@ class LitographyNodeToPlotSection(BaseTable):
     __tablename__ = "litography_node_to_plot_section"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True, name="id"
+        Integer, primary_key=True, autoincrement=True, name="id"
     )
     node_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("litography_node.id"), name="node_id"
@@ -346,7 +346,7 @@ class LitographyArc(BaseTable):
     __tablename__ = "litography_arc"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True, name="id"
+        Integer, primary_key=True, autoincrement=True, name="id"
     )
     project_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("project.id"), nullable=False, name="project_id"
@@ -361,7 +361,7 @@ class Class_(BaseTable):
     __tablename__ = "class"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True, name="id"
+        Integer, primary_key=True, autoincrement=True, name="id"
     )
     class_name: Mapped[str | None] = mapped_column(String(255), name="class_name")
     class_description: Mapped[str | None] = mapped_column(
@@ -382,7 +382,7 @@ class Background(BaseTable):
     __tablename__ = "background"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True
+        Integer, primary_key=True, autoincrement=True
     )
     background_name: Mapped[str | None] = mapped_column(String(255))
     background_description: Mapped[str | None] = mapped_column(Text)
@@ -401,7 +401,7 @@ class Race(BaseTable):
     __tablename__ = "race"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True
+        Integer, primary_key=True, autoincrement=True
     )
     race_name: Mapped[str | None] = mapped_column(String(255))
     race_description: Mapped[str | None] = mapped_column(Text)
@@ -419,7 +419,7 @@ class SubRace(BaseTable):
     __tablename__ = "sub_race"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True
+        Integer, primary_key=True, autoincrement=True
     )
     parent_race_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("race.id"))
     sub_race_name: Mapped[str | None] = mapped_column(String(255))
@@ -440,7 +440,7 @@ class Actor(BaseTable):
     __tablename__ = "actor"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), primary_key=True, nullable=False, name="id"
+        Integer, primary_key=True, autoincrement=True, name="id"
     )
     first_name: Mapped[str | None] = mapped_column(
         Text, nullable=True, name="first_name"
@@ -534,7 +534,7 @@ class ActorAOnBRelations(BaseTable):
     __tablename__ = "actor_a_on_b_relations"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True
+        Integer, primary_key=True, autoincrement=True
     )
     actor_a_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
     actor_b_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
@@ -558,7 +558,7 @@ class Skills(BaseTable):
     __tablename__ = "skills"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True
+        Integer, primary_key=True, autoincrement=True
     )
     skill_name: Mapped[str | None] = mapped_column(String(255))
     skill_description: Mapped[str | None] = mapped_column(Text)
@@ -578,7 +578,7 @@ class ActorToSkills(BaseTable):
     __tablename__ = "actor_to_skills"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True
+        Integer, primary_key=True, autoincrement=True
     )
     actor_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
     skill_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("skills.id"))
@@ -596,7 +596,7 @@ class Faction(BaseTable):
     __tablename__ = "faction"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True
+        Integer, primary_key=True, autoincrement=True
     )
     faction_name: Mapped[str | None] = mapped_column(String(255))
     faction_description: Mapped[str | None] = mapped_column(Text)
@@ -629,7 +629,7 @@ class FactionAOnBRelations(BaseTable):
     __tablename__ = "faction_a_on_b_relations"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True
+        Integer, primary_key=True, autoincrement=True
     )
     faction_a_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("faction.id"))
     faction_b_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("faction.id"))
@@ -654,7 +654,7 @@ class FactionMembers(BaseTable):
     __tablename__ = "faction_members"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True
+        Integer, primary_key=True, autoincrement=True
     )
     actor_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
     faction_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("faction.id"))
@@ -673,7 +673,7 @@ class Location(BaseTable):
     __tablename__ = "location_"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True
+        Integer, primary_key=True, autoincrement=True
     )
     location_name: Mapped[str | None] = mapped_column(String(255))
     location_type: Mapped[str | None] = mapped_column(String(255))
@@ -714,7 +714,7 @@ class LocationToFaction(BaseTable):
     __tablename__ = "location_to_faction"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True
+        Integer, primary_key=True, autoincrement=True
     )
     location_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
     faction_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("faction.id"))
@@ -736,7 +736,7 @@ class LocationDungeon(BaseTable):
     __tablename__ = "location_dungeon"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True
+        Integer, primary_key=True, autoincrement=True
     )
     location_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
     dangers: Mapped[str | None] = mapped_column(Text)
@@ -754,7 +754,7 @@ class LocationCity(BaseTable):
     __tablename__ = "location_city"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True
+        Integer, primary_key=True, autoincrement=True
     )
     location_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
     government: Mapped[str | None] = mapped_column(Text)
@@ -770,7 +770,7 @@ class LocationCityDistricts(BaseTable):
     __tablename__ = "location_city_districts"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True
+        Integer, primary_key=True, autoincrement=True
     )
     location_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
     district_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
@@ -793,7 +793,7 @@ class Resident(BaseTable):
     __tablename__ = "residents"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True
+        Integer, primary_key=True, autoincrement=True
     )
     actor_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
     location_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
@@ -810,7 +810,7 @@ class LocationFloraFauna(BaseTable):
     __tablename__ = "location_flora_fauna"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True
+        Integer, primary_key=True, autoincrement=True
     )
     location_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
     living_name: Mapped[str | None] = mapped_column(String(255))
@@ -830,7 +830,7 @@ class History(BaseTable):
     __tablename__ = "history"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True
+        Integer, primary_key=True, autoincrement=True
     )
     event_name: Mapped[str | None] = mapped_column(String(255))
     event_year: Mapped[int | None] = mapped_column(Integer)
@@ -856,7 +856,7 @@ class HistoryActor(BaseTable):
     __tablename__ = "history_actor"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True
+        Integer, primary_key=True, autoincrement=True
     )
     history_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("history.id"))
     actor_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
@@ -873,7 +873,7 @@ class HistoryLocation(BaseTable):
     __tablename__ = "history_location"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True
+        Integer, primary_key=True, autoincrement=True
     )
     history_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("history.id"))
     location_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
@@ -890,7 +890,7 @@ class HistoryFaction(BaseTable):
     __tablename__ = "history_faction"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True
+        Integer, primary_key=True, autoincrement=True
     )
     history_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("history.id"))
     faction_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("faction.id"))
@@ -907,7 +907,7 @@ class Object_(BaseTable):
     __tablename__ = "object_"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True
+        Integer, primary_key=True, autoincrement=True
     )
     object_name: Mapped[str | None] = mapped_column(String(255))
     object_description: Mapped[str | None] = mapped_column(Text)
@@ -929,7 +929,7 @@ class HistoryObject(BaseTable):
     __tablename__ = "history_object"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True
+        Integer, primary_key=True, autoincrement=True
     )
     history_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("history.id"))
     object_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("object_.id"))
@@ -946,7 +946,7 @@ class ObjectToOwner(BaseTable):
     __tablename__ = "object_to_owner"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True
+        Integer, primary_key=True, autoincrement=True
     )
     object_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("object_.id"))
     actor_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
@@ -963,7 +963,7 @@ class WorldData(BaseTable):
     __tablename__ = "world_data"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True
+        Integer, primary_key=True, autoincrement=True
     )
     data_name: Mapped[str | None] = mapped_column(String(255))
     data_description: Mapped[str | None] = mapped_column(Text)
@@ -984,7 +984,7 @@ class HistoryWorldData(BaseTable):
     __tablename__ = "history_world_data"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True
+        Integer, primary_key=True, autoincrement=True
     )
     history_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("history.id"))
     world_data_id: Mapped[int | None] = mapped_column(
@@ -1214,7 +1214,7 @@ class ArcToNode(BaseTable):
     __tablename__ = "arc_to_node"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True, name="id"
+        Integer, primary_key=True, autoincrement=True, name="id"
     )
     node_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("litography_node.id"), name="node_id"
@@ -1233,7 +1233,7 @@ class ArcToActor(BaseTable):
     __tablename__ = "arc_to_actor"
 
     id: Mapped[int] = mapped_column(
-        Integer, Identity(), nullable=False, primary_key=True, name="id"
+        Integer, primary_key=True, autoincrement=True, name="id"
     )
     actor_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("actor.id"), nullable=False, name="actor_id"
