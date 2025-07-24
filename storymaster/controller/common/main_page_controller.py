@@ -43,12 +43,34 @@ from sqlalchemy.orm import Session
 
 from storymaster.model.common.common_model import BaseModel
 from storymaster.model.database.schema.base import (
+    Actor,
+    Background,
+    Class_,
+    Faction,
+    History,
     LitographyNode,
     LitographyNodeToPlotSection,
     LitographyNotes,
+    LitographyNoteToActor,
+    LitographyNoteToBackground,
+    LitographyNoteToClass,
+    LitographyNoteToFaction,
+    LitographyNoteToHistory,
+    LitographyNoteToLocation,
+    LitographyNoteToObject,
+    LitographyNoteToRace,
+    LitographyNoteToSkills,
+    LitographyNoteToSubRace,
+    LitographyNoteToWorldData,
     LitographyPlotSection,
+    Location,
     NodeType,
+    Object_,
     PlotSectionType,
+    Race,
+    Skills,
+    SubRace,
+    WorldData,
 )
 from storymaster.view.common.common_view import MainView
 from storymaster.view.common.open_project_dialog import OpenProjectDialog
@@ -1345,6 +1367,242 @@ class MainWindowController:
             except Exception as e:
                 self.view.ui.statusbar.showMessage(f"Error deleting note: {e}", 5000)
 
+    # Lore entity methods for note associations
+    def get_lore_entities_for_group(self, group_id):
+        """Get all lore entities for a given group"""
+        try:
+            with Session(self.model.engine) as session:
+                actors = session.query(Actor).filter_by(group_id=group_id).all()
+                backgrounds = (
+                    session.query(Background).filter_by(group_id=group_id).all()
+                )
+                classes = session.query(Class_).filter_by(group_id=group_id).all()
+                factions = session.query(Faction).filter_by(group_id=group_id).all()
+                histories = session.query(History).filter_by(group_id=group_id).all()
+                locations = session.query(Location).filter_by(group_id=group_id).all()
+                objects = session.query(Object_).filter_by(group_id=group_id).all()
+                races = session.query(Race).filter_by(group_id=group_id).all()
+                skills = session.query(Skills).filter_by(group_id=group_id).all()
+                sub_races = session.query(SubRace).filter_by(group_id=group_id).all()
+                world_data = session.query(WorldData).filter_by(group_id=group_id).all()
+
+                return {
+                    "actors": actors,
+                    "backgrounds": backgrounds,
+                    "classes": classes,
+                    "factions": factions,
+                    "histories": histories,
+                    "locations": locations,
+                    "objects": objects,
+                    "races": races,
+                    "skills": skills,
+                    "sub_races": sub_races,
+                    "world_data": world_data,
+                }
+        except Exception as e:
+            print(f"Error getting lore entities: {e}")
+            return {}
+
+    def get_note_associations(self, note_id):
+        """Get all lore entity associations for a note"""
+        associations = {}
+        try:
+            with Session(self.model.engine) as session:
+                associations["actors"] = (
+                    session.query(LitographyNoteToActor)
+                    .filter_by(note_id=note_id)
+                    .all()
+                )
+                associations["backgrounds"] = (
+                    session.query(LitographyNoteToBackground)
+                    .filter_by(note_id=note_id)
+                    .all()
+                )
+                associations["classes"] = (
+                    session.query(LitographyNoteToClass)
+                    .filter_by(note_id=note_id)
+                    .all()
+                )
+                associations["factions"] = (
+                    session.query(LitographyNoteToFaction)
+                    .filter_by(note_id=note_id)
+                    .all()
+                )
+                associations["histories"] = (
+                    session.query(LitographyNoteToHistory)
+                    .filter_by(note_id=note_id)
+                    .all()
+                )
+                associations["locations"] = (
+                    session.query(LitographyNoteToLocation)
+                    .filter_by(note_id=note_id)
+                    .all()
+                )
+                associations["objects"] = (
+                    session.query(LitographyNoteToObject)
+                    .filter_by(note_id=note_id)
+                    .all()
+                )
+                associations["races"] = (
+                    session.query(LitographyNoteToRace).filter_by(note_id=note_id).all()
+                )
+                associations["skills"] = (
+                    session.query(LitographyNoteToSkills)
+                    .filter_by(note_id=note_id)
+                    .all()
+                )
+                associations["sub_races"] = (
+                    session.query(LitographyNoteToSubRace)
+                    .filter_by(note_id=note_id)
+                    .all()
+                )
+                associations["world_data"] = (
+                    session.query(LitographyNoteToWorldData)
+                    .filter_by(note_id=note_id)
+                    .all()
+                )
+        except Exception as e:
+            print(f"Error getting note associations: {e}")
+        return associations
+
+    def create_note_association(self, note_id, entity_type, entity_id):
+        """Create an association between a note and a lore entity"""
+        try:
+            with Session(self.model.engine) as session:
+                association = None
+                if entity_type == "actor":
+                    association = LitographyNoteToActor(
+                        note_id=note_id, actor_id=entity_id
+                    )
+                elif entity_type == "background":
+                    association = LitographyNoteToBackground(
+                        note_id=note_id, background_id=entity_id
+                    )
+                elif entity_type == "class":
+                    association = LitographyNoteToClass(
+                        note_id=note_id, class_id=entity_id
+                    )
+                elif entity_type == "faction":
+                    association = LitographyNoteToFaction(
+                        note_id=note_id, faction_id=entity_id
+                    )
+                elif entity_type == "history":
+                    association = LitographyNoteToHistory(
+                        note_id=note_id, history_id=entity_id
+                    )
+                elif entity_type == "location":
+                    association = LitographyNoteToLocation(
+                        note_id=note_id, location_id=entity_id
+                    )
+                elif entity_type == "object":
+                    association = LitographyNoteToObject(
+                        note_id=note_id, object_id=entity_id
+                    )
+                elif entity_type == "race":
+                    association = LitographyNoteToRace(
+                        note_id=note_id, race_id=entity_id
+                    )
+                elif entity_type == "skill":
+                    association = LitographyNoteToSkills(
+                        note_id=note_id, skill_id=entity_id
+                    )
+                elif entity_type == "sub_race":
+                    association = LitographyNoteToSubRace(
+                        note_id=note_id, sub_race_id=entity_id
+                    )
+                elif entity_type == "world_data":
+                    association = LitographyNoteToWorldData(
+                        note_id=note_id, world_data_id=entity_id
+                    )
+
+                if association:
+                    session.add(association)
+                    session.commit()
+                    return True
+        except Exception as e:
+            print(f"Error creating note association: {e}")
+        return False
+
+    def delete_note_association(self, note_id, entity_type, entity_id):
+        """Delete an association between a note and a lore entity"""
+        try:
+            with Session(self.model.engine) as session:
+                association = None
+                if entity_type == "actor":
+                    association = (
+                        session.query(LitographyNoteToActor)
+                        .filter_by(note_id=note_id, actor_id=entity_id)
+                        .first()
+                    )
+                elif entity_type == "background":
+                    association = (
+                        session.query(LitographyNoteToBackground)
+                        .filter_by(note_id=note_id, background_id=entity_id)
+                        .first()
+                    )
+                elif entity_type == "class":
+                    association = (
+                        session.query(LitographyNoteToClass)
+                        .filter_by(note_id=note_id, class_id=entity_id)
+                        .first()
+                    )
+                elif entity_type == "faction":
+                    association = (
+                        session.query(LitographyNoteToFaction)
+                        .filter_by(note_id=note_id, faction_id=entity_id)
+                        .first()
+                    )
+                elif entity_type == "history":
+                    association = (
+                        session.query(LitographyNoteToHistory)
+                        .filter_by(note_id=note_id, history_id=entity_id)
+                        .first()
+                    )
+                elif entity_type == "location":
+                    association = (
+                        session.query(LitographyNoteToLocation)
+                        .filter_by(note_id=note_id, location_id=entity_id)
+                        .first()
+                    )
+                elif entity_type == "object":
+                    association = (
+                        session.query(LitographyNoteToObject)
+                        .filter_by(note_id=note_id, object_id=entity_id)
+                        .first()
+                    )
+                elif entity_type == "race":
+                    association = (
+                        session.query(LitographyNoteToRace)
+                        .filter_by(note_id=note_id, race_id=entity_id)
+                        .first()
+                    )
+                elif entity_type == "skill":
+                    association = (
+                        session.query(LitographyNoteToSkills)
+                        .filter_by(note_id=note_id, skill_id=entity_id)
+                        .first()
+                    )
+                elif entity_type == "sub_race":
+                    association = (
+                        session.query(LitographyNoteToSubRace)
+                        .filter_by(note_id=note_id, sub_race_id=entity_id)
+                        .first()
+                    )
+                elif entity_type == "world_data":
+                    association = (
+                        session.query(LitographyNoteToWorldData)
+                        .filter_by(note_id=note_id, world_data_id=entity_id)
+                        .first()
+                    )
+
+                if association:
+                    session.delete(association)
+                    session.commit()
+                    return True
+        except Exception as e:
+            print(f"Error deleting note association: {e}")
+        return False
+
     def on_delete_node_button_clicked(self, node_id):
         """Handle clicking '-' button to delete a node"""
         try:
@@ -2015,13 +2273,28 @@ class MainWindowController:
             return
 
         form_data = {}
+        has_non_empty_data = False
+
         for key, widget in widget_dict.items():
             if isinstance(widget, QComboBox):
                 form_data[key] = widget.currentData()
+                if widget.currentData() is not None:
+                    has_non_empty_data = True
             elif isinstance(widget, QLineEdit):
                 form_data[key] = widget.text()
+                if widget.text().strip():
+                    has_non_empty_data = True
             elif isinstance(widget, QTextEdit):
                 form_data[key] = widget.toPlainText()
+                if widget.toPlainText().strip():
+                    has_non_empty_data = True
+
+        # For new rows, check if at least one field has meaningful data
+        if not is_update and not has_non_empty_data:
+            self.view.ui.statusbar.showMessage(
+                "Cannot create empty row. Please fill in at least one field.", 5000
+            )
+            return
 
         try:
             if is_update:

@@ -245,6 +245,31 @@ class LitographyNotes(BaseTable):
 
     linked_node: Mapped["LitographyNode"] = relationship(back_populates="notes")
     project: Mapped["Project"] = relationship(back_populates="litography_notes")
+    actors: Mapped[list["LitographyNoteToActor"]] = relationship(back_populates="note")
+    backgrounds: Mapped[list["LitographyNoteToBackground"]] = relationship(
+        back_populates="note"
+    )
+    factions: Mapped[list["LitographyNoteToFaction"]] = relationship(
+        back_populates="note"
+    )
+    locations: Mapped[list["LitographyNoteToLocation"]] = relationship(
+        back_populates="note"
+    )
+    histories: Mapped[list["LitographyNoteToHistory"]] = relationship(
+        back_populates="note"
+    )
+    objects: Mapped[list["LitographyNoteToObject"]] = relationship(
+        back_populates="note"
+    )
+    world_data: Mapped[list["LitographyNoteToWorldData"]] = relationship(
+        back_populates="note"
+    )
+    classes: Mapped[list["LitographyNoteToClass"]] = relationship(back_populates="note")
+    races: Mapped[list["LitographyNoteToRace"]] = relationship(back_populates="note")
+    sub_races: Mapped[list["LitographyNoteToSubRace"]] = relationship(
+        back_populates="note"
+    )
+    skills: Mapped[list["LitographyNoteToSkills"]] = relationship(back_populates="note")
 
 
 class LitographyPlot(BaseTable):
@@ -320,8 +345,8 @@ class LitographyArc(BaseTable):
 
     __tablename__ = "litography_arc"
 
-    id: Mapped[int | None] = mapped_column(
-        Integer, Identity(), nullable=True, primary_key=True, name="id"
+    id: Mapped[int] = mapped_column(
+        Integer, Identity(), nullable=False, primary_key=True, name="id"
     )
     project_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("project.id"), nullable=False, name="project_id"
@@ -335,8 +360,8 @@ class LitographyArc(BaseTable):
 class Class_(BaseTable):
     __tablename__ = "class"
 
-    id: Mapped[int | None] = mapped_column(
-        Integer, Identity(), nullable=True, primary_key=True, name="id"
+    id: Mapped[int] = mapped_column(
+        Integer, Identity(), nullable=False, primary_key=True, name="id"
     )
     class_name: Mapped[str | None] = mapped_column(String(255), name="class_name")
     class_description: Mapped[str | None] = mapped_column(
@@ -348,6 +373,9 @@ class Class_(BaseTable):
 
     group: Mapped["LorekeeperGroup"] = relationship(back_populates="classes")
     actors: Mapped[list["Actor"]] = relationship(back_populates="class_")
+    notes_to: Mapped[list["LitographyNoteToClass"]] = relationship(
+        back_populates="class_"
+    )
 
 
 class Background(BaseTable):
@@ -364,6 +392,9 @@ class Background(BaseTable):
 
     group: Mapped["LorekeeperGroup"] = relationship(back_populates="backgrounds")
     actors: Mapped[list["Actor"]] = relationship(back_populates="background")
+    notes_to: Mapped[list["LitographyNoteToBackground"]] = relationship(
+        back_populates="background"
+    )
 
 
 class Race(BaseTable):
@@ -381,6 +412,7 @@ class Race(BaseTable):
     group: Mapped["LorekeeperGroup"] = relationship(back_populates="races")
     sub_races: Mapped[list["SubRace"]] = relationship(back_populates="race")
     actors: Mapped[list["Actor"]] = relationship(back_populates="race")
+    notes_to: Mapped[list["LitographyNoteToRace"]] = relationship(back_populates="race")
 
 
 class SubRace(BaseTable):
@@ -399,6 +431,9 @@ class SubRace(BaseTable):
     group: Mapped["LorekeeperGroup"] = relationship(back_populates="sub_races")
     race: Mapped["Race"] = relationship(back_populates="sub_races")
     actors: Mapped[list["Actor"]] = relationship(back_populates="sub_race")
+    notes_to: Mapped[list["LitographyNoteToSubRace"]] = relationship(
+        back_populates="sub_race"
+    )
 
 
 class Actor(BaseTable):
@@ -534,6 +569,9 @@ class Skills(BaseTable):
 
     group: Mapped["LorekeeperGroup"] = relationship(back_populates="skills")
     actors: Mapped[list["ActorToSkills"]] = relationship(back_populates="skill")
+    notes_to: Mapped[list["LitographyNoteToSkills"]] = relationship(
+        back_populates="skill"
+    )
 
 
 class ActorToSkills(BaseTable):
@@ -1094,13 +1132,89 @@ class LitographyNoteToWorldData(BaseTable):
     world_data: Mapped["WorldData"] = relationship(back_populates="notes_to")
 
 
+class LitographyNoteToClass(BaseTable):
+    """Represents litography_note_to_class table"""
+
+    __tablename__ = "litography_note_to_class"
+
+    id: Mapped[int] = mapped_column(
+        Integer, nullable=False, primary_key=True, name="id"
+    )
+    note_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("litography_notes.id"), name="note_id"
+    )
+    class_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("class.id"), name="class_id"
+    )
+
+    note: Mapped["LitographyNotes"] = relationship()
+    class_: Mapped["Class_"] = relationship(back_populates="notes_to")
+
+
+class LitographyNoteToRace(BaseTable):
+    """Represents litography_note_to_race table"""
+
+    __tablename__ = "litography_note_to_race"
+
+    id: Mapped[int] = mapped_column(
+        Integer, nullable=False, primary_key=True, name="id"
+    )
+    note_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("litography_notes.id"), name="note_id"
+    )
+    race_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("race.id"), name="race_id"
+    )
+
+    note: Mapped["LitographyNotes"] = relationship()
+    race: Mapped["Race"] = relationship(back_populates="notes_to")
+
+
+class LitographyNoteToSubRace(BaseTable):
+    """Represents litography_note_to_sub_race table"""
+
+    __tablename__ = "litography_note_to_sub_race"
+
+    id: Mapped[int] = mapped_column(
+        Integer, nullable=False, primary_key=True, name="id"
+    )
+    note_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("litography_notes.id"), name="note_id"
+    )
+    sub_race_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("sub_race.id"), name="sub_race_id"
+    )
+
+    note: Mapped["LitographyNotes"] = relationship()
+    sub_race: Mapped["SubRace"] = relationship(back_populates="notes_to")
+
+
+class LitographyNoteToSkills(BaseTable):
+    """Represents litography_note_to_skills table"""
+
+    __tablename__ = "litography_note_to_skills"
+
+    id: Mapped[int] = mapped_column(
+        Integer, nullable=False, primary_key=True, name="id"
+    )
+    note_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("litography_notes.id"), name="note_id"
+    )
+    skill_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("skills.id"), name="skill_id"
+    )
+
+    note: Mapped["LitographyNotes"] = relationship()
+    skill: Mapped["Skills"] = relationship(back_populates="notes_to")
+
+
 class ArcToNode(BaseTable):
     """Represents the arc_to_node table"""
 
     __tablename__ = "arc_to_node"
 
-    id: Mapped[int | None] = mapped_column(
-        Integer, nullable=True, primary_key=True, name="id"
+    id: Mapped[int] = mapped_column(
+        Integer, Identity(), nullable=False, primary_key=True, name="id"
     )
     node_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("litography_node.id"), name="node_id"
@@ -1118,8 +1232,8 @@ class ArcToActor(BaseTable):
 
     __tablename__ = "arc_to_actor"
 
-    id: Mapped[int | None] = mapped_column(
-        Integer, nullable=True, primary_key=True, name="id"
+    id: Mapped[int] = mapped_column(
+        Integer, Identity(), nullable=False, primary_key=True, name="id"
     )
     actor_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("actor.id"), nullable=False, name="actor_id"

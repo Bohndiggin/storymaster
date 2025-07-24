@@ -178,10 +178,47 @@ class BaseModel:
 
     def get_all_table_names(self) -> list[str]:
         """
-        Inspects the database and returns a list of all table names.
+        Inspects the database and returns a list of user-visible table names.
+        Filters out system tables and junction tables that shouldn't be directly edited.
         """
         inspector = inspect(self.engine)
-        return inspector.get_table_names()
+        all_tables = inspector.get_table_names()
+
+        # Tables that should be hidden from the Lorekeeper UI
+        hidden_tables = {
+            "user",
+            "project",
+            "lorekeeper_group",
+            "project_to_group",
+            "litography_node",
+            "litography_notes",
+            "litography_plot",
+            "litography_plot_section",
+            "litography_node_to_plot_section",
+            "litography_arc",
+            "litography_note_to_actor",
+            "litography_note_to_background",
+            "litography_note_to_class",
+            "litography_note_to_faction",
+            "litography_note_to_history",
+            "litography_note_to_location",
+            "litography_note_to_object",
+            "litography_note_to_race",
+            "litography_note_to_sub_race",
+            "litography_note_to_world_data",
+            "actor_a_on_b_relations",
+            "faction_a_on_b_relations",
+            "history_actor",
+            "history_location",
+            "history_faction",
+            "history_object",
+            "history_world_data",
+            "litography_note_to_skills",
+            "arc_to_actor",
+            "arc_to_node",
+        }
+
+        return [table for table in all_tables if table not in hidden_tables]
 
     def get_table_data(
         self, table_name: str, project_id: int | None = None
