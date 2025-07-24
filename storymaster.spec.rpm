@@ -38,16 +38,12 @@ mkdir -p $RPM_BUILD_ROOT%{_bindir}
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/%{name}
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/applications
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/pixmaps
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/doc/%{name}
 
 # Install the application
 cp -r storymaster $RPM_BUILD_ROOT%{_datadir}/%{name}/
 cp -r tests $RPM_BUILD_ROOT%{_datadir}/%{name}/
 cp init_database.py $RPM_BUILD_ROOT%{_datadir}/%{name}/
 
-# Install documentation
-cp README.md $RPM_BUILD_ROOT%{_datadir}/doc/%{name}/
-cp CLAUDE.md $RPM_BUILD_ROOT%{_datadir}/doc/%{name}/
 
 # Create launcher script
 cat > $RPM_BUILD_ROOT%{_bindir}/storymaster << 'EOF'
@@ -129,7 +125,6 @@ EOF
 %{_datadir}/%{name}/
 %{_datadir}/applications/storymaster.desktop
 %{_datadir}/pixmaps/storymaster.xpm
-%doc %{_datadir}/doc/%{name}/
 
 %post
 # Create user data directory

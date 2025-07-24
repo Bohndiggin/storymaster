@@ -53,14 +53,21 @@ def create_source_tarball():
             source_dir.mkdir()
             
             # Copy source files
-            files_to_copy = [
+            # Copy files that exist
+            base_files = [
                 'storymaster/',
                 'tests/',
                 'init_database.py',
-                'README.md',
-                'CLAUDE.md',
                 'requirements.txt'
             ]
+            
+            # Optional files
+            optional_files = [
+                'README.md',
+                'CLAUDE.md'
+            ]
+            
+            files_to_copy = base_files + [f for f in optional_files if Path(f).exists()]
             
             for file_path in files_to_copy:
                 src = Path(file_path)
