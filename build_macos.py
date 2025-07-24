@@ -523,11 +523,28 @@ def print_completion_info(build_mode):
 
 def main():
     """Main build process"""
+    import sys
+    
     print_header()
+    
+    # Check for non-interactive mode (CI/CD)
+    non_interactive = len(sys.argv) > 1 and sys.argv[1] == "--non-interactive"
     
     # Check build capabilities
     build_mode = check_cross_compilation_support()
     if not build_mode:
+        if non_interactive:
+            # In CI/CD, try the fallback test bundle
+            print("\n🧪 Non-interactive mode: Creating test app bundle...")
+            app_bundle = create_app_bundle_structure()
+            create_info_plist(app_bundle)
+            if install_app_contents(app_bundle, "test"):
+                create_dmg_installer(app_bundle)
+                create_installation_instructions()
+                print("\n✅ Test app bundle created (requires manual Python setup)")
+                return True
+            return False
+        
         print("\n💡 Alternatives for macOS distribution:")
         print("   • Use GitHub Actions with macOS runner")
         print("   • Use macOS virtual machine")
@@ -557,15 +574,21 @@ def main():
     
     # Choose build method
     print(f"\n🔧 Build mode: {build_mode}")
-    print("\nChoose build method:")
-    print("   1. PyInstaller (recommended)")
-    print("   2. Manual app bundle")
     
-    try:
-        choice = input("Select method (1 or 2): ").strip()
-    except KeyboardInterrupt:
-        print("\n❌ Build cancelled")
-        return False
+    if non_interactive:
+        # In CI/CD, use PyInstaller by default
+        choice = "1"
+        print("Non-interactive mode: Using PyInstaller (recommended)")
+    else:
+        print("\nChoose build method:")
+        print("   1. PyInstaller (recommended)")
+        print("   2. Manual app bundle")
+        
+        try:
+            choice = input("Select method (1 or 2): ").strip()
+        except KeyboardInterrupt:
+            print("\n❌ Build cancelled")
+            return False
     
     success = False
     

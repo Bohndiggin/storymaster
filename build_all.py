@@ -36,7 +36,11 @@ def run_build_script(script_name, description):
     print("=" * 50)
     
     try:
-        result = subprocess.run([sys.executable, script_name], check=True)
+        # Split script name and arguments
+        script_parts = script_name.split()
+        script_cmd = [sys.executable] + script_parts
+        
+        result = subprocess.run(script_cmd, check=True)
         print(f"✅ {description} completed successfully!")
         return True
     except subprocess.CalledProcessError as e:
@@ -49,7 +53,12 @@ def run_build_script(script_name, description):
 
 def main():
     """Main build orchestrator"""
+    import sys
+    
     print_header()
+    
+    # Check for non-interactive mode (CI/CD)
+    non_interactive = len(sys.argv) > 1 and sys.argv[1] == "--non-interactive"
     
     # Define available build targets
     build_targets = []
@@ -69,42 +78,47 @@ def main():
     
     # macOS builds (native or cross-compilation)
     if platform.system() == "Darwin":
-        build_targets.append(("build_macos.py", "macOS App Bundle & DMG"))
+        build_targets.append(("build_macos.py --non-interactive", "macOS App Bundle & DMG"))
     else:
         # Cross-compilation option for macOS
-        build_targets.append(("build_macos.py", "macOS App Bundle (Cross-compile)"))
+        build_targets.append(("build_macos.py --non-interactive", "macOS App Bundle (Cross-compile)"))
     
     if not build_targets:
         print("❌ No build targets available for this platform")
         return False
     
-    print("📋 Available build targets:")
-    for i, (script, description) in enumerate(build_targets, 1):
-        print(f"   {i}. {description}")
-    print(f"   {len(build_targets) + 1}. Build all")
-    print()
-    
-    # Get user choice
-    while True:
-        try:
-            choice = input("Select build target (number): ").strip()
-            
-            if choice == str(len(build_targets) + 1):
-                # Build all
-                selected_targets = build_targets
-                break
-            else:
-                choice_num = int(choice)
-                if 1 <= choice_num <= len(build_targets):
-                    selected_targets = [build_targets[choice_num - 1]]
+    if non_interactive:
+        # In CI/CD, build all targets
+        selected_targets = build_targets
+        print("Non-interactive mode: Building all available targets")
+    else:
+        print("📋 Available build targets:")
+        for i, (script, description) in enumerate(build_targets, 1):
+            print(f"   {i}. {description}")
+        print(f"   {len(build_targets) + 1}. Build all")
+        print()
+        
+        # Get user choice
+        while True:
+            try:
+                choice = input("Select build target (number): ").strip()
+                
+                if choice == str(len(build_targets) + 1):
+                    # Build all
+                    selected_targets = build_targets
                     break
                 else:
-                    print(f"Please enter a number between 1 and {len(build_targets) + 1}")
-        except ValueError:
-            print("Please enter a valid number")
-        except KeyboardInterrupt:
-            print("\n❌ Build cancelled by user")
-            return False
+                    choice_num = int(choice)
+                    if 1 <= choice_num <= len(build_targets):
+                        selected_targets = [build_targets[choice_num - 1]]
+                        break
+                    else:
+                        print(f"Please enter a number between 1 and {len(build_targets) + 1}")
+            except ValueError:
+                print("Please enter a valid number")
+            except KeyboardInterrupt:
+                print("\n❌ Build cancelled by user")
+                return False
     
     print()
     

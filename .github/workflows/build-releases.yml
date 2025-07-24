@@ -49,7 +49,7 @@ jobs:
         pip install -r requirements.txt
     
     - name: Build macOS app bundle
-      run: python build_macos.py
+      run: python build_macos.py --non-interactive
     
     - name: Create DMG (if hdiutil available)
       run: |
@@ -81,11 +81,19 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y \
-          python3-pyqt6 \
-          python3-pyqt6.qtwidgets \
           rpm \
+          rpm-build \
           fuse \
-          libfuse2
+          libfuse2 \
+          xvfb \
+          libxcb-xinerama0 \
+          libxcb-cursor0 \
+          libxkbcommon-x11-0 \
+          libxcb-icccm4 \
+          libxcb-image0 \
+          libxcb-keysyms1 \
+          libxcb-randr0 \
+          libxcb-render-util0
     
     - name: Install Python dependencies
       run: |
@@ -93,18 +101,24 @@ jobs:
         pip install -r requirements.txt
     
     - name: Build Linux executable
-      run: python build_executable.py
+      run: xvfb-run -a python build_executable.py
+      env:
+        DISPLAY: :99
     
     - name: Build AppImage
-      run: python build_appimage.py
+      run: xvfb-run -a python build_appimage.py
+      env:
+        DISPLAY: :99
     
     - name: Build RPM (if rpmbuild available)
       run: |
         if command -v rpmbuild &> /dev/null; then
-          python build_rpm.py
+          xvfb-run -a python build_rpm.py
         else
           echo "rpmbuild not available, skipping RPM build"
         fi
+      env:
+        DISPLAY: :99
     
     - name: Upload Linux artifacts
       uses: actions/upload-artifact@v4
