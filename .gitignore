@@ -13,3 +13,4 @@ CLAUDE.md
 *.appimage
 *.AppImage
 *APPIMAGE_USAGE.md
+*.db
