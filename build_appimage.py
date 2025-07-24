@@ -85,8 +85,7 @@ def install_python_app(appdir):
         app_files = [
             'storymaster/',
             'tests/',
-            'init_database.py',
-            'seed.py'
+            'init_database.py'
         ]
         
         for file_path in app_files:

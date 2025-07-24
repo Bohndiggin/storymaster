@@ -8,9 +8,6 @@ URL:            https://github.com/your-username/storymaster
 Source0:        %{name}-%{version}.tar.gz
 
 BuildArch:      noarch
-BuildRequires:  python3-devel
-BuildRequires:  python3-setuptools
-BuildRequires:  python3-pip
 
 Requires:       python3 >= 3.8
 Requires:       python3-PyQt6
@@ -47,7 +44,6 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/doc/%{name}
 cp -r storymaster $RPM_BUILD_ROOT%{_datadir}/%{name}/
 cp -r tests $RPM_BUILD_ROOT%{_datadir}/%{name}/
 cp init_database.py $RPM_BUILD_ROOT%{_datadir}/%{name}/
-cp seed.py $RPM_BUILD_ROOT%{_datadir}/%{name}/
 
 # Install documentation
 cp README.md $RPM_BUILD_ROOT%{_datadir}/doc/%{name}/

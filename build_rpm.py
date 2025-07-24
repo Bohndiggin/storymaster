@@ -57,7 +57,6 @@ def create_source_tarball():
                 'storymaster/',
                 'tests/',
                 'init_database.py',
-                'seed.py',
                 'README.md',
                 'CLAUDE.md',
                 'requirements.txt'

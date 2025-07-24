@@ -17,3 +17,4 @@ Storymaster.app/*
 build
 dist
 APPIMAGE_USAGE.md
+RPM_INSTALL.md

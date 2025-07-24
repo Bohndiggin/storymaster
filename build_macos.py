@@ -177,8 +177,7 @@ def install_app_contents(app_bundle, build_mode):
         app_files = [
             'storymaster/',
             'tests/',
-            'init_database.py', 
-            'seed.py'
+            'init_database.py'
         ]
         
         resources_dir = app_bundle / "Contents/Resources/storymaster"
