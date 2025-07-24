@@ -9,3 +9,4 @@ test.py
 .pytest_cache
 .coverage
 .venv
+CLAUDE.md

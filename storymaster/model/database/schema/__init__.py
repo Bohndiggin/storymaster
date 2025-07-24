@@ -50,7 +50,7 @@ from storymaster.model.database.schema.base import (
     WorldData,
     ArcToActor,
     ArcToNode,
-    LitographyArc
+    LitographyArc,
 )
 
 __all__ = [

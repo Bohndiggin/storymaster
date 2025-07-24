@@ -1,16 +1,23 @@
 """
 Defines the dialog for adding a new Litography Node.
 """
+
 from PyQt6.QtWidgets import (
-    QDialog, QVBoxLayout, QFormLayout, QComboBox, QDoubleSpinBox,
+    QDialog,
+    QVBoxLayout,
+    QFormLayout,
+    QComboBox,
+    QDoubleSpinBox,
     QDialogButtonBox,
 )
 from storymaster.model.database import schema
+
 
 class AddNodeDialog(QDialog):
     """
     A dialog window that presents a form to add a new Litography Node.
     """
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Add New Node")
@@ -24,12 +31,14 @@ class AddNodeDialog(QDialog):
         # Populate the node type combo box from the NodeType enum
         for node_type in schema.NodeType:
             # Add the user-friendly name and store the actual enum member as data
-            self.node_type_combo.addItem(node_type.name.title().replace('_', ' '), node_type)
+            self.node_type_combo.addItem(
+                node_type.name.title().replace("_", " "), node_type
+            )
 
         # Configure the height spinbox for a 0.0 to 1.0 float value
         self.node_height_spinbox.setRange(0.0, 1.0)
         self.node_height_spinbox.setSingleStep(0.1)
-        self.node_height_spinbox.setValue(0.5) # Set a sensible default
+        self.node_height_spinbox.setValue(0.5)  # Set a sensible default
 
         # --- Layout ---
         form_layout = QFormLayout()
@@ -37,7 +46,9 @@ class AddNodeDialog(QDialog):
         form_layout.addRow("Node Height (Tension):", self.node_height_spinbox)
 
         # --- Dialog Buttons (OK/Cancel) ---
-        self.button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        self.button_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
 
