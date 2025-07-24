@@ -28,7 +28,7 @@ def download_appimage_tool():
     """Download appimagetool if not present"""
     print("[CHECK] Checking AppImage tools...")
     
-    tool_path = Path("appimagetool-x86_64.appimage")
+    tool_path = Path("appimagetool-x86_64.AppImage")
     
     if tool_path.exists():
         print("[OK] appimagetool found")
@@ -219,7 +219,7 @@ def build_appimage(appdir, appimagetool_path):
         env = os.environ.copy()
         env['ARCH'] = 'x86_64'
         
-        cmd = [appimagetool_path, str(appdir), "Storymaster-x86_64.AppImage"]
+        cmd = [f"./{appimagetool_path}", str(appdir), "Storymaster-x86_64.AppImage"]
         
         print(f"   Running: {' '.join(cmd)}")
         result = subprocess.run(cmd, env=env, capture_output=True, text=True)
