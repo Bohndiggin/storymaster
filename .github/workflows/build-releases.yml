@@ -81,11 +81,16 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y \
-          python3-pyqt6 \
-          python3-pyqt6.qtwidgets \
           rpm \
           fuse \
-          libfuse2
+          libfuse2 \
+          xvfb \
+          libxkbcommon-x11-0 \
+          libxcb-icccm4 \
+          libxcb-image0 \
+          libxcb-keysyms1 \
+          libxcb-randr0 \
+          libxcb-render-util0
     
     - name: Install Python dependencies
       run: |
