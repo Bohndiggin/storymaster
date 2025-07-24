@@ -5,10 +5,10 @@ from PyQt6.QtWidgets import (
     QApplication,
     QLineEdit,
     QListWidget,
+    QMainWindow,
     QPushButton,
     QVBoxLayout,
     QWidget,
-    QMainWindow,
 )
 
 from storymaster.view.common.storymaster_main import Ui_StorymasterMainWindow

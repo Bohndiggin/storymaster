@@ -3,10 +3,18 @@
 import dataclasses
 from enum import Enum
 
-from sqlalchemy import Engine, inspect
+from sqlalchemy import (
+    Column,
+    Engine,
+    Float,
+    ForeignKey,
+    Identity,
+    Integer,
+    String,
+    Text,
+    inspect,
+)
 from sqlalchemy.orm import Session
-from sqlalchemy import Column, Float, ForeignKey, Identity, Integer, String, Text
-
 
 from storymaster.model.database import base_connection, common_queries, schema
 

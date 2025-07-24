@@ -3,12 +3,13 @@ Defines the dialog for opening an existing project.
 """
 
 from PyQt6.QtWidgets import (
-    QDialog,
-    QVBoxLayout,
-    QFormLayout,
     QComboBox,
+    QDialog,
     QDialogButtonBox,
+    QFormLayout,
+    QVBoxLayout,
 )
+
 from storymaster.model.common.common_model import BaseModel
 
 

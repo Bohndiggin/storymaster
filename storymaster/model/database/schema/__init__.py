@@ -4,6 +4,8 @@ from storymaster.model.database.schema.base import (
     Actor,
     ActorAOnBRelations,
     ActorToSkills,
+    ArcToActor,
+    ArcToNode,
     Background,
     BaseTable,
     Class_,
@@ -16,6 +18,7 @@ from storymaster.model.database.schema.base import (
     HistoryLocation,
     HistoryObject,
     HistoryWorldData,
+    LitographyArc,
     LitographyNode,
     LitographyNodeToPlotSection,
     LitographyNotes,
@@ -48,9 +51,6 @@ from storymaster.model.database.schema.base import (
     SubRace,
     User,
     WorldData,
-    ArcToActor,
-    ArcToNode,
-    LitographyArc,
 )
 
 __all__ = [
