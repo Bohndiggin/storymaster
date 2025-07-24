@@ -10,3 +10,4 @@ test.py
 .coverage
 .venv
 CLAUDE.md
+*.db
