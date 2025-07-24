@@ -200,14 +200,15 @@ def print_completion_info():
     """Print build completion information"""
     system = platform.system()
     arch = platform.machine()
-    
+    archive = 'zip' if system == 'Windows' else 'tar.gz'
+    extension = '.exe' if system == 'Windows' else ''
     print("\n" + "=" * 60)
     print("🎉 Build Complete!")
     print("=" * 60)
     print()
     print("📁 Files created:")
-    print(f"   • Executable: dist/storymaster/storymaster{''.exe' if system == 'Windows' else ''}")
-    print(f"   • Archive: storymaster-{system.lower()}-{arch.lower()}.{'zip' if system == 'Windows' else 'tar.gz'}")
+    print(f"   • Executable: dist/storymaster/storymaster{extension}")
+    print(f"   • Archive: storymaster-{system.lower()}-{arch.lower()}.{archive}")
     print()
     print("🚀 To distribute:")
     print("   1. Share the archive file")
