@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write  # Required to create releases and upload assets
+  actions: read    # Required to download artifacts
 
 jobs:
   build-windows:
@@ -150,14 +151,23 @@ jobs:
       with:
         path: release-artifacts
     
+    - name: Prepare release files
+      run: |
+        mkdir -p release-files
+        find release-artifacts -type f -name "*.zip" -exec cp {} release-files/ \;
+        find release-artifacts -type f -name "*.dmg" -exec cp {} release-files/ \;
+        find release-artifacts -type f -name "*.tar.gz" -exec cp {} release-files/ \;
+        find release-artifacts -type f -name "*.AppImage" -exec cp {} release-files/ \;
+        find release-artifacts -type f -name "*.rpm" -exec cp {} release-files/ \;
+        ls -la release-files/
+        
     - name: Create Release
       uses: softprops/action-gh-release@v2
       with:
         draft: true
         generate_release_notes: true
         fail_on_unmatched_files: false
-        files: |
-          release-artifacts/**/*
+        files: release-files/*
         body: |
           ## 🏰 Storymaster Release
           
@@ -197,4 +207,4 @@ jobs:
           
           **Questions or issues?** Check the documentation or create an issue on GitHub.
       env:
-        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

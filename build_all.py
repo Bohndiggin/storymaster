@@ -147,7 +147,6 @@ def main():
             ("storymaster-*.tar.gz", "Executable archive"),
             ("storymaster-*.zip", "Executable archive (Windows)"),
             ("Storymaster-x86_64.AppImage", "Linux universal binary"),
-            ("~/rpmbuild/RPMS/noarch/storymaster-*.rpm", "RPM package"),
         ]
         
         for file_pattern, description in distribution_files:

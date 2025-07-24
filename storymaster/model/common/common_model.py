@@ -186,10 +186,6 @@ class BaseModel:
 
         # Tables that should be hidden from the Lorekeeper UI
         hidden_tables = {
-            "user",
-            "project",
-            "lorekeeper_group",
-            "project_to_group",
             "litography_node",
             "litography_notes",
             "litography_plot",
