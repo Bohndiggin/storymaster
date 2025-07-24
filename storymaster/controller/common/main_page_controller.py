@@ -24,6 +24,9 @@ from PyQt6.QtWidgets import (
     QScrollArea,
     QMenu,
     QDialog,
+    QListWidget,
+    QListWidgetItem,
+    QMessageBox,
 )
 from PyQt6.QtGui import QStandardItemModel, QStandardItem, QBrush, QColor, QPen, QPolygonF, QPainterPath, QFont
 from PyQt6.QtCore import Qt, pyqtSignal, QPointF
@@ -41,6 +44,7 @@ from storymaster.view.common.common_view import MainView
 
 # Import the dialogs
 from storymaster.view.litographer.add_node_dialog import AddNodeDialog
+from storymaster.view.litographer.node_notes_dialog import NodeNotesDialog
 from storymaster.view.common.open_project_dialog import OpenProjectDialog
 
 
@@ -78,8 +82,11 @@ class RectangleNodeItem(QGraphicsRectItem):
         self.setFlag(QGraphicsRectItem.GraphicsItemFlag.ItemIsSelectable, True)
     
     def mousePressEvent(self, event):
-        super().mousePressEvent(event)
-        self.controller.on_node_clicked(self.node_data)
+        if event.button() == Qt.MouseButton.RightButton:
+            self.controller.on_node_context_menu(self.node_data, event.screenPos())
+        else:
+            super().mousePressEvent(event)
+            self.controller.on_node_clicked(self.node_data)
 
 
 class CircleNodeItem(QGraphicsEllipseItem):
@@ -92,8 +99,11 @@ class CircleNodeItem(QGraphicsEllipseItem):
         self.setFlag(QGraphicsEllipseItem.GraphicsItemFlag.ItemIsSelectable, True)
     
     def mousePressEvent(self, event):
-        super().mousePressEvent(event)
-        self.controller.on_node_clicked(self.node_data)
+        if event.button() == Qt.MouseButton.RightButton:
+            self.controller.on_node_context_menu(self.node_data, event.screenPos())
+        else:
+            super().mousePressEvent(event)
+            self.controller.on_node_clicked(self.node_data)
 
 
 class DiamondNodeItem(QGraphicsPolygonItem):
@@ -115,8 +125,11 @@ class DiamondNodeItem(QGraphicsPolygonItem):
         self.setFlag(QGraphicsPolygonItem.GraphicsItemFlag.ItemIsSelectable, True)
     
     def mousePressEvent(self, event):
-        super().mousePressEvent(event)
-        self.controller.on_node_clicked(self.node_data)
+        if event.button() == Qt.MouseButton.RightButton:
+            self.controller.on_node_context_menu(self.node_data, event.screenPos())
+        else:
+            super().mousePressEvent(event)
+            self.controller.on_node_clicked(self.node_data)
 
 
 class StarNodeItem(QGraphicsPolygonItem):
@@ -149,8 +162,11 @@ class StarNodeItem(QGraphicsPolygonItem):
         self.setFlag(QGraphicsPolygonItem.GraphicsItemFlag.ItemIsSelectable, True)
     
     def mousePressEvent(self, event):
-        super().mousePressEvent(event)
-        self.controller.on_node_clicked(self.node_data)
+        if event.button() == Qt.MouseButton.RightButton:
+            self.controller.on_node_context_menu(self.node_data, event.screenPos())
+        else:
+            super().mousePressEvent(event)
+            self.controller.on_node_clicked(self.node_data)
 
 
 class HexagonNodeItem(QGraphicsPolygonItem):
@@ -177,8 +193,11 @@ class HexagonNodeItem(QGraphicsPolygonItem):
         self.setFlag(QGraphicsPolygonItem.GraphicsItemFlag.ItemIsSelectable, True)
     
     def mousePressEvent(self, event):
-        super().mousePressEvent(event)
-        self.controller.on_node_clicked(self.node_data)
+        if event.button() == Qt.MouseButton.RightButton:
+            self.controller.on_node_context_menu(self.node_data, event.screenPos())
+        else:
+            super().mousePressEvent(event)
+            self.controller.on_node_clicked(self.node_data)
 
 
 class TriangleNodeItem(QGraphicsPolygonItem):
@@ -197,8 +216,11 @@ class TriangleNodeItem(QGraphicsPolygonItem):
         self.setFlag(QGraphicsPolygonItem.GraphicsItemFlag.ItemIsSelectable, True)
     
     def mousePressEvent(self, event):
-        super().mousePressEvent(event)
-        self.controller.on_node_clicked(self.node_data)
+        if event.button() == Qt.MouseButton.RightButton:
+            self.controller.on_node_context_menu(self.node_data, event.screenPos())
+        else:
+            super().mousePressEvent(event)
+            self.controller.on_node_clicked(self.node_data)
 
 
 def create_node_item(x, y, width, height, node_data, controller):
@@ -329,82 +351,71 @@ class SectionEditDialog(QDialog):
             self.reject()
 
 
-class AddNodeButton(QGraphicsEllipseItem):
-    """Clickable '+' button for adding nodes"""
+class AddNodeButton(QGraphicsPathItem):
+    """Clickable '+' symbol for adding nodes"""
     
     def __init__(self, x, y, controller, position_type, reference_node_id=None):
-        # Create a small circle for the button
-        super().__init__(x, y, 25, 25)
+        super().__init__()
         self.controller = controller
         self.position_type = position_type  # 'before' or 'after'
         self.reference_node_id = reference_node_id
         
-        # Style the button
-        self.setBrush(QBrush(QColor("#4CAF50")))  # Green background
-        self.setPen(QPen(QColor("#2E7D32"), 2))   # Darker green border
-        self.setFlag(QGraphicsEllipseItem.GraphicsItemFlag.ItemIsSelectable, True)
+        # Create '+' symbol using QPainterPath
+        path = QPainterPath()
+        # Horizontal bar
+        path.addRect(x + 5, y + 10, 15, 5)
+        # Vertical bar  
+        path.addRect(x + 10, y + 5, 5, 15)
         
-        # Add the '+' text
-        self.text_item = QGraphicsTextItem("+", self)
-        self.text_item.setDefaultTextColor(QColor("#FFFFFF"))
-        font = QFont()
-        font.setPointSize(14)
-        font.setBold(True)
-        self.text_item.setFont(font)
-        # Center the text in the circle
-        self.text_item.setPos(x + 6, y + 1)
+        self.setPath(path)
+        self.setBrush(QBrush(QColor("#4CAF50")))  # Green
+        self.setPen(QPen(QColor("#2E7D32"), 1))
+        self.setFlag(QGraphicsPathItem.GraphicsItemFlag.ItemIsSelectable, True)
     
     def mousePressEvent(self, event):
         super().mousePressEvent(event)
         self.controller.on_add_node_button_clicked(self.position_type, self.reference_node_id)
     
     def hoverEnterEvent(self, event):
-        # Lighten the button on hover
         self.setBrush(QBrush(QColor("#66BB6A")))
         super().hoverEnterEvent(event)
     
     def hoverLeaveEvent(self, event):
-        # Return to normal color
         self.setBrush(QBrush(QColor("#4CAF50")))
         super().hoverLeaveEvent(event)
 
 
-class DeleteNodeButton(QGraphicsEllipseItem):
-    """Clickable '-' button for deleting nodes"""
+class DeleteNodeButton(QGraphicsPathItem):
+    """Clickable '×' symbol for deleting nodes"""
     
     def __init__(self, x, y, controller, node_id):
-        # Create a small circle for the button
-        super().__init__(x, y, 20, 20)
+        super().__init__()
         self.controller = controller
         self.node_id = node_id
         
-        # Style the button
-        self.setBrush(QBrush(QColor("#F44336")))  # Red background
-        self.setPen(QPen(QColor("#C62828"), 2))   # Darker red border
-        self.setFlag(QGraphicsEllipseItem.GraphicsItemFlag.ItemIsSelectable, True)
+        # Create '×' symbol using QPainterPath
+        path = QPainterPath()
+        # First diagonal line (top-left to bottom-right)
+        path.moveTo(x + 3, y + 3)
+        path.lineTo(x + 17, y + 17)
+        # Second diagonal line (top-right to bottom-left)
+        path.moveTo(x + 17, y + 3)
+        path.lineTo(x + 3, y + 17)
         
-        # Add the '-' text
-        self.text_item = QGraphicsTextItem("−", self)  # Using minus symbol
-        self.text_item.setDefaultTextColor(QColor("#FFFFFF"))
-        font = QFont()
-        font.setPointSize(12)
-        font.setBold(True)
-        self.text_item.setFont(font)
-        # Center the text in the circle
-        self.text_item.setPos(x + 5, y + 1)
+        self.setPath(path)
+        self.setPen(QPen(QColor("#F44336"), 4))  # Red, thick lines
+        self.setFlag(QGraphicsPathItem.GraphicsItemFlag.ItemIsSelectable, True)
     
     def mousePressEvent(self, event):
         super().mousePressEvent(event)
         self.controller.on_delete_node_button_clicked(self.node_id)
     
     def hoverEnterEvent(self, event):
-        # Lighten the button on hover
-        self.setBrush(QBrush(QColor("#EF5350")))
+        self.setPen(QPen(QColor("#EF5350"), 4))  # Lighter red on hover
         super().hoverEnterEvent(event)
     
     def hoverLeaveEvent(self, event):
-        # Return to normal color
-        self.setBrush(QBrush(QColor("#F44336")))
+        self.setPen(QPen(QColor("#F44336"), 4))  # Back to normal red
         super().hoverLeaveEvent(event)
 
 
@@ -518,6 +529,33 @@ class MainWindowController:
             connections_layout.addRow("Next Node:", self.next_node_combo)
             connections_layout.addRow("Plot Section:", self.section_combo)
             
+            # Notes section
+            notes_group = QGroupBox("Notes")
+            notes_layout = QVBoxLayout(notes_group)
+            
+            # Notes list
+            self.notes_list = QListWidget()
+            self.notes_list.setMaximumHeight(120)
+            self.notes_list.itemSelectionChanged.connect(self.on_note_selected)
+            notes_layout.addWidget(self.notes_list)
+            
+            # Notes controls
+            notes_controls_layout = QHBoxLayout()
+            self.add_note_btn = QPushButton("Add Note")
+            self.edit_note_btn = QPushButton("Edit")
+            self.delete_note_btn = QPushButton("Delete")
+            self.edit_note_btn.setEnabled(False)
+            self.delete_note_btn.setEnabled(False)
+            
+            self.add_note_btn.clicked.connect(self.on_add_note)
+            self.edit_note_btn.clicked.connect(self.on_edit_note)
+            self.delete_note_btn.clicked.connect(self.on_delete_note)
+            
+            notes_controls_layout.addWidget(self.add_note_btn)
+            notes_controls_layout.addWidget(self.edit_note_btn)
+            notes_controls_layout.addWidget(self.delete_note_btn)
+            notes_layout.addLayout(notes_controls_layout)
+            
             # Buttons
             button_layout = QHBoxLayout()
             self.save_node_btn = QPushButton("Save Changes")
@@ -530,6 +568,7 @@ class MainWindowController:
             # Add to panel
             panel_layout.addWidget(node_info_group)
             panel_layout.addWidget(connections_group)
+            panel_layout.addWidget(notes_group)
             panel_layout.addLayout(button_layout)
             panel_layout.addStretch()
             
@@ -725,6 +764,9 @@ class MainWindowController:
         
         # Populate section combo
         self.populate_section_combo(node_data)
+        
+        # Load notes for this node
+        self.load_notes_for_node(node_data.id)
 
     def populate_connection_combos(self, current_node):
         """Populate the previous/next node combo boxes"""
@@ -997,6 +1039,203 @@ class MainWindowController:
         except Exception as e:
             print(f"Error adding connected node: {e}")
             self.view.ui.statusbar.showMessage(f"Error adding node: {e}", 5000)
+
+    def on_node_context_menu(self, node_data, position):
+        """Handle right-click context menu on nodes"""
+        menu = QMenu()
+        
+        # Add notes action
+        notes_action = menu.addAction("Manage Notes...")
+        notes_action.triggered.connect(lambda: self.open_notes_dialog(node_data))
+        
+        # Add separator
+        menu.addSeparator()
+        
+        # Add existing actions
+        edit_action = menu.addAction("Edit Node")
+        edit_action.triggered.connect(lambda: self.on_node_clicked(node_data))
+        
+        delete_action = menu.addAction("Delete Node")
+        delete_action.triggered.connect(lambda: self.on_delete_node_button_clicked(node_data.id))
+        
+        # Show menu
+        menu.exec(position)
+
+    def open_notes_dialog(self, node_data):
+        """Open the notes management dialog for a node"""
+        try:
+            dialog = NodeNotesDialog(node_data, self, self.view)
+            dialog.exec()
+        except Exception as e:
+            self.view.ui.statusbar.showMessage(f"Error opening notes dialog: {e}", 5000)
+
+    def get_notes_for_node(self, node_id):
+        """Get all notes for a specific node"""
+        try:
+            with Session(self.model.engine) as session:
+                notes = session.query(LitographyNotes).filter_by(
+                    linked_node_id=node_id,
+                    project_id=self.current_project_id
+                ).all()
+                return notes
+        except Exception as e:
+            print(f"Error getting notes for node {node_id}: {e}")
+            return []
+
+    def create_note(self, node_id, title, description, note_type):
+        """Create a new note linked to a node"""
+        try:
+            with Session(self.model.engine) as session:
+                note = LitographyNotes(
+                    title=title,
+                    description=description,
+                    note_type=note_type,
+                    linked_node_id=node_id,
+                    project_id=self.current_project_id
+                )
+                session.add(note)
+                session.commit()
+                self.view.ui.statusbar.showMessage("Note created successfully", 3000)
+        except Exception as e:
+            print(f"Error creating note: {e}")
+            raise e
+
+    def update_note(self, note_id, title, description, note_type):
+        """Update an existing note"""
+        try:
+            with Session(self.model.engine) as session:
+                note = session.query(LitographyNotes).filter_by(
+                    id=note_id,
+                    project_id=self.current_project_id
+                ).first()
+                
+                if note:
+                    note.title = title
+                    note.description = description
+                    note.note_type = note_type
+                    session.commit()
+                    self.view.ui.statusbar.showMessage("Note updated successfully", 3000)
+                else:
+                    raise Exception("Note not found")
+        except Exception as e:
+            print(f"Error updating note: {e}")
+            raise e
+
+    def delete_note(self, note_id):
+        """Delete a note"""
+        try:
+            with Session(self.model.engine) as session:
+                note = session.query(LitographyNotes).filter_by(
+                    id=note_id,
+                    project_id=self.current_project_id
+                ).first()
+                
+                if note:
+                    session.delete(note)
+                    session.commit()
+                    self.view.ui.statusbar.showMessage("Note deleted successfully", 3000)
+                else:
+                    raise Exception("Note not found")
+        except Exception as e:
+            print(f"Error deleting note: {e}")
+            raise e
+
+    def node_has_notes(self, node_id):
+        """Check if a node has any notes attached to it"""
+        try:
+            with Session(self.model.engine) as session:
+                count = session.query(LitographyNotes).filter_by(
+                    linked_node_id=node_id,
+                    project_id=self.current_project_id
+                ).count()
+                return count > 0
+        except Exception as e:
+            print(f"Error checking notes for node {node_id}: {e}")
+            return False
+
+    def load_notes_for_node(self, node_id):
+        """Load notes for the current node into the side panel"""
+        self.notes_list.clear()
+        notes = self.get_notes_for_node(node_id)
+        
+        for note in notes:
+            item = QListWidgetItem(f"[{note.note_type.name}] {note.title}")
+            item.setData(Qt.ItemDataRole.UserRole, note)
+            self.notes_list.addItem(item)
+
+    def on_note_selected(self):
+        """Handle note selection in the side panel"""
+        current_item = self.notes_list.currentItem()
+        if current_item:
+            self.edit_note_btn.setEnabled(True)
+            self.delete_note_btn.setEnabled(True)
+        else:
+            self.edit_note_btn.setEnabled(False)
+            self.delete_note_btn.setEnabled(False)
+
+    def on_add_note(self):
+        """Add a new note from the side panel"""
+        if not self.selected_node:
+            return
+        
+        try:
+            dialog = NodeNotesDialog(self.selected_node, self, self.view)
+            dialog.exec()
+            # Refresh notes list and visual indicators
+            self.load_notes_for_node(self.selected_node.id)
+            self.load_and_draw_nodes()
+        except Exception as e:
+            self.view.ui.statusbar.showMessage(f"Error opening notes dialog: {e}", 5000)
+
+    def on_edit_note(self):
+        """Edit the selected note"""
+        if not self.selected_node:
+            return
+            
+        current_item = self.notes_list.currentItem()
+        if not current_item:
+            return
+            
+        try:
+            dialog = NodeNotesDialog(self.selected_node, self, self.view)
+            # Pre-select the note in the dialog
+            note = current_item.data(Qt.ItemDataRole.UserRole)
+            dialog.current_note = note
+            dialog.load_note_to_editor(note)
+            dialog.set_editor_enabled(True)
+            dialog.exec()
+            # Refresh notes list
+            self.load_notes_for_node(self.selected_node.id)
+            self.load_and_draw_nodes()
+        except Exception as e:
+            self.view.ui.statusbar.showMessage(f"Error opening notes dialog: {e}", 5000)
+
+    def on_delete_note(self):
+        """Delete the selected note from the side panel"""
+        if not self.selected_node:
+            return
+            
+        current_item = self.notes_list.currentItem()
+        if not current_item:
+            return
+            
+        note = current_item.data(Qt.ItemDataRole.UserRole)
+        
+        reply = QMessageBox.question(
+            self.view,
+            "Confirm Delete",
+            f"Are you sure you want to delete the note '{note.title}'?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No
+        )
+        
+        if reply == QMessageBox.StandardButton.Yes:
+            try:
+                self.delete_note(note.id)
+                self.load_notes_for_node(self.selected_node.id)
+                self.load_and_draw_nodes()  # Refresh visual indicators
+            except Exception as e:
+                self.view.ui.statusbar.showMessage(f"Error deleting note: {e}", 5000)
 
     def on_delete_node_button_clicked(self, node_id):
         """Handle clicking '-' button to delete a node"""
@@ -1360,12 +1599,12 @@ class MainWindowController:
             
             # Add "+" button before the node (except for the very first node)
             if i == 0:
-                # Add "+" button at the very beginning for the first node
-                before_button = AddNodeButton(x_pos - 35, y_pos + 20, self, "before", node.id)
+                # Add "+" button at the very beginning for the first node (centered vertically with node)
+                before_button = AddNodeButton(x_pos - 35, y_pos + 27.5, self, "before", node.id)  # (80-25)/2 = 27.5
                 self.node_scene.addItem(before_button)
             
-            # Add small delete "-" button on the top-left of the node
-            delete_button = DeleteNodeButton(x_pos - 10, y_pos - 10, self, node.id)
+            # Add small delete "-" button on the top-right of the node
+            delete_button = DeleteNodeButton(x_pos + 60, y_pos - 10, self, node.id)  # Top-right corner
             self.node_scene.addItem(delete_button)
             
             # Get color based on node type
@@ -1377,13 +1616,20 @@ class MainWindowController:
             node_item.setPen(QPen(QColor("#333333"), 2))
             self.node_scene.addItem(node_item)
             
+            # Add note indicator if node has notes
+            if self.node_has_notes(node.id):
+                note_indicator = QGraphicsTextItem("📝")
+                note_indicator.setPos(x_pos + 45, y_pos - 5)  # Top-center, avoiding delete button
+                note_indicator.setFont(QFont("Arial", 12))
+                self.node_scene.addItem(note_indicator)
+            
             # Store position for connection drawing
             center_x = x_pos + 40  # Center of the square (80/2)
             center_y = y_pos + 40
             node_positions[node.id] = (center_x, center_y)
             
-            # Add "+" button after each node
-            after_button = AddNodeButton(x_pos + 90, y_pos + 28, self, "after", node.id)
+            # Add "+" button after each node (centered vertically with node)
+            after_button = AddNodeButton(x_pos + 90, y_pos + 27.5, self, "after", node.id)  # (80-25)/2 = 27.5
             self.node_scene.addItem(after_button)
             
             x_pos += 140  # Adjusted spacing for new layout
