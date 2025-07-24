@@ -51,6 +51,7 @@ from storymaster.model.database.schema.base import (
     LitographyNode,
     LitographyNodeToPlotSection,
     LitographyNotes,
+    LitographyPlot,
     LitographyNoteToActor,
     LitographyNoteToBackground,
     LitographyNoteToClass,
@@ -74,6 +75,7 @@ from storymaster.model.database.schema.base import (
 )
 from storymaster.view.common.common_view import MainView
 from storymaster.view.common.open_project_dialog import OpenProjectDialog
+from storymaster.view.common.plot_manager_dialog import PlotManagerDialog
 
 # Import the dialogs
 from storymaster.view.litographer.add_node_dialog import AddNodeDialog
@@ -1752,8 +1754,11 @@ class MainWindowController:
         self.view.ui.litographerNavButton.released.connect(self.on_litographer_selected)
         self.view.ui.lorekeeperNavButton.released.connect(self.on_lorekeeper_selected)
 
-        # --- File Menu ---
+        # --- Plot Menu ---
         self.view.ui.actionOpen.triggered.connect(self.on_open_project_clicked)
+        self.view.ui.actionNewPlot.triggered.connect(self.on_new_plot_clicked)
+        self.view.ui.actionSwitchPlot.triggered.connect(self.on_switch_plot_clicked)
+        self.view.ui.actionDeletePlot.triggered.connect(self.on_delete_plot_clicked)
 
         # --- Litographer Toolbar ---
         self.view.ui.actionAddNode.triggered.connect(self.on_add_node_clicked)
@@ -1784,6 +1789,145 @@ class MainWindowController:
                 self.load_and_draw_nodes()
             else:
                 self._refresh_current_table_view()
+
+    # --- Plot Management Methods ---
+    
+    def on_new_plot_clicked(self):
+        """Handle creating a new plot in the current project."""
+        try:
+            with Session(self.model.engine) as session:
+                plots = session.query(LitographyPlot).filter_by(
+                    project_id=self.current_project_id
+                ).all()
+                
+                dialog = PlotManagerDialog(self.view)
+                dialog.populate_plots(plots, self.current_plot_id)
+                dialog.new_plot_input.setText("")
+                dialog.new_plot_input.setFocus()
+                
+                if dialog.exec() == QDialog.DialogCode.Accepted and hasattr(dialog, 'action'):
+                    if dialog.action == "add":
+                        new_plot = LitographyPlot(
+                            title=dialog.new_plot_name,
+                            project_id=self.current_project_id
+                        )
+                        session.add(new_plot)
+                        session.commit()
+                        
+                        self.view.ui.statusbar.showMessage(
+                            f"Created new plot: {dialog.new_plot_name}", 5000
+                        )
+                        
+        except Exception as e:
+            print(f"Error creating new plot: {e}")
+            self.view.ui.statusbar.showMessage(f"Error creating plot: {e}", 5000)
+    
+    def on_switch_plot_clicked(self):
+        """Handle switching to a different plot."""
+        try:
+            with Session(self.model.engine) as session:
+                plots = session.query(LitographyPlot).filter_by(
+                    project_id=self.current_project_id
+                ).all()
+                
+                if len(plots) <= 1:
+                    self.view.ui.statusbar.showMessage(
+                        "Only one plot available. Create more plots to switch.", 5000
+                    )
+                    return
+                
+                dialog = PlotManagerDialog(self.view)
+                dialog.populate_plots(plots, self.current_plot_id)
+                
+                if dialog.exec() == QDialog.DialogCode.Accepted and hasattr(dialog, 'action'):
+                    if dialog.action == "switch" and dialog.selected_plot_id:
+                        self.current_plot_id = dialog.selected_plot_id
+                        
+                        plot = session.query(LitographyPlot).get(self.current_plot_id)
+                        plot_name = plot.title if plot else f"Plot {self.current_plot_id}"
+                        
+                        self.view.ui.statusbar.showMessage(
+                            f"Switched to plot: {plot_name}", 5000
+                        )
+                        
+                        # Refresh the litographer view if currently active
+                        if self.view.ui.pageStack.currentIndex() == 0:
+                            self.load_plot_sections()
+                            self.load_and_draw_nodes()
+                            
+        except Exception as e:
+            print(f"Error switching plot: {e}")
+            self.view.ui.statusbar.showMessage(f"Error switching plot: {e}", 5000)
+    
+    def on_delete_plot_clicked(self):
+        """Handle deleting the current plot."""
+        try:
+            with Session(self.model.engine) as session:
+                plots = session.query(LitographyPlot).filter_by(
+                    project_id=self.current_project_id
+                ).all()
+                
+                if len(plots) <= 1:
+                    self.view.ui.statusbar.showMessage(
+                        "Cannot delete the only plot in the project.", 5000
+                    )
+                    return
+                
+                dialog = PlotManagerDialog(self.view)
+                dialog.populate_plots(plots, self.current_plot_id)
+                
+                if dialog.exec() == QDialog.DialogCode.Accepted and hasattr(dialog, 'action'):
+                    if dialog.action == "delete" and dialog.selected_plot_id:
+                        plot_to_delete = session.query(LitographyPlot).get(dialog.selected_plot_id)
+                        plot_name = plot_to_delete.title if plot_to_delete else f"Plot {dialog.selected_plot_id}"
+                        
+                        # Delete all related data
+                        sections = session.query(LitographyPlotSection).filter_by(
+                            plot_id=dialog.selected_plot_id
+                        ).all()
+                        
+                        for section in sections:
+                            # Delete junction records
+                            session.query(LitographyNodeToPlotSection).filter_by(
+                                plot_section_id=section.id
+                            ).delete()
+                            
+                            # Delete nodes in this section
+                            nodes = session.query(LitographyNode).join(
+                                LitographyNodeToPlotSection
+                            ).filter(
+                                LitographyNodeToPlotSection.litography_plot_section_id == section.id
+                            ).all()
+                            
+                            for node in nodes:
+                                session.delete(node)
+                            
+                            session.delete(section)
+                        
+                        session.delete(plot_to_delete)
+                        session.commit()
+                        
+                        # If we deleted the current plot, switch to the first available plot
+                        if dialog.selected_plot_id == self.current_plot_id:
+                            remaining_plots = session.query(LitographyPlot).filter_by(
+                                project_id=self.current_project_id
+                            ).first()
+                            
+                            if remaining_plots:
+                                self.current_plot_id = remaining_plots.id
+                                
+                                # Refresh the view
+                                if self.view.ui.pageStack.currentIndex() == 0:
+                                    self.load_plot_sections()
+                                    self.load_and_draw_nodes()
+                        
+                        self.view.ui.statusbar.showMessage(
+                            f"Deleted plot: {plot_name}", 5000
+                        )
+                        
+        except Exception as e:
+            print(f"Error deleting plot: {e}")
+            self.view.ui.statusbar.showMessage(f"Error deleting plot: {e}", 5000)
 
     # --- Litographer Methods ---
 
