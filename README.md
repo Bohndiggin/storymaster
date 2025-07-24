@@ -139,6 +139,40 @@ Use the **Plot** menu to:
 - Create an issue on GitHub
 - Review the sample data to understand the data model
 
+## 📦 Distribution & Packaging
+
+### For Developers - Creating Distribution Packages
+
+**Build all distribution formats:**
+```bash
+python build_all.py
+```
+
+**Individual build options:**
+```bash
+# Cross-platform executable
+python build_executable.py
+
+# Linux AppImage (universal binary)
+python build_appimage.py
+
+# Linux RPM package
+python build_rpm.py
+```
+
+**Available distribution formats:**
+- **Executable** - Standalone binary with Python runtime included
+- **AppImage** - Universal Linux binary (no installation required)
+- **RPM** - Linux package for Red Hat-based distributions
+- **Future**: Windows installer, macOS app bundle
+
+### For End Users - Download Options
+
+1. **Python Source** - Use the installer (`python install.py`)
+2. **Executable** - Download and run (no Python installation needed)
+3. **AppImage** - Download, make executable, and run (Linux)
+4. **RPM** - Install system-wide on Fedora/RHEL/CentOS
+
 ## 📄 License
 
 This project is open source. See LICENSE file for details.

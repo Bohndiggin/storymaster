@@ -8,3 +8,6 @@ pytest==8.4.1
 black==25.1.0
 isort==6.0.1
 Faker==37.4.2
+
+# Distribution dependencies
+pyinstaller==6.11.1

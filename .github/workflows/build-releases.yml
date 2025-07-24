@@ -1,0 +1,178 @@
+name: Build Multi-Platform Releases
+
+on:
+  push:
+    tags:
+      - 'v*'  # Trigger on version tags like v1.0.0
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Build Windows executable
+      run: python build_executable.py
+    
+    - name: Upload Windows artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: storymaster-windows
+        path: |
+          dist/storymaster/
+          storymaster-*.zip
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Build macOS app bundle
+      run: python build_macos.py
+    
+    - name: Create DMG (if hdiutil available)
+      run: |
+        if command -v hdiutil &> /dev/null; then
+          hdiutil create -srcfolder Storymaster.app -volname "Storymaster" Storymaster-macOS.dmg
+        else
+          tar -czf Storymaster-macOS.tar.gz Storymaster.app
+        fi
+    
+    - name: Upload macOS artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: storymaster-macos
+        path: |
+          Storymaster.app/
+          Storymaster-macOS.*
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          python3-pyqt6 \
+          python3-pyqt6.qtwidgets \
+          rpm \
+          fuse \
+          libfuse2
+    
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Build Linux executable
+      run: python build_executable.py
+    
+    - name: Build AppImage
+      run: python build_appimage.py
+    
+    - name: Build RPM (if rpmbuild available)
+      run: |
+        if command -v rpmbuild &> /dev/null; then
+          python build_rpm.py
+        else
+          echo "rpmbuild not available, skipping RPM build"
+        fi
+    
+    - name: Upload Linux artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: storymaster-linux
+        path: |
+          dist/storymaster/
+          storymaster-*.tar.gz
+          *.AppImage
+          ~/rpmbuild/RPMS/noarch/*.rpm
+
+  create-release:
+    needs: [build-windows, build-macos, build-linux]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: release-artifacts
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        draft: true
+        generate_release_notes: true
+        files: |
+          release-artifacts/**/*
+        body: |
+          ## 🏰 Storymaster Release
+          
+          **Visual Story Plotting & World-Building Tool**
+          
+          ### 📦 Download Options:
+          
+          **Windows:**
+          - `storymaster-windows.zip` - Portable executable
+          
+          **macOS:**
+          - `Storymaster-macOS.dmg` - Installer disk image
+          - `Storymaster-macOS.tar.gz` - Archive version
+          
+          **Linux:**
+          - `Storymaster-x86_64.AppImage` - Universal binary (recommended)
+          - `storymaster-linux.tar.gz` - Portable executable
+          - `storymaster-*.rpm` - RPM package for Red Hat-based distributions
+          
+          ### 🚀 Quick Start:
+          
+          1. **Windows**: Extract zip and run `storymaster.exe`
+          2. **macOS**: Open DMG and drag to Applications, or extract tar.gz
+          3. **Linux**: Make AppImage executable and run, or extract tar.gz
+          
+          ### ✨ Features:
+          
+          - **Multi-plot support** - Create and switch between different storylines
+          - **Visual story plotting** with node-based structure
+          - **Comprehensive world-building** database
+          - **SQLite backend** - fully offline and portable
+          - **Dark theme** UI for comfortable writing sessions
+          
+          ---
+          
+          **First time using Storymaster?** The application will guide you through initial setup and optionally load sample data to get you started.
+          
+          **Questions or issues?** Check the documentation or create an issue on GitHub.
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
