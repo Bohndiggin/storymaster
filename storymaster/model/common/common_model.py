@@ -221,7 +221,10 @@ class BaseModel:
         return [table for table in all_tables if table not in hidden_tables]
 
     def get_table_data(
-        self, table_name: str, storyline_id: int | None = None, setting_id: int | None = None
+        self,
+        table_name: str,
+        storyline_id: int | None = None,
+        setting_id: int | None = None,
     ) -> tuple[list[str], list[tuple]]:
         """
         Fetches all data from a specific table, optionally filtered by storyline_id or setting_id.
@@ -287,7 +290,10 @@ class BaseModel:
         return result.as_dict() if result else None
 
     def get_all_rows_as_dicts(
-        self, table_name: str, storyline_id: int | None = None, setting_id: int | None = None
+        self,
+        table_name: str,
+        storyline_id: int | None = None,
+        setting_id: int | None = None,
     ) -> list[dict]:
         """Fetches all rows from a table as dicts, optionally filtered by storyline or setting."""
         orm_class = self._table_to_class_map.get(table_name)
@@ -296,7 +302,7 @@ class BaseModel:
 
         with Session(self.engine) as session:
             query = session.query(orm_class)
-            
+
             # Filter by setting_id if the table has that column
             if hasattr(orm_class, "setting_id"):
                 if setting_id:
@@ -365,7 +371,11 @@ class BaseModel:
             print(f"Successfully updated row {pk_value} in {table_name}")
 
     def add_row(
-        self, table_name: str, data_dict: dict, storyline_id: int | None = None, setting_id: int | None = None
+        self,
+        table_name: str,
+        data_dict: dict,
+        storyline_id: int | None = None,
+        setting_id: int | None = None,
     ):
         """
         Adds a new row to the database, associating it with the correct setting.

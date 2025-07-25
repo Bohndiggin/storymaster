@@ -41,9 +41,8 @@ from PyQt6.QtWidgets import (
 )
 from sqlalchemy.orm import Session
 
-from storymaster.model.common.common_model import BaseModel
 from storymaster.model.common.backup_manager import BackupManager
-from storymaster.view.common.database_manager_dialog import DatabaseManagerDialog
+from storymaster.model.common.common_model import BaseModel
 from storymaster.model.database.schema.base import (
     Actor,
     Background,
@@ -53,7 +52,6 @@ from storymaster.model.database.schema.base import (
     LitographyNode,
     LitographyNodeToPlotSection,
     LitographyNotes,
-    LitographyPlot,
     LitographyNoteToActor,
     LitographyNoteToBackground,
     LitographyNoteToClass,
@@ -65,6 +63,7 @@ from storymaster.model.database.schema.base import (
     LitographyNoteToSkills,
     LitographyNoteToSubRace,
     LitographyNoteToWorldData,
+    LitographyPlot,
     LitographyPlotSection,
     Location,
     NodeType,
@@ -76,6 +75,7 @@ from storymaster.model.database.schema.base import (
     WorldData,
 )
 from storymaster.view.common.common_view import MainView
+from storymaster.view.common.database_manager_dialog import DatabaseManagerDialog
 from storymaster.view.common.new_setting_dialog import NewSettingDialog
 from storymaster.view.common.new_storyline_dialog import NewStorylineDialog
 from storymaster.view.common.open_storyline_dialog import OpenStorylineDialog
@@ -502,9 +502,11 @@ class MainWindowController:
         # --- Set up Litographer scene ---
         self.node_scene = QGraphicsScene()
         self.view.ui.nodeGraphView.setScene(self.node_scene)
-        
+
         # Enable context menu on graphics view
-        self.view.ui.nodeGraphView.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.view.ui.nodeGraphView.setContextMenuPolicy(
+            Qt.ContextMenuPolicy.CustomContextMenu
+        )
         self.view.ui.nodeGraphView.customContextMenuRequested.connect(
             self.on_litographer_context_menu
         )
@@ -518,13 +520,16 @@ class MainWindowController:
 
         # --- Set up backup system ---
         import os
-        database_path = os.getenv("DATABASE_CONNECTION", "sqlite:///storymaster.db").replace("sqlite:///", "")
+
+        database_path = os.getenv(
+            "DATABASE_CONNECTION", "sqlite:///storymaster.db"
+        ).replace("sqlite:///", "")
         self.backup_manager = BackupManager(database_path)
-        
+
         # Connect backup signals
         self.backup_manager.backup_created.connect(self.on_backup_created)
         self.backup_manager.backup_failed.connect(self.on_backup_failed)
-        
+
         # Start automatic backups
         self.backup_manager.start_automatic_backups()
 
@@ -1208,29 +1213,29 @@ class MainWindowController:
 
         # Show menu
         menu.exec(position)
-    
+
     def on_litographer_context_menu(self, position):
         """Handle right-click context menu on litographer graphics view"""
         menu = QMenu()
-        
+
         # Plot management section
         plot_menu = menu.addMenu("Plot Management")
-        
+
         new_plot_action = plot_menu.addAction("New Plot")
         new_plot_action.triggered.connect(self.on_new_plot_clicked)
-        
+
         switch_plot_action = plot_menu.addAction("Switch Plot")
         switch_plot_action.triggered.connect(self.on_switch_plot_clicked)
-        
+
         delete_plot_action = plot_menu.addAction("Delete Plot")
         delete_plot_action.triggered.connect(self.on_delete_plot_clicked)
-        
+
         menu.addSeparator()
-        
+
         # Node creation (only if we're in litographer mode)
         add_node_action = menu.addAction("Add Node")
         add_node_action.triggered.connect(self.on_add_node_clicked)
-        
+
         # Show menu at the clicked position
         menu.exec(self.view.ui.nodeGraphView.mapToGlobal(position))
 
@@ -1239,16 +1244,21 @@ class MainWindowController:
         try:
             # Get current storyline name
             storylines = self.model.get_all_storylines()
-            storyline_name = next((s.name for s in storylines if s.id == self.current_storyline_id), "Unknown")
-            
+            storyline_name = next(
+                (s.name for s in storylines if s.id == self.current_storyline_id),
+                "Unknown",
+            )
+
             # Get current setting name
             settings = self.model.get_all_settings()
-            setting_name = next((s.name for s in settings if s.id == self.current_setting_id), "Unknown")
-            
+            setting_name = next(
+                (s.name for s in settings if s.id == self.current_setting_id), "Unknown"
+            )
+
             # Update status bar
             status_text = f"Storyline: {storyline_name} | Setting: {setting_name}"
             self.view.ui.statusbar.showMessage(status_text)
-            
+
         except Exception as e:
             print(f"Error updating status indicators: {e}")
 
@@ -1451,13 +1461,21 @@ class MainWindowController:
                 )
                 classes = session.query(Class_).filter_by(setting_id=setting_id).all()
                 factions = session.query(Faction).filter_by(setting_id=setting_id).all()
-                histories = session.query(History).filter_by(setting_id=setting_id).all()
-                locations = session.query(Location).filter_by(setting_id=setting_id).all()
+                histories = (
+                    session.query(History).filter_by(setting_id=setting_id).all()
+                )
+                locations = (
+                    session.query(Location).filter_by(setting_id=setting_id).all()
+                )
                 objects = session.query(Object_).filter_by(setting_id=setting_id).all()
                 races = session.query(Race).filter_by(setting_id=setting_id).all()
                 skills = session.query(Skills).filter_by(setting_id=setting_id).all()
-                sub_races = session.query(SubRace).filter_by(setting_id=setting_id).all()
-                world_data = session.query(WorldData).filter_by(setting_id=setting_id).all()
+                sub_races = (
+                    session.query(SubRace).filter_by(setting_id=setting_id).all()
+                )
+                world_data = (
+                    session.query(WorldData).filter_by(setting_id=setting_id).all()
+                )
 
                 return {
                     "actors": actors,
@@ -1827,17 +1845,23 @@ class MainWindowController:
 
         # --- File Menu ---
         self.view.ui.actionOpen.triggered.connect(self.on_open_storyline_clicked)
-        self.view.ui.actionDatabaseManager.triggered.connect(self.on_database_manager_clicked)
+        self.view.ui.actionDatabaseManager.triggered.connect(
+            self.on_database_manager_clicked
+        )
         self.view.ui.actionCreateBackup.triggered.connect(self.on_create_backup_clicked)
-        
+
         # --- Storyline Menu ---
         self.view.ui.actionNewStoryline.triggered.connect(self.on_new_storyline_clicked)
-        self.view.ui.actionSwitchStoryline.triggered.connect(self.on_switch_storyline_clicked)
-        
+        self.view.ui.actionSwitchStoryline.triggered.connect(
+            self.on_switch_storyline_clicked
+        )
+
         # --- Setting Menu ---
         self.view.ui.actionNewSetting.triggered.connect(self.on_new_setting_clicked)
-        self.view.ui.actionSwitchSetting.triggered.connect(self.on_switch_setting_clicked)
-        
+        self.view.ui.actionSwitchSetting.triggered.connect(
+            self.on_switch_setting_clicked
+        )
+
         # --- Plot Actions (context menu only now) ---
         self.view.ui.actionNewPlot.triggered.connect(self.on_new_plot_clicked)
         self.view.ui.actionSwitchPlot.triggered.connect(self.on_switch_plot_clicked)
@@ -1872,17 +1896,17 @@ class MainWindowController:
                 self.load_and_draw_nodes()
             else:
                 self._refresh_current_table_view()
-                
+
     def on_database_manager_clicked(self):
         """Opens the database and backup manager dialog."""
         dialog = DatabaseManagerDialog(
             parent=self.view,
             current_db_path=str(self.backup_manager.database_path),
-            backup_manager=self.backup_manager
+            backup_manager=self.backup_manager,
         )
         dialog.database_changed.connect(self.on_database_changed)
         dialog.exec()
-        
+
     def on_create_backup_clicked(self):
         """Creates a manual backup of the database."""
         backup_path = self.backup_manager.create_backup()
@@ -1890,22 +1914,23 @@ class MainWindowController:
             self.view.ui.statusbar.showMessage("Backup created successfully", 5000)
         else:
             self.view.ui.statusbar.showMessage("Failed to create backup", 5000)
-            
+
     def on_database_changed(self, new_database_path: str):
         """Handle database change - requires application restart."""
         reply = QMessageBox.information(
-            self.view, "Database Changed",
+            self.view,
+            "Database Changed",
             f"Database changed to: {new_database_path}\\n\\n"
             "The application needs to be restarted to use the new database.",
-            QMessageBox.StandardButton.Ok
+            QMessageBox.StandardButton.Ok,
         )
         # Note: Full database switching would require reinitializing the entire application
         # For now, we inform the user to restart
-        
+
     def on_backup_created(self, message: str):
         """Handle backup created signal."""
         self.view.ui.statusbar.showMessage(message, 3000)
-        
+
     def on_backup_failed(self, message: str):
         """Handle backup failed signal."""
         self.view.ui.statusbar.showMessage(f"Backup failed: {message}", 5000)
@@ -1948,7 +1973,9 @@ class MainWindowController:
 
     def on_switch_storyline_clicked(self):
         """Opens a dialog to switch between storylines."""
-        dialog = StorylineSwitcherDialog(self.model, self.current_storyline_id, self.view)
+        dialog = StorylineSwitcherDialog(
+            self.model, self.current_storyline_id, self.view
+        )
         if dialog.exec() == QDialog.DialogCode.Accepted:
             new_storyline_id = dialog.get_selected_storyline_id()
             if new_storyline_id:
@@ -1956,8 +1983,11 @@ class MainWindowController:
                     self.current_storyline_id = new_storyline_id
                     # Get storyline name for status message
                     storylines = self.model.get_all_storylines()
-                    storyline_name = next((s.name for s in storylines if s.id == new_storyline_id), "Unknown")
-                    
+                    storyline_name = next(
+                        (s.name for s in storylines if s.id == new_storyline_id),
+                        "Unknown",
+                    )
+
                     self.view.ui.statusbar.showMessage(
                         f"Switched to storyline: {storyline_name}", 5000
                     )
@@ -1982,8 +2012,10 @@ class MainWindowController:
                     self.current_setting_id = new_setting_id
                     # Get setting name for status message
                     settings = self.model.get_all_settings()
-                    setting_name = next((s.name for s in settings if s.id == new_setting_id), "Unknown")
-                    
+                    setting_name = next(
+                        (s.name for s in settings if s.id == new_setting_id), "Unknown"
+                    )
+
                     self.view.ui.statusbar.showMessage(
                         f"Switched to setting: {setting_name}", 5000
                     )

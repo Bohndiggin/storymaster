@@ -29,7 +29,9 @@ class LitographerPlotNodeModel(BaseLitographerPageModel):
     next_node: typing.Self | None
     node_table_object: schema.LitographyNode
 
-    def __init__(self, user: int, setting: int, storyline_id: int, node_id: int) -> None:
+    def __init__(
+        self, user: int, setting: int, storyline_id: int, node_id: int
+    ) -> None:
         super().__init__(user, setting, storyline_id)
         try:
             self._gather_self(node_id)
@@ -111,7 +113,9 @@ class LitographerLinkedList(BaseLitographerPageModel):
     head: LitographerPlotNodeModel
     tail: LitographerPlotNodeModel | None
 
-    def __init__(self, user: int, setting: int, storyline_id: int, section_id: int) -> None:
+    def __init__(
+        self, user: int, setting: int, storyline_id: int, section_id: int
+    ) -> None:
         super().__init__(user, setting, storyline_id)
         self.section_id = section_id
         self.head = None
@@ -372,7 +376,9 @@ class LitographerPlotSectionModel(BaseLitographerPageModel):
     nodes: LitographerLinkedList
     section_id: int
 
-    def __init__(self, user: int, setting: int, storyline_id: int, section_id: int) -> None:
+    def __init__(
+        self, user: int, setting: int, storyline_id: int, section_id: int
+    ) -> None:
         super().__init__(user, setting, storyline_id)
         self.section_id = section_id
         self.nodes = LitographerLinkedList(

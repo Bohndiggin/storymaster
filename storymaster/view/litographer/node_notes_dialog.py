@@ -536,7 +536,9 @@ class LoreSelectionDialog(QDialog):
         try:
             # This would need the actual setting_id from the storyline
             # For now, we'll add a placeholder
-            self.entity_list.addItem("(Feature requires storyline setting configuration)")
+            self.entity_list.addItem(
+                "(Feature requires storyline setting configuration)"
+            )
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to load entities: {str(e)}")
 

@@ -58,7 +58,9 @@ def get_lorekeeper_backgrounds_from_setting(setting_id: int) -> sql.Executable:
         sql executable
     """
 
-    return sql.select(schema.Background).where(schema.Background.setting_id == setting_id)
+    return sql.select(schema.Background).where(
+        schema.Background.setting_id == setting_id
+    )
 
 
 def get_lorekeeper_races_from_setting(setting_id: int) -> sql.Executable:

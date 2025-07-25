@@ -55,14 +55,21 @@ def global_setup():
             session.commit()
             pbar.update(1)
 
-            session.add(schema.Storyline(id=1, user_id=1, name="Test Storyline", description="Test storyline"))
+            session.add(
+                schema.Storyline(
+                    id=1, user_id=1, name="Test Storyline", description="Test storyline"
+                )
+            )
 
             session.commit()
             pbar.update(1)
 
             session.add(
                 schema.Setting(
-                    id=1, name="TESTSETTING", description="SETTING FOR TESTING", user_id=1
+                    id=1,
+                    name="TESTSETTING",
+                    description="SETTING FOR TESTING",
+                    user_id=1,
                 )
             )
 

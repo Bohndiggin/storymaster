@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 """
 AppImage Builder for Storymaster
@@ -8,9 +7,9 @@ without installation. AppImages are portable and self-contained.
 """
 
 import os
-import sys
 import shutil
 import subprocess
+import sys
 import tempfile
 import urllib.request
 from pathlib import Path
@@ -28,25 +27,25 @@ def print_header():
 def download_appimage_tool():
     """Download appimagetool if not present"""
     print("[CHECK] Checking AppImage tools...")
-    
+
     tool_path = Path("appimagetool-x86_64.AppImage")
-    
+
     if tool_path.exists():
         print("[OK] appimagetool found")
         return str(tool_path)
-    
+
     print("[DOWNLOAD]  Downloading appimagetool...")
-    
+
     try:
         url = "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"
         urllib.request.urlretrieve(url, tool_path)
-        
+
         # Make executable
         os.chmod(tool_path, 0o755)
-        
+
         print("[OK] appimagetool downloaded")
         return str(tool_path)
-        
+
     except Exception as e:
         print(f"[ERROR] Failed to download appimagetool: {e}")
         return None
@@ -55,24 +54,24 @@ def download_appimage_tool():
 def create_appdir_structure():
     """Create AppDir structure for AppImage"""
     print("\n[BUILD]  Creating AppDir structure...")
-    
+
     appdir = Path("Storymaster.AppDir")
-    
+
     # Clean up existing AppDir
     if appdir.exists():
         shutil.rmtree(appdir)
-    
+
     # Create directory structure
     dirs = [
         "usr/bin",
         "usr/share/applications",
         "usr/share/icons/hicolor/scalable/apps",
-        "usr/share/storymaster"
+        "usr/share/storymaster",
     ]
-    
+
     for dir_path in dirs:
         (appdir / dir_path).mkdir(parents=True)
-    
+
     print("[OK] AppDir structure created")
     return appdir
 
@@ -80,15 +79,11 @@ def create_appdir_structure():
 def install_python_app(appdir):
     """Install Python application and dependencies into AppDir"""
     print("\n[PACKAGE] Installing application into AppDir...")
-    
+
     try:
         # Copy application files
-        app_files = [
-            'storymaster/',
-            'tests/',
-            'init_database.py'
-        ]
-        
+        app_files = ["storymaster/", "tests/", "init_database.py"]
+
         for file_path in app_files:
             src = Path(file_path)
             if src.exists():
@@ -98,10 +93,10 @@ def install_python_app(appdir):
                 else:
                     shutil.copy2(src, dst)
                 print(f"   Copied {file_path}")
-        
+
         # Create launcher script
         launcher_script = appdir / "usr/bin/storymaster"
-        launcher_content = '''#!/bin/bash
+        launcher_content = """#!/bin/bash
 # Storymaster AppImage launcher
 
 # Get the directory where this script is located
@@ -147,16 +142,16 @@ fi
 
 # Launch the application
 exec $PYTHON_CMD storymaster/main.py "$@"
-'''
-        
-        with open(launcher_script, 'w') as f:
+"""
+
+        with open(launcher_script, "w") as f:
             f.write(launcher_content)
-        
+
         os.chmod(launcher_script, 0o755)
-        
+
         # Create desktop entry
         desktop_entry = appdir / "usr/share/applications/storymaster.desktop"
-        desktop_content = '''[Desktop Entry]
+        desktop_content = """[Desktop Entry]
 Version=1.0
 Type=Application
 Name=Storymaster
@@ -167,44 +162,44 @@ Terminal=false
 Categories=Office;Publishing;
 Keywords=writing;story;plot;worldbuilding;creative;
 StartupNotify=true
-'''
-        
-        with open(desktop_entry, 'w') as f:
+"""
+
+        with open(desktop_entry, "w") as f:
             f.write(desktop_content)
-        
+
         # Create a simple SVG icon
         icon_path = appdir / "usr/share/icons/hicolor/scalable/apps/storymaster.svg"
-        icon_content = '''<?xml version="1.0" encoding="UTF-8"?>
+        icon_content = """<?xml version="1.0" encoding="UTF-8"?>
 <svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
   <rect width="64" height="64" fill="#2e2e2e" rx="8"/>
   <text x="32" y="25" text-anchor="middle" fill="#dcdcdc" font-size="16" font-family="Arial">[CASTLE]</text>
   <text x="32" y="45" text-anchor="middle" fill="#af80f8" font-size="8" font-family="Arial">STORY</text>
   <text x="32" y="55" text-anchor="middle" fill="#af80f8" font-size="8" font-family="Arial">MASTER</text>
-</svg>'''
-        
-        with open(icon_path, 'w') as f:
+</svg>"""
+
+        with open(icon_path, "w") as f:
             f.write(icon_content)
-        
+
         # Copy icon and desktop file to AppDir root (required for AppImage)
         shutil.copy2(icon_path, appdir / "storymaster.svg")
         shutil.copy2(desktop_entry, appdir / "storymaster.desktop")
-        
+
         # Create AppRun script
         apprun_script = appdir / "AppRun"
-        apprun_content = '''#!/bin/bash
+        apprun_content = """#!/bin/bash
 # AppRun script for Storymaster
 
 exec "$APPDIR/usr/bin/storymaster" "$@"
-'''
-        
-        with open(apprun_script, 'w') as f:
+"""
+
+        with open(apprun_script, "w") as f:
             f.write(apprun_content)
-        
+
         os.chmod(apprun_script, 0o755)
-        
+
         print("[OK] Application installed into AppDir")
         return True
-        
+
     except Exception as e:
         print(f"[ERROR] Failed to install application: {e}")
         return False
@@ -213,24 +208,24 @@ exec "$APPDIR/usr/bin/storymaster" "$@"
 def build_appimage(appdir, appimagetool_path):
     """Build the AppImage using appimagetool"""
     print("\n[COMPILE] Building AppImage...")
-    
+
     try:
         # Set environment variable to skip desktop integration
         env = os.environ.copy()
-        env['ARCH'] = 'x86_64'
-        
+        env["ARCH"] = "x86_64"
+
         cmd = [f"./{appimagetool_path}", str(appdir), "Storymaster-x86_64.AppImage"]
-        
+
         print(f"   Running: {' '.join(cmd)}")
         result = subprocess.run(cmd, env=env, capture_output=True, text=True)
-        
+
         if result.returncode == 0:
             print("[OK] AppImage built successfully!")
             return "Storymaster-x86_64.AppImage"
         else:
             print(f"[ERROR] AppImage build failed: {result.stderr}")
             return None
-            
+
     except Exception as e:
         print(f"[ERROR] Failed to build AppImage: {e}")
         return None
@@ -310,10 +305,10 @@ If the AppImage doesn't run:
 - [OK] Easy to distribute and update
 - [OK] Sandboxed execution
 """
-    
+
     with open("APPIMAGE_USAGE.md", "w") as f:
         f.write(instructions)
-    
+
     print("[OK] Usage instructions created: APPIMAGE_USAGE.md")
 
 
@@ -343,36 +338,36 @@ def print_completion_info():
 def main():
     """Main build process"""
     print_header()
-    
+
     # Check if we're on Linux
-    if not sys.platform.startswith('linux'):
+    if not sys.platform.startswith("linux"):
         print("[ERROR] AppImage building is only supported on Linux")
         return False
-    
+
     # Download appimagetool
     appimagetool_path = download_appimage_tool()
     if not appimagetool_path:
         return False
-    
+
     # Create AppDir structure
     appdir = create_appdir_structure()
-    
+
     # Install application
     if not install_python_app(appdir):
         return False
-    
+
     # Build AppImage
     appimage_file = build_appimage(appdir, appimagetool_path)
     if not appimage_file:
         return False
-    
+
     # Create instructions
     create_installation_instructions()
-    
+
     # Cleanup
     shutil.rmtree(appdir)
     print(f"\n[CLEAN] Cleaned up build directory")
-    
+
     print_completion_info()
     return True
 

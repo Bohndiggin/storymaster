@@ -178,7 +178,11 @@ class ActorItem(LorekeeperItemModel):
     item_table_object: schema.Actor
 
     def __init__(
-        self, user: int, setting: int, storyline_id: int, item_table_object: schema.Actor
+        self,
+        user: int,
+        setting: int,
+        storyline_id: int,
+        item_table_object: schema.Actor,
     ):
         super().__init__(user, setting, storyline_id, item_table_object)
 
@@ -396,7 +400,11 @@ class FactionItem(LorekeeperItemModel):
     item_table_object: schema.Faction
 
     def __init__(
-        self, user: int, setting: int, storyline_id: int, item_table_object: schema.Faction
+        self,
+        user: int,
+        setting: int,
+        storyline_id: int,
+        item_table_object: schema.Faction,
     ):
         super().__init__(user, setting, storyline_id, item_table_object)
 
@@ -543,7 +551,11 @@ class LocationItem(LorekeeperItemModel):
     item_table_object: schema.Location
 
     def __init__(
-        self, user: int, setting: int, storyline_id: int, item_table_object: schema.Location
+        self,
+        user: int,
+        setting: int,
+        storyline_id: int,
+        item_table_object: schema.Location,
     ):
         super().__init__(user, setting, storyline_id, item_table_object)
 
@@ -737,7 +749,11 @@ class HistoryItem(LorekeeperItemModel):
     item_table_object: schema.History
 
     def __init__(
-        self, user: int, setting: int, storyline_id: int, item_table_object: schema.History
+        self,
+        user: int,
+        setting: int,
+        storyline_id: int,
+        item_table_object: schema.History,
     ):
         super().__init__(user, setting, storyline_id, item_table_object)
 
@@ -865,7 +881,11 @@ class ObjectItem(LorekeeperItemModel):
     item_table_object: schema.Object_
 
     def __init__(
-        self, user: int, setting: int, storyline_id: int, item_table_object: schema.Object_
+        self,
+        user: int,
+        setting: int,
+        storyline_id: int,
+        item_table_object: schema.Object_,
     ):
         super().__init__(user, setting, storyline_id, item_table_object)
 

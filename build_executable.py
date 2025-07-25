@@ -7,10 +7,10 @@ Supports Windows (.exe), Linux, and macOS executables.
 """
 
 import os
-import sys
+import platform
 import shutil
 import subprocess
-import platform
+import sys
 from pathlib import Path
 
 
@@ -26,15 +26,19 @@ def print_header():
 def check_dependencies():
     """Check if PyInstaller is available"""
     print("Checking build dependencies...")
-    
+
     try:
         import PyInstaller
+
         print(f"PyInstaller {PyInstaller.__version__} found")
         return True
     except ImportError:
         print("PyInstaller not found. Installing...")
         try:
-            subprocess.run([sys.executable, "-m", "pip", "install", "pyinstaller==6.11.1"], check=True)
+            subprocess.run(
+                [sys.executable, "-m", "pip", "install", "pyinstaller==6.11.1"],
+                check=True,
+            )
             print("PyInstaller installed successfully")
             return True
         except subprocess.CalledProcessError:
@@ -45,23 +49,23 @@ def check_dependencies():
 def clean_previous_builds():
     """Clean up previous build artifacts"""
     print("\n[CLEAN] Cleaning previous builds...")
-    
-    dirs_to_clean = ['build', 'dist', '__pycache__']
-    files_to_clean = ['*.pyc']
-    
+
+    dirs_to_clean = ["build", "dist", "__pycache__"]
+    files_to_clean = ["*.pyc"]
+
     for dir_name in dirs_to_clean:
         if Path(dir_name).exists():
             shutil.rmtree(dir_name)
             print(f"   Removed {dir_name}/")
-    
+
     # Clean pyc files recursively
-    for pyc_file in Path('.').rglob('*.pyc'):
+    for pyc_file in Path(".").rglob("*.pyc"):
         pyc_file.unlink()
-    
-    for pycache_dir in Path('.').rglob('__pycache__'):
+
+    for pycache_dir in Path(".").rglob("__pycache__"):
         if pycache_dir.is_dir():
             shutil.rmtree(pycache_dir)
-    
+
     print("[OK] Build cleanup complete")
     return True
 
@@ -69,21 +73,21 @@ def clean_previous_builds():
 def build_executable():
     """Build the executable using PyInstaller"""
     print("\n[COMPILE] Building executable...")
-    
+
     try:
         # Run PyInstaller with our spec file
         cmd = [sys.executable, "-m", "PyInstaller", "--clean", "storymaster.spec"]
-        
+
         print(f"   Running: {' '.join(cmd)}")
         result = subprocess.run(cmd, check=True, capture_output=True, text=True)
-        
+
         if result.returncode == 0:
             print("[OK] Executable built successfully!")
             return True
         else:
             print(f"[ERROR] Build failed: {result.stderr}")
             return False
-            
+
     except subprocess.CalledProcessError as e:
         print(f"[ERROR] PyInstaller failed: {e}")
         if e.stdout:
@@ -96,29 +100,29 @@ def build_executable():
 def create_portable_package():
     """Create a portable package with database and sample data"""
     print("\n[PACKAGE] Creating portable package...")
-    
+
     dist_dir = Path("dist/storymaster")
     if not dist_dir.exists():
         print("[ERROR] Executable not found in dist/storymaster")
         return False
-    
+
     try:
         # Create empty database in the dist directory
         print("   Initializing database...")
-        
+
         # Change to dist directory and run database init
         original_dir = os.getcwd()
         os.chdir(dist_dir)
-        
+
         # Run the executable to create database (if init_database.py is bundled)
         # For now, we'll copy the database from the main directory
         os.chdir(original_dir)
-        
+
         # Copy database if it exists
         if Path("storymaster.db").exists():
             shutil.copy2("storymaster.db", dist_dir / "storymaster.db")
             print("   Copied sample database")
-        
+
         # Create a README for the portable package
         readme_content = """# Storymaster Portable
 
@@ -153,13 +157,13 @@ If the application doesn't start:
 
 For more help, visit: https://github.com/your-repo/storymaster
 """
-        
+
         with open(dist_dir / "README.txt", "w") as f:
             f.write(readme_content)
-        
+
         print("[OK] Portable package created in dist/storymaster/")
         return True
-        
+
     except Exception as e:
         print(f"[ERROR] Failed to create portable package: {e}")
         return False
@@ -168,30 +172,30 @@ For more help, visit: https://github.com/your-repo/storymaster
 def create_archive():
     """Create a compressed archive of the executable"""
     print("\n[FILES] Creating distribution archive...")
-    
+
     system = platform.system().lower()
     arch = platform.machine().lower()
-    
+
     # Define archive name
     archive_name = f"storymaster-{system}-{arch}"
-    
+
     dist_dir = Path("dist")
     if not (dist_dir / "storymaster").exists():
         print("[ERROR] No build found to archive")
         return False
-    
+
     try:
         # Create archive based on platform
         if system == "windows":
             archive_path = f"{archive_name}.zip"
-            shutil.make_archive(archive_name, 'zip', dist_dir, 'storymaster')
+            shutil.make_archive(archive_name, "zip", dist_dir, "storymaster")
         else:
             archive_path = f"{archive_name}.tar.gz"
-            shutil.make_archive(archive_name, 'gztar', dist_dir, 'storymaster')
-        
+            shutil.make_archive(archive_name, "gztar", dist_dir, "storymaster")
+
         print(f"[OK] Archive created: {archive_path}")
         return True
-        
+
     except Exception as e:
         print(f"[ERROR] Failed to create archive: {e}")
         return False
@@ -201,14 +205,18 @@ def print_completion_info():
     """Print build completion information"""
     system = platform.system()
     arch = platform.machine()
-    
+
     print("\n" + "=" * 60)
     print("[SUCCESS] Build Complete!")
     print("=" * 60)
     print()
     print("[FILES] Files created:")
-    print(f"   • Executable: dist/storymaster/storymaster{'.exe' if system == 'Windows' else ''}")
-    print(f"   • Archive: storymaster-{system.lower()}-{arch.lower()}.{'zip' if system == 'Windows' else 'tar.gz'}")
+    print(
+        f"   • Executable: dist/storymaster/storymaster{'.exe' if system == 'Windows' else ''}"
+    )
+    print(
+        f"   • Archive: storymaster-{system.lower()}-{arch.lower()}.{'zip' if system == 'Windows' else 'tar.gz'}"
+    )
     print()
     print("[DEPLOY] To distribute:")
     print("   1. Share the archive file")
@@ -226,21 +234,21 @@ def print_completion_info():
 def main():
     """Main build process"""
     print_header()
-    
+
     # Build steps
     steps = [
         ("Checking dependencies", check_dependencies),
         ("Cleaning previous builds", clean_previous_builds),
         ("Building executable", build_executable),
         ("Creating portable package", create_portable_package),
-        ("Creating distribution archive", create_archive)
+        ("Creating distribution archive", create_archive),
     ]
-    
+
     for step_name, step_func in steps:
         if not step_func():
             print(f"\n[ERROR] Build failed at: {step_name}")
             sys.exit(1)
-    
+
     print_completion_info()
 
 

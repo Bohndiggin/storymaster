@@ -12,7 +12,6 @@ from storymaster.controller.common.main_page_controller import MainWindowControl
 from storymaster.model.common.common_model import BaseModel
 from storymaster.view.common.common_view import MainView
 
-
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 

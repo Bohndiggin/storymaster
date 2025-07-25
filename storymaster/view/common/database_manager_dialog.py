@@ -5,26 +5,26 @@ from pathlib import Path
 from typing import List, Optional
 
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal
+from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
+    QCheckBox,
     QDialog,
-    QVBoxLayout,
-    QHBoxLayout,
+    QFileDialog,
     QGridLayout,
     QGroupBox,
-    QPushButton,
+    QHBoxLayout,
     QLabel,
     QListWidget,
     QListWidgetItem,
-    QFileDialog,
     QMessageBox,
-    QSpinBox,
-    QCheckBox,
-    QTabWidget,
-    QWidget,
     QProgressBar,
+    QPushButton,
+    QSpinBox,
+    QTabWidget,
     QTextEdit,
+    QVBoxLayout,
+    QWidget,
 )
-from PyQt6.QtGui import QFont
 
 from storymaster.model.common.backup_manager import BackupManager
 

@@ -2,16 +2,16 @@
 Defines the dialog for switching between storylines.
 """
 
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QLabel,
     QListWidget,
     QListWidgetItem,
-    QVBoxLayout,
     QMessageBox,
+    QVBoxLayout,
 )
-from PyQt6.QtCore import Qt
 
 from storymaster.model.common.common_model import BaseModel
 
@@ -37,12 +37,12 @@ class StorylineSwitcherDialog(QDialog):
 
         # --- Layout ---
         main_layout = QVBoxLayout()
-        
+
         # Header
         header_label = QLabel("Select a storyline to switch to:")
         header_label.setStyleSheet("font-weight: bold; margin-bottom: 10px;")
         main_layout.addWidget(header_label)
-        
+
         # List
         main_layout.addWidget(self.storyline_list)
 
@@ -53,11 +53,11 @@ class StorylineSwitcherDialog(QDialog):
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
         self.button_box.button(QDialogButtonBox.StandardButton.Ok).setEnabled(False)
-        
+
         main_layout.addWidget(self.button_box)
-        
+
         self.setLayout(main_layout)
-        
+
         # Load storylines
         self.load_storylines()
 
@@ -65,11 +65,11 @@ class StorylineSwitcherDialog(QDialog):
         """Load available storylines into the list"""
         try:
             storylines = self.model.get_all_storylines()
-            
+
             for storyline in storylines:
                 item = QListWidgetItem(storyline.name)
                 item.setData(Qt.ItemDataRole.UserRole, storyline.id)
-                
+
                 # Mark current storyline
                 if storyline.id == self.current_storyline_id:
                     item.setText(f"{storyline.name} (Current)")
@@ -77,9 +77,9 @@ class StorylineSwitcherDialog(QDialog):
                     font = item.font()
                     font.setItalic(True)
                     item.setFont(font)
-                
+
                 self.storyline_list.addItem(item)
-                
+
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to load storylines: {str(e)}")
 
