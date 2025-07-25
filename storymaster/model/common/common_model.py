@@ -98,9 +98,9 @@ class BaseModel:
     # Mapping of table names to their corresponding ORM classes from the schema
     _table_to_class_map = {
         "user": schema.User,
-        "project": schema.Project,
-        "lorekeeper_group": schema.LorekeeperGroup,
-        "project_to_group": schema.ProjectToGroup,
+        "storyline": schema.Storyline,
+        "setting": schema.Setting,
+        "storyline_to_setting": schema.StorylineToSetting,
         "litography_node": schema.LitographyNode,
         "litography_notes": schema.LitographyNotes,
         "litography_plot": schema.LitographyPlot,
@@ -153,23 +153,23 @@ class BaseModel:
         """Generates the connection used to test"""
         return base_connection.engine
 
-    def load_user_projects(self) -> list[int]:
-        """Loads all the project_ids for a user"""
+    def load_user_storylines(self) -> list[int]:
+        """Loads all the storyline_ids for a user"""
         with Session(self.engine) as session:
-            project_id_list = session.execute(
-                common_queries.get_project_ids_for_user(self.user_id)
+            storyline_id_list = session.execute(
+                common_queries.get_storyline_ids_for_user(self.user_id)
             ).all()
 
-        return [project.id for project in project_id_list]
+        return [storyline.id for storyline in storyline_id_list]
 
     # --- Litographer Methods ---
 
-    def get_litography_nodes(self, project_id: int) -> list[schema.LitographyNode]:
-        """Fetches all litography nodes for a given project."""
+    def get_litography_nodes(self, storyline_id: int) -> list[schema.LitographyNode]:
+        """Fetches all litography nodes for a given storyline."""
         with Session(self.engine) as session:
             nodes = (
                 session.query(schema.LitographyNode)
-                .filter_by(project_id=project_id)
+                .filter_by(storyline_id=storyline_id)
                 .all()
             )
         return nodes
@@ -187,9 +187,9 @@ class BaseModel:
         # Tables that should be hidden from the Lorekeeper UI
         hidden_tables = {
             "user",
-            "project",
-            "lorekeeper_group",
-            "project_to_group",
+            "storyline",
+            "setting",
+            "storyline_to_setting",
             "litography_node",
             "litography_notes",
             "litography_plot",
@@ -221,10 +221,11 @@ class BaseModel:
         return [table for table in all_tables if table not in hidden_tables]
 
     def get_table_data(
-        self, table_name: str, project_id: int | None = None
+        self, table_name: str, storyline_id: int | None = None, setting_id: int | None = None
     ) -> tuple[list[str], list[tuple]]:
         """
-        Fetches all data from a specific table, optionally filtered by project_id.
+        Fetches all data from a specific table, optionally filtered by storyline_id or setting_id.
+        If both are provided, setting_id takes precedence.
         """
         orm_class = self._table_to_class_map.get(table_name)
 
@@ -236,16 +237,22 @@ class BaseModel:
         with Session(self.engine) as session:
             query = session.query(orm_class)
 
-            # If a project_id is provided and the table has a group_id, filter the results
-            if project_id and hasattr(orm_class, "group_id"):
-                # Find the group_id associated with the project_id
-                project_group_link = (
-                    session.query(schema.ProjectToGroup)
-                    .filter_by(project_id=project_id)
-                    .first()
-                )
-                if project_group_link:
-                    query = query.filter_by(group_id=project_group_link.group_id)
+            # Filter by setting_id if the table has that column
+            if hasattr(orm_class, "setting_id"):
+                if setting_id:
+                    # Direct setting_id filtering takes precedence
+                    query = query.filter_by(setting_id=setting_id)
+                elif storyline_id:
+                    # Fall back to deriving setting_id from storyline_id
+                    storyline_setting_link = (
+                        session.query(schema.StorylineToSetting)
+                        .filter_by(storyline_id=storyline_id)
+                        .first()
+                    )
+                    if storyline_setting_link:
+                        query = query.filter_by(
+                            setting_id=storyline_setting_link.setting_id
+                        )
 
             results = query.all()
 
@@ -280,33 +287,48 @@ class BaseModel:
         return result.as_dict() if result else None
 
     def get_all_rows_as_dicts(
-        self, table_name: str, project_id: int | None = None
+        self, table_name: str, storyline_id: int | None = None, setting_id: int | None = None
     ) -> list[dict]:
-        """Fetches all rows from a table as dicts, optionally filtered by project."""
+        """Fetches all rows from a table as dicts, optionally filtered by storyline or setting."""
         orm_class = self._table_to_class_map.get(table_name)
         if not orm_class:
             return []
 
         with Session(self.engine) as session:
             query = session.query(orm_class)
-            if project_id and hasattr(orm_class, "group_id"):
-                project_group_link = (
-                    session.query(schema.ProjectToGroup)
-                    .filter_by(project_id=project_id)
-                    .first()
-                )
-                if project_group_link:
-                    query = query.filter_by(group_id=project_group_link.group_id)
+            
+            # Filter by setting_id if the table has that column
+            if hasattr(orm_class, "setting_id"):
+                if setting_id:
+                    # Direct setting_id filtering takes precedence
+                    query = query.filter_by(setting_id=setting_id)
+                elif storyline_id:
+                    # Fall back to deriving setting_id from storyline_id
+                    storyline_setting_link = (
+                        session.query(schema.StorylineToSetting)
+                        .filter_by(storyline_id=storyline_id)
+                        .first()
+                    )
+                    if storyline_setting_link:
+                        query = query.filter_by(
+                            setting_id=storyline_setting_link.setting_id
+                        )
 
             results = query.all()
 
         return [row.as_dict() for row in results]
 
-    def get_all_projects(self) -> list[schema.Project]:
-        """Fetches all projects from the database."""
+    def get_all_storylines(self) -> list[schema.Storyline]:
+        """Fetches all storylines from the database."""
         with Session(self.engine) as session:
-            projects = session.query(schema.Project).all()
-            return projects
+            storylines = session.query(schema.Storyline).all()
+            return storylines
+
+    def get_all_settings(self) -> list[schema.Setting]:
+        """Fetches all settings from the database."""
+        with Session(self.engine) as session:
+            settings = session.query(schema.Setting).all()
+            return settings
 
     def update_row(self, table_name: str, data_dict: dict):
         """
@@ -342,9 +364,12 @@ class BaseModel:
             session.commit()
             print(f"Successfully updated row {pk_value} in {table_name}")
 
-    def add_row(self, table_name: str, data_dict: dict, project_id: int | None = None):
+    def add_row(
+        self, table_name: str, data_dict: dict, storyline_id: int | None = None, setting_id: int | None = None
+    ):
         """
-        Adds a new row to the database, associating it with the correct project group.
+        Adds a new row to the database, associating it with the correct setting.
+        If both storyline_id and setting_id are provided, setting_id takes precedence.
         """
         orm_class = self._table_to_class_map.get(table_name)
         if not orm_class:
@@ -354,18 +379,23 @@ class BaseModel:
             del data_dict["id"]
 
         with Session(self.engine) as session:
-            # If the table is project-specific (has a group_id), find the correct group
-            if project_id and hasattr(orm_class, "group_id"):
-                project_group_link = (
-                    session.query(schema.ProjectToGroup)
-                    .filter_by(project_id=project_id)
-                    .first()
-                )
-                if not project_group_link:
-                    raise ValueError(
-                        f"No Lorekeeper group found for Project ID {project_id}"
+            # If the table has a setting_id column, set it appropriately
+            if hasattr(orm_class, "setting_id"):
+                if setting_id:
+                    # Direct setting_id takes precedence
+                    data_dict["setting_id"] = setting_id
+                elif storyline_id:
+                    # Fall back to deriving setting_id from storyline_id
+                    storyline_setting_link = (
+                        session.query(schema.StorylineToSetting)
+                        .filter_by(storyline_id=storyline_id)
+                        .first()
                     )
-                data_dict["group_id"] = project_group_link.group_id
+                    if not storyline_setting_link:
+                        raise ValueError(
+                            f"No Setting found for Storyline ID {storyline_id}"
+                        )
+                    data_dict["setting_id"] = storyline_setting_link.setting_id
 
             # Convert empty strings to None for numeric types
             for key, value in data_dict.items():
@@ -381,85 +411,85 @@ class BaseModel:
 
     def load_user_data(self) -> list[GroupData]:
         """Loads all data attributed to a single user"""
-        group_return: list[GroupData] = []
+        setting_return: list[GroupData] = []
         with Session(self.engine) as session:
-            group_list = (
-                session.execute(common_queries.get_group_ids_for_project(1))
+            setting_list = (
+                session.execute(common_queries.get_setting_ids_for_storyline(1))
                 .scalars()
                 .all()
             )
-            for group in group_list:
+            for setting in setting_list:
                 actors = list(
                     session.execute(
-                        common_queries.get_lorekeeper_actors_from_group(group)
+                        common_queries.get_lorekeeper_actors_from_setting(setting)
                     )
                     .scalars()
                     .all()
                 )
                 backgrounds = list(
                     session.execute(
-                        common_queries.get_lorekeeper_backgrounds_from_group(group)
+                        common_queries.get_lorekeeper_backgrounds_from_setting(setting)
                     )
                     .scalars()
                     .all()
                 )
                 classes = list(
                     session.execute(
-                        common_queries.get_lorekeeper_classes_from_group(group)
+                        common_queries.get_lorekeeper_classes_from_setting(setting)
                     )
                     .scalars()
                     .all()
                 )
                 factions = list(
                     session.execute(
-                        common_queries.get_lorekeeper_factions_from_group(group)
+                        common_queries.get_lorekeeper_factions_from_setting(setting)
                     )
                     .scalars()
                     .all()
                 )
                 history = list(
                     session.execute(
-                        common_queries.get_lorekeeper_history_from_group(group)
+                        common_queries.get_lorekeeper_history_from_setting(setting)
                     )
                     .scalars()
                     .all()
                 )
                 locations = list(
                     session.execute(
-                        common_queries.get_lorekeeper_locations_from_group(group)
+                        common_queries.get_lorekeeper_locations_from_setting(setting)
                     )
                     .scalars()
                     .all()
                 )
                 objects = list(
                     session.execute(
-                        common_queries.get_lorekeeper_objects_from_group(group)
+                        common_queries.get_lorekeeper_objects_from_setting(setting)
                     )
                     .scalars()
                     .all()
                 )
                 races = list(
                     session.execute(
-                        common_queries.get_lorekeeper_races_from_group(group)
+                        common_queries.get_lorekeeper_races_from_setting(setting)
                     )
                     .scalars()
                     .all()
                 )
                 sub_races = list(
                     session.execute(
-                        common_queries.get_lorekeeper_sub_races_from_group(group)
+                        common_queries.get_lorekeeper_sub_races_from_setting(setting)
                     )
                     .scalars()
                     .all()
                 )
                 world_datas = list(
                     session.execute(
-                        common_queries.get_lorekeeper_world_data_from_group(group)
+                        common_queries.get_lorekeeper_world_data_from_setting(setting)
                     )
                     .scalars()
                     .all()
                 )
-                group_return.append(
+                setting_return.append(
                     GroupData(
                         actors=actors,
                         backgrounds=backgrounds,
@@ -473,5 +503,5 @@ class BaseModel:
                         world_datas=world_datas,
                     )
                 )
-            self.group_data = group_return
-            return group_return
+            self.group_data = setting_return
+            return setting_return

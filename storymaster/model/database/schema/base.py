@@ -28,16 +28,14 @@ class User(BaseTable):
     )
     username: Mapped[str] = mapped_column(String(150), nullable=False, name="username")
 
-    projects: Mapped[list["Project"]] = relationship(back_populates="user")
-    lorekeeper_groups: Mapped[list["LorekeeperGroup"]] = relationship(
-        back_populates="user"
-    )
+    storylines: Mapped[list["Storyline"]] = relationship(back_populates="user")
+    settings: Mapped[list["Setting"]] = relationship(back_populates="user")
 
 
-class Project(BaseTable):
-    """Class to represent the project table"""
+class Storyline(BaseTable):
+    """Class to represent the storyline table"""
 
-    __tablename__ = "project"
+    __tablename__ = "storyline"
 
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True, name="id"
@@ -50,28 +48,28 @@ class Project(BaseTable):
         Integer, ForeignKey("user.id"), nullable=False, name="user_id"
     )
 
-    user: Mapped["User"] = relationship(back_populates="projects")
-    project_to_groups: Mapped[list["ProjectToGroup"]] = relationship(
-        back_populates="project"
+    user: Mapped["User"] = relationship(back_populates="storylines")
+    storyline_to_settings: Mapped[list["StorylineToSetting"]] = relationship(
+        back_populates="storyline"
     )
     litography_nodes: Mapped[list["LitographyNode"]] = relationship(
-        back_populates="project"
+        back_populates="storyline"
     )
     litography_notes: Mapped[list["LitographyNotes"]] = relationship(
-        back_populates="project"
+        back_populates="storyline"
     )
     litography_plots: Mapped[list["LitographyPlot"]] = relationship(
-        back_populates="project"
+        back_populates="storyline"
     )
     litography_arcs: Mapped[list["LitographyArc"]] = relationship(
-        back_populates="project"
+        back_populates="storyline"
     )
 
 
-class LorekeeperGroup(BaseTable):
-    """Class to represent the lorekeeper_group table"""
+class Setting(BaseTable):
+    """Class to represent the setting table"""
 
-    __tablename__ = "lorekeeper_group"
+    __tablename__ = "setting"
 
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True, name="id"
@@ -84,80 +82,88 @@ class LorekeeperGroup(BaseTable):
         Integer, ForeignKey("user.id"), nullable=False, name="user_id"
     )
 
-    user: Mapped["User"] = relationship(back_populates="lorekeeper_groups")
-    project_to_group: Mapped[list["ProjectToGroup"]] = relationship(
-        back_populates="group"
+    user: Mapped["User"] = relationship(back_populates="settings")
+    storyline_to_setting: Mapped[list["StorylineToSetting"]] = relationship(
+        back_populates="setting"
     )
-    classes: Mapped[list["Class_"]] = relationship(back_populates="group")
-    backgrounds: Mapped[list["Background"]] = relationship(back_populates="group")
-    races: Mapped[list["Race"]] = relationship(back_populates="group")
-    sub_races: Mapped[list["SubRace"]] = relationship(back_populates="group")
-    actors: Mapped[list["Actor"]] = relationship(back_populates="group")
+    classes: Mapped[list["Class_"]] = relationship(back_populates="setting")
+    backgrounds: Mapped[list["Background"]] = relationship(back_populates="setting")
+    races: Mapped[list["Race"]] = relationship(back_populates="setting")
+    sub_races: Mapped[list["SubRace"]] = relationship(back_populates="setting")
+    actors: Mapped[list["Actor"]] = relationship(back_populates="setting")
     actor_relations: Mapped[list["ActorAOnBRelations"]] = relationship(
-        back_populates="group"
+        back_populates="setting"
     )
-    skills: Mapped[list["Skills"]] = relationship(back_populates="group")
+    skills: Mapped[list["Skills"]] = relationship(back_populates="setting")
     actor_to_skills: Mapped[list["ActorToSkills"]] = relationship(
-        back_populates="group"
+        back_populates="setting"
     )
-    factions: Mapped[list["Faction"]] = relationship(back_populates="group")
+    factions: Mapped[list["Faction"]] = relationship(back_populates="setting")
     faction_relations: Mapped[list["FactionAOnBRelations"]] = relationship(
-        back_populates="group"
+        back_populates="setting"
     )
     faction_members: Mapped[list["FactionMembers"]] = relationship(
-        back_populates="group"
+        back_populates="setting"
     )
-    locations: Mapped[list["Location"]] = relationship(back_populates="group")
+    locations: Mapped[list["Location"]] = relationship(back_populates="setting")
     location_to_factions: Mapped[list["LocationToFaction"]] = relationship(
-        back_populates="group"
+        back_populates="setting"
     )
     location_dungeons: Mapped[list["LocationDungeon"]] = relationship(
-        back_populates="group"
+        back_populates="setting"
     )
-    location_cities: Mapped[list["LocationCity"]] = relationship(back_populates="group")
+    location_cities: Mapped[list["LocationCity"]] = relationship(
+        back_populates="setting"
+    )
     location_city_districts: Mapped[list["LocationCityDistricts"]] = relationship(
-        back_populates="group"
+        back_populates="setting"
     )
-    residents: Mapped[list["Resident"]] = relationship(back_populates="group")
+    residents: Mapped[list["Resident"]] = relationship(back_populates="setting")
     location_flora_fauna: Mapped[list["LocationFloraFauna"]] = relationship(
-        back_populates="group"
+        back_populates="setting"
     )
-    histories: Mapped[list["History"]] = relationship(back_populates="group")
-    history_actors: Mapped[list["HistoryActor"]] = relationship(back_populates="group")
+    histories: Mapped[list["History"]] = relationship(back_populates="setting")
+    history_actors: Mapped[list["HistoryActor"]] = relationship(
+        back_populates="setting"
+    )
     history_locations: Mapped[list["HistoryLocation"]] = relationship(
-        back_populates="group"
+        back_populates="setting"
     )
     history_factions: Mapped[list["HistoryFaction"]] = relationship(
-        back_populates="group"
+        back_populates="setting"
     )
-    objects: Mapped[list["Object_"]] = relationship(back_populates="group")
+    objects: Mapped[list["Object_"]] = relationship(back_populates="setting")
     history_objects: Mapped[list["HistoryObject"]] = relationship(
-        back_populates="group"
+        back_populates="setting"
     )
-    object_owners: Mapped[list["ObjectToOwner"]] = relationship(back_populates="group")
-    world_data: Mapped[list["WorldData"]] = relationship(back_populates="group")
+    object_owners: Mapped[list["ObjectToOwner"]] = relationship(
+        back_populates="setting"
+    )
+    world_data: Mapped[list["WorldData"]] = relationship(back_populates="setting")
     history_world_data: Mapped[list["HistoryWorldData"]] = relationship(
-        back_populates="group"
+        back_populates="setting"
     )
 
 
-class ProjectToGroup(BaseTable):
-    """Class to represent the project_to_group table"""
+class StorylineToSetting(BaseTable):
+    """Class to represent the storyline_to_setting table"""
 
-    __tablename__ = "project_to_group"
+    __tablename__ = "storyline_to_setting"
 
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True, name="id"
     )
-    project_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("project.id"), nullable=False, name="project_id"
+    storyline_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("storyline.id"), nullable=False, name="storyline_id"
     )
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
-    project: Mapped["Project"] = relationship(back_populates="project_to_groups")
-    group: Mapped["LorekeeperGroup"] = relationship(back_populates="project_to_group")
+    storyline: Mapped["Storyline"] = relationship(
+        back_populates="storyline_to_settings"
+    )
+    setting: Mapped["Setting"] = relationship(back_populates="storyline_to_setting")
 
 
 class PlotSectionType(enum.Enum):
@@ -207,11 +213,11 @@ class LitographyNode(BaseTable):
     next_node: Mapped[int | None] = mapped_column(
         Integer, nullable=True, name="next_node"
     )
-    project_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("project.id"), nullable=False, name="project_id"
+    storyline_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("storyline.id"), nullable=False, name="storyline_id"
     )
 
-    project: Mapped["Project"] = relationship(back_populates="litography_nodes")
+    storyline: Mapped["Storyline"] = relationship(back_populates="litography_nodes")
     notes: Mapped[list["LitographyNotes"]] = relationship(back_populates="linked_node")
     plot_sections: Mapped[list["LitographyNodeToPlotSection"]] = relationship(
         back_populates="node"
@@ -239,12 +245,12 @@ class LitographyNotes(BaseTable):
     linked_node_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("litography_node.id"), nullable=False, name="linked_node"
     )
-    project_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("project.id"), nullable=False, name="project_id"
+    storyline_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("storyline.id"), nullable=False, name="storyline_id"
     )
 
     linked_node: Mapped["LitographyNode"] = relationship(back_populates="notes")
-    project: Mapped["Project"] = relationship(back_populates="litography_notes")
+    storyline: Mapped["Storyline"] = relationship(back_populates="litography_notes")
     actors: Mapped[list["LitographyNoteToActor"]] = relationship(back_populates="note")
     backgrounds: Mapped[list["LitographyNoteToBackground"]] = relationship(
         back_populates="note"
@@ -284,11 +290,11 @@ class LitographyPlot(BaseTable):
     description: Mapped[str | None] = mapped_column(
         Text, nullable=True, name="description"
     )
-    project_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("project.id"), nullable=False, name="project_id"
+    storyline_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("storyline.id"), nullable=False, name="storyline_id"
     )
 
-    project: Mapped["Project"] = relationship(back_populates="litography_plots")
+    storyline: Mapped["Storyline"] = relationship(back_populates="litography_plots")
     plot_sections: Mapped[list["LitographyPlotSection"]] = relationship(
         back_populates="section_plot"
     )
@@ -348,11 +354,11 @@ class LitographyArc(BaseTable):
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True, name="id"
     )
-    project_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("project.id"), nullable=False, name="project_id"
+    storyline_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("storyline.id"), nullable=False, name="storyline_id"
     )
 
-    project: Mapped["Project"] = relationship(back_populates="litography_arcs")
+    storyline: Mapped["Storyline"] = relationship(back_populates="litography_arcs")
     nodes: Mapped[list["ArcToNode"]] = relationship(back_populates="arc")
     actors: Mapped[list["ArcToActor"]] = relationship(back_populates="arc")
 
@@ -367,11 +373,11 @@ class Class_(BaseTable):
     class_description: Mapped[str | None] = mapped_column(
         Text, name="class_description"
     )
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
-    group: Mapped["LorekeeperGroup"] = relationship(back_populates="classes")
+    setting: Mapped["Setting"] = relationship(back_populates="classes")
     actors: Mapped[list["Actor"]] = relationship(back_populates="class_")
     notes_to: Mapped[list["LitographyNoteToClass"]] = relationship(
         back_populates="class_"
@@ -381,16 +387,14 @@ class Class_(BaseTable):
 class Background(BaseTable):
     __tablename__ = "background"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     background_name: Mapped[str | None] = mapped_column(String(255))
     background_description: Mapped[str | None] = mapped_column(Text)
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
-    group: Mapped["LorekeeperGroup"] = relationship(back_populates="backgrounds")
+    setting: Mapped["Setting"] = relationship(back_populates="backgrounds")
     actors: Mapped[list["Actor"]] = relationship(back_populates="background")
     notes_to: Mapped[list["LitographyNoteToBackground"]] = relationship(
         back_populates="background"
@@ -400,16 +404,14 @@ class Background(BaseTable):
 class Race(BaseTable):
     __tablename__ = "race"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     race_name: Mapped[str | None] = mapped_column(String(255))
     race_description: Mapped[str | None] = mapped_column(Text)
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
-    group: Mapped["LorekeeperGroup"] = relationship(back_populates="races")
+    setting: Mapped["Setting"] = relationship(back_populates="races")
     sub_races: Mapped[list["SubRace"]] = relationship(back_populates="race")
     actors: Mapped[list["Actor"]] = relationship(back_populates="race")
     notes_to: Mapped[list["LitographyNoteToRace"]] = relationship(back_populates="race")
@@ -418,17 +420,15 @@ class Race(BaseTable):
 class SubRace(BaseTable):
     __tablename__ = "sub_race"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     parent_race_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("race.id"))
     sub_race_name: Mapped[str | None] = mapped_column(String(255))
     sub_race_description: Mapped[str | None] = mapped_column(Text)
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
-    group: Mapped["LorekeeperGroup"] = relationship(back_populates="sub_races")
+    setting: Mapped["Setting"] = relationship(back_populates="sub_races")
     race: Mapped["Race"] = relationship(back_populates="sub_races")
     actors: Mapped[list["Actor"]] = relationship(back_populates="sub_race")
     notes_to: Mapped[list["LitographyNoteToSubRace"]] = relationship(
@@ -502,11 +502,11 @@ class Actor(BaseTable):
         Text, nullable=True, name="weaknesses"
     )
     notes: Mapped[str | None] = mapped_column(Text, nullable=True, name="notes")
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
-    group: Mapped["LorekeeperGroup"] = relationship(back_populates="actors")
+    setting: Mapped["Setting"] = relationship(back_populates="actors")
     class_: Mapped["Class_"] = relationship(back_populates="actors")
     background: Mapped["Background"] = relationship(back_populates="actors")
     race: Mapped["Race"] = relationship(back_populates="actors")
@@ -533,19 +533,17 @@ class Actor(BaseTable):
 class ActorAOnBRelations(BaseTable):
     __tablename__ = "actor_a_on_b_relations"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     actor_a_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
     actor_b_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
     overall: Mapped[str | None] = mapped_column(String)
     economically: Mapped[str | None] = mapped_column(String)
     power_dynamic: Mapped[str | None] = mapped_column(String)
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
-    group: Mapped["LorekeeperGroup"] = relationship(back_populates="actor_relations")
+    setting: Mapped["Setting"] = relationship(back_populates="actor_relations")
     actor_a: Mapped["Actor"] = relationship(
         foreign_keys=[actor_a_id], back_populates="actor_a_relations"
     )
@@ -557,17 +555,15 @@ class ActorAOnBRelations(BaseTable):
 class Skills(BaseTable):
     __tablename__ = "skills"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     skill_name: Mapped[str | None] = mapped_column(String(255))
     skill_description: Mapped[str | None] = mapped_column(Text)
     skill_trait: Mapped[str | None] = mapped_column(String(255))
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
-    group: Mapped["LorekeeperGroup"] = relationship(back_populates="skills")
+    setting: Mapped["Setting"] = relationship(back_populates="skills")
     actors: Mapped[list["ActorToSkills"]] = relationship(back_populates="skill")
     notes_to: Mapped[list["LitographyNoteToSkills"]] = relationship(
         back_populates="skill"
@@ -577,17 +573,15 @@ class Skills(BaseTable):
 class ActorToSkills(BaseTable):
     __tablename__ = "actor_to_skills"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     actor_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
     skill_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("skills.id"))
     skill_level: Mapped[int | None] = mapped_column(Integer)
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
-    group: Mapped["LorekeeperGroup"] = relationship(back_populates="actor_to_skills")
+    setting: Mapped["Setting"] = relationship(back_populates="actor_to_skills")
     actor: Mapped["Actor"] = relationship(back_populates="skills")
     skill: Mapped["Skills"] = relationship(back_populates="actors")
 
@@ -595,20 +589,18 @@ class ActorToSkills(BaseTable):
 class Faction(BaseTable):
     __tablename__ = "faction"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     faction_name: Mapped[str | None] = mapped_column(String(255))
     faction_description: Mapped[str | None] = mapped_column(Text)
     goals: Mapped[str | None] = mapped_column(Text)
     faction_values: Mapped[str | None] = mapped_column(Text)
     faction_income_sources: Mapped[str | None] = mapped_column(Text)
     faction_expenses: Mapped[str | None] = mapped_column(Text)
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
-    group: Mapped["LorekeeperGroup"] = relationship(back_populates="factions")
+    setting: Mapped["Setting"] = relationship(back_populates="factions")
     faction_a_relations: Mapped[list["FactionAOnBRelations"]] = relationship(
         foreign_keys="FactionAOnBRelations.faction_a_id", back_populates="faction_a"
     )
@@ -628,20 +620,18 @@ class Faction(BaseTable):
 class FactionAOnBRelations(BaseTable):
     __tablename__ = "faction_a_on_b_relations"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     faction_a_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("faction.id"))
     faction_b_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("faction.id"))
     overall: Mapped[str | None] = mapped_column(Text)
     economically: Mapped[str | None] = mapped_column(Text)
     politically: Mapped[str | None] = mapped_column(Text)
     opinion: Mapped[str | None] = mapped_column(Text)
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
-    group: Mapped["LorekeeperGroup"] = relationship(back_populates="faction_relations")
+    setting: Mapped["Setting"] = relationship(back_populates="faction_relations")
     faction_a: Mapped["Faction"] = relationship(
         foreign_keys=[faction_a_id], back_populates="faction_a_relations"
     )
@@ -653,28 +643,24 @@ class FactionAOnBRelations(BaseTable):
 class FactionMembers(BaseTable):
     __tablename__ = "faction_members"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     actor_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
     faction_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("faction.id"))
     actor_role: Mapped[str | None] = mapped_column(String(255))
     relative_power: Mapped[int | None] = mapped_column(Integer)
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
     actor: Mapped["Actor"] = relationship(back_populates="faction_memberships")
     faction: Mapped["Faction"] = relationship(back_populates="members")
-    group: Mapped["LorekeeperGroup"] = relationship(back_populates="faction_members")
+    setting: Mapped["Setting"] = relationship(back_populates="faction_members")
 
 
 class Location(BaseTable):
     __tablename__ = "location_"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     location_name: Mapped[str | None] = mapped_column(String(255))
     location_type: Mapped[str | None] = mapped_column(String(255))
     location_description: Mapped[str | None] = mapped_column(Text)
@@ -684,14 +670,14 @@ class Location(BaseTable):
     feels: Mapped[str | None] = mapped_column(Text)
     tastes: Mapped[str | None] = mapped_column(Text)
     coordinates: Mapped[str | None] = mapped_column(String(255))
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
     location_flora_fauna: Mapped[list["LocationFloraFauna"]] = relationship(
         back_populates="location_"
     )
-    group: Mapped["LorekeeperGroup"] = relationship(back_populates="locations")
+    setting: Mapped["Setting"] = relationship(back_populates="locations")
     factions: Mapped[list["LocationToFaction"]] = relationship(
         back_populates="location"
     )
@@ -713,69 +699,59 @@ class Location(BaseTable):
 class LocationToFaction(BaseTable):
     __tablename__ = "location_to_faction"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     location_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
     faction_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("faction.id"))
     faction_presence: Mapped[float | None] = mapped_column(Float)
     faction_power: Mapped[float | None] = mapped_column(Float)
     notes: Mapped[str | None] = mapped_column(Text)
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
     location: Mapped["Location"] = relationship(back_populates="factions")
     faction: Mapped["Faction"] = relationship(back_populates="locations")
-    group: Mapped["LorekeeperGroup"] = relationship(
-        back_populates="location_to_factions"
-    )
+    setting: Mapped["Setting"] = relationship(back_populates="location_to_factions")
 
 
 class LocationDungeon(BaseTable):
     __tablename__ = "location_dungeon"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     location_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
     dangers: Mapped[str | None] = mapped_column(Text)
     traps: Mapped[str | None] = mapped_column(Text)
     secrets: Mapped[str | None] = mapped_column(Text)
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
     location: Mapped["Location"] = relationship(back_populates="dungeons")
-    group: Mapped["LorekeeperGroup"] = relationship(back_populates="location_dungeons")
+    setting: Mapped["Setting"] = relationship(back_populates="location_dungeons")
 
 
 class LocationCity(BaseTable):
     __tablename__ = "location_city"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     location_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
     government: Mapped[str | None] = mapped_column(Text)
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
     location: Mapped["Location"] = relationship(back_populates="cities")
-    group: Mapped["LorekeeperGroup"] = relationship(back_populates="location_cities")
+    setting: Mapped["Setting"] = relationship(back_populates="location_cities")
 
 
 class LocationCityDistricts(BaseTable):
     __tablename__ = "location_city_districts"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     location_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
     district_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
     location: Mapped["Location"] = relationship(
@@ -784,62 +760,52 @@ class LocationCityDistricts(BaseTable):
     district: Mapped["Location"] = relationship(
         foreign_keys=[district_id], back_populates="districts_in_city"
     )
-    group: Mapped["LorekeeperGroup"] = relationship(
-        back_populates="location_city_districts"
-    )
+    setting: Mapped["Setting"] = relationship(back_populates="location_city_districts")
 
 
 class Resident(BaseTable):
     __tablename__ = "residents"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     actor_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
     location_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
     actor: Mapped["Actor"] = relationship(back_populates="residences")
     location: Mapped["Location"] = relationship(back_populates="residents")
-    group: Mapped["LorekeeperGroup"] = relationship(back_populates="residents")
+    setting: Mapped["Setting"] = relationship(back_populates="residents")
 
 
 class LocationFloraFauna(BaseTable):
     __tablename__ = "location_flora_fauna"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     location_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
     living_name: Mapped[str | None] = mapped_column(String(255))
     living_description: Mapped[str | None] = mapped_column(Text)
     living_type: Mapped[str | None] = mapped_column(Text)
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
     location_: Mapped["Location"] = relationship(back_populates="location_flora_fauna")
-    group: Mapped["LorekeeperGroup"] = relationship(
-        back_populates="location_flora_fauna"
-    )
+    setting: Mapped["Setting"] = relationship(back_populates="location_flora_fauna")
 
 
 class History(BaseTable):
     __tablename__ = "history"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     event_name: Mapped[str | None] = mapped_column(String(255))
     event_year: Mapped[int | None] = mapped_column(Integer)
     event_description: Mapped[str | None] = mapped_column(Text)
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
-    group: Mapped["LorekeeperGroup"] = relationship(back_populates="histories")
+    setting: Mapped["Setting"] = relationship(back_populates="histories")
     actors: Mapped[list["HistoryActor"]] = relationship(back_populates="history")
     locations: Mapped[list["HistoryLocation"]] = relationship(back_populates="history")
     factions: Mapped[list["HistoryFaction"]] = relationship(back_populates="history")
@@ -855,33 +821,29 @@ class History(BaseTable):
 class HistoryActor(BaseTable):
     __tablename__ = "history_actor"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     history_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("history.id"))
     actor_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
     history: Mapped["History"] = relationship(back_populates="actors")
     actor: Mapped["Actor"] = relationship(back_populates="history")
-    group: Mapped["LorekeeperGroup"] = relationship(back_populates="history_actors")
+    setting: Mapped["Setting"] = relationship(back_populates="history_actors")
 
 
 class HistoryLocation(BaseTable):
     __tablename__ = "history_location"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     history_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("history.id"))
     location_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
-    group: Mapped["LorekeeperGroup"] = relationship(back_populates="history_locations")
+    setting: Mapped["Setting"] = relationship(back_populates="history_locations")
     history: Mapped["History"] = relationship(back_populates="locations")
     location: Mapped["Location"] = relationship(back_populates="history")
 
@@ -889,16 +851,14 @@ class HistoryLocation(BaseTable):
 class HistoryFaction(BaseTable):
     __tablename__ = "history_faction"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     history_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("history.id"))
     faction_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("faction.id"))
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
-    group: Mapped["LorekeeperGroup"] = relationship(back_populates="history_factions")
+    setting: Mapped["Setting"] = relationship(back_populates="history_factions")
     history: Mapped["History"] = relationship(back_populates="factions")
     faction: Mapped["Faction"] = relationship(back_populates="history")
 
@@ -906,18 +866,16 @@ class HistoryFaction(BaseTable):
 class Object_(BaseTable):
     __tablename__ = "object_"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     object_name: Mapped[str | None] = mapped_column(String(255))
     object_description: Mapped[str | None] = mapped_column(Text)
     object_value: Mapped[int | None] = mapped_column(Integer)
     rarity: Mapped[str | None] = mapped_column(String(255))
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
-    group: Mapped["LorekeeperGroup"] = relationship(back_populates="objects")
+    setting: Mapped["Setting"] = relationship(back_populates="objects")
     history: Mapped[list["HistoryObject"]] = relationship(back_populates="object")
     owners: Mapped[list["ObjectToOwner"]] = relationship(back_populates="object")
     notes_to: Mapped[list["LitographyNoteToObject"]] = relationship(
@@ -928,16 +886,14 @@ class Object_(BaseTable):
 class HistoryObject(BaseTable):
     __tablename__ = "history_object"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     history_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("history.id"))
     object_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("object_.id"))
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
-    group: Mapped["LorekeeperGroup"] = relationship(back_populates="history_objects")
+    setting: Mapped["Setting"] = relationship(back_populates="history_objects")
     history: Mapped["History"] = relationship(back_populates="objects")
     object: Mapped["Object_"] = relationship(back_populates="history")
 
@@ -945,16 +901,14 @@ class HistoryObject(BaseTable):
 class ObjectToOwner(BaseTable):
     __tablename__ = "object_to_owner"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     object_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("object_.id"))
     actor_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
-    group: Mapped["LorekeeperGroup"] = relationship(back_populates="object_owners")
+    setting: Mapped["Setting"] = relationship(back_populates="object_owners")
     object: Mapped["Object_"] = relationship(back_populates="owners")
     actor: Mapped["Actor"] = relationship(back_populates="objects")
 
@@ -962,16 +916,14 @@ class ObjectToOwner(BaseTable):
 class WorldData(BaseTable):
     __tablename__ = "world_data"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     data_name: Mapped[str | None] = mapped_column(String(255))
     data_description: Mapped[str | None] = mapped_column(Text)
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
-    group: Mapped["LorekeeperGroup"] = relationship(back_populates="world_data")
+    setting: Mapped["Setting"] = relationship(back_populates="world_data")
     history: Mapped[list["HistoryWorldData"]] = relationship(
         back_populates="world_data"
     )
@@ -983,18 +935,16 @@ class WorldData(BaseTable):
 class HistoryWorldData(BaseTable):
     __tablename__ = "history_world_data"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     history_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("history.id"))
     world_data_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("world_data.id")
     )
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("lorekeeper_group.id"), nullable=False, name="group_id"
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
-    group: Mapped["LorekeeperGroup"] = relationship(back_populates="history_world_data")
+    setting: Mapped["Setting"] = relationship(back_populates="history_world_data")
     history: Mapped["History"] = relationship(back_populates="world_data")
     world_data: Mapped["WorldData"] = relationship(back_populates="history")
 

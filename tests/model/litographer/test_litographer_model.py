@@ -88,7 +88,7 @@ class TestLitographerPlotNodeModel:
             description="",
             note_type=NoteType.OTHER,
             linked_node_id=model.node_table_object.id,
-            project_id=model.project_id,
+            storyline_id=model.storyline_id,
         )
 
         assert model.notes[2].title == test.title
@@ -286,7 +286,7 @@ class TestLitographerPlotModel:
             "id": 1,
             "title": "test_plot",
             "description": "this is the test plot",
-            "project_id": 1,
+            "storyline_id": 1,
         }
 
     def test_load_plot_sections(self, model: LitographerPlotModel) -> None:
@@ -307,5 +307,5 @@ class TestLitographerPlotModel:
             "id": 2,
             "title": "NewPlot",
             "description": "",
-            "project_id": 1,
+            "storyline_id": 1,
         }

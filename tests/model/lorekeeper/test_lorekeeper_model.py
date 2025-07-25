@@ -62,7 +62,7 @@ class TestActorTab:
             "strengths": "magic",
             "weaknesses": "beard",
             "notes": "huh",
-            "group_id": 1,
+            "setting_id": 1,
         }
 
     def test_load_item(self, model: ActorTab) -> None:
@@ -96,7 +96,7 @@ class TestActorTab:
             "strengths": "magic",
             "weaknesses": "beard",
             "notes": "huh",
-            "group_id": 1,
+            "setting_id": 1,
         }
 
         assert result.user == 1
@@ -150,7 +150,7 @@ class TestActorTab:
         arguments = {
             "actor_id": test_actor.item_table_object.id,
             "location_id": 1,
-            "group_id": test_actor.group,
+            "setting_id": test_actor.group,
         }
 
         test_actor.add_to_database(target_table, arguments)
@@ -211,7 +211,7 @@ class TestFactionTab:
             "faction_values": "inteligence",
             "faction_income_sources": "selling staffs",
             "faction_expenses": "books",
-            "group_id": 1,
+            "setting_id": 1,
         }
 
     def test_load_item(self, model: FactionTab) -> None:
@@ -262,7 +262,7 @@ class TestFactionTab:
             "faction_presence": 0.1,
             "faction_power": 0.99,
             "notes": "test_notes",
-            "group_id": 1,
+            "setting_id": 1,
         }
         test_faction.add_to_database(target_table, test_data)
 
@@ -285,7 +285,7 @@ class TestFactionTab:
                 "faction_presence": 0.1,
                 "faction_power": 0.99,
                 "notes": "test_notes",
-                "group_id": 1,
+                "setting_id": 1,
             }
 
     def test_remove_from_database(self, model: FactionTab) -> None:
@@ -328,7 +328,7 @@ class TestLocationTab:
             "feels": "home",
             "tastes": "yum",
             "coordinates": "A1",
-            "group_id": 1,
+            "setting_id": 1,
         }
 
     def test_load_item(self, model: LocationTab) -> None:

@@ -17,7 +17,7 @@ def global_setup():
     """Generates / refreshes a test database for testing"""
 
     def load_from_csv(
-        path: str, group_id: int | None = None
+        path: str, setting_id: int | None = None
     ) -> list[dict[str, str | int]]:
         """loads the csv based on path and returns a list of dictionaries"""
 
@@ -27,15 +27,15 @@ def global_setup():
             for row in reader:
                 result_list.append(row)
 
-            if not group_id:
+            if not setting_id:
                 return result_list
             for result in result_list:
-                result["group_id"] = group_id
+                result["setting_id"] = setting_id
 
         return result_list
 
-    def clear_old_data(session: Session, group_id: int) -> Session:
-        """deletes all old lorekeeper data from db of a certain group id"""
+    def clear_old_data(session: Session, setting_id: int) -> Session:
+        """deletes all old lorekeeper data from db of a certain setting id"""
 
         with open("tests/seed.sql", "r") as sql_file:
             commands = sql_file.read()
@@ -55,14 +55,14 @@ def global_setup():
             session.commit()
             pbar.update(1)
 
-            session.add(schema.Project(id=1, user_id=1))
+            session.add(schema.Storyline(id=1, user_id=1, name="Test Storyline", description="Test storyline"))
 
             session.commit()
             pbar.update(1)
 
             session.add(
-                schema.LorekeeperGroup(
-                    id=1, name="TESTGROUP", description="GROUP FOR TESTING", user_id=1
+                schema.Setting(
+                    id=1, name="TESTSETTING", description="SETTING FOR TESTING", user_id=1
                 )
             )
 
@@ -241,7 +241,7 @@ def global_setup():
             node_data_list[-1]["next_node"] = None
 
             schema_list = [
-                schema.LitographyNode(**i, project_id=1) for i in node_data_list
+                schema.LitographyNode(**i, storyline_id=1) for i in node_data_list
             ]
 
             session.add_all(schema_list)

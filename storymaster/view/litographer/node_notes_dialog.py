@@ -529,14 +529,14 @@ class LoreSelectionDialog(QDialog):
 
     def load_entities(self):
         """Load entities for the current type"""
-        # For now, we'll need to get the group_id from somewhere
+        # For now, we'll need to get the setting_id from somewhere
         # This is a simplified implementation
         self.entity_list.clear()
 
         try:
-            # This would need the actual group_id from the project
+            # This would need the actual setting_id from the storyline
             # For now, we'll add a placeholder
-            self.entity_list.addItem("(Feature requires project group configuration)")
+            self.entity_list.addItem("(Feature requires storyline setting configuration)")
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to load entities: {str(e)}")
 

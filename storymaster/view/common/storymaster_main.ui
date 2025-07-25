@@ -548,17 +548,27 @@ QLabel#pageTitleLabel {
      <height>25</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuPlot">
+   <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>Plot</string>
+     <string>File</string>
     </property>
-    <addaction name="actionNewPlot"/>
-    <addaction name="actionSwitchPlot"/>
-    <addaction name="actionDeletePlot"/>
-    <addaction name="separator"/>
     <addaction name="actionOpen"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuStoryline">
+    <property name="title">
+     <string>Storyline</string>
+    </property>
+    <addaction name="actionNewStoryline"/>
+    <addaction name="actionSwitchStoryline"/>
+   </widget>
+   <widget class="QMenu" name="menuSetting">
+    <property name="title">
+     <string>Setting</string>
+    </property>
+    <addaction name="actionNewSetting"/>
+    <addaction name="actionSwitchSetting"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -573,25 +583,59 @@ QLabel#pageTitleLabel {
     </property>
     <addaction name="actionAbout"/>
    </widget>
-   <addaction name="menuPlot"/>
+   <addaction name="menuFile"/>
+   <addaction name="menuStoryline"/>
+   <addaction name="menuSetting"/>
    <addaction name="menuEdit"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionNewStoryline">
+   <property name="text">
+    <string>New Storyline</string>
+   </property>
+   <property name="toolTip">
+    <string>Create a new storyline</string>
+   </property>
+  </action>
+  <action name="actionNewSetting">
+   <property name="text">
+    <string>New Setting</string>
+   </property>
+   <property name="toolTip">
+    <string>Create a new setting</string>
+   </property>
+  </action>
+  <action name="actionSwitchStoryline">
+   <property name="text">
+    <string>Switch Storyline</string>
+   </property>
+   <property name="toolTip">
+    <string>Switch to a different storyline</string>
+   </property>
+  </action>
+  <action name="actionSwitchSetting">
+   <property name="text">
+    <string>Switch Setting</string>
+   </property>
+   <property name="toolTip">
+    <string>Switch to a different setting</string>
+   </property>
+  </action>
   <action name="actionNewPlot">
    <property name="text">
     <string>New Plot</string>
    </property>
    <property name="toolTip">
-    <string>Create a new plot in the current project</string>
+    <string>Create a new plot in the current storyline</string>
    </property>
   </action>
   <action name="actionOpen">
    <property name="text">
-    <string>Open Project</string>
+    <string>Open Storyline</string>
    </property>
    <property name="toolTip">
-    <string>Open a different project</string>
+    <string>Open a different storyline</string>
    </property>
   </action>
   <action name="actionSwitchPlot">
@@ -599,7 +643,7 @@ QLabel#pageTitleLabel {
     <string>Switch Plot</string>
    </property>
    <property name="toolTip">
-    <string>Switch to a different plot in the current project</string>
+    <string>Switch to a different plot in the current storyline</string>
    </property>
   </action>
   <action name="actionDeletePlot">

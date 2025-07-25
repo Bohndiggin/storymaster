@@ -74,8 +74,12 @@ from storymaster.model.database.schema.base import (
     WorldData,
 )
 from storymaster.view.common.common_view import MainView
-from storymaster.view.common.open_project_dialog import OpenProjectDialog
+from storymaster.view.common.new_setting_dialog import NewSettingDialog
+from storymaster.view.common.new_storyline_dialog import NewStorylineDialog
+from storymaster.view.common.open_storyline_dialog import OpenStorylineDialog
 from storymaster.view.common.plot_manager_dialog import PlotManagerDialog
+from storymaster.view.common.setting_switcher_dialog import SettingSwitcherDialog
+from storymaster.view.common.storyline_switcher_dialog import StorylineSwitcherDialog
 
 # Import the dialogs
 from storymaster.view.litographer.add_node_dialog import AddNodeDialog
@@ -479,7 +483,8 @@ class MainWindowController:
     def __init__(self, view: MainView, model: BaseModel):
         self.view = view
         self.model = model
-        self.current_project_id = 1  # Default to project 1
+        self.current_storyline_id = 1  # Default to storyline 1
+        self.current_setting_id = 1  # Default to setting 1
         self.current_table_name = None
         self.current_row_data = None
         self.current_foreign_keys = {}
@@ -495,6 +500,12 @@ class MainWindowController:
         # --- Set up Litographer scene ---
         self.node_scene = QGraphicsScene()
         self.view.ui.nodeGraphView.setScene(self.node_scene)
+        
+        # Enable context menu on graphics view
+        self.view.ui.nodeGraphView.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.view.ui.nodeGraphView.customContextMenuRequested.connect(
+            self.on_litographer_context_menu
+        )
 
         # --- Set up node editing side panel ---
         self.setup_node_editing_panel()
@@ -505,13 +516,14 @@ class MainWindowController:
 
         self.connect_signals()
         self.on_litographer_selected()  # Start on the litographer page
+        self.update_status_indicators()  # Initialize status indicators
 
     def validate_ui_database_sync(self):
         """Check if UI and database are in sync and force refresh if not"""
         try:
             # Get current database state
             db_nodes = self.model.get_litography_nodes(
-                project_id=self.current_project_id
+                storyline_id=self.current_storyline_id
             )
             db_ids = set(n.id for n in db_nodes)
 
@@ -847,7 +859,9 @@ class MainWindowController:
     def populate_connection_combos(self, current_node):
         """Populate the previous/next node combo boxes"""
         # Get all nodes for this project
-        all_nodes = self.model.get_litography_nodes(project_id=self.current_project_id)
+        all_nodes = self.model.get_litography_nodes(
+            storyline_id=self.current_storyline_id
+        )
 
         # Clear combos
         self.previous_node_combo.clear()
@@ -946,7 +960,7 @@ class MainWindowController:
                 "node_height": new_height,
                 "previous_node": new_previous,
                 "next_node": new_next,
-                "project_id": self.current_project_id,
+                "storyline_id": self.current_storyline_id,
             }
 
             self.model.update_row("litography_node", update_data)
@@ -978,7 +992,7 @@ class MainWindowController:
                     session.query(LitographyNotes)
                     .filter_by(
                         linked_node_id=self.selected_node.id,
-                        project_id=self.current_project_id,
+                        storyline_id=self.current_storyline_id,
                     )
                     .all()
                 )
@@ -990,7 +1004,7 @@ class MainWindowController:
                 node_to_delete = (
                     session.query(LitographyNode)
                     .filter_by(
-                        id=self.selected_node.id, project_id=self.current_project_id
+                        id=self.selected_node.id, storyline_id=self.current_storyline_id
                     )
                     .first()
                 )
@@ -1025,7 +1039,7 @@ class MainWindowController:
             new_node_data = {
                 "node_type": NodeType.OTHER.value,  # Use the enum value
                 "node_height": 0.5,
-                "project_id": self.current_project_id,
+                "storyline_id": self.current_storyline_id,
                 "previous_node": None,
                 "next_node": None,
             }
@@ -1038,7 +1052,7 @@ class MainWindowController:
                 # Get the newly created node and add to current section
                 if self.current_plot_section_id:
                     all_nodes_after = self.model.get_litography_nodes(
-                        project_id=self.current_project_id
+                        storyline_id=self.current_storyline_id
                     )
                     new_node = max(all_nodes_after, key=lambda n: n.id)
                     self.add_node_to_section(new_node.id, self.current_plot_section_id)
@@ -1050,7 +1064,7 @@ class MainWindowController:
             if position_type == "before" and reference_node_id:
                 # Find the reference node
                 all_nodes = self.model.get_litography_nodes(
-                    project_id=self.current_project_id
+                    storyline_id=self.current_storyline_id
                 )
                 reference_node = next(
                     (n for n in all_nodes if n.id == reference_node_id), None
@@ -1072,13 +1086,13 @@ class MainWindowController:
                         old_previous_data = {
                             "id": reference_node.previous_node,
                             "next_node": None,  # Will be set after we create the new node
-                            "project_id": self.current_project_id,
+                            "storyline_id": self.current_storyline_id,
                         }
 
             elif position_type == "after" and reference_node_id:
                 # Find the reference node
                 all_nodes = self.model.get_litography_nodes(
-                    project_id=self.current_project_id
+                    storyline_id=self.current_storyline_id
                 )
                 reference_node = next(
                     (n for n in all_nodes if n.id == reference_node_id), None
@@ -1102,7 +1116,7 @@ class MainWindowController:
 
             # Get the newly created node to get its ID
             all_nodes_after = self.model.get_litography_nodes(
-                project_id=self.current_project_id
+                storyline_id=self.current_storyline_id
             )
             new_node = max(
                 all_nodes_after, key=lambda n: n.id
@@ -1118,7 +1132,7 @@ class MainWindowController:
                 reference_update = {
                     "id": reference_node_id,
                     "previous_node": new_node.id,
-                    "project_id": self.current_project_id,
+                    "storyline_id": self.current_storyline_id,
                 }
                 self.model.update_row("litography_node", reference_update)
 
@@ -1127,7 +1141,7 @@ class MainWindowController:
                     old_previous_update = {
                         "id": reference_node.previous_node,
                         "next_node": new_node.id,
-                        "project_id": self.current_project_id,
+                        "storyline_id": self.current_storyline_id,
                     }
                     self.model.update_row("litography_node", old_previous_update)
 
@@ -1136,7 +1150,7 @@ class MainWindowController:
                 reference_update = {
                     "id": reference_node_id,
                     "next_node": new_node.id,
-                    "project_id": self.current_project_id,
+                    "storyline_id": self.current_storyline_id,
                 }
                 self.model.update_row("litography_node", reference_update)
 
@@ -1145,7 +1159,7 @@ class MainWindowController:
                     old_next_update = {
                         "id": reference_node.next_node,
                         "previous_node": new_node.id,
-                        "project_id": self.current_project_id,
+                        "storyline_id": self.current_storyline_id,
                     }
                     self.model.update_row("litography_node", old_next_update)
 
@@ -1180,6 +1194,49 @@ class MainWindowController:
 
         # Show menu
         menu.exec(position)
+    
+    def on_litographer_context_menu(self, position):
+        """Handle right-click context menu on litographer graphics view"""
+        menu = QMenu()
+        
+        # Plot management section
+        plot_menu = menu.addMenu("Plot Management")
+        
+        new_plot_action = plot_menu.addAction("New Plot")
+        new_plot_action.triggered.connect(self.on_new_plot_clicked)
+        
+        switch_plot_action = plot_menu.addAction("Switch Plot")
+        switch_plot_action.triggered.connect(self.on_switch_plot_clicked)
+        
+        delete_plot_action = plot_menu.addAction("Delete Plot")
+        delete_plot_action.triggered.connect(self.on_delete_plot_clicked)
+        
+        menu.addSeparator()
+        
+        # Node creation (only if we're in litographer mode)
+        add_node_action = menu.addAction("Add Node")
+        add_node_action.triggered.connect(self.on_add_node_clicked)
+        
+        # Show menu at the clicked position
+        menu.exec(self.view.ui.nodeGraphView.mapToGlobal(position))
+
+    def update_status_indicators(self):
+        """Update status bar to show current storyline and setting"""
+        try:
+            # Get current storyline name
+            storylines = self.model.get_all_storylines()
+            storyline_name = next((s.name for s in storylines if s.id == self.current_storyline_id), "Unknown")
+            
+            # Get current setting name
+            settings = self.model.get_all_settings()
+            setting_name = next((s.name for s in settings if s.id == self.current_setting_id), "Unknown")
+            
+            # Update status bar
+            status_text = f"Storyline: {storyline_name} | Setting: {setting_name}"
+            self.view.ui.statusbar.showMessage(status_text)
+            
+        except Exception as e:
+            print(f"Error updating status indicators: {e}")
 
     def open_notes_dialog(self, node_data):
         """Open the notes management dialog for a node"""
@@ -1196,7 +1253,7 @@ class MainWindowController:
                 notes = (
                     session.query(LitographyNotes)
                     .filter_by(
-                        linked_node_id=node_id, project_id=self.current_project_id
+                        linked_node_id=node_id, storyline_id=self.current_storyline_id
                     )
                     .all()
                 )
@@ -1214,7 +1271,7 @@ class MainWindowController:
                     description=description,
                     note_type=note_type,
                     linked_node_id=node_id,
-                    project_id=self.current_project_id,
+                    storyline_id=self.current_storyline_id,
                 )
                 session.add(note)
                 session.commit()
@@ -1229,7 +1286,7 @@ class MainWindowController:
             with Session(self.model.engine) as session:
                 note = (
                     session.query(LitographyNotes)
-                    .filter_by(id=note_id, project_id=self.current_project_id)
+                    .filter_by(id=note_id, storyline_id=self.current_storyline_id)
                     .first()
                 )
 
@@ -1253,7 +1310,7 @@ class MainWindowController:
             with Session(self.model.engine) as session:
                 note = (
                     session.query(LitographyNotes)
-                    .filter_by(id=note_id, project_id=self.current_project_id)
+                    .filter_by(id=note_id, storyline_id=self.current_storyline_id)
                     .first()
                 )
 
@@ -1276,7 +1333,7 @@ class MainWindowController:
                 count = (
                     session.query(LitographyNotes)
                     .filter_by(
-                        linked_node_id=node_id, project_id=self.current_project_id
+                        linked_node_id=node_id, storyline_id=self.current_storyline_id
                     )
                     .count()
                 )
@@ -1370,23 +1427,23 @@ class MainWindowController:
                 self.view.ui.statusbar.showMessage(f"Error deleting note: {e}", 5000)
 
     # Lore entity methods for note associations
-    def get_lore_entities_for_group(self, group_id):
-        """Get all lore entities for a given group"""
+    def get_lore_entities_for_setting(self, setting_id):
+        """Get all lore entities for a given setting"""
         try:
             with Session(self.model.engine) as session:
-                actors = session.query(Actor).filter_by(group_id=group_id).all()
+                actors = session.query(Actor).filter_by(setting_id=setting_id).all()
                 backgrounds = (
-                    session.query(Background).filter_by(group_id=group_id).all()
+                    session.query(Background).filter_by(setting_id=setting_id).all()
                 )
-                classes = session.query(Class_).filter_by(group_id=group_id).all()
-                factions = session.query(Faction).filter_by(group_id=group_id).all()
-                histories = session.query(History).filter_by(group_id=group_id).all()
-                locations = session.query(Location).filter_by(group_id=group_id).all()
-                objects = session.query(Object_).filter_by(group_id=group_id).all()
-                races = session.query(Race).filter_by(group_id=group_id).all()
-                skills = session.query(Skills).filter_by(group_id=group_id).all()
-                sub_races = session.query(SubRace).filter_by(group_id=group_id).all()
-                world_data = session.query(WorldData).filter_by(group_id=group_id).all()
+                classes = session.query(Class_).filter_by(setting_id=setting_id).all()
+                factions = session.query(Faction).filter_by(setting_id=setting_id).all()
+                histories = session.query(History).filter_by(setting_id=setting_id).all()
+                locations = session.query(Location).filter_by(setting_id=setting_id).all()
+                objects = session.query(Object_).filter_by(setting_id=setting_id).all()
+                races = session.query(Race).filter_by(setting_id=setting_id).all()
+                skills = session.query(Skills).filter_by(setting_id=setting_id).all()
+                sub_races = session.query(SubRace).filter_by(setting_id=setting_id).all()
+                world_data = session.query(WorldData).filter_by(setting_id=setting_id).all()
 
                 return {
                     "actors": actors,
@@ -1613,7 +1670,7 @@ class MainWindowController:
 
             # Debug: Check what nodes actually exist in database
             all_db_nodes = self.model.get_litography_nodes(
-                project_id=self.current_project_id
+                storyline_id=self.current_storyline_id
             )
             existing_ids = [n.id for n in all_db_nodes]
 
@@ -1622,7 +1679,7 @@ class MainWindowController:
             with Session(self.model.engine) as session:
                 node_to_delete_db = (
                     session.query(LitographyNode)
-                    .filter_by(id=node_id, project_id=self.current_project_id)
+                    .filter_by(id=node_id, storyline_id=self.current_storyline_id)
                     .first()
                 )
 
@@ -1636,7 +1693,7 @@ class MainWindowController:
 
             # Get fresh node data to understand its connections
             all_nodes = self.model.get_litography_nodes(
-                project_id=self.current_project_id
+                storyline_id=self.current_storyline_id
             )
             node_to_delete = next((n for n in all_nodes if n.id == node_id), None)
 
@@ -1650,7 +1707,7 @@ class MainWindowController:
             # Update connections: connect previous and next nodes directly
             # First verify that the connected nodes actually exist
             all_current_nodes = self.model.get_litography_nodes(
-                project_id=self.current_project_id
+                storyline_id=self.current_storyline_id
             )
             existing_node_ids = {n.id for n in all_current_nodes}
 
@@ -1665,14 +1722,14 @@ class MainWindowController:
                 previous_update = {
                     "id": node_to_delete.previous_node,
                     "next_node": node_to_delete.next_node,
-                    "project_id": self.current_project_id,
+                    "storyline_id": self.current_storyline_id,
                 }
                 self.model.update_row("litography_node", previous_update)
 
                 next_update = {
                     "id": node_to_delete.next_node,
                     "previous_node": node_to_delete.previous_node,
-                    "project_id": self.current_project_id,
+                    "storyline_id": self.current_storyline_id,
                 }
                 self.model.update_row("litography_node", next_update)
 
@@ -1684,7 +1741,7 @@ class MainWindowController:
                 previous_update = {
                     "id": node_to_delete.previous_node,
                     "next_node": None,
-                    "project_id": self.current_project_id,
+                    "storyline_id": self.current_storyline_id,
                 }
                 self.model.update_row("litography_node", previous_update)
 
@@ -1696,7 +1753,7 @@ class MainWindowController:
                 next_update = {
                     "id": node_to_delete.next_node,
                     "previous_node": None,
-                    "project_id": self.current_project_id,
+                    "storyline_id": self.current_storyline_id,
                 }
                 self.model.update_row("litography_node", next_update)
             else:
@@ -1709,7 +1766,7 @@ class MainWindowController:
                 notes_to_delete = (
                     session.query(LitographyNotes)
                     .filter_by(
-                        linked_node_id=node_id, project_id=self.current_project_id
+                        linked_node_id=node_id, storyline_id=self.current_storyline_id
                     )
                     .all()
                 )
@@ -1720,7 +1777,7 @@ class MainWindowController:
                 # Then delete the node itself
                 node_to_delete_db = (
                     session.query(LitographyNode)
-                    .filter_by(id=node_id, project_id=self.current_project_id)
+                    .filter_by(id=node_id, storyline_id=self.current_storyline_id)
                     .first()
                 )
 
@@ -1754,8 +1811,18 @@ class MainWindowController:
         self.view.ui.litographerNavButton.released.connect(self.on_litographer_selected)
         self.view.ui.lorekeeperNavButton.released.connect(self.on_lorekeeper_selected)
 
-        # --- Plot Menu ---
-        self.view.ui.actionOpen.triggered.connect(self.on_open_project_clicked)
+        # --- File Menu ---
+        self.view.ui.actionOpen.triggered.connect(self.on_open_storyline_clicked)
+        
+        # --- Storyline Menu ---
+        self.view.ui.actionNewStoryline.triggered.connect(self.on_new_storyline_clicked)
+        self.view.ui.actionSwitchStoryline.triggered.connect(self.on_switch_storyline_clicked)
+        
+        # --- Setting Menu ---
+        self.view.ui.actionNewSetting.triggered.connect(self.on_new_setting_clicked)
+        self.view.ui.actionSwitchSetting.triggered.connect(self.on_switch_setting_clicked)
+        
+        # --- Plot Actions (context menu only now) ---
         self.view.ui.actionNewPlot.triggered.connect(self.on_new_plot_clicked)
         self.view.ui.actionSwitchPlot.triggered.connect(self.on_switch_plot_clicked)
         self.view.ui.actionDeletePlot.triggered.connect(self.on_delete_plot_clicked)
@@ -1773,15 +1840,15 @@ class MainWindowController:
         self.view.ui.formTabWidget.currentChanged.connect(self.on_tab_changed)
 
     # --- Project Handling ---
-    def on_open_project_clicked(self):
-        """Opens a dialog to select a project."""
-        dialog = OpenProjectDialog(self.model, self.view)
-        project_id = dialog.get_selected_project_id()
-        if project_id is not None:
-            self.current_project_id = project_id
-            print(f"Switched to Project ID: {self.current_project_id}")
+    def on_open_storyline_clicked(self):
+        """Opens a dialog to select a storyline."""
+        dialog = OpenStorylineDialog(self.model, self.view)
+        storyline_id = dialog.get_selected_storyline_id()
+        if storyline_id is not None:
+            self.current_storyline_id = storyline_id
+            print(f"Switched to Storyline ID: {self.current_storyline_id}")
             self.view.ui.statusbar.showMessage(
-                f"Opened Project ID: {self.current_project_id}", 5000
+                f"Opened Storyline ID: {self.current_storyline_id}", 5000
             )
 
             # Refresh the current view with the new project's data
@@ -1790,141 +1857,258 @@ class MainWindowController:
             else:
                 self._refresh_current_table_view()
 
+    def on_new_storyline_clicked(self):
+        """Opens a dialog to create a new storyline."""
+        dialog = NewStorylineDialog(self.model, self.view)
+        storyline_data = dialog.get_storyline_data()
+        if storyline_data is not None:
+            try:
+                self.model.add_row("storyline", storyline_data)
+                self.view.ui.statusbar.showMessage(
+                    f"Created new storyline: {storyline_data['name']}", 5000
+                )
+                print(f"Created new storyline: {storyline_data['name']}")
+            except Exception as e:
+                QMessageBox.critical(
+                    self.view,
+                    "Error Creating Storyline",
+                    f"Failed to create storyline: {str(e)}",
+                )
+
+    def on_new_setting_clicked(self):
+        """Opens a dialog to create a new setting."""
+        dialog = NewSettingDialog(self.model, self.view)
+        setting_data = dialog.get_setting_data()
+        if setting_data is not None:
+            try:
+                self.model.add_row("setting", setting_data)
+                self.view.ui.statusbar.showMessage(
+                    f"Created new setting: {setting_data['name']}", 5000
+                )
+                print(f"Created new setting: {setting_data['name']}")
+            except Exception as e:
+                QMessageBox.critical(
+                    self.view,
+                    "Error Creating Setting",
+                    f"Failed to create setting: {str(e)}",
+                )
+
+    def on_switch_storyline_clicked(self):
+        """Opens a dialog to switch between storylines."""
+        dialog = StorylineSwitcherDialog(self.model, self.current_storyline_id, self.view)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            new_storyline_id = dialog.get_selected_storyline_id()
+            if new_storyline_id:
+                try:
+                    self.current_storyline_id = new_storyline_id
+                    # Get storyline name for status message
+                    storylines = self.model.get_all_storylines()
+                    storyline_name = next((s.name for s in storylines if s.id == new_storyline_id), "Unknown")
+                    
+                    self.view.ui.statusbar.showMessage(
+                        f"Switched to storyline: {storyline_name}", 5000
+                    )
+                    # TODO: Refresh views to show new storyline data
+                    self.load_and_draw_nodes()
+                    self.update_status_indicators()
+                    print(f"Switched to storyline: {storyline_name}")
+                except Exception as e:
+                    QMessageBox.critical(
+                        self.view,
+                        "Error Switching Storyline",
+                        f"Failed to switch storyline: {str(e)}",
+                    )
+
+    def on_switch_setting_clicked(self):
+        """Opens a dialog to switch between settings."""
+        dialog = SettingSwitcherDialog(self.model, self.current_setting_id, self.view)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            new_setting_id = dialog.get_selected_setting_id()
+            if new_setting_id:
+                try:
+                    self.current_setting_id = new_setting_id
+                    # Get setting name for status message
+                    settings = self.model.get_all_settings()
+                    setting_name = next((s.name for s in settings if s.id == new_setting_id), "Unknown")
+                    
+                    self.view.ui.statusbar.showMessage(
+                        f"Switched to setting: {setting_name}", 5000
+                    )
+                    # TODO: Refresh lorekeeper views to show new setting data
+                    if self.db_tree_model.rowCount() > 0:
+                        self.load_database_structure()
+                    self.update_status_indicators()
+                    print(f"Switched to setting: {setting_name}")
+                except Exception as e:
+                    QMessageBox.critical(
+                        self.view,
+                        "Error Switching Setting",
+                        f"Failed to switch setting: {str(e)}",
+                    )
+
     # --- Plot Management Methods ---
-    
+
     def on_new_plot_clicked(self):
         """Handle creating a new plot in the current project."""
         try:
             with Session(self.model.engine) as session:
-                plots = session.query(LitographyPlot).filter_by(
-                    project_id=self.current_project_id
-                ).all()
-                
+                plots = (
+                    session.query(LitographyPlot)
+                    .filter_by(storyline_id=self.current_storyline_id)
+                    .all()
+                )
+
                 dialog = PlotManagerDialog(self.view)
                 dialog.populate_plots(plots, self.current_plot_id)
                 dialog.new_plot_input.setText("")
                 dialog.new_plot_input.setFocus()
-                
-                if dialog.exec() == QDialog.DialogCode.Accepted and hasattr(dialog, 'action'):
+
+                if dialog.exec() == QDialog.DialogCode.Accepted and hasattr(
+                    dialog, "action"
+                ):
                     if dialog.action == "add":
                         new_plot = LitographyPlot(
                             title=dialog.new_plot_name,
-                            project_id=self.current_project_id
+                            storyline_id=self.current_storyline_id,
                         )
                         session.add(new_plot)
                         session.commit()
-                        
+
                         self.view.ui.statusbar.showMessage(
                             f"Created new plot: {dialog.new_plot_name}", 5000
                         )
-                        
+
         except Exception as e:
             print(f"Error creating new plot: {e}")
             self.view.ui.statusbar.showMessage(f"Error creating plot: {e}", 5000)
-    
+
     def on_switch_plot_clicked(self):
         """Handle switching to a different plot."""
         try:
             with Session(self.model.engine) as session:
-                plots = session.query(LitographyPlot).filter_by(
-                    project_id=self.current_project_id
-                ).all()
-                
+                plots = (
+                    session.query(LitographyPlot)
+                    .filter_by(storyline_id=self.current_storyline_id)
+                    .all()
+                )
+
                 if len(plots) <= 1:
                     self.view.ui.statusbar.showMessage(
                         "Only one plot available. Create more plots to switch.", 5000
                     )
                     return
-                
+
                 dialog = PlotManagerDialog(self.view)
                 dialog.populate_plots(plots, self.current_plot_id)
-                
-                if dialog.exec() == QDialog.DialogCode.Accepted and hasattr(dialog, 'action'):
+
+                if dialog.exec() == QDialog.DialogCode.Accepted and hasattr(
+                    dialog, "action"
+                ):
                     if dialog.action == "switch" and dialog.selected_plot_id:
                         self.current_plot_id = dialog.selected_plot_id
-                        
+
                         plot = session.query(LitographyPlot).get(self.current_plot_id)
-                        plot_name = plot.title if plot else f"Plot {self.current_plot_id}"
-                        
+                        plot_name = (
+                            plot.title if plot else f"Plot {self.current_plot_id}"
+                        )
+
                         self.view.ui.statusbar.showMessage(
                             f"Switched to plot: {plot_name}", 5000
                         )
-                        
+
                         # Refresh the litographer view if currently active
                         if self.view.ui.pageStack.currentIndex() == 0:
                             self.load_plot_sections()
                             self.load_and_draw_nodes()
-                            
+
         except Exception as e:
             print(f"Error switching plot: {e}")
             self.view.ui.statusbar.showMessage(f"Error switching plot: {e}", 5000)
-    
+
     def on_delete_plot_clicked(self):
         """Handle deleting the current plot."""
         try:
             with Session(self.model.engine) as session:
-                plots = session.query(LitographyPlot).filter_by(
-                    project_id=self.current_project_id
-                ).all()
-                
+                plots = (
+                    session.query(LitographyPlot)
+                    .filter_by(storyline_id=self.current_storyline_id)
+                    .all()
+                )
+
                 if len(plots) <= 1:
                     self.view.ui.statusbar.showMessage(
                         "Cannot delete the only plot in the project.", 5000
                     )
                     return
-                
+
                 dialog = PlotManagerDialog(self.view)
                 dialog.populate_plots(plots, self.current_plot_id)
-                
-                if dialog.exec() == QDialog.DialogCode.Accepted and hasattr(dialog, 'action'):
+
+                if dialog.exec() == QDialog.DialogCode.Accepted and hasattr(
+                    dialog, "action"
+                ):
                     if dialog.action == "delete" and dialog.selected_plot_id:
-                        plot_to_delete = session.query(LitographyPlot).get(dialog.selected_plot_id)
-                        plot_name = plot_to_delete.title if plot_to_delete else f"Plot {dialog.selected_plot_id}"
-                        
+                        plot_to_delete = session.query(LitographyPlot).get(
+                            dialog.selected_plot_id
+                        )
+                        plot_name = (
+                            plot_to_delete.title
+                            if plot_to_delete
+                            else f"Plot {dialog.selected_plot_id}"
+                        )
+
                         # Delete all related data
-                        sections = session.query(LitographyPlotSection).filter_by(
-                            plot_id=dialog.selected_plot_id
-                        ).all()
-                        
+                        sections = (
+                            session.query(LitographyPlotSection)
+                            .filter_by(plot_id=dialog.selected_plot_id)
+                            .all()
+                        )
+
                         for section in sections:
                             # Delete junction records
                             session.query(LitographyNodeToPlotSection).filter_by(
                                 plot_section_id=section.id
                             ).delete()
-                            
+
                             # Delete nodes in this section
-                            nodes = session.query(LitographyNode).join(
-                                LitographyNodeToPlotSection
-                            ).filter(
-                                LitographyNodeToPlotSection.litography_plot_section_id == section.id
-                            ).all()
-                            
+                            nodes = (
+                                session.query(LitographyNode)
+                                .join(LitographyNodeToPlotSection)
+                                .filter(
+                                    LitographyNodeToPlotSection.litography_plot_section_id
+                                    == section.id
+                                )
+                                .all()
+                            )
+
                             for node in nodes:
                                 session.delete(node)
-                            
+
                             session.delete(section)
-                        
+
                         session.delete(plot_to_delete)
                         session.commit()
-                        
+
                         # If we deleted the current plot, switch to the first available plot
                         if dialog.selected_plot_id == self.current_plot_id:
-                            remaining_plots = session.query(LitographyPlot).filter_by(
-                                project_id=self.current_project_id
-                            ).first()
-                            
+                            remaining_plots = (
+                                session.query(LitographyPlot)
+                                .filter_by(storyline_id=self.current_storyline_id)
+                                .first()
+                            )
+
                             if remaining_plots:
                                 self.current_plot_id = remaining_plots.id
-                                
+
                                 # Refresh the view
                                 if self.view.ui.pageStack.currentIndex() == 0:
                                     self.load_plot_sections()
                                     self.load_and_draw_nodes()
-                        
+
                         self.view.ui.statusbar.showMessage(
                             f"Deleted plot: {plot_name}", 5000
                         )
-                        
+
         except Exception as e:
             print(f"Error deleting plot: {e}")
             self.view.ui.statusbar.showMessage(f"Error deleting plot: {e}", 5000)
@@ -2010,7 +2194,7 @@ class MainWindowController:
                     .filter(
                         LitographyNodeToPlotSection.litography_plot_section_id
                         == section_id,
-                        LitographyNode.project_id == self.current_project_id,
+                        LitographyNode.storyline_id == self.current_storyline_id,
                     )
                     .all()
                 )
@@ -2093,7 +2277,7 @@ class MainWindowController:
         new_node_data = dialog.get_data()
 
         if new_node_data:
-            new_node_data["project_id"] = self.current_project_id
+            new_node_data["storyline_id"] = self.current_storyline_id
 
             try:
                 self.model.add_row("litography_node", new_node_data)
@@ -2102,7 +2286,7 @@ class MainWindowController:
                 if self.current_plot_section_id:
                     # Get the newly created node ID
                     all_nodes_after = self.model.get_litography_nodes(
-                        project_id=self.current_project_id
+                        storyline_id=self.current_storyline_id
                     )
                     new_node = max(all_nodes_after, key=lambda n: n.id)
 
@@ -2124,7 +2308,7 @@ class MainWindowController:
             all_nodes = self.get_nodes_in_section(self.current_plot_section_id)
         else:
             all_nodes = self.model.get_litography_nodes(
-                project_id=self.current_project_id
+                storyline_id=self.current_storyline_id
             )
 
         node_ids = [n.id for n in all_nodes] if all_nodes else []
@@ -2316,9 +2500,9 @@ class MainWindowController:
         if not self.current_table_name:
             return
 
-        # NOTE: Assumes get_table_data can accept a project_id to get correct headers
+        # NOTE: Assumes get_table_data can accept a storyline_id to get correct headers
         headers, _ = self.model.get_table_data(
-            self.current_table_name, project_id=self.current_project_id
+            self.current_table_name, storyline_id=self.current_storyline_id
         )
         blank_data = {header: "" for header in headers}
         self._populate_form(
@@ -2340,7 +2524,7 @@ class MainWindowController:
         widget_dict.clear()
 
         for key, value in row_data.items():
-            if is_add_form and key.lower() in ["id", "group_id", "project_id"]:
+            if is_add_form and key.lower() in ["id", "setting_id", "storyline_id"]:
                 continue
 
             label = QLabel(f"{key.replace('_', ' ').title()}:")
@@ -2364,7 +2548,7 @@ class MainWindowController:
         try:
             # NOTE: Assumes get_all_rows_as_dicts can be filtered by project
             dropdown_items = self.model.get_all_rows_as_dicts(
-                referenced_table, project_id=self.current_project_id
+                referenced_table, storyline_id=self.current_storyline_id
             )
             field.addItem("None", None)
 
@@ -2448,11 +2632,11 @@ class MainWindowController:
                     f"Successfully saved changes to '{self.current_table_name}'.", 5000
                 )
             else:
-                # NOTE: Assumes add_row can accept a project_id to find the correct group
+                # Pass the current setting ID directly for lorekeeper data
                 self.model.add_row(
                     self.current_table_name,
                     form_data,
-                    project_id=self.current_project_id,
+                    setting_id=self.current_setting_id,
                 )
                 self.view.ui.statusbar.showMessage(
                     f"Successfully added new row to '{self.current_table_name}'.", 5000
@@ -2511,9 +2695,9 @@ class MainWindowController:
         self.db_table_model.clear()
 
         try:
-            # Pass the current project ID to filter the data
+            # Pass the current setting ID to filter the lorekeeper data
             headers, data_rows = self.model.get_table_data(
-                self.current_table_name, project_id=self.current_project_id
+                self.current_table_name, setting_id=self.current_setting_id
             )
             self.db_table_model.setHorizontalHeaderLabels(headers)
 

@@ -13,12 +13,12 @@ from storymaster.model.database import schema
 class BaseLitographerPageModel(BaseModel):
     """Base model for litographer"""
 
-    def __init__(self, user: int, group: int, project_id: int):
+    def __init__(self, user: int, setting: int, storyline_id: int):
         super().__init__()
         self.mode = StorioModes.LITOGRAPHER
         self.user = user
-        self.group = group
-        self.project_id = project_id
+        self.setting = setting
+        self.storyline_id = storyline_id
 
 
 class LitographerPlotNodeModel(BaseLitographerPageModel):
@@ -29,8 +29,8 @@ class LitographerPlotNodeModel(BaseLitographerPageModel):
     next_node: typing.Self | None
     node_table_object: schema.LitographyNode
 
-    def __init__(self, user: int, group: int, project_id: int, node_id: int) -> None:
-        super().__init__(user, group, project_id)
+    def __init__(self, user: int, setting: int, storyline_id: int, node_id: int) -> None:
+        super().__init__(user, setting, storyline_id)
         try:
             self._gather_self(node_id)
         except NoResultFound:
@@ -46,7 +46,7 @@ class LitographerPlotNodeModel(BaseLitographerPageModel):
             node = session.execute(
                 sql.select(schema.LitographyNode).where(
                     schema.LitographyNode.id == node_id,
-                    schema.LitographyNode.project_id == self.project_id,
+                    schema.LitographyNode.storyline_id == self.storyline_id,
                 )
             ).scalar_one()
 
@@ -58,7 +58,7 @@ class LitographerPlotNodeModel(BaseLitographerPageModel):
         new_node = schema.LitographyNode(
             node_type=schema.NodeType.OTHER.value,
             node_height=0.1,
-            project_id=self.project_id,
+            storyline_id=self.storyline_id,
         )
 
         with Session(self.engine) as session:
@@ -95,7 +95,7 @@ class LitographerPlotNodeModel(BaseLitographerPageModel):
             description="",
             note_type=note_type,
             linked_node_id=self.node_table_object.id,
-            project_id=self.project_id,
+            storyline_id=self.storyline_id,
         )
 
         with Session(self.engine) as session:
@@ -111,8 +111,8 @@ class LitographerLinkedList(BaseLitographerPageModel):
     head: LitographerPlotNodeModel
     tail: LitographerPlotNodeModel | None
 
-    def __init__(self, user: int, group: int, project_id: int, section_id: int) -> None:
-        super().__init__(user, group, project_id)
+    def __init__(self, user: int, setting: int, storyline_id: int, section_id: int) -> None:
+        super().__init__(user, setting, storyline_id)
         self.section_id = section_id
         self.head = None
         self.tail = None
@@ -150,7 +150,7 @@ class LitographerLinkedList(BaseLitographerPageModel):
         """Add a new node at the end of the list"""
 
         new_node = LitographerPlotNodeModel(
-            self.user, self.group, self.project_id, node_id
+            self.user, self.setting, self.storyline_id, node_id
         )
 
         if not self.head:
@@ -166,7 +166,7 @@ class LitographerLinkedList(BaseLitographerPageModel):
         """Add a node to the beginning of the list"""
 
         new_node = LitographerPlotNodeModel(
-            self.user, self.group, self.project_id, node_id
+            self.user, self.setting, self.storyline_id, node_id
         )
 
         if not self.head:
@@ -194,7 +194,7 @@ class LitographerLinkedList(BaseLitographerPageModel):
         """Inserts node after specified id"""
 
         new_node = LitographerPlotNodeModel(
-            self.user, self.group, self.project_id, node_id
+            self.user, self.setting, self.storyline_id, node_id
         )
 
         if not self.head:
@@ -372,11 +372,11 @@ class LitographerPlotSectionModel(BaseLitographerPageModel):
     nodes: LitographerLinkedList
     section_id: int
 
-    def __init__(self, user: int, group: int, project_id: int, section_id: int) -> None:
-        super().__init__(user, group, project_id)
+    def __init__(self, user: int, setting: int, storyline_id: int, section_id: int) -> None:
+        super().__init__(user, setting, storyline_id)
         self.section_id = section_id
         self.nodes = LitographerLinkedList(
-            self.user, self.group, self.project_id, self.section_id
+            self.user, self.setting, self.storyline_id, self.section_id
         )
         self.nodes.load_up()
 
@@ -394,8 +394,8 @@ class LitographerPlotModel(BaseLitographerPageModel):
     plot_table: schema.LitographyPlot
     section_dict: dict[int, LitographerPlotSectionModel]
 
-    def __init__(self, user: int, group: int, project_id: int, plot_id: int):
-        super().__init__(user, group, project_id)
+    def __init__(self, user: int, setting: int, storyline_id: int, plot_id: int):
+        super().__init__(user, setting, storyline_id)
         self.plot_id = plot_id
         try:
             self.load_self()
@@ -429,7 +429,7 @@ class LitographerPlotModel(BaseLitographerPageModel):
 
             self.section_dict: dict[int, LitographerPlotSectionModel] = {
                 plot_section.id: LitographerPlotSectionModel(
-                    self.user, self.group, self.project_id, plot_section.id
+                    self.user, self.setting, self.storyline_id, plot_section.id
                 )
                 for plot_section in plot_sections
             }
@@ -438,7 +438,7 @@ class LitographerPlotModel(BaseLitographerPageModel):
         """Creates a new plot. Used when one doesn't exist"""
 
         new_plot = schema.LitographyPlot(
-            title="NewPlot", description="", project_id=self.project_id
+            title="NewPlot", description="", storyline_id=self.storyline_id
         )
 
         with Session(self.engine) as session:

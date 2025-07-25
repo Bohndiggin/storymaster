@@ -1,5 +1,5 @@
 """
-Defines the dialog for opening an existing project.
+Defines the dialog for opening an existing storyline.
 """
 
 from PyQt6.QtWidgets import (
@@ -13,26 +13,26 @@ from PyQt6.QtWidgets import (
 from storymaster.model.common.common_model import BaseModel
 
 
-class OpenProjectDialog(QDialog):
+class OpenStorylineDialog(QDialog):
     """
-    A dialog window that allows the user to select a project to open.
+    A dialog window that allows the user to select a storyline to open.
     """
 
     def __init__(self, model: BaseModel, parent=None):
         super().__init__(parent)
         self.model = model
-        self.setWindowTitle("Open Project")
+        self.setWindowTitle("Open Storyline")
         self.setMinimumWidth(350)
 
         # --- Create Widgets ---
-        self.project_combo = QComboBox()
+        self.storyline_combo = QComboBox()
 
         # --- Configure Widgets ---
-        self._populate_projects()
+        self._populate_storylines()
 
         # --- Layout ---
         form_layout = QFormLayout()
-        form_layout.addRow("Select Project:", self.project_combo)
+        form_layout.addRow("Select Storyline:", self.storyline_combo)
 
         # --- Dialog Buttons (OK/Cancel) ---
         self.button_box = QDialogButtonBox(
@@ -47,29 +47,29 @@ class OpenProjectDialog(QDialog):
 
         self.setLayout(main_layout)
 
-    def _populate_projects(self):
+    def _populate_storylines(self):
         """
-        Fetches the list of projects from the model and populates the combo box.
+        Fetches the list of storylines from the model and populates the combo box.
         """
         try:
-            # NOTE: This requires a `get_all_projects` method in your model
-            projects = self.model.get_all_projects()
-            for project in projects:
-                # Display project name, store the project object's ID as data
-                self.project_combo.addItem(
-                    f"{project.name} (ID: {project.id})", project.id
+            # NOTE: This requires a `get_all_storylines` method in your model
+            storylines = self.model.get_all_storylines()
+            for storyline in storylines:
+                # Display storyline name, store the storyline object's ID as data
+                self.storyline_combo.addItem(
+                    f"{storyline.name} (ID: {storyline.id})", storyline.id
                 )
         except Exception as e:
-            print(f"Error populating projects list: {e}")
+            print(f"Error populating storylines list: {e}")
             # You could add a disabled item to show the error
-            self.project_combo.addItem("Could not load projects.")
-            self.project_combo.setEnabled(False)
+            self.storyline_combo.addItem("Could not load storylines.")
+            self.storyline_combo.setEnabled(False)
 
-    def get_selected_project_id(self) -> int | None:
+    def get_selected_storyline_id(self) -> int | None:
         """
-        Returns the ID of the selected project if the dialog is accepted.
+        Returns the ID of the selected storyline if the dialog is accepted.
         Returns None if canceled.
         """
         if self.exec() == QDialog.DialogCode.Accepted:
-            return self.project_combo.currentData()
+            return self.storyline_combo.currentData()
         return None
