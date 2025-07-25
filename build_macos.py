@@ -247,13 +247,65 @@ exec $PYTHON_CMD storymaster/main.py "$@"
 
         os.chmod(launcher_script, 0o755)
 
-        # Note: Icon creation would require iconutil (macOS) or external tools
-        # For production builds, create a proper .icns file and place it in Resources/
+        # Create castle emoji icon for macOS
+        icon_svg_path = Path("assets/storymaster_icon.svg")
+        if icon_svg_path.exists():
+            try:
+                # Create iconset directory
+                iconset_dir = app_bundle / "Contents/Resources/storymaster.iconset"
+                iconset_dir.mkdir(parents=True, exist_ok=True)
+
+                # Generate different icon sizes for macOS
+                icon_sizes = [16, 32, 128, 256, 512]
+                for size in icon_sizes:
+                    png_name = f"icon_{size}x{size}.png"
+                    png_path = iconset_dir / png_name
+
+                    # Use ImageMagick/Inkscape to convert SVG to PNG
+                    try:
+                        subprocess.run(
+                            [
+                                "convert",
+                                "-background",
+                                "transparent",
+                                "-size",
+                                f"{size}x{size}",
+                                str(icon_svg_path),
+                                str(png_path),
+                            ],
+                            check=True,
+                        )
+                    except (subprocess.CalledProcessError, FileNotFoundError):
+                        print(
+                            f"Warning: Could not create {png_name} - ImageMagick required"
+                        )
+
+                # Try to create .icns file using iconutil (macOS only)
+                icns_path = app_bundle / "Contents/Resources/storymaster.icns"
+                try:
+                    subprocess.run(
+                        [
+                            "iconutil",
+                            "-c",
+                            "icns",
+                            str(iconset_dir),
+                            "-o",
+                            str(icns_path),
+                        ],
+                        check=True,
+                    )
+                    print(f"Created macOS icon: {icns_path}")
+                    # Clean up iconset directory
+                    shutil.rmtree(iconset_dir)
+                except (subprocess.CalledProcessError, FileNotFoundError):
+                    print("Warning: iconutil not available - .icns file not created")
+
+            except Exception as e:
+                print(f"Warning: Could not create icon: {e}")
+        else:
+            print("Warning: Icon SVG not found - run create_icons.py first")
 
         print("[OK] Application contents installed")
-        print(
-            "[WARNING]  Note: Icon creation requires iconutil (macOS) or external tools"
-        )
         return True
 
     except Exception as e:

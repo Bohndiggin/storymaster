@@ -94,6 +94,16 @@ def install_python_app(appdir):
                     shutil.copy2(src, dst)
                 print(f"   Copied {file_path}")
 
+        # Create virtual environment for bundled dependencies
+        print("   Creating virtual environment for dependencies...")
+        venv_path = appdir / "usr/share/storymaster/venv"
+        subprocess.run(["python3", "-m", "venv", str(venv_path)], check=True)
+
+        # Install dependencies in virtual environment
+        pip_path = venv_path / "bin/pip"
+        subprocess.run([str(pip_path), "install", "SQLAlchemy==2.0.41"], check=True)
+        print("   Installed SQLAlchemy in virtual environment")
+
         # Create launcher script
         launcher_script = appdir / "usr/bin/storymaster"
         launcher_content = """#!/bin/bash
@@ -107,13 +117,41 @@ APP_DIR="$SCRIPT_DIR/../share/storymaster"
 export APPDIR="${APPDIR:-$(dirname "$SCRIPT_DIR")}"
 export PYTHONPATH="$APP_DIR:$PYTHONPATH"
 
-# Use system Python3 (AppImages should use system libraries when possible)
-PYTHON_CMD="python3"
+# Smart Python selection: use system Python for PyQt6, bundled for SQLAlchemy
+VENV_PYTHON="$APP_DIR/venv/bin/python"
 
-# Check if python3 is available
+# Check if system python3 is available
 if ! command -v python3 &> /dev/null; then
     echo "Error: Python 3 is required but not installed."
     echo "Please install Python 3.8 or newer and try again."
+    exit 1
+fi
+
+# Test if system Python has PyQt6 (preferred for GUI applications)
+if python3 -c "import PyQt6" 2>/dev/null; then
+    echo "Using system Python with PyQt6"
+    PYTHON_CMD="python3"
+    
+    # Set PYTHONPATH to include bundled SQLAlchemy if available
+    if [ -f "$VENV_PYTHON" ]; then
+        VENV_SITE_PACKAGES=$(echo "$APP_DIR"/venv/lib/python*/site-packages)
+        export PYTHONPATH="$VENV_SITE_PACKAGES:$PYTHONPATH"
+        echo "Added bundled SQLAlchemy to Python path"
+    else
+        # Check if SQLAlchemy is available system-wide
+        python3 -c "import sqlalchemy" 2>/dev/null || {
+            echo "Error: SQLAlchemy is missing."
+            echo "Please install: sudo apt install python3-sqlalchemy"
+            echo "Or via pip: pip install SQLAlchemy"
+            exit 1
+        }
+    fi
+else
+    echo "Error: PyQt6 is required but not found."
+    echo "Please install PyQt6:"
+    echo "  Ubuntu/Debian: sudo apt install python3-pyqt6"
+    echo "  Fedora/RHEL:   sudo dnf install python3-PyQt6"
+    echo "  Or via pip:    pip install PyQt6"
     exit 1
 fi
 
@@ -124,9 +162,6 @@ cd "$APP_DIR"
 if [ ! -f "$HOME/.local/share/storymaster/storymaster.db" ]; then
     mkdir -p "$HOME/.local/share/storymaster"
     
-    export DATABASE_CONNECTION="sqlite:///$HOME/.local/share/storymaster/storymaster.db"
-    export TEST_DATABASE_CONNECTION="sqlite:///$HOME/.local/share/storymaster/test_storymaster.db"
-    
     echo "Initializing Storymaster database..."
     $PYTHON_CMD init_database.py
     
@@ -135,9 +170,6 @@ if [ ! -f "$HOME/.local/share/storymaster/storymaster.db" ]; then
     if [[ "$response" =~ ^[Yy]$ ]]; then
         $PYTHON_CMD seed.py
     fi
-else
-    export DATABASE_CONNECTION="sqlite:///$HOME/.local/share/storymaster/storymaster.db"
-    export TEST_DATABASE_CONNECTION="sqlite:///$HOME/.local/share/storymaster/test_storymaster.db"
 fi
 
 # Launch the application
@@ -167,14 +199,12 @@ StartupNotify=true
         with open(desktop_entry, "w") as f:
             f.write(desktop_content)
 
-        # Create a simple SVG icon
+        # Create a castle emoji SVG icon
         icon_path = appdir / "usr/share/icons/hicolor/scalable/apps/storymaster.svg"
         icon_content = """<?xml version="1.0" encoding="UTF-8"?>
 <svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-  <rect width="64" height="64" fill="#2e2e2e" rx="8"/>
-  <text x="32" y="25" text-anchor="middle" fill="#dcdcdc" font-size="16" font-family="Arial">[CASTLE]</text>
-  <text x="32" y="45" text-anchor="middle" fill="#af80f8" font-size="8" font-family="Arial">STORY</text>
-  <text x="32" y="55" text-anchor="middle" fill="#af80f8" font-size="8" font-family="Arial">MASTER</text>
+  <rect width="64" height="64" fill="#1a1a1a" rx="8"/>
+  <text x="32" y="44" text-anchor="middle" fill="#ffffff" font-size="32" font-family="Arial, sans-serif">🏰</text>
 </svg>"""
 
         with open(icon_path, "w") as f:
@@ -257,9 +287,11 @@ An AppImage is a portable application format for Linux that:
 
 ## Requirements
 
-- Linux x86_64 system
+- Linux x86_64 system  
 - Python 3.8 or newer (usually pre-installed)
 - PyQt6 system libraries (auto-installed on most modern distributions)
+
+**Note**: SQLAlchemy is bundled in the AppImage, no additional installation required!
 
 ## First Run
 
@@ -293,8 +325,13 @@ Delete the AppImage file. User data remains in `~/.local/share/storymaster/`.
 If the AppImage doesn't run:
 1. Ensure it's executable: `chmod +x Storymaster-x86_64.AppImage`
 2. Check Python 3 is installed: `python3 --version`
-3. Try running from terminal to see error messages
-4. Install PyQt6: `sudo apt install python3-pyqt6` (Ubuntu/Debian)
+3. Install PyQt6 if needed:
+   - Ubuntu/Debian: `sudo apt install python3-pyqt6`
+   - Fedora/RHEL: `sudo dnf install python3-PyQt6`
+   - Or via pip: `pip install PyQt6`
+4. Try running from terminal to see error messages
+
+**Note**: SQLAlchemy is bundled, so you only need PyQt6!
 
 ## Benefits of AppImage
 

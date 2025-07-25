@@ -97,25 +97,33 @@ Keywords=writing;story;plot;worldbuilding;creative;
 StartupNotify=true
 EOF
 
-# Create a simple icon (text-based for now)
+# Create a castle emoji icon
 cat > $RPM_BUILD_ROOT%{_datadir}/pixmaps/storymaster.xpm << 'EOF'
 /* XPM */
 static char * storymaster_xpm[] = {
-"32 32 3 1",
+"32 32 4 1",
 " 	c None",
-".	c #000000",
-"+	c #FFFFFF",
+".	c #1a1a1a",
+"+	c #ffffff",
+"#	c #af80f8",
 "                                ",
-"  ............................  ",
-"  .+++++++++++++++++++++++++.   ",
-"  .+......................+.   ",
-"  .+.  🏰 STORYMASTER   .+.   ",
-"  .+......................+.   ",
-"  .+++++++++++++++++++++++++.   ",
-"  ............................  ",
+"           .......               ",
+"         ..+++++++..             ",
+"        .+.+.+.+.+.+.            ",
+"        .+.+.+.+.+.+.            ",
+"        .+++++++++++.            ",
+"       .+.++.++.++.+.            ",
+"       .+.++.++.++.+.            ",
+"       .+++++++++++.             ",
+"       .+.++.++.+.              ",
+"       .+.++.++.+.              ",
+"       .++++++++.               ",
+"       .++.++.++.               ",
+"       .++.++.++.               ",
+"       .++++++++.               ",
+"       .........                ",
 "                                ",
-"     📖 Litographer             ",
-"     🗂️  Lorekeeper             ",
+"      #STORYMASTER#             ",
 "                                ",
 "                                "};
 EOF

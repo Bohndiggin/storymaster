@@ -521,9 +521,10 @@ class MainWindowController:
         # --- Set up backup system ---
         import os
 
-        database_path = os.getenv(
-            "DATABASE_CONNECTION", "sqlite:///storymaster.db"
-        ).replace("sqlite:///", "")
+        # Use the same database path as base_connection.py
+        home_dir = os.path.expanduser("~")
+        db_dir = os.path.join(home_dir, ".local", "share", "storymaster")
+        database_path = os.path.join(db_dir, "storymaster.db")
         self.backup_manager = BackupManager(database_path)
 
         # Connect backup signals

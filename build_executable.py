@@ -46,6 +46,25 @@ def check_dependencies():
             return False
 
 
+def ensure_icons_exist():
+    """Ensure icon files exist for the build"""
+    print("Checking for icon files...")
+    icon_path = Path("assets/storymaster_icon.ico")
+    if not icon_path.exists():
+        print("Icons not found. Generating...")
+        try:
+            import subprocess
+
+            subprocess.run([sys.executable, "create_icons.py"], check=True)
+            print("Icons generated successfully")
+        except subprocess.CalledProcessError:
+            print("Warning: Could not generate icons automatically")
+            print("Run 'python create_icons.py' manually if you want icons")
+    else:
+        print("Icons found")
+    return True
+
+
 def clean_previous_builds():
     """Clean up previous build artifacts"""
     print("\n[CLEAN] Cleaning previous builds...")
@@ -238,6 +257,7 @@ def main():
     # Build steps
     steps = [
         ("Checking dependencies", check_dependencies),
+        ("Ensuring icons exist", ensure_icons_exist),
         ("Cleaning previous builds", clean_previous_builds),
         ("Building executable", build_executable),
         ("Creating portable package", create_portable_package),

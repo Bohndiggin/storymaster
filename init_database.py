@@ -13,8 +13,15 @@ from storymaster.model.database.schema.base import BaseTable
 
 def init_database():
     """Initialize SQLite database with schema"""
-    # Use SQLite database in the data directory
-    db_connection = "sqlite:///data/storymaster.db"
+    # Use SQLite database in user's home directory for AppImage compatibility
+    import os
+
+    home_dir = os.path.expanduser("~")
+    db_dir = os.path.join(home_dir, ".local", "share", "storymaster")
+    os.makedirs(db_dir, exist_ok=True)
+
+    db_path = os.path.join(db_dir, "storymaster.db")
+    db_connection = f"sqlite:///{db_path}"
 
     print(f"Initializing database: {db_connection}")
 
