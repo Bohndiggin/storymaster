@@ -141,8 +141,17 @@ class BaseModel:
         "litography_note_to_history": schema.LitographyNoteToHistory,
         "litography_note_to_object": schema.LitographyNoteToObject,
         "litography_note_to_world_data": schema.LitographyNoteToWorldData,
+        "litography_note_to_class": schema.LitographyNoteToClass,
+        "litography_note_to_race": schema.LitographyNoteToRace,
+        "litography_note_to_sub_race": schema.LitographyNoteToSubRace,
+        "litography_note_to_skills": schema.LitographyNoteToSkills,
         "arc_to_node": schema.ArcToNode,
         "arc_to_actor": schema.ArcToActor,
+        "alignment": schema.Alignment,
+        "stat": schema.Stat,
+        "actor_to_race": schema.ActorToRace,
+        "actor_to_class": schema.ActorToClass,
+        "actor_to_stat": schema.ActorToStat,
     }
 
     def __init__(self, user_id: int):
@@ -216,6 +225,9 @@ class BaseModel:
             "litography_note_to_skills",
             "arc_to_actor",
             "arc_to_node",
+            "actor_to_race",
+            "actor_to_class",
+            "actor_to_stat",
         }
 
         return [table for table in all_tables if table not in hidden_tables]

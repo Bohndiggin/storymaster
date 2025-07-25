@@ -98,6 +98,17 @@ class Setting(BaseTable):
     actor_to_skills: Mapped[list["ActorToSkills"]] = relationship(
         back_populates="setting"
     )
+    alignments: Mapped[list["Alignment"]] = relationship(back_populates="setting")
+    stats: Mapped[list["Stat"]] = relationship(back_populates="setting")
+    actor_to_races: Mapped[list["ActorToRace"]] = relationship(
+        back_populates="setting"
+    )
+    actor_to_classes: Mapped[list["ActorToClass"]] = relationship(
+        back_populates="setting"
+    )
+    actor_to_stats: Mapped[list["ActorToStat"]] = relationship(
+        back_populates="setting"
+    )
     factions: Mapped[list["Faction"]] = relationship(back_populates="setting")
     faction_relations: Mapped[list["FactionAOnBRelations"]] = relationship(
         back_populates="setting"
@@ -369,16 +380,16 @@ class Class_(BaseTable):
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True, name="id"
     )
-    class_name: Mapped[str | None] = mapped_column(String(255), name="class_name")
-    class_description: Mapped[str | None] = mapped_column(
-        Text, name="class_description"
+    name: Mapped[str | None] = mapped_column(String(255), name="name")
+    description: Mapped[str | None] = mapped_column(
+        Text, name="description"
     )
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
     setting: Mapped["Setting"] = relationship(back_populates="classes")
-    actors: Mapped[list["Actor"]] = relationship(back_populates="class_")
+    actors: Mapped[list["ActorToClass"]] = relationship(back_populates="class_")
     notes_to: Mapped[list["LitographyNoteToClass"]] = relationship(
         back_populates="class_"
     )
@@ -388,8 +399,8 @@ class Background(BaseTable):
     __tablename__ = "background"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    background_name: Mapped[str | None] = mapped_column(String(255))
-    background_description: Mapped[str | None] = mapped_column(Text)
+    name: Mapped[str | None] = mapped_column(String(255))
+    description: Mapped[str | None] = mapped_column(Text)
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
@@ -405,15 +416,15 @@ class Race(BaseTable):
     __tablename__ = "race"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    race_name: Mapped[str | None] = mapped_column(String(255))
-    race_description: Mapped[str | None] = mapped_column(Text)
+    name: Mapped[str | None] = mapped_column(String(255))
+    description: Mapped[str | None] = mapped_column(Text)
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
     setting: Mapped["Setting"] = relationship(back_populates="races")
     sub_races: Mapped[list["SubRace"]] = relationship(back_populates="race")
-    actors: Mapped[list["Actor"]] = relationship(back_populates="race")
+    actors: Mapped[list["ActorToRace"]] = relationship(back_populates="race")
     notes_to: Mapped[list["LitographyNoteToRace"]] = relationship(back_populates="race")
 
 
@@ -422,18 +433,46 @@ class SubRace(BaseTable):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     parent_race_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("race.id"))
-    sub_race_name: Mapped[str | None] = mapped_column(String(255))
-    sub_race_description: Mapped[str | None] = mapped_column(Text)
+    name: Mapped[str | None] = mapped_column(String(255))
+    description: Mapped[str | None] = mapped_column(Text)
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
     setting: Mapped["Setting"] = relationship(back_populates="sub_races")
     race: Mapped["Race"] = relationship(back_populates="sub_races")
-    actors: Mapped[list["Actor"]] = relationship(back_populates="sub_race")
+    actors: Mapped[list["ActorToRace"]] = relationship(back_populates="sub_race")
     notes_to: Mapped[list["LitographyNoteToSubRace"]] = relationship(
         back_populates="sub_race"
     )
+
+
+class Alignment(BaseTable):
+    __tablename__ = "alignment"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str | None] = mapped_column(String(255))
+    description: Mapped[str | None] = mapped_column(Text)
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
+    )
+
+    setting: Mapped["Setting"] = relationship(back_populates="alignments")
+    actors: Mapped[list["Actor"]] = relationship(back_populates="alignment")
+
+
+class Stat(BaseTable):
+    __tablename__ = "stat"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str | None] = mapped_column(String(255))
+    description: Mapped[str | None] = mapped_column(Text)
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
+    )
+
+    setting: Mapped["Setting"] = relationship(back_populates="stats")
+    actors: Mapped[list["ActorToStat"]] = relationship(back_populates="stat")
 
 
 class Actor(BaseTable):
@@ -453,12 +492,6 @@ class Actor(BaseTable):
     actor_age: Mapped[int | None] = mapped_column(
         Integer, nullable=True, name="actor_age"
     )
-    class_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("class.id"), nullable=True, name="class_id"
-    )
-    actor_level: Mapped[int | None] = mapped_column(
-        Integer, nullable=True, name="actor_level"
-    )
     background_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("background.id"), nullable=True, name="background_id"
     )
@@ -466,30 +499,8 @@ class Actor(BaseTable):
     actor_role: Mapped[str | None] = mapped_column(
         Text, nullable=True, name="actor_role"
     )
-    race_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("race.id"), nullable=True, name="race_id"
-    )
-    sub_race_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("sub_race.id"), nullable=True, name="sub_race_id"
-    )
-    alignment: Mapped[str | None] = mapped_column(
-        String(2), nullable=True, name="alignment"
-    )
-    strength: Mapped[int | None] = mapped_column(
-        Integer, nullable=True, name="strength"
-    )
-    dexterity: Mapped[int | None] = mapped_column(
-        Integer, nullable=True, name="dexterity"
-    )
-    constitution: Mapped[int | None] = mapped_column(
-        Integer, nullable=True, name="constitution"
-    )
-    intelligence: Mapped[int | None] = mapped_column(
-        Integer, nullable=True, name="intelligence"
-    )
-    wisdom: Mapped[int | None] = mapped_column(Integer, nullable=True, name="wisdom")
-    charisma: Mapped[int | None] = mapped_column(
-        Integer, nullable=True, name="charisma"
+    alignment_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("alignment.id"), nullable=True, name="alignment_id"
     )
     ideal: Mapped[str | None] = mapped_column(Text, nullable=True, name="ideal")
     bond: Mapped[str | None] = mapped_column(Text, nullable=True, name="bond")
@@ -507,10 +518,8 @@ class Actor(BaseTable):
     )
 
     setting: Mapped["Setting"] = relationship(back_populates="actors")
-    class_: Mapped["Class_"] = relationship(back_populates="actors")
     background: Mapped["Background"] = relationship(back_populates="actors")
-    race: Mapped["Race"] = relationship(back_populates="actors")
-    sub_race: Mapped["SubRace"] = relationship(back_populates="actors")
+    alignment: Mapped["Alignment"] = relationship(back_populates="actors")
     actor_a_relations: Mapped[list["ActorAOnBRelations"]] = relationship(
         foreign_keys="ActorAOnBRelations.actor_a_id", back_populates="actor_a"
     )
@@ -528,6 +537,9 @@ class Actor(BaseTable):
         back_populates="actor"
     )
     arcs: Mapped[list["ArcToActor"]] = relationship(back_populates="actor")
+    races: Mapped[list["ActorToRace"]] = relationship(back_populates="actor")
+    classes: Mapped[list["ActorToClass"]] = relationship(back_populates="actor")
+    stats: Mapped[list["ActorToStat"]] = relationship(back_populates="actor")
 
 
 class ActorAOnBRelations(BaseTable):
@@ -556,8 +568,8 @@ class Skills(BaseTable):
     __tablename__ = "skills"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    skill_name: Mapped[str | None] = mapped_column(String(255))
-    skill_description: Mapped[str | None] = mapped_column(Text)
+    name: Mapped[str | None] = mapped_column(String(255))
+    description: Mapped[str | None] = mapped_column(Text)
     skill_trait: Mapped[str | None] = mapped_column(String(255))
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
@@ -586,12 +598,61 @@ class ActorToSkills(BaseTable):
     skill: Mapped["Skills"] = relationship(back_populates="actors")
 
 
+class ActorToRace(BaseTable):
+    __tablename__ = "actor_to_race"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    actor_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
+    race_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("race.id"))
+    sub_race_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("sub_race.id"))
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
+    )
+
+    setting: Mapped["Setting"] = relationship(back_populates="actor_to_races")
+    actor: Mapped["Actor"] = relationship(back_populates="races")
+    race: Mapped["Race"] = relationship(back_populates="actors")
+    sub_race: Mapped["SubRace"] = relationship(back_populates="actors")
+
+
+class ActorToClass(BaseTable):
+    __tablename__ = "actor_to_class"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    actor_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
+    class_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("class.id"))
+    level: Mapped[int | None] = mapped_column(Integer)
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
+    )
+
+    setting: Mapped["Setting"] = relationship(back_populates="actor_to_classes")
+    actor: Mapped["Actor"] = relationship(back_populates="classes")
+    class_: Mapped["Class_"] = relationship(back_populates="actors")
+
+
+class ActorToStat(BaseTable):
+    __tablename__ = "actor_to_stat"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    actor_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
+    stat_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("stat.id"))
+    stat_value: Mapped[int | None] = mapped_column(Integer)
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
+    )
+
+    setting: Mapped["Setting"] = relationship(back_populates="actor_to_stats")
+    actor: Mapped["Actor"] = relationship(back_populates="stats")
+    stat: Mapped["Stat"] = relationship(back_populates="actors")
+
+
 class Faction(BaseTable):
     __tablename__ = "faction"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    faction_name: Mapped[str | None] = mapped_column(String(255))
-    faction_description: Mapped[str | None] = mapped_column(Text)
+    name: Mapped[str | None] = mapped_column(String(255))
+    description: Mapped[str | None] = mapped_column(Text)
     goals: Mapped[str | None] = mapped_column(Text)
     faction_values: Mapped[str | None] = mapped_column(Text)
     faction_income_sources: Mapped[str | None] = mapped_column(Text)
@@ -661,9 +722,9 @@ class Location(BaseTable):
     __tablename__ = "location_"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    location_name: Mapped[str | None] = mapped_column(String(255))
+    name: Mapped[str | None] = mapped_column(String(255))
     location_type: Mapped[str | None] = mapped_column(String(255))
-    location_description: Mapped[str | None] = mapped_column(Text)
+    description: Mapped[str | None] = mapped_column(Text)
     sights: Mapped[str | None] = mapped_column(Text)
     smells: Mapped[str | None] = mapped_column(Text)
     sounds: Mapped[str | None] = mapped_column(Text)
@@ -783,8 +844,8 @@ class LocationFloraFauna(BaseTable):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     location_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
-    living_name: Mapped[str | None] = mapped_column(String(255))
-    living_description: Mapped[str | None] = mapped_column(Text)
+    name: Mapped[str | None] = mapped_column(String(255))
+    description: Mapped[str | None] = mapped_column(Text)
     living_type: Mapped[str | None] = mapped_column(Text)
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
@@ -798,9 +859,9 @@ class History(BaseTable):
     __tablename__ = "history"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    event_name: Mapped[str | None] = mapped_column(String(255))
+    name: Mapped[str | None] = mapped_column(String(255))
     event_year: Mapped[int | None] = mapped_column(Integer)
-    event_description: Mapped[str | None] = mapped_column(Text)
+    description: Mapped[str | None] = mapped_column(Text)
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
@@ -867,8 +928,8 @@ class Object_(BaseTable):
     __tablename__ = "object_"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    object_name: Mapped[str | None] = mapped_column(String(255))
-    object_description: Mapped[str | None] = mapped_column(Text)
+    name: Mapped[str | None] = mapped_column(String(255))
+    description: Mapped[str | None] = mapped_column(Text)
     object_value: Mapped[int | None] = mapped_column(Integer)
     rarity: Mapped[str | None] = mapped_column(String(255))
     setting_id: Mapped[int] = mapped_column(
@@ -917,8 +978,8 @@ class WorldData(BaseTable):
     __tablename__ = "world_data"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    data_name: Mapped[str | None] = mapped_column(String(255))
-    data_description: Mapped[str | None] = mapped_column(Text)
+    name: Mapped[str | None] = mapped_column(String(255))
+    description: Mapped[str | None] = mapped_column(Text)
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )

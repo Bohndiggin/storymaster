@@ -3,7 +3,7 @@
 import sys
 from pathlib import Path
 
-from PyQt6.QtWidgets import QApplication, QLabel
+from PyQt6.QtWidgets import QApplication
 
 current_dir = Path(__file__).parent.parent
 sys.path.append(str(current_dir.resolve()))
