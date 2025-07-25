@@ -189,7 +189,6 @@ The RPM will automatically install required Python dependencies:
 - python3 >= 3.8
 - python3-PyQt6
 - python3-sqlalchemy >= 2.0
-- python3-python-dotenv
 
 ## Running Storymaster
 

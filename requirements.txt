@@ -1,7 +1,6 @@
 # Core dependencies for Storymaster
 PyQt6==6.4.2
 SQLAlchemy==2.0.41
-python-dotenv==1.1.1
 
 # Development and testing dependencies (optional)
 pytest==8.4.1

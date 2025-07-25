@@ -8,13 +8,9 @@ from PyQt6.QtWidgets import QApplication, QLabel
 current_dir = Path(__file__).parent.parent
 sys.path.append(str(current_dir.resolve()))
 
-from dotenv import load_dotenv
-
 from storymaster.controller.common.main_page_controller import MainWindowController
 from storymaster.model.common.common_model import BaseModel
 from storymaster.view.common.common_view import MainView
-
-load_dotenv()
 
 
 if __name__ == "__main__":
