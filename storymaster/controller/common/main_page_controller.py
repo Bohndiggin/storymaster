@@ -42,6 +42,8 @@ from PyQt6.QtWidgets import (
 from sqlalchemy.orm import Session
 
 from storymaster.model.common.common_model import BaseModel
+from storymaster.model.common.backup_manager import BackupManager
+from storymaster.view.common.database_manager_dialog import DatabaseManagerDialog
 from storymaster.model.database.schema.base import (
     Actor,
     Background,
@@ -513,6 +515,18 @@ class MainWindowController:
         self.current_plot_section_id = None
         self.current_plot_id = 1  # Default to first plot
         self.section_tab_ids = []  # Store section IDs corresponding to tab indices
+
+        # --- Set up backup system ---
+        import os
+        database_path = os.getenv("DATABASE_CONNECTION", "sqlite:///storymaster.db").replace("sqlite:///", "")
+        self.backup_manager = BackupManager(database_path)
+        
+        # Connect backup signals
+        self.backup_manager.backup_created.connect(self.on_backup_created)
+        self.backup_manager.backup_failed.connect(self.on_backup_failed)
+        
+        # Start automatic backups
+        self.backup_manager.start_automatic_backups()
 
         self.connect_signals()
         self.on_litographer_selected()  # Start on the litographer page
@@ -1813,6 +1827,8 @@ class MainWindowController:
 
         # --- File Menu ---
         self.view.ui.actionOpen.triggered.connect(self.on_open_storyline_clicked)
+        self.view.ui.actionDatabaseManager.triggered.connect(self.on_database_manager_clicked)
+        self.view.ui.actionCreateBackup.triggered.connect(self.on_create_backup_clicked)
         
         # --- Storyline Menu ---
         self.view.ui.actionNewStoryline.triggered.connect(self.on_new_storyline_clicked)
@@ -1856,6 +1872,43 @@ class MainWindowController:
                 self.load_and_draw_nodes()
             else:
                 self._refresh_current_table_view()
+                
+    def on_database_manager_clicked(self):
+        """Opens the database and backup manager dialog."""
+        dialog = DatabaseManagerDialog(
+            parent=self.view,
+            current_db_path=str(self.backup_manager.database_path),
+            backup_manager=self.backup_manager
+        )
+        dialog.database_changed.connect(self.on_database_changed)
+        dialog.exec()
+        
+    def on_create_backup_clicked(self):
+        """Creates a manual backup of the database."""
+        backup_path = self.backup_manager.create_backup()
+        if backup_path:
+            self.view.ui.statusbar.showMessage("Backup created successfully", 5000)
+        else:
+            self.view.ui.statusbar.showMessage("Failed to create backup", 5000)
+            
+    def on_database_changed(self, new_database_path: str):
+        """Handle database change - requires application restart."""
+        reply = QMessageBox.information(
+            self.view, "Database Changed",
+            f"Database changed to: {new_database_path}\\n\\n"
+            "The application needs to be restarted to use the new database.",
+            QMessageBox.StandardButton.Ok
+        )
+        # Note: Full database switching would require reinitializing the entire application
+        # For now, we inform the user to restart
+        
+    def on_backup_created(self, message: str):
+        """Handle backup created signal."""
+        self.view.ui.statusbar.showMessage(message, 3000)
+        
+    def on_backup_failed(self, message: str):
+        """Handle backup failed signal."""
+        self.view.ui.statusbar.showMessage(f"Backup failed: {message}", 5000)
 
     def on_new_storyline_clicked(self):
         """Opens a dialog to create a new storyline."""
