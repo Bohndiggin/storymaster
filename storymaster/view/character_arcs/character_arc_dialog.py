@@ -1,9 +1,8 @@
 """Character Arc Add/Edit Dialog"""
 
-import os
-from PyQt6 import uic
 from PyQt6.QtWidgets import QDialog, QMessageBox, QListWidgetItem
 from PyQt6.QtCore import Qt
+from .character_arc_dialog_ui import Ui_CharacterArcDialog
 
 
 class CharacterArcDialog(QDialog):
@@ -16,9 +15,9 @@ class CharacterArcDialog(QDialog):
         self.setting_id = setting_id
         self.character_arc = character_arc  # None for add, LitographyArc object for edit
         
-        # Load UI
-        ui_path = os.path.join(os.path.dirname(__file__), "character_arc_dialog.ui")
-        uic.loadUi(ui_path, self)
+        # Setup UI
+        self.ui = Ui_CharacterArcDialog()
+        self.ui.setupUi(self)
         
         self.setup_ui()
         self.load_data()
@@ -27,16 +26,16 @@ class CharacterArcDialog(QDialog):
         """Initialize UI components"""
         if self.character_arc:
             # Edit mode
-            self.titleLabel.setText("Edit Character Arc")
-            self.arcTitleEdit.setText(self.character_arc.title)
-            self.descriptionEdit.setPlainText(self.character_arc.description or "")
+            self.ui.titleLabel.setText("Edit Character Arc")
+            self.ui.arcTitleEdit.setText(self.character_arc.title)
+            self.ui.descriptionEdit.setPlainText(self.character_arc.description or "")
         else:
             # Add mode
-            self.titleLabel.setText("Add Character Arc")
+            self.ui.titleLabel.setText("Add Character Arc")
             
         # Connect signals
-        self.buttonBox.accepted.connect(self.accept)
-        self.buttonBox.rejected.connect(self.reject)
+        self.ui.buttonBox.accepted.connect(self.accept)
+        self.ui.buttonBox.rejected.connect(self.reject)
         
     def load_data(self):
         """Load arc types and characters"""
@@ -46,17 +45,17 @@ class CharacterArcDialog(QDialog):
     def load_arc_types(self):
         """Load available arc types into the combo box"""
         try:
-            self.arcTypeComboBox.clear()
+            self.ui.arcTypeComboBox.clear()
             arc_types = self.model.get_arc_types(self.setting_id)
             
             for arc_type in arc_types:
-                self.arcTypeComboBox.addItem(arc_type.name, arc_type.id)
+                self.ui.arcTypeComboBox.addItem(arc_type.name, arc_type.id)
                 
             # Set current selection if editing
             if self.character_arc:
-                for i in range(self.arcTypeComboBox.count()):
-                    if self.arcTypeComboBox.itemData(i) == self.character_arc.arc_type_id:
-                        self.arcTypeComboBox.setCurrentIndex(i)
+                for i in range(self.ui.arcTypeComboBox.count()):
+                    if self.ui.arcTypeComboBox.itemData(i) == self.character_arc.arc_type_id:
+                        self.ui.arcTypeComboBox.setCurrentIndex(i)
                         break
                         
         except Exception as e:
@@ -65,7 +64,7 @@ class CharacterArcDialog(QDialog):
     def load_characters(self):
         """Load available characters into the list widget"""
         try:
-            self.charactersListWidget.clear()
+            self.ui.charactersListWidget.clear()
             actors = self.model.get_actors_for_setting(self.setting_id)
             
             selected_actor_ids = set()
@@ -87,16 +86,16 @@ class CharacterArcDialog(QDialog):
                 else:
                     item.setCheckState(Qt.CheckState.Unchecked)
                     
-                self.charactersListWidget.addItem(item)
+                self.ui.charactersListWidget.addItem(item)
                 
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to load characters: {e}")
             
     def accept(self):
         """Handle OK button click"""
-        title = self.arcTitleEdit.text().strip()
-        arc_type_id = self.arcTypeComboBox.currentData()
-        description = self.descriptionEdit.toPlainText().strip()
+        title = self.ui.arcTitleEdit.text().strip()
+        arc_type_id = self.ui.arcTypeComboBox.currentData()
+        description = self.ui.descriptionEdit.toPlainText().strip()
         
         if not title:
             QMessageBox.warning(self, "Validation Error", "Character arc title is required.")
@@ -108,8 +107,8 @@ class CharacterArcDialog(QDialog):
             
         # Get selected character IDs
         selected_actor_ids = []
-        for i in range(self.charactersListWidget.count()):
-            item = self.charactersListWidget.item(i)
+        for i in range(self.ui.charactersListWidget.count()):
+            item = self.ui.charactersListWidget.item(i)
             if item.checkState() == Qt.CheckState.Checked:
                 selected_actor_ids.append(item.data(Qt.ItemDataRole.UserRole))
                 
@@ -141,14 +140,14 @@ class CharacterArcDialog(QDialog):
     def get_result(self):
         """Get the dialog result data"""
         selected_actor_ids = []
-        for i in range(self.charactersListWidget.count()):
-            item = self.charactersListWidget.item(i)
+        for i in range(self.ui.charactersListWidget.count()):
+            item = self.ui.charactersListWidget.item(i)
             if item.checkState() == Qt.CheckState.Checked:
                 selected_actor_ids.append(item.data(Qt.ItemDataRole.UserRole))
                 
         return {
-            'title': self.arcTitleEdit.text().strip(),
-            'arc_type_id': self.arcTypeComboBox.currentData(),
-            'description': self.descriptionEdit.toPlainText().strip(),
+            'title': self.ui.arcTitleEdit.text().strip(),
+            'arc_type_id': self.ui.arcTypeComboBox.currentData(),
+            'description': self.ui.descriptionEdit.toPlainText().strip(),
             'actor_ids': selected_actor_ids
         }

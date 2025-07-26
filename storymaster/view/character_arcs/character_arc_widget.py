@@ -1,7 +1,5 @@
 """Character Arc Management Widget"""
 
-import os
-from PyQt6 import uic
 from PyQt6.QtWidgets import QWidget, QListWidgetItem, QTreeWidgetItem, QMessageBox, QDialog
 from PyQt6.QtCore import Qt, pyqtSignal
 
@@ -9,6 +7,7 @@ from storymaster.model.database import schema
 from .arc_type_manager_dialog import ArcTypeManagerDialog
 from .arc_point_dialog import ArcPointDialog
 from .character_arc_dialog import CharacterArcDialog
+from .character_arc_widget_ui import Ui_CharacterArcWidget
 
 
 class CharacterArcWidget(QWidget):
@@ -25,9 +24,9 @@ class CharacterArcWidget(QWidget):
         self.current_arc_point_id = None
         self.current_storyline_id = None
         
-        # Load UI
-        ui_path = os.path.join(os.path.dirname(__file__), "character_arc_widget.ui")
-        uic.loadUi(ui_path, self)
+        # Setup UI
+        self.ui = Ui_CharacterArcWidget()
+        self.ui.setupUi(self)
         
         self.setup_ui()
         self.connect_signals()
@@ -35,35 +34,35 @@ class CharacterArcWidget(QWidget):
     def setup_ui(self):
         """Initialize UI components"""
         # Set initial states
-        self.arcDetailsTabWidget.setEnabled(False)
+        self.ui.arcDetailsTabWidget.setEnabled(False)
         
         # Configure tree widget
-        self.arcPointsTreeWidget.setRootIsDecorated(False)
-        self.arcPointsTreeWidget.setAlternatingRowColors(True)
-        self.arcPointsTreeWidget.setSortingEnabled(True)
-        self.arcPointsTreeWidget.sortByColumn(0, Qt.SortOrder.AscendingOrder)
+        self.ui.arcPointsTreeWidget.setRootIsDecorated(False)
+        self.ui.arcPointsTreeWidget.setAlternatingRowColors(True)
+        self.ui.arcPointsTreeWidget.setSortingEnabled(True)
+        self.ui.arcPointsTreeWidget.sortByColumn(0, Qt.SortOrder.AscendingOrder)
         
     def connect_signals(self):
         """Connect widget signals"""
         # Arc management buttons
-        self.newArcButton.clicked.connect(self.on_new_arc)
-        self.editArcButton.clicked.connect(self.on_edit_arc)
-        self.deleteArcButton.clicked.connect(self.on_delete_arc)
-        self.manageArcTypesButton.clicked.connect(self.on_manage_arc_types)
+        self.ui.newArcButton.clicked.connect(self.on_new_arc)
+        self.ui.editArcButton.clicked.connect(self.on_edit_arc)
+        self.ui.deleteArcButton.clicked.connect(self.on_delete_arc)
+        self.ui.manageArcTypesButton.clicked.connect(self.on_manage_arc_types)
         
         # Arc point management buttons
-        self.newArcPointButton.clicked.connect(self.on_new_arc_point)
-        self.editArcPointButton.clicked.connect(self.on_edit_arc_point)
-        self.deleteArcPointButton.clicked.connect(self.on_delete_arc_point)
+        self.ui.newArcPointButton.clicked.connect(self.on_new_arc_point)
+        self.ui.editArcPointButton.clicked.connect(self.on_edit_arc_point)
+        self.ui.deleteArcPointButton.clicked.connect(self.on_delete_arc_point)
         
         # Selection events
-        self.arcListWidget.itemSelectionChanged.connect(self.on_arc_selection_changed)
-        self.arcPointsTreeWidget.itemSelectionChanged.connect(self.on_arc_point_selection_changed)
+        self.ui.arcListWidget.itemSelectionChanged.connect(self.on_arc_selection_changed)
+        self.ui.arcPointsTreeWidget.itemSelectionChanged.connect(self.on_arc_point_selection_changed)
         
     def refresh_arcs(self, storyline_id=None):
         """Refresh the list of character arcs"""
         self.current_storyline_id = storyline_id
-        self.arcListWidget.clear()
+        self.ui.arcListWidget.clear()
         
         try:
             arcs = self.model.get_character_arcs(storyline_id)  # We'll implement this method
@@ -78,14 +77,14 @@ class CharacterArcWidget(QWidget):
                 if character_names:
                     item.setToolTip(f"Characters: {', '.join(character_names)}")
                 
-                self.arcListWidget.addItem(item)
+                self.ui.arcListWidget.addItem(item)
                 
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to load character arcs: {e}")
             
     def refresh_arc_points(self):
         """Refresh the arc points for the current arc"""
-        self.arcPointsTreeWidget.clear()
+        self.ui.arcPointsTreeWidget.clear()
         
         if not self.current_arc_id:
             return
@@ -101,14 +100,14 @@ class CharacterArcWidget(QWidget):
                 item.setText(3, point.emotional_state or "")
                 item.setData(0, Qt.ItemDataRole.UserRole, point.id)
                 
-                self.arcPointsTreeWidget.addTopLevelItem(item)
+                self.ui.arcPointsTreeWidget.addTopLevelItem(item)
                 
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to load arc points: {e}")
     
     def on_arc_selection_changed(self):
         """Handle arc selection change"""
-        selected_items = self.arcListWidget.selectedItems()
+        selected_items = self.ui.arcListWidget.selectedItems()
         
         if selected_items:
             item = selected_items[0]
@@ -116,10 +115,10 @@ class CharacterArcWidget(QWidget):
             self.current_arc_id = arc_id
             
             # Enable/disable buttons
-            self.editArcButton.setEnabled(True)
-            self.deleteArcButton.setEnabled(True)
-            self.arcDetailsTabWidget.setEnabled(True)
-            self.newArcPointButton.setEnabled(True)
+            self.ui.editArcButton.setEnabled(True)
+            self.ui.deleteArcButton.setEnabled(True)
+            self.ui.arcDetailsTabWidget.setEnabled(True)
+            self.ui.newArcPointButton.setEnabled(True)
             
             # Load arc details
             self.load_arc_details(arc_id)
@@ -129,39 +128,39 @@ class CharacterArcWidget(QWidget):
             self.arc_selected.emit(arc_id)
         else:
             self.current_arc_id = None
-            self.editArcButton.setEnabled(False)
-            self.deleteArcButton.setEnabled(False)
-            self.arcDetailsTabWidget.setEnabled(False)
-            self.newArcPointButton.setEnabled(False)
+            self.ui.editArcButton.setEnabled(False)
+            self.ui.deleteArcButton.setEnabled(False)
+            self.ui.arcDetailsTabWidget.setEnabled(False)
+            self.ui.newArcPointButton.setEnabled(False)
             self.clear_arc_details()
             
     def on_arc_point_selection_changed(self):
         """Handle arc point selection change"""
-        selected_items = self.arcPointsTreeWidget.selectedItems()
+        selected_items = self.ui.arcPointsTreeWidget.selectedItems()
         
         if selected_items:
             item = selected_items[0]
             arc_point_id = item.data(0, Qt.ItemDataRole.UserRole)
             self.current_arc_point_id = arc_point_id
             
-            self.editArcPointButton.setEnabled(True)
-            self.deleteArcPointButton.setEnabled(True)
+            self.ui.editArcPointButton.setEnabled(True)
+            self.ui.deleteArcPointButton.setEnabled(True)
             
             # Emit signal
             self.arc_point_selected.emit(arc_point_id)
         else:
             self.current_arc_point_id = None
-            self.editArcPointButton.setEnabled(False)
-            self.deleteArcPointButton.setEnabled(False)
+            self.ui.editArcPointButton.setEnabled(False)
+            self.ui.deleteArcPointButton.setEnabled(False)
     
     def load_arc_details(self, arc_id):
         """Load and display arc details"""
         try:
             arc = self.model.get_character_arc(arc_id)  # We'll implement this
             
-            self.arcTitleEdit.setText(arc.title)
-            self.arcTypeEdit.setText(arc.arc_type.name)
-            self.arcDescriptionEdit.setPlainText(arc.description or "")
+            self.ui.arcTitleEdit.setText(arc.title)
+            self.ui.arcTypeEdit.setText(arc.arc_type.name)
+            self.ui.arcDescriptionEdit.setPlainText(arc.description or "")
             
             # Load character names
             character_names = []
@@ -171,18 +170,18 @@ class CharacterArcWidget(QWidget):
                 full_name = " ".join(part for part in name_parts if part)
                 character_names.append(full_name or "Unknown")
             
-            self.charactersEdit.setText(", ".join(character_names))
+            self.ui.charactersEdit.setText(", ".join(character_names))
             
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to load arc details: {e}")
             
     def clear_arc_details(self):
         """Clear arc details display"""
-        self.arcTitleEdit.clear()
-        self.arcTypeEdit.clear()
-        self.arcDescriptionEdit.clear()
-        self.charactersEdit.clear()
-        self.arcPointsTreeWidget.clear()
+        self.ui.arcTitleEdit.clear()
+        self.ui.arcTypeEdit.clear()
+        self.ui.arcDescriptionEdit.clear()
+        self.ui.charactersEdit.clear()
+        self.ui.arcPointsTreeWidget.clear()
     
     # Placeholder methods for button handlers - we'll implement these next
     def on_new_arc(self):

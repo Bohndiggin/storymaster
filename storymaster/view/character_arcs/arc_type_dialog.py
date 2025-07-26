@@ -1,9 +1,8 @@
 """Arc Type Add/Edit Dialog"""
 
-import os
-from PyQt6 import uic
 from PyQt6.QtWidgets import QDialog, QMessageBox
 from PyQt6.QtCore import Qt
+from .arc_type_dialog_ui import Ui_ArcTypeDialog
 
 
 class ArcTypeDialog(QDialog):
@@ -15,9 +14,9 @@ class ArcTypeDialog(QDialog):
         self.setting_id = setting_id
         self.arc_type = arc_type  # None for add, ArcType object for edit
         
-        # Load UI
-        ui_path = os.path.join(os.path.dirname(__file__), "arc_type_dialog.ui")
-        uic.loadUi(ui_path, self)
+        # Setup UI
+        self.ui = Ui_ArcTypeDialog()
+        self.ui.setupUi(self)
         
         self.setup_ui()
         
@@ -25,21 +24,21 @@ class ArcTypeDialog(QDialog):
         """Initialize UI components"""
         if self.arc_type:
             # Edit mode
-            self.titleLabel.setText("Edit Arc Type")
-            self.nameEdit.setText(self.arc_type.name)
-            self.descriptionEdit.setPlainText(self.arc_type.description or "")
+            self.ui.titleLabel.setText("Edit Arc Type")
+            self.ui.nameEdit.setText(self.arc_type.name)
+            self.ui.descriptionEdit.setPlainText(self.arc_type.description or "")
         else:
             # Add mode
-            self.titleLabel.setText("Add Arc Type")
+            self.ui.titleLabel.setText("Add Arc Type")
             
         # Connect signals
-        self.buttonBox.accepted.connect(self.accept)
-        self.buttonBox.rejected.connect(self.reject)
+        self.ui.buttonBox.accepted.connect(self.accept)
+        self.ui.buttonBox.rejected.connect(self.reject)
         
     def accept(self):
         """Handle OK button click"""
-        name = self.nameEdit.text().strip()
-        description = self.descriptionEdit.toPlainText().strip()
+        name = self.ui.nameEdit.text().strip()
+        description = self.ui.descriptionEdit.toPlainText().strip()
         
         if not name:
             QMessageBox.warning(self, "Validation Error", "Arc type name is required.")
@@ -69,6 +68,6 @@ class ArcTypeDialog(QDialog):
     def get_result(self):
         """Get the dialog result data"""
         return {
-            'name': self.nameEdit.text().strip(),
-            'description': self.descriptionEdit.toPlainText().strip()
+            'name': self.ui.nameEdit.text().strip(),
+            'description': self.ui.descriptionEdit.toPlainText().strip()
         }
