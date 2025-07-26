@@ -51,17 +51,14 @@ def ensure_icons_exist():
     print("Checking for icon files...")
     icon_path = Path("assets/storymaster_icon.ico")
     if not icon_path.exists():
-        print("Icons not found. Generating...")
-        try:
-            import subprocess
-
-            subprocess.run([sys.executable, "create_icons.py"], check=True)
-            print("Icons generated successfully")
-        except subprocess.CalledProcessError:
-            print("Warning: Could not generate icons automatically")
-            print("Run 'python create_icons.py' manually if you want icons")
+        print("Warning: Icon assets not found at assets/storymaster_icon.ico")
+        print("The build will continue but the executable may not have an icon")
+        print("To add icons, ensure the assets/ directory contains:")
+        print("  - storymaster_icon.ico (Windows)")
+        print("  - storymaster_icon.svg (cross-platform)")
+        print("  - storymaster_icon_*.png (various sizes)")
     else:
-        print("Icons found")
+        print("Using icon from assets: assets/storymaster_icon.ico")
     return True
 
 

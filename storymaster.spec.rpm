@@ -43,6 +43,7 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/pixmaps
 cp -r storymaster $RPM_BUILD_ROOT%{_datadir}/%{name}/
 cp -r tests $RPM_BUILD_ROOT%{_datadir}/%{name}/
 cp init_database.py $RPM_BUILD_ROOT%{_datadir}/%{name}/
+cp -r assets $RPM_BUILD_ROOT%{_datadir}/%{name}/
 
 
 # Create launcher script
@@ -97,8 +98,14 @@ Keywords=writing;story;plot;worldbuilding;creative;
 StartupNotify=true
 EOF
 
-# Create a castle emoji icon
-cat > $RPM_BUILD_ROOT%{_datadir}/pixmaps/storymaster.xpm << 'EOF'
+# Install proper icon files
+if [ -f assets/storymaster_icon_64.png ]; then
+    cp assets/storymaster_icon_64.png $RPM_BUILD_ROOT%{_datadir}/pixmaps/storymaster.png
+elif [ -f assets/storymaster_icon_32.png ]; then
+    cp assets/storymaster_icon_32.png $RPM_BUILD_ROOT%{_datadir}/pixmaps/storymaster.png
+else
+    # Fallback XPM icon if assets not available
+    cat > $RPM_BUILD_ROOT%{_datadir}/pixmaps/storymaster.xpm << 'EOF'
 /* XPM */
 static char * storymaster_xpm[] = {
 "32 32 4 1",
@@ -127,6 +134,7 @@ static char * storymaster_xpm[] = {
 "                                ",
 "                                "};
 EOF
+fi
 
 %files
 %{_bindir}/storymaster

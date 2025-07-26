@@ -59,6 +59,7 @@ def create_source_tarball():
                 "tests/",
                 "init_database.py",
                 "requirements.txt",
+                "assets/",  # Include assets directory with icons
             ]
 
             # Optional files

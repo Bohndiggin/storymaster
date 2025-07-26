@@ -199,16 +199,24 @@ StartupNotify=true
         with open(desktop_entry, "w") as f:
             f.write(desktop_content)
 
-        # Create a castle emoji SVG icon
+        # Use the proper icon from assets
         icon_path = appdir / "usr/share/icons/hicolor/scalable/apps/storymaster.svg"
-        icon_content = """<?xml version="1.0" encoding="UTF-8"?>
+        assets_icon_svg = Path("assets/storymaster_icon.svg")
+        
+        if assets_icon_svg.exists():
+            # Copy the proper icon
+            shutil.copy2(assets_icon_svg, icon_path)
+            print(f"   Using icon from assets: {assets_icon_svg}")
+        else:
+            # Fallback to emoji icon if assets don't exist
+            icon_content = """<?xml version="1.0" encoding="UTF-8"?>
 <svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
   <rect width="64" height="64" fill="#1a1a1a" rx="8"/>
   <text x="32" y="44" text-anchor="middle" fill="#ffffff" font-size="32" font-family="Arial, sans-serif">🏰</text>
 </svg>"""
-
-        with open(icon_path, "w") as f:
-            f.write(icon_content)
+            with open(icon_path, "w") as f:
+                f.write(icon_content)
+            print("   Using fallback emoji icon (run create_icons.py to generate proper icons)")
 
         # Copy icon and desktop file to AppDir root (required for AppImage)
         shutil.copy2(icon_path, appdir / "storymaster.svg")
