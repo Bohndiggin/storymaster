@@ -570,6 +570,15 @@ QLabel#pageTitleLabel {
     <addaction name="actionNewSetting"/>
     <addaction name="actionSwitchSetting"/>
    </widget>
+   <widget class="QMenu" name="menuUser">
+    <property name="title">
+     <string>User</string>
+    </property>
+    <addaction name="actionNewUser"/>
+    <addaction name="actionSwitchUser"/>
+    <addaction name="separator"/>
+    <addaction name="actionManageUsers"/>
+   </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
      <string>Edit</string>
@@ -586,6 +595,7 @@ QLabel#pageTitleLabel {
    <addaction name="menuFile"/>
    <addaction name="menuStoryline"/>
    <addaction name="menuSetting"/>
+   <addaction name="menuUser"/>
    <addaction name="menuEdit"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -680,6 +690,30 @@ QLabel#pageTitleLabel {
    </property>
    <property name="toolTip">
     <string>Add a new node to the canvas</string>
+   </property>
+  </action>
+  <action name="actionNewUser">
+   <property name="text">
+    <string>New User</string>
+   </property>
+   <property name="toolTip">
+    <string>Create a new user</string>
+   </property>
+  </action>
+  <action name="actionSwitchUser">
+   <property name="text">
+    <string>Switch User</string>
+   </property>
+   <property name="toolTip">
+    <string>Switch to a different user</string>
+   </property>
+  </action>
+  <action name="actionManageUsers">
+   <property name="text">
+    <string>Manage Users</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage users (add, switch, delete)</string>
    </property>
   </action>
  </widget>

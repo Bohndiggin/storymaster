@@ -79,10 +79,13 @@ from storymaster.view.common.common_view import MainView
 from storymaster.view.common.database_manager_dialog import DatabaseManagerDialog
 from storymaster.view.common.new_setting_dialog import NewSettingDialog
 from storymaster.view.common.new_storyline_dialog import NewStorylineDialog
+from storymaster.view.common.new_user_dialog import NewUserDialog
 from storymaster.view.common.open_storyline_dialog import OpenStorylineDialog
 from storymaster.view.common.plot_manager_dialog import PlotManagerDialog
 from storymaster.view.common.setting_switcher_dialog import SettingSwitcherDialog
 from storymaster.view.common.storyline_switcher_dialog import StorylineSwitcherDialog
+from storymaster.view.common.user_manager_dialog import UserManagerDialog
+from storymaster.view.common.user_switcher_dialog import UserSwitcherDialog
 
 # Import the dialogs
 from storymaster.view.litographer.add_node_dialog import AddNodeDialog
@@ -756,8 +759,9 @@ class MainWindowController:
     def __init__(self, view: MainView, model: BaseModel):
         self.view = view
         self.model = model
-        self.current_storyline_id = 1  # Default to storyline 1
-        self.current_setting_id = 1  # Default to setting 1
+        # Initialize storyline and setting IDs based on user's data
+        self.current_storyline_id = self._get_default_storyline_id()
+        self.current_setting_id = self._get_default_setting_id()
         self.current_table_name = None
         self.current_row_data = None
         self.current_foreign_keys = {}
@@ -810,13 +814,35 @@ class MainWindowController:
         self.on_litographer_selected()  # Start on the litographer page
         self.update_status_indicators()  # Initialize status indicators
 
+    def _get_default_storyline_id(self) -> int | None:
+        """Get the first available storyline ID for the current user, or None if none exist."""
+        try:
+            storylines = self.model.get_all_storylines()
+            return storylines[0].id if storylines else None
+        except Exception:
+            return None
+
+    def _get_default_setting_id(self) -> int | None:
+        """Get the first available setting ID for the current user, or None if none exist."""
+        try:
+            settings = self.model.get_all_settings()
+            return settings[0].id if settings else None
+        except Exception:
+            return None
+
+    def _get_current_storyline_nodes(self):
+        """Safely get litography nodes for the current storyline."""
+        if self.current_storyline_id is not None:
+            return self.model.get_litography_nodes(
+                storyline_id=self.current_storyline_id
+            )
+        return []
+
     def validate_ui_database_sync(self):
         """Check if UI and database are in sync and force refresh if not"""
         try:
             # Get current database state
-            db_nodes = self.model.get_litography_nodes(
-                storyline_id=self.current_storyline_id
-            )
+            db_nodes = self._get_current_storyline_nodes()
             db_ids = set(n.id for n in db_nodes)
 
             # Get UI state by examining scene items
@@ -1548,23 +1574,32 @@ class MainWindowController:
         menu.exec(self.view.ui.nodeGraphView.mapToGlobal(position))
 
     def update_status_indicators(self):
-        """Update status bar to show current storyline and setting"""
+        """Update status bar to show current storyline, setting, and user"""
         try:
+            # Get current user name
+            current_user = self.model.get_current_user()
+            user_name = current_user.username if current_user else "Unknown User"
+
             # Get current storyline name
-            storylines = self.model.get_all_storylines()
-            storyline_name = next(
-                (s.name for s in storylines if s.id == self.current_storyline_id),
-                "Unknown",
-            )
+            storyline_name = "No Storylines"
+            if self.current_storyline_id is not None:
+                storylines = self.model.get_all_storylines()
+                storyline_name = next(
+                    (s.name for s in storylines if s.id == self.current_storyline_id),
+                    "Unknown",
+                )
 
             # Get current setting name
-            settings = self.model.get_all_settings()
-            setting_name = next(
-                (s.name for s in settings if s.id == self.current_setting_id), "Unknown"
-            )
+            setting_name = "No Settings"
+            if self.current_setting_id is not None:
+                settings = self.model.get_all_settings()
+                setting_name = next(
+                    (s.name for s in settings if s.id == self.current_setting_id),
+                    "Unknown",
+                )
 
-            # Update status bar
-            status_text = f"Storyline: {storyline_name} | Setting: {setting_name}"
+            # Update status bar with user info
+            status_text = f"User: {user_name} | Storyline: {storyline_name} | Setting: {setting_name}"
             self.view.ui.statusbar.showMessage(status_text)
 
         except Exception as e:
@@ -2108,10 +2143,12 @@ class MainWindowController:
 
         # --- File Menu ---
         self.view.ui.actionOpen.triggered.connect(self.on_open_storyline_clicked)
-        self.view.ui.actionDatabaseManager.triggered.connect(
-            self.on_database_manager_clicked
-        )
-        self.view.ui.actionCreateBackup.triggered.connect(self.on_create_backup_clicked)
+        # Database manager action not yet added to UI
+        # self.view.ui.actionDatabaseManager.triggered.connect(
+        #     self.on_database_manager_clicked
+        # )
+        # Create backup action not yet added to UI
+        # self.view.ui.actionCreateBackup.triggered.connect(self.on_create_backup_clicked)
 
         # --- Storyline Menu ---
         self.view.ui.actionNewStoryline.triggered.connect(self.on_new_storyline_clicked)
@@ -2124,6 +2161,11 @@ class MainWindowController:
         self.view.ui.actionSwitchSetting.triggered.connect(
             self.on_switch_setting_clicked
         )
+
+        # --- User Menu ---
+        self.view.ui.actionNewUser.triggered.connect(self.on_new_user_clicked)
+        self.view.ui.actionSwitchUser.triggered.connect(self.on_switch_user_clicked)
+        self.view.ui.actionManageUsers.triggered.connect(self.on_manage_users_clicked)
 
         # --- Plot Actions (context menu only now) ---
         self.view.ui.actionNewPlot.triggered.connect(self.on_new_plot_clicked)
@@ -2293,6 +2335,165 @@ class MainWindowController:
                         "Error Switching Setting",
                         f"Failed to switch setting: {str(e)}",
                     )
+
+    # --- User Management Methods ---
+
+    def on_new_user_clicked(self):
+        """Opens a dialog to create a new user."""
+        dialog = NewUserDialog(self.model, self.view)
+        user_data = dialog.get_user_data()
+        if user_data is not None:
+            try:
+                new_user = self.model.create_user(user_data["username"])
+                self.view.ui.statusbar.showMessage(
+                    f"Created new user: {new_user.username}", 5000
+                )
+                print(f"Created new user: {new_user.username}")
+            except Exception as e:
+                QMessageBox.critical(
+                    self.view,
+                    "Error Creating User",
+                    f"Failed to create user: {str(e)}",
+                )
+
+    def on_switch_user_clicked(self):
+        """Opens a dialog to switch between users."""
+        dialog = UserSwitcherDialog(self.model, self.model.user_id, self.view)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            new_user_id = dialog.get_selected_user_id()
+            if new_user_id:
+                try:
+                    # Switch the user in the model
+                    if self.model.switch_user(new_user_id):
+                        user = self.model.get_current_user()
+                        user_name = user.username if user else "Unknown"
+
+                        # Refresh all UI components for the new user
+                        self.refresh_after_user_switch()
+
+                        self.view.ui.statusbar.showMessage(
+                            f"Switched to user: {user_name}", 5000
+                        )
+                        print(f"Successfully switched to user: {user_name}")
+                    else:
+                        QMessageBox.warning(
+                            self.view,
+                            "User Switch Failed",
+                            "Could not switch to the selected user.",
+                        )
+                except Exception as e:
+                    QMessageBox.critical(
+                        self.view,
+                        "Error Switching User",
+                        f"Failed to switch user: {str(e)}",
+                    )
+
+    def on_manage_users_clicked(self):
+        """Opens the user management dialog."""
+        dialog = UserManagerDialog(self.model, self.model.user_id, self.view)
+        if dialog.exec() == QDialog.DialogCode.Accepted and hasattr(dialog, "action"):
+            try:
+                if dialog.action == "add" and dialog.new_user_name:
+                    new_user = self.model.create_user(dialog.new_user_name)
+                    self.view.ui.statusbar.showMessage(
+                        f"Created new user: {new_user.username}", 5000
+                    )
+                    # Reload the dialog to show new user
+                    dialog.load_users()
+
+                elif dialog.action == "switch" and dialog.selected_user_id:
+                    # Switch the user in the model
+                    if self.model.switch_user(dialog.selected_user_id):
+                        user = self.model.get_current_user()
+                        user_name = user.username if user else "Unknown"
+
+                        # Refresh all UI components for the new user
+                        self.refresh_after_user_switch()
+
+                        self.view.ui.statusbar.showMessage(
+                            f"Switched to user: {user_name}", 5000
+                        )
+                        print(f"Successfully switched to user: {user_name}")
+                    else:
+                        QMessageBox.warning(
+                            self.view,
+                            "User Switch Failed",
+                            "Could not switch to the selected user.",
+                        )
+
+                elif dialog.action == "delete" and dialog.selected_user_id:
+                    user = self.model.get_user_by_id(dialog.selected_user_id)
+                    if user:
+                        self.model.delete_user(dialog.selected_user_id)
+                        self.view.ui.statusbar.showMessage(
+                            f"Deleted user: {user.username}", 5000
+                        )
+
+            except Exception as e:
+                QMessageBox.critical(
+                    self.view,
+                    "Error Managing Users",
+                    f"Failed to manage users: {str(e)}",
+                )
+
+    def refresh_after_user_switch(self):
+        """
+        Refreshes all UI components after switching users.
+        This ensures the interface shows only data for the current user.
+        """
+        try:
+            # Reset current storyline and setting to first available for new user
+            storylines = self.model.get_all_storylines()
+            settings = self.model.get_all_settings()
+
+            # Set to first available storyline, or keep current if it exists for this user
+            if storylines:
+                storyline_ids = [s.id for s in storylines]
+                if self.current_storyline_id not in storyline_ids:
+                    self.current_storyline_id = storylines[0].id
+            else:
+                self.current_storyline_id = None
+
+            # Set to first available setting, or keep current if it exists for this user
+            if settings:
+                setting_ids = [s.id for s in settings]
+                if self.current_setting_id not in setting_ids:
+                    self.current_setting_id = settings[0].id
+            else:
+                self.current_setting_id = None
+
+            # Clear and refresh UI components
+
+            # Clear Litographer scene and reload nodes
+            self.node_scene.clear()
+            if self.current_storyline_id:
+                self.load_and_draw_nodes()
+
+            # Refresh Lorekeeper database view
+            if self.db_tree_model.rowCount() > 0:
+                self.load_database_structure()
+
+            # Clear any selected table/row data
+            self.current_table_name = None
+            self.current_row_data = None
+            self.current_foreign_keys = {}
+
+            # Clear form widgets
+            self.edit_form_widgets = {}
+            self.add_form_widgets = {}
+
+            # Update status indicators
+            self.update_status_indicators()
+
+            print(f"Refreshed UI for user {self.model.user_id}")
+
+        except Exception as e:
+            print(f"Error refreshing UI after user switch: {str(e)}")
+            QMessageBox.warning(
+                self.view,
+                "Refresh Warning",
+                f"Some UI elements may not have refreshed properly: {str(e)}",
+            )
 
     # --- Plot Management Methods ---
 

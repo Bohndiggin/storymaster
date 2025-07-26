@@ -3,8 +3,17 @@
 import dataclasses
 from enum import Enum
 
-from sqlalchemy import (Column, Engine, Float, ForeignKey, Identity, Integer,
-                        String, Text, inspect)
+from sqlalchemy import (
+    Column,
+    Engine,
+    Float,
+    ForeignKey,
+    Identity,
+    Integer,
+    String,
+    Text,
+    inspect,
+)
 from sqlalchemy.orm import Session
 
 from storymaster.model.database import base_connection, common_queries, schema
@@ -328,16 +337,91 @@ class BaseModel:
         return [row.as_dict() for row in results]
 
     def get_all_storylines(self) -> list[schema.Storyline]:
-        """Fetches all storylines from the database."""
+        """Fetches all storylines from the database for the current user."""
         with Session(self.engine) as session:
-            storylines = session.query(schema.Storyline).all()
+            storylines = (
+                session.query(schema.Storyline).filter_by(user_id=self.user_id).all()
+            )
             return storylines
 
     def get_all_settings(self) -> list[schema.Setting]:
-        """Fetches all settings from the database."""
+        """Fetches all settings from the database for the current user."""
         with Session(self.engine) as session:
-            settings = session.query(schema.Setting).all()
+            settings = (
+                session.query(schema.Setting).filter_by(user_id=self.user_id).all()
+            )
             return settings
+
+    def get_all_users(self) -> list[schema.User]:
+        """Fetches all users from the database."""
+        with Session(self.engine) as session:
+            users = session.query(schema.User).all()
+            return users
+
+    def create_user(self, username: str) -> schema.User:
+        """Creates a new user in the database."""
+        with Session(self.engine) as session:
+            new_user = schema.User(username=username)
+            session.add(new_user)
+            session.commit()
+            session.refresh(new_user)
+            return new_user
+
+    def delete_user(self, user_id: int):
+        """Deletes a user and all related data from the database."""
+        with Session(self.engine) as session:
+            # Get the user
+            user = session.query(schema.User).filter_by(id=user_id).first()
+            if not user:
+                raise ValueError(f"User with id {user_id} not found")
+
+            # Delete all storylines for this user (cascade will handle related data)
+            storylines = (
+                session.query(schema.Storyline).filter_by(user_id=user_id).all()
+            )
+            for storyline in storylines:
+                session.delete(storyline)
+
+            # Delete all settings for this user (cascade will handle related data)
+            settings = session.query(schema.Setting).filter_by(user_id=user_id).all()
+            for setting in settings:
+                session.delete(setting)
+
+            # Delete the user
+            session.delete(user)
+            session.commit()
+
+    def user_has_data(self, user_id: int) -> bool:
+        """Checks if a user has any storylines or settings."""
+        with Session(self.engine) as session:
+            storyline_count = (
+                session.query(schema.Storyline).filter_by(user_id=user_id).count()
+            )
+            setting_count = (
+                session.query(schema.Setting).filter_by(user_id=user_id).count()
+            )
+            return storyline_count > 0 or setting_count > 0
+
+    def get_user_by_id(self, user_id: int) -> schema.User | None:
+        """Gets a user by ID."""
+        with Session(self.engine) as session:
+            return session.query(schema.User).filter_by(id=user_id).first()
+
+    def switch_user(self, new_user_id: int) -> bool:
+        """
+        Switches the current user context to a different user.
+        Returns True if successful, False if user doesn't exist.
+        """
+        # Verify the user exists
+        user = self.get_user_by_id(new_user_id)
+        if user:
+            self.user_id = new_user_id
+            return True
+        return False
+
+    def get_current_user(self) -> schema.User | None:
+        """Gets the current user object."""
+        return self.get_user_by_id(self.user_id)
 
     def update_row(self, table_name: str, data_dict: dict):
         """
