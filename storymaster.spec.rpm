@@ -98,49 +98,14 @@ Keywords=writing;story;plot;worldbuilding;creative;
 StartupNotify=true
 EOF
 
-# Install proper icon files
-if [ -f assets/storymaster_icon_64.png ]; then
-    cp assets/storymaster_icon_64.png $RPM_BUILD_ROOT%{_datadir}/pixmaps/storymaster.png
-elif [ -f assets/storymaster_icon_32.png ]; then
-    cp assets/storymaster_icon_32.png $RPM_BUILD_ROOT%{_datadir}/pixmaps/storymaster.png
-else
-    # Fallback XPM icon if assets not available
-    cat > $RPM_BUILD_ROOT%{_datadir}/pixmaps/storymaster.xpm << 'EOF'
-/* XPM */
-static char * storymaster_xpm[] = {
-"32 32 4 1",
-" 	c None",
-".	c #1a1a1a",
-"+	c #ffffff",
-"#	c #af80f8",
-"                                ",
-"           .......               ",
-"         ..+++++++..             ",
-"        .+.+.+.+.+.+.            ",
-"        .+.+.+.+.+.+.            ",
-"        .+++++++++++.            ",
-"       .+.++.++.++.+.            ",
-"       .+.++.++.++.+.            ",
-"       .+++++++++++.             ",
-"       .+.++.++.+.              ",
-"       .+.++.++.+.              ",
-"       .++++++++.               ",
-"       .++.++.++.               ",
-"       .++.++.++.               ",
-"       .++++++++.               ",
-"       .........                ",
-"                                ",
-"      #STORYMASTER#             ",
-"                                ",
-"                                "};
-EOF
-fi
+# Install icon file
+cp assets/storymaster_icon_32.png $RPM_BUILD_ROOT%{_datadir}/pixmaps/storymaster.png
 
 %files
 %{_bindir}/storymaster
 %{_datadir}/%{name}/
 %{_datadir}/applications/storymaster.desktop
-%{_datadir}/pixmaps/storymaster.xpm
+%{_datadir}/pixmaps/storymaster.png
 
 %post
 # Create user data directory
