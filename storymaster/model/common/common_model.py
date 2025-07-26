@@ -289,6 +289,33 @@ class BaseModel:
             referred_column = fk["referred_columns"][0]
             fk_info[local_column] = (referred_table, referred_column)
         return fk_info
+    
+    def get_column_types(self, table_name: str) -> dict[str, str]:
+        """Gets column types for a given table."""
+        inspector = inspect(self.engine)
+        columns = inspector.get_columns(table_name)
+        
+        column_types = {}
+        for column in columns:
+            column_name = column['name']
+            column_type = str(column['type'])
+            
+            # Normalize type names to standard categories
+            if 'INTEGER' in column_type.upper() or 'INT' in column_type.upper():
+                column_types[column_name] = 'integer'
+            elif 'FLOAT' in column_type.upper() or 'REAL' in column_type.upper() or 'DECIMAL' in column_type.upper() or 'NUMERIC' in column_type.upper():
+                column_types[column_name] = 'float'
+            elif 'BOOLEAN' in column_type.upper() or 'BOOL' in column_type.upper():
+                column_types[column_name] = 'boolean'
+            elif 'TEXT' in column_type.upper() or 'CLOB' in column_type.upper():
+                column_types[column_name] = 'text'
+            elif 'VARCHAR' in column_type.upper() or 'CHAR' in column_type.upper() or 'STRING' in column_type.upper():
+                column_types[column_name] = 'string'
+            else:
+                # Default to string for unknown types
+                column_types[column_name] = 'string'
+                
+        return column_types
 
     def get_row_by_id(self, table_name: str, row_id: int) -> dict | None:
         """Fetches a single row from a table by its primary key."""
@@ -616,6 +643,98 @@ class BaseModel:
                 joinedload(schema.LitographyArc.arc_type),
                 joinedload(schema.LitographyArc.actors).joinedload(schema.ArcToActor.actor)
             ).all()
+    
+    # Storyline-to-Setting Management Methods
+    def get_settings_for_storyline(self, storyline_id: int) -> list[schema.Setting]:
+        """Get all settings linked to a storyline"""
+        with Session(self.engine) as session:
+            storyline = session.query(schema.Storyline).filter(
+                schema.Storyline.id == storyline_id
+            ).options(
+                joinedload(schema.Storyline.storyline_to_settings).joinedload(schema.StorylineToSetting.setting)
+            ).first()
+            
+            if storyline:
+                return [sts.setting for sts in storyline.storyline_to_settings]
+            return []
+    
+    def get_storylines_for_setting(self, setting_id: int) -> list[schema.Storyline]:
+        """Get all storylines linked to a setting"""
+        with Session(self.engine) as session:
+            setting = session.query(schema.Setting).filter(
+                schema.Setting.id == setting_id
+            ).options(
+                joinedload(schema.Setting.storyline_to_setting).joinedload(schema.StorylineToSetting.storyline)
+            ).first()
+            
+            if setting:
+                return [sts.storyline for sts in setting.storyline_to_setting]
+            return []
+    
+    def link_storyline_to_setting(self, storyline_id: int, setting_id: int) -> bool:
+        """Link a storyline to a setting"""
+        with Session(self.engine) as session:
+            # Check if link already exists
+            existing = session.query(schema.StorylineToSetting).filter(
+                schema.StorylineToSetting.storyline_id == storyline_id,
+                schema.StorylineToSetting.setting_id == setting_id
+            ).first()
+            
+            if existing:
+                return False  # Link already exists
+            
+            # Create new link
+            link = schema.StorylineToSetting(
+                storyline_id=storyline_id,
+                setting_id=setting_id
+            )
+            session.add(link)
+            session.commit()
+            return True
+    
+    def unlink_storyline_from_setting(self, storyline_id: int, setting_id: int) -> bool:
+        """Unlink a storyline from a setting"""
+        with Session(self.engine) as session:
+            link = session.query(schema.StorylineToSetting).filter(
+                schema.StorylineToSetting.storyline_id == storyline_id,
+                schema.StorylineToSetting.setting_id == setting_id
+            ).first()
+            
+            if link:
+                session.delete(link)
+                session.commit()
+                return True
+            return False  # Link didn't exist
+    
+    def get_available_settings_for_storyline(self, storyline_id: int) -> list[schema.Setting]:
+        """Get all settings that could be linked to a storyline (not already linked)"""
+        with Session(self.engine) as session:
+            # Get all settings for this user
+            all_settings = session.query(schema.Setting).filter(
+                schema.Setting.user_id == self.user_id
+            ).all()
+            
+            # Get currently linked settings
+            linked_settings = self.get_settings_for_storyline(storyline_id)
+            linked_setting_ids = {setting.id for setting in linked_settings}
+            
+            # Return settings not already linked
+            return [setting for setting in all_settings if setting.id not in linked_setting_ids]
+    
+    def get_available_storylines_for_setting(self, setting_id: int) -> list[schema.Storyline]:
+        """Get all storylines that could be linked to a setting (not already linked)"""
+        with Session(self.engine) as session:
+            # Get all storylines for this user
+            all_storylines = session.query(schema.Storyline).filter(
+                schema.Storyline.user_id == self.user_id
+            ).all()
+            
+            # Get currently linked storylines
+            linked_storylines = self.get_storylines_for_setting(setting_id)
+            linked_storyline_ids = {storyline.id for storyline in linked_storylines}
+            
+            # Return storylines not already linked
+            return [storyline for storyline in all_storylines if storyline.id not in linked_storyline_ids]
     
     def get_character_arc(self, arc_id: int) -> schema.LitographyArc:
         """Get a specific character arc by ID"""

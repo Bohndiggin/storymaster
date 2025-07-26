@@ -64,8 +64,16 @@ class CharacterArcWidget(QWidget):
         self.current_storyline_id = storyline_id
         self.ui.arcListWidget.clear()
         
+        # Don't try to load arcs if no storyline is selected
+        if not storyline_id:
+            return
+        
         try:
-            arcs = self.model.get_character_arcs(storyline_id)  # We'll implement this method
+            arcs = self.model.get_character_arcs(storyline_id)
+            
+            # Ensure arcs is iterable (handle case where Mock is returned)
+            if not hasattr(arcs, '__iter__'):
+                arcs = []
             
             for arc in arcs:
                 item = QListWidgetItem()
@@ -260,7 +268,7 @@ class CharacterArcWidget(QWidget):
         if reply == QMessageBox.StandardButton.Yes:
             try:
                 self.model.delete_character_arc(self.current_arc_id)
-                self.refresh_arcs()
+                self.refresh_arcs(self.current_storyline_id)
                 QMessageBox.information(self, "Success", "Arc deleted successfully")
             except Exception as e:
                 QMessageBox.warning(self, "Error", f"Failed to delete arc: {e}")

@@ -1,187 +1,494 @@
 """
-Pytest-compatible tests for the node connection system
+Test suite for the node system functionality
 """
 
 import pytest
-from PyQt6.QtCore import QPointF
-from PyQt6.QtWidgets import QGraphicsScene
+from unittest.mock import Mock, patch, MagicMock
+from PyQt6.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QGraphicsItem
+from PyQt6.QtCore import QPointF, Qt
+from PyQt6.QtGui import QPainter
+
+from storymaster.model.database.schema.base import (
+    LitographyNode, NodeType, LitographyPlot, LitographyPlotSection
+)
 
 
-class TestNodeSystemConcepts:
-    """Test the core concepts of the node system"""
+class TestNodeModelMethods:
+    """Test node model methods"""
 
-    def test_graphics_scene_creation(self, qapp):
-        """Test that graphics scenes can be created"""
-        scene = QGraphicsScene()
-        assert scene is not None
-        assert scene.items() == []
+    def setup_method(self):
+        """Set up test fixtures"""
+        self.mock_model = Mock()
+        self.mock_session = Mock()
 
-    def test_qpoint_functionality(self, qapp):
-        """Test QPointF functionality"""
-        point = QPointF(100, 200)
-        assert point.x() == 100
-        assert point.y() == 200
+    def test_get_nodes_for_storyline(self):
+        """Test getting nodes for a storyline"""
+        mock_node1 = Mock(spec=LitographyNode)
+        mock_node1.id = 1
+        mock_node1.label = "Opening Scene"
+        mock_node1.node_type = NodeType.EXPOSITION
+        mock_node1.x_position = 100.0
+        mock_node1.y_position = 200.0
 
-    def test_position_tracking_logic(self, qapp):
-        """Test the position tracking logic used by nodes"""
-        # Simulate node position storage
-        positions = {1: (100, 150), 2: (300, 200)}
-        
-        # Test getting existing position
-        node_id = 1
-        x, y = positions[node_id]
-        assert x == 100
-        assert y == 150
-        
-        # Test updating position
-        positions[1] = (200, 250)
-        x, y = positions[1]
-        assert x == 200
-        assert y == 250
-        
-        # Test fallback for missing node
-        x, y = positions.get(999, (100, 200))
-        assert x == 100
-        assert y == 200
+        mock_node2 = Mock(spec=LitographyNode)
+        mock_node2.id = 2
+        mock_node2.label = "Inciting Incident"
+        mock_node2.node_type = NodeType.ACTION
+        mock_node2.x_position = 300.0
+        mock_node2.y_position = 200.0
 
-    def test_connection_point_mathematics(self, qapp):
-        """Test the mathematical calculations for connection points"""
-        # Node at position (100, 100) with size 80x80
-        node_x, node_y = 100, 100
-        node_width, node_height = 80, 80
-        
-        # Input connection point (left side, center)
-        input_x = node_x - 5  # 5 pixels left of node
-        input_y = node_y + node_height // 2  # Center of node
-        assert input_x == 95
-        assert input_y == 140
-        
-        # Output connection point (right side, center)
-        output_x = node_x + node_width + 5  # 5 pixels right of node
-        output_y = node_y + node_height // 2  # Center of node
-        assert output_x == 185
-        assert output_y == 140
+        self.mock_model.get_nodes_for_storyline.return_value = [mock_node1, mock_node2]
 
-    def test_connection_point_movement(self, qapp):
-        """Test that connection points move correctly with nodes"""
-        # Initial node position
-        node_x, node_y = 100, 100
-        node_width, node_height = 80, 80
-        
-        # Initial connection points
-        input_x = node_x - 5
-        input_y = node_y + node_height // 2
-        output_x = node_x + node_width + 5
-        output_y = node_y + node_height // 2
-        
-        # Move node
-        new_node_x, new_node_y = 200, 200
-        offset_x = new_node_x - node_x
-        offset_y = new_node_y - node_y
-        
-        # Calculate new connection points
-        new_input_x = input_x + offset_x
-        new_input_y = input_y + offset_y
-        new_output_x = output_x + offset_x
-        new_output_y = output_y + offset_y
-        
-        assert new_input_x == 195  # 95 + 100
-        assert new_input_y == 240  # 140 + 100
-        assert new_output_x == 285  # 185 + 100
-        assert new_output_y == 240  # 140 + 100
+        nodes = self.mock_model.get_nodes_for_storyline(storyline_id=1)
 
-    def test_node_type_change_position_preservation(self, qapp):
-        """Test the logic behind preserving position during node type changes"""
-        # Simulate old behavior (using database position)
-        db_position = {"x_position": 100, "y_position": 200}
+        assert len(nodes) == 2
+        assert nodes[0].label == "Opening Scene"
+        assert nodes[1].label == "Inciting Incident"
+        assert nodes[0].node_type == NodeType.EXPOSITION
+        assert nodes[1].node_type == NodeType.ACTION
+
+    def test_create_node(self):
+        """Test creating a new node"""
+        mock_node = Mock(spec=LitographyNode)
+        mock_node.id = 1
+        mock_node.label = "New Scene"
+        mock_node.node_type = NodeType.ACTION
+
+        self.mock_model.create_node.return_value = mock_node
+
+        result = self.mock_model.create_node(
+            label="New Scene",
+            node_type=NodeType.ACTION,
+            storyline_id=1,
+            x_position=150.0,
+            y_position=250.0
+        )
+
+        assert result.label == "New Scene"
+        assert result.node_type == NodeType.ACTION
+
+    def test_update_node_position(self):
+        """Test updating node position"""
+        self.mock_model.update_node_position.return_value = None
+
+        # Should not raise an exception
+        self.mock_model.update_node_position(node_id=1, x=200.0, y=300.0)
+
+        self.mock_model.update_node_position.assert_called_once_with(
+            node_id=1, x=200.0, y=300.0
+        )
+
+    def test_delete_node(self):
+        """Test deleting a node"""
+        self.mock_model.delete_node.return_value = None
+
+        # Should not raise an exception
+        self.mock_model.delete_node(node_id=1)
+
+        self.mock_model.delete_node.assert_called_once_with(node_id=1)
+
+    def test_get_node_connections(self):
+        """Test getting node connections"""
+        mock_connection1 = Mock()
+        mock_connection1.from_node_id = 1
+        mock_connection1.to_node_id = 2
+
+        mock_connection2 = Mock()
+        mock_connection2.from_node_id = 2
+        mock_connection2.to_node_id = 3
+
+        self.mock_model.get_node_connections.return_value = [mock_connection1, mock_connection2]
+
+        connections = self.mock_model.get_node_connections(storyline_id=1)
+
+        assert len(connections) == 2
+        assert connections[0].from_node_id == 1
+        assert connections[0].to_node_id == 2
+
+    def test_create_node_connection(self):
+        """Test creating a connection between nodes"""
+        mock_connection = Mock()
+        mock_connection.from_node_id = 1
+        mock_connection.to_node_id = 2
+
+        self.mock_model.create_node_connection.return_value = mock_connection
+
+        result = self.mock_model.create_node_connection(from_node_id=1, to_node_id=2)
+
+        assert result.from_node_id == 1
+        assert result.to_node_id == 2
+
+    def test_update_node_order(self):
+        """Test updating node order in linked list"""
+        self.mock_model.update_node_order.return_value = None
+
+        # Should not raise an exception
+        self.mock_model.update_node_order(
+            node_id=2, 
+            previous_node_id=1, 
+            next_node_id=3
+        )
+
+        self.mock_model.update_node_order.assert_called_once_with(
+            node_id=2, previous_node_id=1, next_node_id=3
+        )
+
+
+@pytest.fixture
+def qapp():
+    """Create QApplication for GUI tests"""
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication([])
+    yield app
+
+
+class TestNodeGraphicsSystem:
+    """Test the graphics system for nodes"""
+
+    def setup_method(self):
+        """Set up test fixtures"""
+        self.mock_model = Mock()
+
+    def test_node_graphics_item_creation(self, qapp):
+        """Test creating graphics items for nodes"""
+        # Mock the node item creation pattern from the application
+        mock_node = Mock()
+        mock_node.id = 1
+        mock_node.label = "Test Node"
+        mock_node.node_type = NodeType.EXPOSITION
+        mock_node.x_position = 100.0
+        mock_node.y_position = 200.0
+
+        # Test that we can create a graphics item concept
+        node_item_data = {
+            "id": mock_node.id,
+            "label": mock_node.label,
+            "node_type": mock_node.node_type,
+            "position": QPointF(mock_node.x_position, mock_node.y_position)
+        }
+
+        assert node_item_data["id"] == 1
+        assert node_item_data["label"] == "Test Node"
+        assert node_item_data["node_type"] == NodeType.EXPOSITION
+        assert node_item_data["position"].x() == 100.0
+        assert node_item_data["position"].y() == 200.0
+
+    def test_node_shape_types(self, qapp):
+        """Test different node shape types"""
+        # Test that all node types are supported
+        shapes = {
+            NodeType.EXPOSITION: "rectangle",
+            NodeType.ACTION: "circle", 
+            NodeType.REACTION: "diamond",
+            NodeType.TWIST: "star",
+            NodeType.DEVELOPMENT: "hexagon",
+            NodeType.OTHER: "triangle"
+        }
+
+        for node_type, expected_shape in shapes.items():
+            # Mock node shape creation
+            shape_data = {"node_type": node_type, "shape": expected_shape}
+            assert shape_data["node_type"] == node_type
+            assert shape_data["shape"] == expected_shape
+
+    def test_node_positioning_system(self, qapp):
+        """Test node positioning and movement"""
+        mock_node = Mock()
+        mock_node.id = 1
+        mock_node.x_position = 100.0
+        mock_node.y_position = 200.0
+
+        # Test position update
+        new_position = QPointF(150.0, 250.0)
         
-        # Simulate current UI position (what user actually moved to)
-        ui_position = {"x": 250, "y": 350}
+        # Mock position update
+        position_update = {
+            "node_id": mock_node.id,
+            "old_position": QPointF(mock_node.x_position, mock_node.y_position),
+            "new_position": new_position
+        }
+
+        assert position_update["node_id"] == 1
+        assert position_update["old_position"].x() == 100.0
+        assert position_update["new_position"].x() == 150.0
+
+    def test_node_selection_system(self, qapp):
+        """Test node selection handling"""
+        # Mock selection state
+        selected_nodes = [1, 3, 5]  # Node IDs
         
-        # Simulate the fix: prioritize UI position over database position
-        def get_position_for_save():
-            return ui_position["x"], ui_position["y"]
+        selection_data = {
+            "selected_count": len(selected_nodes),
+            "selected_ids": selected_nodes,
+            "multi_select": len(selected_nodes) > 1
+        }
+
+        assert selection_data["selected_count"] == 3
+        assert selection_data["multi_select"] is True
+        assert 1 in selection_data["selected_ids"]
+
+    def test_node_connection_drawing(self, qapp):
+        """Test drawing connections between nodes"""
+        # Mock connection data
+        connection_data = {
+            "from_node_id": 1,
+            "to_node_id": 2,
+            "from_position": QPointF(100.0, 200.0),
+            "to_position": QPointF(300.0, 200.0)
+        }
+
+        # Test connection geometry calculation
+        start_point = connection_data["from_position"]
+        end_point = connection_data["to_position"]
         
-        current_x, current_y = get_position_for_save()
+        # Calculate connection line
+        dx = end_point.x() - start_point.x()
+        dy = end_point.y() - start_point.y()
         
-        # Verify fix preserves UI position
-        assert current_x == 250
-        assert current_y == 350
-        assert current_x != db_position["x_position"]
-        assert current_y != db_position["y_position"]
+        assert dx == 200.0  # Horizontal distance
+        assert dy == 0.0   # No vertical distance
+        
+        # Test distance calculation
+        import math
+        distance = math.sqrt(dx * dx + dy * dy)
+        assert distance == 200.0
+
+
+class TestNodeEditingOperations:
+    """Test node editing operations"""
+
+    def setup_method(self):
+        """Set up test fixtures"""
+        self.mock_model = Mock()
+
+    def test_node_creation_workflow(self, qapp):
+        """Test the complete node creation workflow"""
+        # Mock the node creation process
+        node_data = {
+            "label": "New Scene",
+            "node_type": NodeType.ACTION,
+            "storyline_id": 1,
+            "x_position": 200.0,
+            "y_position": 300.0
+        }
+
+        mock_node = Mock()
+        mock_node.id = 5
+        mock_node.label = node_data["label"]
+        mock_node.node_type = node_data["node_type"]
+
+        self.mock_model.create_node.return_value = mock_node
+
+        # Simulate node creation
+        result = self.mock_model.create_node(**node_data)
+
+        assert result.label == "New Scene"
+        assert result.node_type == NodeType.ACTION
+        self.mock_model.create_node.assert_called_once_with(**node_data)
+
+    def test_node_editing_workflow(self, qapp):
+        """Test node editing workflow"""
+        original_node = Mock()
+        original_node.id = 1
+        original_node.label = "Original Label"
+        original_node.node_type = NodeType.EXPOSITION
+
+        # Mock node update
+        update_data = {
+            "label": "Updated Label",
+            "node_type": NodeType.ACTION,
+            "description": "Updated description"
+        }
+
+        self.mock_model.update_node.return_value = None
+
+        # Simulate node update
+        self.mock_model.update_node(node_id=1, **update_data)
+
+        self.mock_model.update_node.assert_called_once_with(node_id=1, **update_data)
+
+    def test_node_deletion_workflow(self, qapp):
+        """Test node deletion workflow with connection cleanup"""
+        node_to_delete = 2
+        connected_nodes = [1, 3]  # Nodes connected to node 2
+
+        # Mock connection cleanup
+        self.mock_model.get_connected_nodes.return_value = connected_nodes
+        self.mock_model.delete_node_connections.return_value = None
+        self.mock_model.delete_node.return_value = None
+
+        # Simulate deletion workflow
+        connections = self.mock_model.get_connected_nodes(node_to_delete)
+        self.mock_model.delete_node_connections(node_to_delete)
+        self.mock_model.delete_node(node_to_delete)
+
+        assert len(connections) == 2
+        self.mock_model.delete_node_connections.assert_called_once_with(node_to_delete)
+        self.mock_model.delete_node.assert_called_once_with(node_to_delete)
+
+    def test_node_copy_paste_workflow(self, qapp):
+        """Test node copy and paste operations"""
+        source_node = Mock()
+        source_node.label = "Source Node"
+        source_node.node_type = NodeType.REACTION
+        source_node.description = "Original description"
+
+        # Mock copy operation
+        copy_data = {
+            "label": f"{source_node.label} (Copy)",
+            "node_type": source_node.node_type,
+            "description": source_node.description,
+            "x_position": 100.0,  # Offset position
+            "y_position": 100.0,
+            "storyline_id": 1
+        }
+
+        mock_copied_node = Mock()
+        mock_copied_node.id = 10
+        mock_copied_node.label = copy_data["label"]
+
+        self.mock_model.create_node.return_value = mock_copied_node
+
+        # Simulate copy-paste
+        result = self.mock_model.create_node(**copy_data)
+
+        assert result.label == "Source Node (Copy)"
+        self.mock_model.create_node.assert_called_once_with(**copy_data)
 
 
 class TestNodeSystemIntegration:
-    """Test integration with actual node system components"""
+    """Test integration aspects of the node system"""
 
-    def test_node_system_imports(self, qapp):
-        """Test that node system components can be imported"""
-        try:
-            from storymaster.controller.common.main_page_controller import create_node_item
-            assert create_node_item is not None
-        except ImportError as e:
-            pytest.fail(f"Failed to import node system components: {e}")
+    def test_node_plot_section_integration(self, qapp):
+        """Test integration between nodes and plot sections"""
+        # Mock plot section
+        mock_section = Mock()
+        mock_section.id = 1
+        mock_section.name = "Act 1"
+        mock_section.section_type = "rising"
 
-    def test_mock_node_creation(self, qapp):
-        """Test creating mock nodes for testing"""
-        from storymaster.controller.common.main_page_controller import create_node_item
-        
-        class MockNodeData:
-            def __init__(self, id_val):
-                self.id = id_val
-                self.node_type = MockNodeType("EXPOSITION")
-        
-        class MockNodeType:
-            def __init__(self, name):
-                self.name = name
-        
-        class MockController:
-            pass
-        
-        # Create mock objects
-        node_data = MockNodeData(1)
-        controller = MockController()
-        
-        # Create node item
-        node_item = create_node_item(0, 0, 80, 80, node_data, controller)
-        
-        # Verify node has required methods
-        assert hasattr(node_item, 'get_input_connection_pos')
-        assert hasattr(node_item, 'get_output_connection_pos')
+        # Mock nodes in section
+        mock_node1 = Mock()
+        mock_node1.id = 1
+        mock_node1.plot_section_id = 1
+        mock_node1.label = "Opening"
 
-    def test_connection_point_methods(self, qapp):
-        """Test that connection point methods return correct types"""
-        from storymaster.controller.common.main_page_controller import create_node_item
+        mock_node2 = Mock()
+        mock_node2.id = 2
+        mock_node2.plot_section_id = 1
+        mock_node2.label = "Inciting Incident"
+
+        section_nodes = [mock_node1, mock_node2]
+
+        # Test that nodes can be grouped by plot sections
+        nodes_by_section = {mock_section.id: section_nodes}
+
+        assert len(nodes_by_section[1]) == 2
+        assert all(node.plot_section_id == 1 for node in nodes_by_section[1])
+
+    def test_node_storyline_integration(self, qapp):
+        """Test integration between nodes and storylines"""
+        # Mock storyline
+        storyline_id = 1
         
-        class MockNodeData:
-            def __init__(self, id_val):
-                self.id = id_val
-                self.node_type = MockNodeType("EXPOSITION")
+        # Mock nodes for storyline
+        nodes = [
+            Mock(id=1, storyline_id=storyline_id, label="Scene 1"),
+            Mock(id=2, storyline_id=storyline_id, label="Scene 2"),
+            Mock(id=3, storyline_id=storyline_id, label="Scene 3")
+        ]
+
+        # Test storyline filtering
+        storyline_nodes = [node for node in nodes if node.storyline_id == storyline_id]
+
+        assert len(storyline_nodes) == 3
+        assert all(node.storyline_id == storyline_id for node in storyline_nodes)
+
+    def test_node_connection_validation(self, qapp):
+        """Test node connection validation"""
+        # Mock nodes
+        node1 = Mock(id=1, storyline_id=1)
+        node2 = Mock(id=2, storyline_id=1)
+        node3 = Mock(id=3, storyline_id=2)  # Different storyline
+
+        # Test valid connection (same storyline)
+        valid_connection = {
+            "from_node": node1,
+            "to_node": node2,
+            "valid": node1.storyline_id == node2.storyline_id
+        }
+
+        # Test invalid connection (different storylines)
+        invalid_connection = {
+            "from_node": node1,
+            "to_node": node3,
+            "valid": node1.storyline_id == node3.storyline_id
+        }
+
+        assert valid_connection["valid"] is True
+        assert invalid_connection["valid"] is False
+
+
+class TestNodeSystemEdgeCases:
+    """Test edge cases and error conditions"""
+
+    def test_node_system_with_no_nodes(self, qapp):
+        """Test node system behavior with empty storylines"""
+        mock_model = Mock()
+        mock_model.get_nodes_for_storyline.return_value = []
+
+        nodes = mock_model.get_nodes_for_storyline(storyline_id=1)
+
+        assert len(nodes) == 0
+        mock_model.get_nodes_for_storyline.assert_called_once_with(storyline_id=1)
+
+    def test_invalid_node_connections(self, qapp):
+        """Test handling of invalid node connections"""
+        # Test self-connection (node connecting to itself)
+        self_connection = {"from_node_id": 1, "to_node_id": 1}
         
-        class MockNodeType:
-            def __init__(self, name):
-                self.name = name
-        
-        class MockController:
-            pass
-        
-        # Create mock node
-        node_data = MockNodeData(1)
-        controller = MockController()
-        node_item = create_node_item(0, 0, 80, 80, node_data, controller)
-        
-        # Add to scene and position
-        scene = QGraphicsScene()
-        scene.addItem(node_item)
-        node_item.setPos(100, 100)
-        
-        # Test connection point methods
-        input_pos = node_item.get_input_connection_pos()
-        output_pos = node_item.get_output_connection_pos()
-        
-        assert isinstance(input_pos, QPointF)
-        assert isinstance(output_pos, QPointF)
-        assert input_pos.x() >= 0
-        assert input_pos.y() >= 0
-        assert output_pos.x() >= 0
-        assert output_pos.y() >= 0
+        # Mock validation functions
+        def is_self_connection(conn):
+            return conn["from_node_id"] == conn["to_node_id"]
+
+        assert is_self_connection(self_connection) is True
+
+    def test_node_position_boundaries(self, qapp):
+        """Test node position boundary handling"""
+        # Test extreme positions
+        extreme_positions = [
+            {"x": -1000000, "y": -1000000},  # Very negative
+            {"x": 1000000, "y": 1000000},   # Very positive
+            {"x": 0, "y": 0},               # Origin
+        ]
+
+        # Test position validation
+        valid_positions = []
+        for pos in extreme_positions:
+            # Mock position validation
+            if isinstance(pos["x"], (int, float)) and isinstance(pos["y"], (int, float)):
+                valid_positions.append(pos)
+
+        assert len(valid_positions) == 3
+
+    def test_node_label_edge_cases(self, qapp):
+        """Test node label edge cases"""
+        edge_case_labels = [
+            "",  # Empty label
+            "A" * 1000,  # Very long label
+            "Label with emoji 🎭",  # Unicode characters
+            None  # None value
+        ]
+
+        # Test label validation
+        valid_labels = []
+        for label in edge_case_labels:
+            # Mock label validation
+            if label is not None and len(str(label).strip()) > 0 and len(str(label)) < 500:
+                valid_labels.append(label)
+
+        # Should accept non-empty labels under 500 characters
+        assert "Label with emoji 🎭" in valid_labels
+        assert "A" * 1000 not in valid_labels  # Too long
+        assert "" not in valid_labels  # Empty

@@ -765,9 +765,14 @@ class MainWindowController:
         self.current_table_name = None
         self.current_row_data = None
         self.current_foreign_keys = {}
+        self.current_column_types = {}
         self.edit_form_widgets = {}
         self.add_form_widgets = {}
         self.connection_lines = []  # Store connection lines for updates
+        
+        # Table visibility management
+        self.visible_tables = None  # None means show all available tables
+        self.load_table_visibility_preferences()
 
         # --- Set up Lorekeeper models ---
         self.db_tree_model = QStandardItemModel()
@@ -2140,6 +2145,9 @@ class MainWindowController:
         self.view.ui.litographerNavButton.released.connect(self.on_litographer_selected)
         self.view.ui.lorekeeperNavButton.released.connect(self.on_lorekeeper_selected)
         self.view.ui.characterArcsNavButton.released.connect(self.on_character_arcs_selected)
+        
+        # --- Lorekeeper Configure Tables Button ---
+        self.view.ui.configureTablesButton.clicked.connect(self.on_configure_tables_clicked)
 
         # --- File Menu ---
         self.view.ui.actionOpen.triggered.connect(self.on_open_storyline_clicked)
@@ -2160,6 +2168,12 @@ class MainWindowController:
         self.view.ui.actionSwitchSetting.triggered.connect(
             self.on_switch_setting_clicked
         )
+        
+        # Add storyline settings management (if action exists)
+        if hasattr(self.view.ui, 'actionManageStorylineSettings'):
+            self.view.ui.actionManageStorylineSettings.triggered.connect(
+                self.on_manage_storyline_settings_clicked
+            )
 
         # --- User Menu ---
         self.view.ui.actionNewUser.triggered.connect(self.on_new_user_clicked)
@@ -2305,6 +2319,21 @@ class MainWindowController:
                         "Error Switching Storyline",
                         f"Failed to switch storyline: {str(e)}",
                     )
+
+    def on_manage_storyline_settings_clicked(self):
+        """Opens a dialog to manage storylines connected to settings."""        
+        try:
+            from storymaster.view.common.setting_storylines_dialog import SettingStorylinesDialog
+            
+            dialog = SettingStorylinesDialog(self.model, self.view)
+            dialog.exec()
+            
+        except Exception as e:
+            QMessageBox.critical(
+                self.view,
+                "Error",
+                f"Failed to open storyline settings dialog: {str(e)}"
+            )
 
     def on_switch_setting_clicked(self):
         """Opens a dialog to switch between settings."""
@@ -3038,7 +3067,11 @@ class MainWindowController:
         widget_dict.clear()
 
         for key, value in row_data.items():
-            if is_add_form and key.lower() in ["id", "setting_id", "storyline_id"]:
+            # Hide ID fields from both add and edit forms
+            if key.lower() == "id":
+                continue
+            # Hide system fields from add forms only
+            if is_add_form and key.lower() in ["setting_id", "storyline_id"]:
                 continue
 
             label = QLabel(f"{key.replace('_', ' ').title()}:")
@@ -3046,10 +3079,9 @@ class MainWindowController:
             if key in self.current_foreign_keys:
                 field = self._create_dropdown(key, value)
             else:
-                field = self._create_text_field(value)
+                field = self._create_field_by_type(key, value)
 
-            if key.lower() == "id":
-                field.setReadOnly(True)
+            # No need for ID readonly logic since IDs are now hidden
 
             layout.addRow(label, field)
             widget_dict[key] = field
@@ -3090,6 +3122,62 @@ class MainWindowController:
             print(f"Could not populate dropdown for {key}: {e}")
         return field
 
+    def _create_field_by_type(self, key: str, value):
+        """Helper to create appropriate input field based on column type."""
+        column_type = self.current_column_types.get(key, 'string')
+        str_value = str(value) if value is not None else ""
+        
+        if column_type == 'integer':
+            field = self._create_integer_field(str_value)
+        elif column_type == 'float':
+            field = self._create_float_field(str_value)
+        elif column_type == 'boolean':
+            field = self._create_boolean_field(str_value)
+        elif column_type == 'text' or "\n" in str_value or len(str_value) > 60:
+            field = QTextEdit(str_value)
+            field.setMinimumHeight(80)
+        else:
+            # Default to string/text input
+            field = QLineEdit(str_value)
+        
+        return field
+    
+    def _create_integer_field(self, str_value: str):
+        """Create a QLineEdit with integer-only input validation."""
+        from PyQt6.QtGui import QIntValidator
+        field = QLineEdit(str_value)
+        validator = QIntValidator()
+        field.setValidator(validator)
+        field.setPlaceholderText("Enter integer...")
+        return field
+    
+    def _create_float_field(self, str_value: str):
+        """Create a QLineEdit with float input validation."""
+        from PyQt6.QtGui import QDoubleValidator
+        field = QLineEdit(str_value)
+        validator = QDoubleValidator()
+        validator.setNotation(QDoubleValidator.Notation.StandardNotation)
+        field.setValidator(validator)
+        field.setPlaceholderText("Enter number...")
+        return field
+    
+    def _create_boolean_field(self, str_value: str):
+        """Create a QCheckBox for boolean values."""
+        from PyQt6.QtWidgets import QCheckBox
+        field = QCheckBox()
+        # Convert string to boolean
+        if str_value.lower() in ('true', '1', 'yes', 'on'):
+            field.setChecked(True)
+        elif str_value.lower() in ('false', '0', 'no', 'off', ''):
+            field.setChecked(False)
+        else:
+            # Try to convert to int/bool
+            try:
+                field.setChecked(bool(int(str_value)))
+            except (ValueError, TypeError):
+                field.setChecked(False)
+        return field
+    
     def _create_text_field(self, value):
         """Helper to create a QLineEdit or QTextEdit based on content length."""
         str_value = str(value) if value is not None else ""
@@ -3130,6 +3218,9 @@ class MainWindowController:
                 form_data[key] = widget.toPlainText()
                 if widget.toPlainText().strip():
                     has_non_empty_data = True
+            elif hasattr(widget, 'isChecked'):  # QCheckBox
+                form_data[key] = widget.isChecked()
+                has_non_empty_data = True  # Checkbox always has a value
 
         # For new rows, check if at least one field has meaningful data
         if not is_update and not has_non_empty_data:
@@ -3178,7 +3269,16 @@ class MainWindowController:
         self.db_tree_model.clear()
         self.db_tree_model.setHorizontalHeaderLabels(["Database Tables"])
         try:
-            table_names = self.model.get_all_table_names()
+            all_table_names = self.model.get_all_table_names()
+            
+            # Filter tables based on visibility settings
+            if self.visible_tables is not None:
+                # Only show tables that are in the visible set
+                table_names = [name for name in all_table_names if name in self.visible_tables]
+            else:
+                # Show all available tables (default behavior)
+                table_names = all_table_names
+            
             for table_name in table_names:
                 item = QStandardItem(table_name)
                 item.setEditable(False)
@@ -3194,9 +3294,13 @@ class MainWindowController:
             self.current_foreign_keys = self.model.get_foreign_key_info(
                 self.current_table_name
             )
+            self.current_column_types = self.model.get_column_types(
+                self.current_table_name
+            )
         except Exception as e:
-            print(f"Could not get FK info for {self.current_table_name}: {e}")
+            print(f"Could not get table info for {self.current_table_name}: {e}")
             self.current_foreign_keys = {}
+            self.current_column_types = {}
 
         self._clear_layout(self.view.ui.editFormLayout)
         self._clear_layout(self.view.ui.addFormLayout)
@@ -3218,18 +3322,37 @@ class MainWindowController:
             headers, data_rows = self.model.get_table_data(
                 self.current_table_name, setting_id=self.current_setting_id
             )
-            self.db_table_model.setHorizontalHeaderLabels(headers)
+            
+            # Hide ID column from display
+            id_column_index = None
+            filtered_headers = []
+            
+            for i, header in enumerate(headers):
+                if header.lower() == 'id':
+                    id_column_index = i
+                else:
+                    filtered_headers.append(header)
+            
+            self.db_table_model.setHorizontalHeaderLabels(filtered_headers)
 
             for row_tuple in data_rows:
+                # Create full row dict for data storage (including ID)
                 row_dict = dict(zip(headers, row_tuple))
-                row_items = [QStandardItem(str(field)) for field in row_tuple]
+                
+                # Create filtered row items (excluding ID column)
+                filtered_row_items = []
+                for i, field in enumerate(row_tuple):
+                    if i != id_column_index:  # Skip ID column
+                        filtered_row_items.append(QStandardItem(str(field)))
 
-                row_items[0].setData(row_dict, Qt.ItemDataRole.UserRole)
+                # Store full row data (including ID) in the first visible item
+                if filtered_row_items:
+                    filtered_row_items[0].setData(row_dict, Qt.ItemDataRole.UserRole)
 
-                for item in row_items:
-                    item.setEditable(False)
+                    for item in filtered_row_items:
+                        item.setEditable(False)
 
-                self.db_table_model.appendRow(row_items)
+                    self.db_table_model.appendRow(filtered_row_items)
         except Exception as e:
             print(f"Error loading table data for '{self.current_table_name}': {e}")
 
@@ -3241,3 +3364,88 @@ class MainWindowController:
                 widget = item.widget()
                 if widget is not None:
                     widget.deleteLater()
+    
+    def on_configure_tables_clicked(self):
+        """Opens a dialog to configure which tables are visible in Lorekeeper."""
+        try:
+            from storymaster.view.common.table_visibility_dialog import TableVisibilityDialog
+            
+            dialog = TableVisibilityDialog(self.model, self, self.view)
+            dialog.exec()
+            
+        except Exception as e:
+            QMessageBox.critical(
+                self.view,
+                "Error",
+                f"Failed to open table configuration dialog: {str(e)}"
+            )
+    
+    def get_visible_tables(self) -> set[str] | None:
+        """Get the current set of visible tables. None means show all available tables."""
+        return self.visible_tables
+    
+    def set_visible_tables(self, visible_tables: set[str]):
+        """Set which tables should be visible in the Lorekeeper tree view."""
+        self.visible_tables = visible_tables
+        # Save preferences
+        self.save_table_visibility_preferences()
+        # Refresh the database structure view
+        self.load_database_structure()
+        
+        # Clear current selection since the table might have been hidden
+        self.current_table_name = None
+        self.current_row_data = None
+        self.db_table_model.clear()
+        self._clear_form_widgets()
+    
+    def _clear_form_widgets(self):
+        """Clear the form widgets in both edit and add tabs."""
+        # Clear edit form
+        self._clear_layout(self.view.ui.editFormLayout)
+        self.edit_form_widgets.clear()
+        
+        # Clear add form
+        self._clear_layout(self.view.ui.addFormLayout) 
+        self.add_form_widgets.clear()
+    
+    def save_table_visibility_preferences(self):
+        """Save table visibility preferences to a file."""
+        try:
+            import json
+            from pathlib import Path
+            
+            # Use the same directory as the database
+            config_dir = Path.home() / ".local" / "share" / "storymaster"
+            config_dir.mkdir(parents=True, exist_ok=True)
+            config_file = config_dir / "table_visibility.json"
+            
+            # Prepare data to save
+            data = {
+                "visible_tables": list(self.visible_tables) if self.visible_tables else None
+            }
+            
+            with open(config_file, 'w') as f:
+                json.dump(data, f, indent=2)
+                
+        except Exception as e:
+            print(f"Warning: Could not save table visibility preferences: {e}")
+    
+    def load_table_visibility_preferences(self):
+        """Load table visibility preferences from file."""
+        try:
+            import json
+            from pathlib import Path
+            
+            config_file = Path.home() / ".local" / "share" / "storymaster" / "table_visibility.json"
+            
+            if config_file.exists():
+                with open(config_file, 'r') as f:
+                    data = json.load(f)
+                
+                visible_tables = data.get("visible_tables")
+                if visible_tables:
+                    self.visible_tables = set(visible_tables)
+                    
+        except Exception as e:
+            print(f"Warning: Could not load table visibility preferences: {e}")
+            # Continue with default behavior (show all tables)
