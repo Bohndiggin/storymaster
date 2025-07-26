@@ -2,7 +2,7 @@
 
 from storymaster.model.database.schema.base import (
     Actor, ActorAOnBRelations, ActorToClass, ActorToRace, ActorToSkills,
-    ActorToStat, Alignment, ArcToActor, ArcToNode, Background, BaseTable,
+    ActorToStat, Alignment, ArcPoint, ArcToActor, ArcToNode, ArcType, Background, BaseTable,
     Class_, Faction, FactionAOnBRelations, FactionMembers, History,
     HistoryActor, HistoryFaction, HistoryLocation, HistoryObject,
     HistoryWorldData, LitographyArc, LitographyNode,
@@ -74,6 +74,8 @@ __all__ = [
     "LitographyPlot",
     "BaseTable",
     "ArcToActor",
-    "ArcToNode",
+    "ArcToNode", 
+    "ArcType",
+    "ArcPoint",
     "LitographyArc",
 ]

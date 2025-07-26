@@ -440,6 +440,25 @@ QLabel#pageTitleLabel {
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="characterArcsPage">
+       <layout class="QVBoxLayout" name="characterArcsLayout">
+        <item>
+         <widget class="QLabel" name="characterArcsTitleLabel">
+          <property name="text">
+           <string>Character Arcs</string>
+          </property>
+          <property name="objectName">
+           <string>pageTitleLabel</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QWidget" name="characterArcsContainer" native="true">
+          <!-- Character arc widget will be loaded here programmatically -->
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
     <item>
@@ -509,6 +528,22 @@ QLabel#pageTitleLabel {
         <widget class="QPushButton" name="lorekeeperNavButton">
          <property name="text">
           <string>Lorekeeper</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="autoExclusive">
+          <bool>true</bool>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">navButtonGroup</string>
+         </attribute>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="characterArcsNavButton">
+         <property name="text">
+          <string>Character Arcs</string>
          </property>
          <property name="checkable">
           <bool>true</bool>

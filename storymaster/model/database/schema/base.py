@@ -150,6 +150,7 @@ class Setting(BaseTable):
     history_world_data: Mapped[list["HistoryWorldData"]] = relationship(
         back_populates="setting"
     )
+    arc_types: Mapped[list["ArcType"]] = relationship(back_populates="setting")
 
 
 class StorylineToSetting(BaseTable):
@@ -227,6 +228,7 @@ class LitographyNode(BaseTable):
         back_populates="node"
     )
     arcs: Mapped[list["ArcToNode"]] = relationship(back_populates="node")
+    arc_points: Mapped[list["ArcPoint"]] = relationship(back_populates="node")
     output_connections: Mapped[list["NodeConnection"]] = relationship(
         foreign_keys="NodeConnection.output_node_id", back_populates="output_node"
     )
@@ -379,6 +381,28 @@ class LitographyNodeToPlotSection(BaseTable):
     plot_section: Mapped["LitographyPlotSection"] = relationship(back_populates="nodes")
 
 
+class ArcType(BaseTable):
+    """Represents character arc types (Growth, Fall, Flat, etc.)"""
+
+    __tablename__ = "arc_type"
+
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, autoincrement=True, name="id"
+    )
+    name: Mapped[str] = mapped_column(
+        String(100), nullable=False, unique=True, name="name"
+    )
+    description: Mapped[str | None] = mapped_column(
+        Text, nullable=True, name="description"
+    )
+    setting_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
+    )
+
+    setting: Mapped["Setting"] = relationship(back_populates="arc_types")
+    arcs: Mapped[list["LitographyArc"]] = relationship(back_populates="arc_type")
+
+
 class LitographyArc(BaseTable):
     """Represents the litography_arc table"""
 
@@ -387,13 +411,64 @@ class LitographyArc(BaseTable):
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True, name="id"
     )
+    title: Mapped[str] = mapped_column(
+        String(250), nullable=False, name="title"
+    )
+    description: Mapped[str | None] = mapped_column(
+        Text, nullable=True, name="description"
+    )
+    arc_type_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("arc_type.id"), nullable=False, name="arc_type_id"
+    )
     storyline_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("storyline.id"), nullable=False, name="storyline_id"
     )
 
     storyline: Mapped["Storyline"] = relationship(back_populates="litography_arcs")
+    arc_type: Mapped["ArcType"] = relationship(back_populates="arcs")
     nodes: Mapped[list["ArcToNode"]] = relationship(back_populates="arc")
     actors: Mapped[list["ArcToActor"]] = relationship(back_populates="arc")
+    arc_points: Mapped[list["ArcPoint"]] = relationship(back_populates="arc")
+
+
+class ArcPoint(BaseTable):
+    """Represents specific moments in a character's arc progression"""
+
+    __tablename__ = "arc_point"
+
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, autoincrement=True, name="id"
+    )
+    arc_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("litography_arc.id"), nullable=False, name="arc_id"
+    )
+    node_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("litography_node.id"), nullable=True, name="node_id"
+    )
+    order_index: Mapped[int] = mapped_column(
+        Integer, nullable=False, name="order_index", default=0
+    )
+    title: Mapped[str] = mapped_column(
+        String(250), nullable=False, name="title"
+    )
+    description: Mapped[str | None] = mapped_column(
+        Text, nullable=True, name="description"
+    )
+    emotional_state: Mapped[str | None] = mapped_column(
+        String(500), nullable=True, name="emotional_state"
+    )
+    character_relationships: Mapped[str | None] = mapped_column(
+        Text, nullable=True, name="character_relationships"
+    )
+    goals: Mapped[str | None] = mapped_column(
+        Text, nullable=True, name="goals"
+    )
+    internal_conflict: Mapped[str | None] = mapped_column(
+        Text, nullable=True, name="internal_conflict"
+    )
+
+    arc: Mapped["LitographyArc"] = relationship(back_populates="arc_points")
+    node: Mapped["LitographyNode"] = relationship(back_populates="arc_points")
 
 
 class Class_(BaseTable):

@@ -14,7 +14,7 @@ from sqlalchemy import (
     Text,
     inspect,
 )
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from storymaster.model.database import base_connection, common_queries, schema
 
@@ -602,3 +602,263 @@ class BaseModel:
                 )
             self.group_data = setting_return
             return setting_return
+    
+    # Character Arc Management Methods
+    def get_character_arcs(self, storyline_id: int | None = None) -> list[schema.LitographyArc]:
+        """Get all character arcs for a storyline"""
+        with Session(self.engine) as session:
+            query = session.query(schema.LitographyArc)
+            
+            if storyline_id:
+                query = query.filter(schema.LitographyArc.storyline_id == storyline_id)
+            
+            return query.options(
+                joinedload(schema.LitographyArc.arc_type),
+                joinedload(schema.LitographyArc.actors).joinedload(schema.ArcToActor.actor)
+            ).all()
+    
+    def get_character_arc(self, arc_id: int) -> schema.LitographyArc:
+        """Get a specific character arc by ID"""
+        with Session(self.engine) as session:
+            arc = session.query(schema.LitographyArc).options(
+                joinedload(schema.LitographyArc.arc_type),
+                joinedload(schema.LitographyArc.actors).joinedload(schema.ArcToActor.actor)
+            ).filter(schema.LitographyArc.id == arc_id).first()
+            
+            if not arc:
+                raise ValueError(f"Character arc with ID {arc_id} not found")
+            return arc
+    
+    def get_arc_points(self, arc_id: int) -> list[schema.ArcPoint]:
+        """Get all arc points for a character arc"""
+        with Session(self.engine) as session:
+            return session.query(schema.ArcPoint).filter(
+                schema.ArcPoint.arc_id == arc_id
+            ).order_by(schema.ArcPoint.order_index).all()
+    
+    def get_arc_types(self, setting_id: int | None = None) -> list[schema.ArcType]:
+        """Get all arc types for a setting"""
+        with Session(self.engine) as session:
+            query = session.query(schema.ArcType)
+            
+            if setting_id:
+                query = query.filter(schema.ArcType.setting_id == setting_id)
+                
+            return query.all()
+    
+    def create_character_arc(self, title: str, description: str, arc_type_id: int, 
+                           storyline_id: int, actor_ids: list[int] | None = None) -> schema.LitographyArc:
+        """Create a new character arc"""
+        with Session(self.engine) as session:
+            # Create the arc
+            arc = schema.LitographyArc(
+                title=title,
+                description=description,
+                arc_type_id=arc_type_id,
+                storyline_id=storyline_id
+            )
+            session.add(arc)
+            session.flush()  # Get the ID
+            
+            # Link to actors if provided
+            if actor_ids:
+                for actor_id in actor_ids:
+                    arc_to_actor = schema.ArcToActor(
+                        arc_id=arc.id,
+                        actor_id=actor_id
+                    )
+                    session.add(arc_to_actor)
+            
+            session.commit()
+            return arc
+    
+    def update_character_arc(self, arc_id: int, title: str | None = None, description: str | None = None,
+                           arc_type_id: int | None = None, actor_ids: list[int] | None = None) -> schema.LitographyArc:
+        """Update an existing character arc"""
+        with Session(self.engine) as session:
+            arc = session.query(schema.LitographyArc).filter(
+                schema.LitographyArc.id == arc_id
+            ).first()
+            
+            if not arc:
+                raise ValueError(f"Character arc with ID {arc_id} not found")
+            
+            if title is not None:
+                arc.title = title
+            if description is not None:
+                arc.description = description
+            if arc_type_id is not None:
+                arc.arc_type_id = arc_type_id
+            
+            # Update actor links if provided
+            if actor_ids is not None:
+                # Remove existing links
+                session.query(schema.ArcToActor).filter(
+                    schema.ArcToActor.arc_id == arc_id
+                ).delete()
+                
+                # Add new links
+                for actor_id in actor_ids:
+                    arc_to_actor = schema.ArcToActor(
+                        arc_id=arc_id,
+                        actor_id=actor_id
+                    )
+                    session.add(arc_to_actor)
+            
+            session.commit()
+            return arc
+    
+    def delete_character_arc(self, arc_id: int):
+        """Delete a character arc and all its arc points"""
+        with Session(self.engine) as session:
+            # Delete arc points first
+            session.query(schema.ArcPoint).filter(
+                schema.ArcPoint.arc_id == arc_id
+            ).delete()
+            
+            # Delete actor links
+            session.query(schema.ArcToActor).filter(
+                schema.ArcToActor.arc_id == arc_id
+            ).delete()
+            
+            # Delete the arc
+            session.query(schema.LitographyArc).filter(
+                schema.LitographyArc.id == arc_id
+            ).delete()
+            
+            session.commit()
+    
+    def create_arc_point(self, arc_id: int, title: str, order_index: int,
+                        description: str | None = None, emotional_state: str | None = None,
+                        character_relationships: str | None = None, goals: str | None = None,
+                        internal_conflict: str | None = None, node_id: int | None = None) -> schema.ArcPoint:
+        """Create a new arc point"""
+        with Session(self.engine) as session:
+            arc_point = schema.ArcPoint(
+                arc_id=arc_id,
+                title=title,
+                order_index=order_index,
+                description=description,
+                emotional_state=emotional_state,
+                character_relationships=character_relationships,
+                goals=goals,
+                internal_conflict=internal_conflict,
+                node_id=node_id
+            )
+            session.add(arc_point)
+            session.commit()
+            return arc_point
+    
+    def update_arc_point(self, arc_point_id: int, **kwargs) -> schema.ArcPoint:
+        """Update an existing arc point"""
+        with Session(self.engine) as session:
+            arc_point = session.query(schema.ArcPoint).filter(
+                schema.ArcPoint.id == arc_point_id
+            ).first()
+            
+            if not arc_point:
+                raise ValueError(f"Arc point with ID {arc_point_id} not found")
+            
+            for key, value in kwargs.items():
+                if hasattr(arc_point, key):
+                    setattr(arc_point, key, value)
+            
+            session.commit()
+            return arc_point
+    
+    def delete_arc_point(self, arc_point_id: int):
+        """Delete an arc point"""
+        with Session(self.engine) as session:
+            session.query(schema.ArcPoint).filter(
+                schema.ArcPoint.id == arc_point_id
+            ).delete()
+            session.commit()
+    
+    def create_arc_type(self, name: str, description: str, setting_id: int) -> schema.ArcType:
+        """Create a new arc type"""
+        with Session(self.engine) as session:
+            arc_type = schema.ArcType(
+                name=name,
+                description=description,
+                setting_id=setting_id
+            )
+            session.add(arc_type)
+            session.commit()
+            return arc_type
+    
+    def get_arc_type(self, arc_type_id: int) -> schema.ArcType:
+        """Get a specific arc type by ID"""
+        with Session(self.engine) as session:
+            arc_type = session.query(schema.ArcType).filter(
+                schema.ArcType.id == arc_type_id
+            ).first()
+            
+            if not arc_type:
+                raise ValueError(f"Arc type with ID {arc_type_id} not found")
+            return arc_type
+    
+    def update_arc_type(self, arc_type_id: int, name: str | None = None, 
+                       description: str | None = None) -> schema.ArcType:
+        """Update an existing arc type"""
+        with Session(self.engine) as session:
+            arc_type = session.query(schema.ArcType).filter(
+                schema.ArcType.id == arc_type_id
+            ).first()
+            
+            if not arc_type:
+                raise ValueError(f"Arc type with ID {arc_type_id} not found")
+            
+            if name is not None:
+                arc_type.name = name
+            if description is not None:
+                arc_type.description = description
+            
+            session.commit()
+            return arc_type
+    
+    def delete_arc_type(self, arc_type_id: int):
+        """Delete an arc type and all character arcs using it"""
+        with Session(self.engine) as session:
+            # First delete all arc points for arcs using this type
+            session.query(schema.ArcPoint).filter(
+                schema.ArcPoint.arc_id.in_(
+                    session.query(schema.LitographyArc.id).filter(
+                        schema.LitographyArc.arc_type_id == arc_type_id
+                    )
+                )
+            ).delete(synchronize_session=False)
+            
+            # Delete actor links for arcs using this type
+            session.query(schema.ArcToActor).filter(
+                schema.ArcToActor.arc_id.in_(
+                    session.query(schema.LitographyArc.id).filter(
+                        schema.LitographyArc.arc_type_id == arc_type_id
+                    )
+                )
+            ).delete(synchronize_session=False)
+            
+            # Delete character arcs using this type
+            session.query(schema.LitographyArc).filter(
+                schema.LitographyArc.arc_type_id == arc_type_id
+            ).delete()
+            
+            # Delete the arc type
+            session.query(schema.ArcType).filter(
+                schema.ArcType.id == arc_type_id
+            ).delete()
+            
+            session.commit()
+    
+    def get_nodes_for_storyline(self, storyline_id: int) -> list[schema.LitographyNode]:
+        """Get all nodes for a storyline"""
+        with Session(self.engine) as session:
+            return session.query(schema.LitographyNode).filter(
+                schema.LitographyNode.storyline_id == storyline_id
+            ).order_by(schema.LitographyNode.id).all()
+    
+    def get_actors_for_setting(self, setting_id: int) -> list[schema.Actor]:
+        """Get all actors for a setting"""
+        with Session(self.engine) as session:
+            return session.query(schema.Actor).filter(
+                schema.Actor.setting_id == setting_id
+            ).order_by(schema.Actor.first_name, schema.Actor.last_name).all()

@@ -1,0 +1,1 @@
+"""Character arc view components"""

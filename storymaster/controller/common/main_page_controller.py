@@ -89,6 +89,7 @@ from storymaster.view.common.user_switcher_dialog import UserSwitcherDialog
 # Import the dialogs
 from storymaster.view.litographer.add_node_dialog import AddNodeDialog
 from storymaster.view.litographer.node_notes_dialog import NodeNotesDialog
+from storymaster.view.character_arcs.character_arc_widget import CharacterArcWidget
 
 
 class ConnectionPoint(QGraphicsEllipseItem):
@@ -808,6 +809,14 @@ class MainWindowController:
 
         # Start automatic backups
         self.backup_manager.start_automatic_backups()
+
+        # Initialize character arc widget
+        self.character_arc_widget = CharacterArcWidget(self.model, self.view)
+        
+        # Add the character arc widget to the character arcs page
+        character_arcs_layout = QVBoxLayout(self.view.ui.characterArcsContainer)
+        character_arcs_layout.setContentsMargins(0, 0, 0, 0)
+        character_arcs_layout.addWidget(self.character_arc_widget)
 
         self.connect_signals()
         self.on_litographer_selected()  # Start on the litographer page
@@ -2130,6 +2139,7 @@ class MainWindowController:
         # --- Page Navigation ---
         self.view.ui.litographerNavButton.released.connect(self.on_litographer_selected)
         self.view.ui.lorekeeperNavButton.released.connect(self.on_lorekeeper_selected)
+        self.view.ui.characterArcsNavButton.released.connect(self.on_character_arcs_selected)
 
         # --- File Menu ---
         self.view.ui.actionOpen.triggered.connect(self.on_open_storyline_clicked)
@@ -3157,6 +3167,11 @@ class MainWindowController:
         self.view.ui.pageStack.setCurrentIndex(1)
         if self.db_tree_model.rowCount() == 0:
             self.load_database_structure()
+
+    def on_character_arcs_selected(self):
+        """Handle switching to the Character Arcs page."""
+        self.view.ui.pageStack.setCurrentIndex(2)
+        self.character_arc_widget.refresh_arcs(self.current_storyline_id)
 
     def load_database_structure(self):
         """Fetches table names from the model and populates the tree view."""

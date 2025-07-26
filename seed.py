@@ -218,6 +218,75 @@ def main():
         except Exception as e:
             print(f"   Warning: Error creating world entities: {e}")
 
+        # Create character arc types
+        print("Creating character arc types...")
+        try:
+            arc_types = [
+                schema.ArcType(
+                    id=1, name="Hero's Journey", 
+                    description="The classic hero transformation from ordinary to extraordinary",
+                    setting_id=1
+                ),
+                schema.ArcType(
+                    id=2, name="Character Growth", 
+                    description="Character learns and develops throughout the story",
+                    setting_id=1
+                ),
+                schema.ArcType(
+                    id=3, name="Redemption Arc", 
+                    description="Character seeks to make amends for past mistakes",
+                    setting_id=1
+                ),
+                schema.ArcType(
+                    id=4, name="Fall from Grace", 
+                    description="Character's moral decline throughout the story",
+                    setting_id=1
+                ),
+                schema.ArcType(
+                    id=5, name="Romance Arc", 
+                    description="Character's romantic relationship development",
+                    setting_id=1
+                ),
+            ]
+            session.add_all(arc_types)
+            session.commit()
+            print(f"   Created {len(arc_types)} arc types")
+            
+            # Create sample character arcs
+            character_arcs = [
+                schema.LitographyArc(
+                    id=1, title="Kael's Hero Journey", 
+                    description="Kael transforms from farm boy to legendary hero",
+                    arc_type_id=1, storyline_id=1
+                ),
+                schema.LitographyArc(
+                    id=2, title="Luna's Magic Growth", 
+                    description="Luna learns to control her powerful magic abilities",
+                    arc_type_id=2, storyline_id=1
+                ),
+                schema.LitographyArc(
+                    id=3, title="Thorin's Redemption", 
+                    description="Thorin seeks to redeem himself for past failures",
+                    arc_type_id=3, storyline_id=1
+                ),
+            ]
+            session.add_all(character_arcs)
+            session.commit()
+            print(f"   Created {len(character_arcs)} character arcs")
+            
+            # Link arcs to actors
+            arc_to_actors = [
+                schema.ArcToActor(actor_id=1, arc_id=1),  # Kael -> Hero's Journey
+                schema.ArcToActor(actor_id=2, arc_id=2),  # Luna -> Magic Growth
+                schema.ArcToActor(actor_id=3, arc_id=3),  # Thorin -> Redemption
+            ]
+            session.add_all(arc_to_actors)
+            session.commit()
+            print("   Linked arcs to characters")
+            
+        except Exception as e:
+            print(f"   Warning: Error creating character arcs: {e}")
+
         # Create sample story plotting data
         print("Creating sample story plotting data...")
         try:
@@ -270,6 +339,55 @@ def main():
             session.commit()
             print(f"   Created {len(nodes)} story nodes")
             
+            # Create sample arc points
+            arc_points = [
+                # Kael's Hero Journey arc points
+                schema.ArcPoint(
+                    id=1, arc_id=1, node_id=1, order_index=1,
+                    title="Call to Adventure", 
+                    description="Kael discovers the ancient prophecy",
+                    emotional_state="Curious but reluctant",
+                    goals="Understand the prophecy",
+                    internal_conflict="Doubts his ability to be a hero"
+                ),
+                schema.ArcPoint(
+                    id=2, arc_id=1, node_id=2, order_index=2,
+                    title="First Trial",
+                    description="Kael faces his first real challenge",
+                    emotional_state="Determined but afraid",
+                    goals="Prove himself worthy",
+                    internal_conflict="Fear of failure"
+                ),
+                schema.ArcPoint(
+                    id=3, arc_id=1, node_id=3, order_index=3,
+                    title="Transformation",
+                    description="Kael embraces his destiny",
+                    emotional_state="Confident and resolved",
+                    goals="Save the realm",
+                    internal_conflict="Accepts the burden of leadership"
+                ),
+                # Luna's Magic Growth arc points
+                schema.ArcPoint(
+                    id=4, arc_id=2, node_id=1, order_index=1,
+                    title="Power Awakening",
+                    description="Luna's magic manifests uncontrollably",
+                    emotional_state="Frightened and confused",
+                    goals="Control her powers",
+                    internal_conflict="Fear of hurting others"
+                ),
+                schema.ArcPoint(
+                    id=5, arc_id=2, node_id=2, order_index=2,
+                    title="Learning Control",
+                    description="Luna begins formal magic training",
+                    emotional_state="Focused but struggling",
+                    goals="Master basic techniques",
+                    internal_conflict="Impatience with slow progress"
+                ),
+            ]
+            session.add_all(arc_points)
+            session.commit()
+            print(f"   Created {len(arc_points)} arc points")
+            
         except Exception as e:
             print(f"   Warning: Error creating plotting data: {e}")
 
@@ -279,7 +397,9 @@ def main():
         print("  - Fantasy storyline and setting")
         print("  - Basic races, classes, and backgrounds")
         print("  - Sample characters, factions, and locations")
+        print("  - Character arc types and sample character arcs")
         print("  - Example story plot with tension-based sections")
+        print("  - Arc points linking character development to story beats")
         print("\nYou can now launch the application and explore the sample data!")
 
 if __name__ == "__main__":
