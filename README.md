@@ -29,6 +29,7 @@ Storymaster is a comprehensive PyQt6-based creative writing application that sea
 ### 🛠️ Technical Excellence
 - **SQLite backend** - completely offline, portable, and backup-friendly
 - **MVC architecture** - clean separation of concerns with SQLAlchemy ORM
+- **Multi-user support** - user accounts with complete data isolation
 - **Project isolation** - multiple stories/worlds in organized workspaces
 - **Professional dark theme** - eye-friendly interface for long writing sessions
 - **Cross-platform compatibility** - Windows, macOS, and Linux support
@@ -68,23 +69,39 @@ python storymaster/main.py
 storymaster/
 ├── storymaster/
 │   ├── model/              # Data layer
-│   │   └── database/       # SQLAlchemy models and schema
+│   │   ├── database/       # SQLAlchemy models and schema
+│   │   ├── common/         # Shared model components
+│   │   ├── litographer/    # Story plotting data models
+│   │   └── lorekeeper/     # World-building data models
 │   ├── view/               # UI components (PyQt6)
-│   │   ├── common/         # Shared UI elements
+│   │   ├── common/         # Shared UI elements & user management
 │   │   ├── litographer/    # Story plotting interface
 │   │   └── lorekeeper/     # World-building interface
 │   ├── controller/         # Business logic
-│   │   ├── common/         # Shared controllers
+│   │   ├── common/         # Shared controllers & user management
 │   │   ├── litographer/    # Plot management logic
 │   │   └── lorekeeper/     # World-building logic
 │   └── main.py            # Application entry point
 ├── tests/                  # Comprehensive test suite
 │   ├── model/             # Database and logic tests
-│   └── fixtures/          # Test data and utilities
-├── install.py             # Automated installer
-├── init_database.py       # Database initialization
-├── seed.py               # Sample data loader
-└── requirements.txt      # Python dependencies
+│   │   ├── database/      # Schema and test data
+│   │   ├── litographer/   # Story plotting tests
+│   │   └── lorekeeper/    # World-building tests
+│   └── fixtures/          # Test utilities and data
+├── assets/                 # Application assets
+│   ├── storymaster_icon.ico    # Windows executable icon
+│   ├── storymaster_icon.svg    # Vector icon (cross-platform)
+│   └── storymaster_icon_*.png  # Various sizes for system integration
+├── build_executable.py    # Cross-platform executable builder
+├── build_appimage.py      # Linux AppImage builder
+├── build_rpm.py          # Linux RPM package builder
+├── build_macos.py        # macOS app bundle builder
+├── storymaster.spec      # PyInstaller configuration
+├── storymaster.spec.rpm  # RPM package specification
+├── install.py            # Automated installer
+├── init_database.py      # Database initialization
+├── seed.py              # Sample data loader
+└── requirements.txt     # Python dependencies
 ```
 
 ## 🎮 Using Storymaster
@@ -109,6 +126,13 @@ Access via the **Plot** menu:
 - **Switch Plot** - Navigate between different plot threads
 - **Delete Plot** - Remove unused or completed plots
 - **Open Project** - Switch between different story worlds
+
+### User Management
+Access via the **User** menu:
+- **New User** - Create additional user accounts for multi-user environments
+- **Switch User** - Change active user without restarting the application
+- **Manage Users** - Add, switch, or delete user accounts
+- **Data Isolation** - Each user maintains separate stories, settings, and data
 
 ## 🧪 Development
 
@@ -169,6 +193,34 @@ python init_database.py
 # Reload sample data
 python seed.py
 ```
+
+## 📦 Distribution & Building
+
+Storymaster provides multiple distribution options for different platforms and use cases:
+
+### Executable Builds
+```bash
+# Cross-platform executable (PyInstaller)
+python build_executable.py
+
+# Platform-specific builds
+python build_appimage.py    # Linux AppImage (universal)
+python build_rpm.py         # Linux RPM packages  
+python build_macos.py       # macOS app bundles
+```
+
+### Distribution Features
+- **Windows**: Standalone `.exe` with all dependencies
+- **Linux AppImage**: Universal binary that runs on any distribution
+- **Linux RPM**: Native packages for Red Hat-based systems
+- **macOS**: Native `.app` bundles with installer DMG
+- **Cross-platform**: Portable executables for development/testing
+
+### Icon Assets
+All build systems use proper icons from the `assets/` directory:
+- `storymaster_icon.ico` - Windows executables
+- `storymaster_icon.svg` - Cross-platform vector icon
+- `storymaster_icon_*.png` - Various sizes for system integration
 
 ## 🗄️ Data Management
 

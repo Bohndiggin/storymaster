@@ -59,7 +59,6 @@ class LitographerPlotNodeModel(BaseLitographerPageModel):
 
         new_node = schema.LitographyNode(
             node_type=schema.NodeType.OTHER.value,
-            node_height=0.1,
             storyline_id=self.storyline_id,
         )
 

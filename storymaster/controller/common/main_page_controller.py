@@ -14,7 +14,6 @@ from PyQt6.QtGui import (
 from PyQt6.QtWidgets import (
     QComboBox,
     QDialog,
-    QDoubleSpinBox,
     QFormLayout,
     QGraphicsEllipseItem,
     QGraphicsLineItem,
@@ -895,14 +894,9 @@ class MainWindowController:
 
             self.node_id_label = QLabel("None")
             self.node_type_combo = QComboBox()
-            self.node_height_spin = QDoubleSpinBox()
-            self.node_height_spin.setRange(0.0, 1.0)
-            self.node_height_spin.setSingleStep(0.1)
-            self.node_height_spin.setDecimals(2)
 
             node_info_layout.addRow("Node ID:", self.node_id_label)
             node_info_layout.addRow("Node Type:", self.node_type_combo)
-            node_info_layout.addRow("Height (Tension):", self.node_height_spin)
 
             # Connections section
             connections_group = QGroupBox("Connections")
@@ -1195,7 +1189,6 @@ class MainWindowController:
         # Set current values
         self.node_id_label.setText(str(node_data.id))
         self.node_type_combo.setCurrentText(node_data.node_type.value)
-        self.node_height_spin.setValue(node_data.node_height)
 
         # Populate connection combos
         self.populate_connection_combos(node_data)
@@ -1340,7 +1333,6 @@ class MainWindowController:
         try:
             # Get values from the form
             new_type = self.node_type_combo.currentData()
-            new_height = self.node_height_spin.value()
             new_previous = self.previous_node_combo.currentData()
             new_next = self.next_node_combo.currentData()
             # Get section ID from combo index
@@ -1360,7 +1352,6 @@ class MainWindowController:
             update_data = {
                 "id": self.selected_node.id,
                 "node_type": new_type.value if new_type else None,
-                "node_height": new_height,
                 "x_position": current_x,
                 "y_position": current_y,
                 "storyline_id": self.current_storyline_id,
@@ -1499,7 +1490,6 @@ class MainWindowController:
             # Create new node data with new schema
             new_node_data = {
                 "node_type": NodeType.OTHER.value,
-                "node_height": 0.5,
                 "storyline_id": self.current_storyline_id,
                 "x_position": x_pos,
                 "y_position": y_pos,
@@ -2143,12 +2133,11 @@ class MainWindowController:
 
         # --- File Menu ---
         self.view.ui.actionOpen.triggered.connect(self.on_open_storyline_clicked)
-        # Database manager action not yet added to UI
-        # self.view.ui.actionDatabaseManager.triggered.connect(
-        #     self.on_database_manager_clicked
-        # )
-        # Create backup action not yet added to UI
-        # self.view.ui.actionCreateBackup.triggered.connect(self.on_create_backup_clicked)
+        # Database and backup actions
+        self.view.ui.actionDatabaseManager.triggered.connect(
+            self.on_database_manager_clicked
+        )
+        self.view.ui.actionCreateBackup.triggered.connect(self.on_create_backup_clicked)
 
         # --- Storyline Menu ---
         self.view.ui.actionNewStoryline.triggered.connect(self.on_new_storyline_clicked)
@@ -2824,7 +2813,6 @@ class MainWindowController:
         """Add a node at specific coordinates (for testing and programmatic use)"""
         new_node_data = {
             "node_type": node_type,
-            "node_height": 0.5,  # Default height
             "x_position": x,
             "y_position": y,
             "storyline_id": self.current_storyline_id,

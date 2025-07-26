@@ -116,14 +116,12 @@ class TestDatabaseSchemaRelationships:
             storyline_id=1,
             x_position=100.0,
             y_position=200.0,
-            node_height=0.5
         )
         
         assert node.node_type == NodeType.EXPOSITION
         assert node.storyline_id == 1
         assert node.x_position == 100.0
         assert node.y_position == 200.0
-        assert node.node_height == 0.5
 
     def test_world_building_entities_exist(self):
         """Test that world-building entities can be created"""
@@ -221,10 +219,9 @@ class TestDatabaseSchemaIntegration:
             node_type=NodeType.EXPOSITION,
             x_position=100.0,
             y_position=200.0,
-            node_height=0.5
         )
         
-        required_fields = ['storyline_id', 'node_type', 'x_position', 'y_position', 'node_height']
+        required_fields = ['storyline_id', 'node_type', 'x_position', 'y_position']
         for field in required_fields:
             assert hasattr(node, field), f"LitographyNode missing required field: {field}"
 

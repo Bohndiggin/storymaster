@@ -2,7 +2,6 @@
 **/__pycache__*
 **/ignore*
 **/.vscode*
-seed.py
 **.env
 **/.mypy_cache
 test.py

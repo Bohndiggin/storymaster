@@ -40,9 +40,6 @@ class NodeNotesDialog(QDialog):
         node_info_layout.addRow(
             "Node Type:", QLabel(self.node_data.node_type.name.title())
         )
-        node_info_layout.addRow(
-            "Node Height:", QLabel(f"{self.node_data.node_height:.2f}")
-        )
         node_info_group.setLayout(node_info_layout)
         main_layout.addWidget(node_info_group)
 

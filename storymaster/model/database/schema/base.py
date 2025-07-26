@@ -211,9 +211,6 @@ class LitographyNode(BaseTable):
         nullable=False,
         name="node_type",
     )
-    node_height: Mapped[float] = mapped_column(
-        Float, nullable=False, name="node_height"
-    )
     x_position: Mapped[float] = mapped_column(
         Float, nullable=False, name="x_position", default=0.0
     )

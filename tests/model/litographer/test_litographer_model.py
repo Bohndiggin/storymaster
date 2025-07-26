@@ -164,7 +164,6 @@ class TestLitographerModelIntegration:
         mock_node = {
             "id": 1,
             "node_type": NodeType.EXPOSITION,
-            "node_height": 0.5,
             "storyline_id": 1,
             "x_position": 150.0,
             "y_position": 250.0,
@@ -293,7 +292,6 @@ class TestLitographerWorkflows:
                 "x_position": float(x_pos),
                 "y_position": float(y_pos),
                 "storyline_id": storyline_id,
-                "node_height": 0.5  # Default
             }
             
             return workflow_state["current_node"]
@@ -465,14 +463,6 @@ class TestLitographerErrorHandling:
                     except (ValueError, TypeError):
                         errors.append(f"Invalid {pos_field}")
             
-            # Check height if provided
-            if "node_height" in data:
-                try:
-                    height = float(data["node_height"])
-                    if not (0.0 <= height <= 1.0):
-                        errors.append("node_height must be between 0.0 and 1.0")
-                except (ValueError, TypeError):
-                    errors.append("Invalid node_height")
             
             return len(errors) == 0, errors
         
@@ -482,7 +472,6 @@ class TestLitographerErrorHandling:
             "x_position": 100,
             "y_position": 200,
             "storyline_id": 1,
-            "node_height": 0.5
         }
         
         valid, errors = validate_node_creation(valid_node)

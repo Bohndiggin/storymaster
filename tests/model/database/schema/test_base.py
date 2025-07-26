@@ -91,7 +91,6 @@ class TestSchemaModelConcepts:
         mock_node_data = {
             "id": 1,
             "node_type": NodeType.EXPOSITION,
-            "node_height": 0.5,
             "storyline_id": 1,
             "x_position": 100.0,
             "y_position": 200.0,

@@ -554,6 +554,9 @@ QLabel#pageTitleLabel {
     </property>
     <addaction name="actionOpen"/>
     <addaction name="separator"/>
+    <addaction name="actionCreateBackup"/>
+    <addaction name="actionDatabaseManager"/>
+    <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuStoryline">
@@ -714,6 +717,22 @@ QLabel#pageTitleLabel {
    </property>
    <property name="toolTip">
     <string>Manage users (add, switch, delete)</string>
+   </property>
+  </action>
+  <action name="actionCreateBackup">
+   <property name="text">
+    <string>Create Backup</string>
+   </property>
+   <property name="toolTip">
+    <string>Create a manual backup of the database</string>
+   </property>
+  </action>
+  <action name="actionDatabaseManager">
+   <property name="text">
+    <string>Database Manager</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage databases and backups</string>
    </property>
   </action>
  </widget>
