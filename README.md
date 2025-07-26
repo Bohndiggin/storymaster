@@ -1,89 +1,125 @@
 # 🏰 Storymaster
 
-**Visual Story Plotting & World-Building Tool**
+**Visual Story Plotting & World-Building Tool for Creative Writers**
 
-Storymaster is a PyQt6-based creative writing application that combines visual story structure planning with comprehensive world-building capabilities.
+![GitHub](https://img.shields.io/github/license/Bohndiggin/storymaster)
+![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)
 
-## 🚀 Quick Install
+Storymaster is a comprehensive PyQt6-based creative writing application that seamlessly combines visual story structure planning with detailed world-building capabilities. Perfect for novelists, screenwriters, and game designers who need to organize complex narratives and rich fictional worlds.
 
-**Prerequisites:**
+## ✨ Key Features
+
+### 📈 Litographer - Visual Story Plotting
+- **Interactive node-based interface** for plotting story beats with drag-and-drop functionality
+- **Multiple plot support** - manage main plots, subplots, and character arcs simultaneously
+- **Tension mapping** with visual flow indicators (Rising, Flat, Point, Lower)
+- **Customizable node shapes** - rectangles, circles, diamonds, stars, hexagons, triangles
+- **Linked-list navigation** for easy story flow management
+- **Integrated scene notes** and beat descriptions
+
+### 🌍 Lorekeeper - World Building Database
+- **Character management** - detailed actor profiles with relationships, backgrounds, classes, and races
+- **Faction system** - complex organizational structures with hierarchies and conflicts
+- **Location catalog** - comprehensive setting database with descriptions and connections
+- **Historical timeline** - track events with multi-entity involvement
+- **Object repository** - manage items, artifacts, and world elements
+- **Dynamic relationship mapping** between all entities
+
+### 🛠️ Technical Excellence
+- **SQLite backend** - completely offline, portable, and backup-friendly
+- **MVC architecture** - clean separation of concerns with SQLAlchemy ORM
+- **Project isolation** - multiple stories/worlds in organized workspaces
+- **Professional dark theme** - eye-friendly interface for long writing sessions
+- **Cross-platform compatibility** - Windows, macOS, and Linux support
+
+## 🚀 Quick Start
+
+### Prerequisites
 - Python 3.8 or higher
-- Works on Windows, macOS, and Linux
+- Git (for development)
 
-**One-command installation:**
+### One-Command Installation
 ```bash
+git clone https://github.com/Bohndiggin/storymaster.git
+cd storymaster
 python install.py
 ```
 
-The installer will:
-- ✅ Create a virtual environment
-- ✅ Install all dependencies  
-- ✅ Initialize SQLite database
-- ✅ Optionally seed with sample data
+The installer automatically:
+- ✅ Creates an isolated virtual environment
+- ✅ Installs all required dependencies
+- ✅ Initializes the SQLite database schema
+- ✅ Optionally seeds with sample story data
 
-## 🎯 Features
-
-### 📖 Litographer - Visual Story Plotting
-- **Node-based story structure** with linked-list navigation
-- **Multiple plot support** - create and switch between different storylines
-- **Plot sections** with tension types (Rising, Flat, Point, Lower)
-- **Custom node shapes** (rectangle, circle, diamond, star, hexagon, triangle)
-- **Visual connections** showing story flow
-- **Integrated notes** for each story beat
-
-### 🗂️ Lorekeeper - World Building Database
-- **Character management** - actors, backgrounds, classes, races
-- **Faction system** with complex relationships
-- **Location tracking** with detailed descriptions
-- **Historical events** with multi-entity involvement
-- **Object catalog** for items and artifacts
-- **Dynamic forms** with foreign key relationships
-
-### 🔧 Technical Features
-- **SQLite database** - fully offline, portable
-- **Project isolation** - multiple stories in one database
-- **Dark theme** UI inspired by professional tools
-- **Cross-platform** compatibility
-
-## 🏃‍♂️ Running Storymaster
-
-After installation:
-
+### Launch Application
 ```bash
 # Activate virtual environment
 source .venv/bin/activate    # Linux/Mac
-# or
-.venv\Scripts\activate      # Windows
+.venv\Scripts\activate       # Windows
 
-# Run the application
+# Start Storymaster
 python storymaster/main.py
 ```
 
-## 📁 Project Structure
+## 📁 Architecture
 
 ```
 storymaster/
-├── storymaster/           # Main application code
-│   ├── model/            # Database models and business logic
-│   ├── view/             # PyQt6 UI components
-│   └── controller/       # Event handling and coordination
-├── tests/                # Test suite with sample data
-├── install.py           # One-click installer
-├── init_database.py     # Database initialization
-├── seed.py             # Sample data loading
-└── requirements.txt    # Python dependencies
+├── storymaster/
+│   ├── model/              # Data layer
+│   │   └── database/       # SQLAlchemy models and schema
+│   ├── view/               # UI components (PyQt6)
+│   │   ├── common/         # Shared UI elements
+│   │   ├── litographer/    # Story plotting interface
+│   │   └── lorekeeper/     # World-building interface
+│   ├── controller/         # Business logic
+│   │   ├── common/         # Shared controllers
+│   │   ├── litographer/    # Plot management logic
+│   │   └── lorekeeper/     # World-building logic
+│   └── main.py            # Application entry point
+├── tests/                  # Comprehensive test suite
+│   ├── model/             # Database and logic tests
+│   └── fixtures/          # Test data and utilities
+├── install.py             # Automated installer
+├── init_database.py       # Database initialization
+├── seed.py               # Sample data loader
+└── requirements.txt      # Python dependencies
 ```
 
-## 🛠️ Development
+## 🎮 Using Storymaster
 
-### Manual Setup
-If you prefer to set up manually:
+### Story Plotting Workflow
+1. **Create Project** - Start with a new story workspace
+2. **Add Plots** - Create main plot and subplots using the Plot menu
+3. **Build Structure** - Add story nodes with custom shapes and connections
+4. **Organize Sections** - Group scenes into acts or chapters
+5. **Add Details** - Include notes, tension levels, and scene descriptions
 
+### World Building Workflow
+1. **Design Characters** - Create actors with detailed backgrounds
+2. **Build Locations** - Establish settings with rich descriptions
+3. **Create Factions** - Define organizations and their relationships
+4. **Track History** - Record significant events and timelines
+5. **Manage Objects** - Catalog important items and artifacts
+
+### Plot Management
+Access via the **Plot** menu:
+- **New Plot** - Create additional storylines or character arcs
+- **Switch Plot** - Navigate between different plot threads
+- **Delete Plot** - Remove unused or completed plots
+- **Open Project** - Switch between different story worlds
+
+## 🧪 Development
+
+### Manual Development Setup
 ```bash
+# Clone repository
+git clone https://github.com/Bohndiggin/storymaster.git
+cd storymaster
+
 # Create virtual environment
 python -m venv .venv
-
-# Activate it
 source .venv/bin/activate  # Linux/Mac
 .venv\Scripts\activate     # Windows
 
@@ -93,7 +129,7 @@ pip install -r requirements.txt
 # Initialize database
 python init_database.py
 
-# Seed with sample data (optional)
+# Load sample data
 python seed.py
 
 # Run application
@@ -102,81 +138,106 @@ python storymaster/main.py
 
 ### Testing
 ```bash
-pytest tests/
+# Run full test suite
+pytest
+
+# Run specific modules
+pytest tests/model/litographer/
+pytest tests/model/lorekeeper/
+
+# Verbose output
+pytest -v
 ```
 
-### Code Formatting
+### Code Quality
 ```bash
+# Format code
 black .
+
+# Sort imports
 isort .
+
+# Type checking (if mypy is installed)
+mypy storymaster/
 ```
 
-## 🎨 Plot Management
-
-Use the **Plot** menu to:
-- **New Plot** - Create additional storylines
-- **Switch Plot** - Move between different plots
-- **Delete Plot** - Remove unused plots
-- **Open Project** - Switch between different story projects
-
-## 🗄️ Database
-
-- **SQLite** - Single file database (`storymaster.db`)
-- **Portable** - Copy the .db file to backup/share your work
-- **Offline** - No internet connection required
-- **Sample data** - Includes example characters, locations, and story nodes
-
-## 🆘 Troubleshooting
-
-**Common Issues:**
-
-1. **"ModuleNotFoundError"** - Make sure virtual environment is activated
-2. **"Database connection failed"** - Run `python init_database.py`
-3. **"PyQt6 not found"** - Install with `pip install PyQt6`
-
-**Getting Help:**
-- Check the documentation
-- Create an issue on GitHub
-- Review the sample data to understand the data model
-
-## 📦 Distribution & Packaging
-
-### For Developers - Creating Distribution Packages
-
-**Build all distribution formats:**
+### Database Management
 ```bash
-python build_all.py
+# Reset database
+python init_database.py
+
+# Reload sample data
+python seed.py
 ```
 
-**Individual build options:**
+## 🗄️ Data Management
+
+### Database Features
+- **SQLite backend** - Single file database (`storymaster.db`)
+- **Portable storage** - Copy `.db` file to backup entire project
+- **Offline operation** - No internet connection required
+- **Relational integrity** - Foreign key constraints and data validation
+- **Sample data included** - Example characters, locations, and story structure
+
+### Backup Strategy
+Simply copy `storymaster.db` to preserve all your work:
 ```bash
-# Cross-platform executable
-python build_executable.py
-
-# Linux AppImage (universal binary)
-python build_appimage.py
-
-# Linux RPM package
-python build_rpm.py
+cp storymaster.db backup/storymaster_backup_$(date +%Y%m%d).db
 ```
 
-**Available distribution formats:**
-- **Executable** - Standalone binary with Python runtime included
-- **AppImage** - Universal Linux binary (no installation required)
-- **RPM** - Linux package for Red Hat-based distributions
-- **Future**: Windows installer, macOS app bundle
+## 🔧 Troubleshooting
 
-### For End Users - Download Options
+### Common Issues
 
-1. **Python Source** - Use the installer (`python install.py`)
-2. **Executable** - Download and run (no Python installation needed)
-3. **AppImage** - Download, make executable, and run (Linux)
-4. **RPM** - Install system-wide on Fedora/RHEL/CentOS
+**Environment Problems:**
+- `ModuleNotFoundError` → Ensure virtual environment is activated
+- `Database connection failed` → Run `python init_database.py`
+- `PyQt6 import error` → Reinstall with `pip install PyQt6`
+
+**Database Issues:**
+- Corrupt database → Delete `storymaster.db` and run `init_database.py`
+- Missing tables → Run `python init_database.py` to recreate schema
+- Performance issues → Consider archiving old projects
+
+**UI Problems:**
+- Blank interface → Check console for PyQt6 errors
+- Node positioning issues → Clear cache and restart application
+- Menu not responding → Verify database connection
+
+### Getting Support
+- 📖 Check [CLAUDE.md](./CLAUDE.md) for detailed technical documentation
+- 🐛 Report bugs at [GitHub Issues](https://github.com/Bohndiggin/storymaster/issues)
+- 💡 Request features via GitHub Issues with the "enhancement" label
+- 📝 Review sample data to understand the data model
+
+## 🌟 Contributing
+
+We welcome contributions! Please see our development workflow:
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
+
+### Development Guidelines
+- Follow existing code style (Black formatting)
+- Add tests for new features
+- Update documentation as needed
+- Ensure all tests pass before submitting
 
 ## 📄 License
 
-This project is open source. See LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Built with [PyQt6](https://www.riverbankcomputing.com/software/pyqt/) for the user interface
+- Database powered by [SQLAlchemy](https://www.sqlalchemy.org/) ORM
+- Inspired by professional story development tools and writing methodologies
 
 ---
 
-**Happy storytelling! 📚✨**
+**Start crafting your next great story today! 📚✨**
+
+*For detailed technical documentation, see [CLAUDE.md](./CLAUDE.md)*

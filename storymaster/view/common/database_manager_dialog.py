@@ -6,25 +6,11 @@ from typing import List, Optional
 
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import (
-    QCheckBox,
-    QDialog,
-    QFileDialog,
-    QGridLayout,
-    QGroupBox,
-    QHBoxLayout,
-    QLabel,
-    QListWidget,
-    QListWidgetItem,
-    QMessageBox,
-    QProgressBar,
-    QPushButton,
-    QSpinBox,
-    QTabWidget,
-    QTextEdit,
-    QVBoxLayout,
-    QWidget,
-)
+from PyQt6.QtWidgets import (QCheckBox, QDialog, QFileDialog, QGridLayout,
+                             QGroupBox, QHBoxLayout, QLabel, QListWidget,
+                             QListWidgetItem, QMessageBox, QProgressBar,
+                             QPushButton, QSpinBox, QTabWidget, QTextEdit,
+                             QVBoxLayout, QWidget)
 
 from storymaster.model.common.backup_manager import BackupManager
 

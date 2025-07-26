@@ -15,6 +15,7 @@ test_db_path = os.path.join(db_dir, "test_storymaster.db")
 # Check if database exists, if not create it
 if not os.path.exists(db_path):
     from storymaster.model.database.schema.base import BaseTable
+
     temp_engine = create_engine(f"sqlite:///{db_path}")
     BaseTable.metadata.create_all(temp_engine)
     temp_engine.dispose()

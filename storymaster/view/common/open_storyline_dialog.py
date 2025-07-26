@@ -2,13 +2,8 @@
 Defines the dialog for opening an existing storyline.
 """
 
-from PyQt6.QtWidgets import (
-    QComboBox,
-    QDialog,
-    QDialogButtonBox,
-    QFormLayout,
-    QVBoxLayout,
-)
+from PyQt6.QtWidgets import (QComboBox, QDialog, QDialogButtonBox, QFormLayout,
+                             QVBoxLayout)
 
 from storymaster.model.common.common_model import BaseModel
 

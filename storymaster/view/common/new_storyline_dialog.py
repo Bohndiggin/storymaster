@@ -2,15 +2,8 @@
 Defines the dialog for creating a new storyline.
 """
 
-from PyQt6.QtWidgets import (
-    QComboBox,
-    QDialog,
-    QDialogButtonBox,
-    QFormLayout,
-    QLineEdit,
-    QTextEdit,
-    QVBoxLayout,
-)
+from PyQt6.QtWidgets import (QComboBox, QDialog, QDialogButtonBox, QFormLayout,
+                             QLineEdit, QTextEdit, QVBoxLayout)
 
 from storymaster.model.common.common_model import BaseModel
 

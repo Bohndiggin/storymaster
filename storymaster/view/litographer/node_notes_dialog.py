@@ -3,23 +3,10 @@ Dialog for managing notes linked to a litography node.
 """
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import (
-    QComboBox,
-    QDialog,
-    QDialogButtonBox,
-    QFormLayout,
-    QGroupBox,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QListWidget,
-    QListWidgetItem,
-    QMessageBox,
-    QPushButton,
-    QSplitter,
-    QTextEdit,
-    QVBoxLayout,
-)
+from PyQt6.QtWidgets import (QComboBox, QDialog, QDialogButtonBox, QFormLayout,
+                             QGroupBox, QHBoxLayout, QLabel, QLineEdit,
+                             QListWidget, QListWidgetItem, QMessageBox,
+                             QPushButton, QSplitter, QTextEdit, QVBoxLayout)
 
 from storymaster.model.database.schema.base import NoteType
 

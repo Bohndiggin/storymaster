@@ -100,15 +100,11 @@ class Setting(BaseTable):
     )
     alignments: Mapped[list["Alignment"]] = relationship(back_populates="setting")
     stats: Mapped[list["Stat"]] = relationship(back_populates="setting")
-    actor_to_races: Mapped[list["ActorToRace"]] = relationship(
-        back_populates="setting"
-    )
+    actor_to_races: Mapped[list["ActorToRace"]] = relationship(back_populates="setting")
     actor_to_classes: Mapped[list["ActorToClass"]] = relationship(
         back_populates="setting"
     )
-    actor_to_stats: Mapped[list["ActorToStat"]] = relationship(
-        back_populates="setting"
-    )
+    actor_to_stats: Mapped[list["ActorToStat"]] = relationship(back_populates="setting")
     factions: Mapped[list["Faction"]] = relationship(back_populates="setting")
     faction_relations: Mapped[list["FactionAOnBRelations"]] = relationship(
         back_populates="setting"
@@ -218,11 +214,11 @@ class LitographyNode(BaseTable):
     node_height: Mapped[float] = mapped_column(
         Float, nullable=False, name="node_height"
     )
-    previous_node: Mapped[int | None] = mapped_column(
-        Integer, nullable=True, name="previous_node"
+    x_position: Mapped[float] = mapped_column(
+        Float, nullable=False, name="x_position", default=0.0
     )
-    next_node: Mapped[int | None] = mapped_column(
-        Integer, nullable=True, name="next_node"
+    y_position: Mapped[float] = mapped_column(
+        Float, nullable=False, name="y_position", default=0.0
     )
     storyline_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("storyline.id"), nullable=False, name="storyline_id"
@@ -234,6 +230,35 @@ class LitographyNode(BaseTable):
         back_populates="node"
     )
     arcs: Mapped[list["ArcToNode"]] = relationship(back_populates="node")
+    output_connections: Mapped[list["NodeConnection"]] = relationship(
+        foreign_keys="NodeConnection.output_node_id", back_populates="output_node"
+    )
+    input_connections: Mapped[list["NodeConnection"]] = relationship(
+        foreign_keys="NodeConnection.input_node_id", back_populates="input_node"
+    )
+
+
+class NodeConnection(BaseTable):
+    """Represents connections between nodes"""
+
+    __tablename__ = "node_connection"
+
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, autoincrement=True, name="id"
+    )
+    output_node_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("litography_node.id"), nullable=False, name="output_node_id"
+    )
+    input_node_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("litography_node.id"), nullable=False, name="input_node_id"
+    )
+
+    output_node: Mapped["LitographyNode"] = relationship(
+        foreign_keys=[output_node_id], back_populates="output_connections"
+    )
+    input_node: Mapped["LitographyNode"] = relationship(
+        foreign_keys=[input_node_id], back_populates="input_connections"
+    )
 
 
 class LitographyNotes(BaseTable):
@@ -381,9 +406,7 @@ class Class_(BaseTable):
         Integer, primary_key=True, autoincrement=True, name="id"
     )
     name: Mapped[str | None] = mapped_column(String(255), name="name")
-    description: Mapped[str | None] = mapped_column(
-        Text, name="description"
-    )
+    description: Mapped[str | None] = mapped_column(Text, name="description")
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )

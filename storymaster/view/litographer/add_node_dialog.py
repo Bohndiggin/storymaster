@@ -2,14 +2,8 @@
 Defines the dialog for adding a new Litography Node.
 """
 
-from PyQt6.QtWidgets import (
-    QComboBox,
-    QDialog,
-    QDialogButtonBox,
-    QDoubleSpinBox,
-    QFormLayout,
-    QVBoxLayout,
-)
+from PyQt6.QtWidgets import (QComboBox, QDialog, QDialogButtonBox,
+                             QDoubleSpinBox, QFormLayout, QVBoxLayout)
 
 from storymaster.model.database import schema
 

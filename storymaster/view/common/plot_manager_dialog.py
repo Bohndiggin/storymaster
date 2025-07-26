@@ -1,15 +1,7 @@
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import (
-    QDialog,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QListWidget,
-    QListWidgetItem,
-    QMessageBox,
-    QPushButton,
-    QVBoxLayout,
-)
+from PyQt6.QtWidgets import (QDialog, QHBoxLayout, QLabel, QLineEdit,
+                             QListWidget, QListWidgetItem, QMessageBox,
+                             QPushButton, QVBoxLayout)
 
 
 class PlotManagerDialog(QDialog):

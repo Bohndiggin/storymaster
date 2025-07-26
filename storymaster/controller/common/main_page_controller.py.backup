@@ -1,15 +1,17 @@
 """Holds the controller for the main page"""
 
-from PyQt6.QtCore import QPointF, Qt, pyqtSignal
+from PyQt6.QtCore import QObject, QPointF, Qt, pyqtSignal, QEvent
 from PyQt6.QtGui import (
     QBrush,
     QColor,
     QFont,
+    QMouseEvent,
     QPainterPath,
     QPen,
     QPolygonF,
     QStandardItem,
     QStandardItemModel,
+    QWheelEvent,
 )
 from PyQt6.QtWidgets import (
     QComboBox,
@@ -59,6 +61,7 @@ from storymaster.model.database.schema.base import (
     LitographyNoteToHistory,
     LitographyNoteToLocation,
     LitographyNoteToObject,
+    NodeConnection,
     LitographyNoteToRace,
     LitographyNoteToSkills,
     LitographyNoteToSubRace,
@@ -66,7 +69,6 @@ from storymaster.model.database.schema.base import (
     LitographyPlot,
     LitographyPlotSection,
     Location,
-    NodeConnection,
     NodeType,
     Object_,
     PlotSectionType,
@@ -90,293 +92,63 @@ from storymaster.view.litographer.node_notes_dialog import NodeNotesDialog
 
 
 class ConnectionPoint(QGraphicsEllipseItem):
-    """Visual connection point on nodes for creating connections"""
-
+    """Connection point for nodes - small circle on node edge"""
     def __init__(self, x, y, is_input, node_item, parent=None):
-        # Create the ellipse at origin, we'll position it after
-        super().__init__(-5, -5, 10, 10, parent)
+        super().__init__(x-5, y-5, 10, 10, parent)
         self.is_input = is_input
         self.node_item = node_item
-        self.relative_x = x
-        self.relative_y = y
-
-        # Position the connection point at the correct relative location
-        self.setPos(x, y)
-
         self.setBrush(QBrush(QColor("#4CAF50" if is_input else "#FF5722")))
-        self.setPen(QPen(QColor("#FFFFFF"), 1))
-        self.setZValue(10)  # Ensure connection points are on top
-        self.setAcceptHoverEvents(True)
-
-        # Connection dragging state
-        self.dragging_connection = False
-        self.temp_line = None
-
-    def get_absolute_center(self):
-        """Get the absolute center position of this connection point"""
-        # Since connection point is a child of the node, use its scene position
-        scene_pos = self.scenePos()
-        return QPointF(
-            scene_pos.x() + 5, scene_pos.y() + 5
-        )  # Center of the 10x10 circle
-
+        self.setPen(QPen(QColor("#ffffff"), 1))
+        self.setFlag(QGraphicsEllipseItem.GraphicsItemFlag.ItemIsSelectable, True)
+        self.setZValue(10)
+        
     def mousePressEvent(self, event):
-        """Start connection dragging from output points"""
-        if event.button() == Qt.MouseButton.LeftButton and not self.is_input:
-            # Only allow dragging from output points (red ones)
-            self.dragging_connection = True
-            start_pos = self.get_absolute_center()
-
-            # Create temporary line for visual feedback
-            self.temp_line = QGraphicsLineItem(
-                start_pos.x(), start_pos.y(), start_pos.x(), start_pos.y()
-            )
-            self.temp_line.setPen(QPen(QColor("#FFFF00"), 3))  # Yellow connection line
-            self.temp_line.setZValue(5)
-            self.scene().addItem(self.temp_line)
-
-            event.accept()
-        else:
-            super().mousePressEvent(event)
-
-    def mouseMoveEvent(self, event):
-        """Update temporary connection line while dragging"""
-        if self.dragging_connection and self.temp_line:
-            start_pos = self.get_absolute_center()
-            end_pos = event.scenePos()
-
-            self.temp_line.setLine(
-                start_pos.x(), start_pos.y(), end_pos.x(), end_pos.y()
-            )
-
-            event.accept()
-        else:
-            super().mouseMoveEvent(event)
-
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.node_item.controller.start_connection(self)
+        super().mousePressEvent(event)
+        
     def mouseReleaseEvent(self, event):
-        """Complete connection when released over a valid input point"""
-        if self.dragging_connection and event.button() == Qt.MouseButton.LeftButton:
-            # Clean up temporary line
-            if self.temp_line:
-                self.scene().removeItem(self.temp_line)
-                self.temp_line = None
-
-            # Find item under mouse
-            items_under_mouse = self.scene().items(event.scenePos())
-            target_connection_point = None
-
-            for item in items_under_mouse:
-                if (
-                    isinstance(item, ConnectionPoint)
-                    and item != self
-                    and item.is_input
-                    and item.node_item != self.node_item
-                ):  # Can't connect to same node
-                    target_connection_point = item
-                    break
-
-            if target_connection_point:
-                # Create connection in database
-                self.create_connection(target_connection_point)
-
-            self.dragging_connection = False
-            event.accept()
-        else:
-            super().mouseReleaseEvent(event)
-
-    def create_connection(self, target_point):
-        """Create a connection between this output point and target input point"""
-        try:
-            # Get controller from node
-            if hasattr(self.node_item, "controller") and hasattr(
-                target_point.node_item, "controller"
-            ):
-                controller = self.node_item.controller
-
-                from sqlalchemy.orm import Session
-
-                with Session(controller.model.engine) as session:
-                    # Check if connection already exists
-                    existing = (
-                        session.query(NodeConnection)
-                        .filter_by(
-                            output_node_id=self.node_item.node_data.id,
-                            input_node_id=target_point.node_item.node_data.id,
-                        )
-                        .first()
-                    )
-
-                    if not existing:
-                        new_connection = NodeConnection(
-                            output_node_id=self.node_item.node_data.id,
-                            input_node_id=target_point.node_item.node_data.id,
-                        )
-                        session.add(new_connection)
-                        session.commit()
-
-                        print(
-                            f"✅ Connected node {self.node_item.node_data.id} -> {target_point.node_item.node_data.id}"
-                        )
-
-                        # Refresh the display
-                        controller.load_and_draw_nodes()
-                    else:
-                        print(
-                            f"⚠️ Connection already exists between nodes {self.node_item.node_data.id} and {target_point.node_item.node_data.id}"
-                        )
-
-        except Exception as e:
-            print(f"❌ Error creating connection: {e}")
-
-    def hoverEnterEvent(self, event):
-        """Highlight connection point on hover"""
-        self.setPen(QPen(QColor("#FFFFFF"), 3))
-        super().hoverEnterEvent(event)
-
-    def hoverLeaveEvent(self, event):
-        """Remove highlight when not hovering"""
-        self.setPen(QPen(QColor("#FFFFFF"), 1))
-        super().hoverLeaveEvent(event)
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.node_item.controller.end_connection(self)
+        super().mouseReleaseEvent(event)
 
 
 class NodeMixin:
-    """Mixin class that adds connection functionality to node items"""
-
+    """Mixin class for all node shapes to add common functionality"""
+    
     def init_node_data(self, x, y, width, height, node_data, controller):
-        """Initialize node data and connection points"""
+        """Initialize node-specific data"""
         self.node_data = node_data
         self.controller = controller
         self.x = x
         self.y = y
         self.width = width
         self.height = height
-
-        # Store all connection lines for updates
-        self.connection_lines = []
-
-        # Add connection points
-        self.add_connection_points()
-
-        # Setup drag handlers (pass 'self' which is the graphics item)
-        self.setup_drag_handlers(self)
-
-    def add_connection_points(self):
-        """Add input and output connection points to the node"""
-        # Special positioning for triangle nodes (lower connection points)
-        if hasattr(self, "__class__") and "Triangle" in self.__class__.__name__:
-            input_y = int(self.height * 0.75)  # Lower position for triangles
-            output_y = int(self.height * 0.75)
-        else:
-            input_y = self.height // 2  # Center vertically for other shapes
-            output_y = self.height // 2
-
-        # Input connection point (left side, green) - relative to node
-        input_x = -5  # Left edge
-        self.input_point = ConnectionPoint(input_x, input_y, True, self, self)
-
-        # Output connection point (right side, red) - relative to node
-        output_x = self.width + 5  # Right edge
-        self.output_point = ConnectionPoint(output_x, output_y, False, self, self)
-
-    def get_input_connection_pos(self):
-        """Get absolute position of input connection point"""
-        if hasattr(self, "input_point"):
-            return self.input_point.get_absolute_center()
-        # Fallback for compatibility
-        node_pos = self.pos()
-        return QPointF(node_pos.x() - 5, node_pos.y() + self.height // 2)
-
-    def get_output_connection_pos(self):
-        """Get absolute position of output connection point"""
-        if hasattr(self, "output_point"):
-            return self.output_point.get_absolute_center()
-        # Fallback for compatibility
-        node_pos = self.pos()
-        return QPointF(node_pos.x() + self.width + 5, node_pos.y() + self.height // 2)
-
-    def setup_drag_handlers(self, graphics_item):
-        """Setup drag event handlers for the graphics item"""
-        # Store original events
-        original_mouse_release = graphics_item.mouseReleaseEvent
-        original_mouse_move = graphics_item.mouseMoveEvent
-
-        def mouse_move_handler(event):
-            """Handle mouse move to update connections while dragging"""
-            # Call original move event first
-            original_mouse_move(event)
-
-            # Update all connection lines during drag
-            if hasattr(self, "controller"):
-                self.controller.update_all_connections()
-
-        def mouse_release_handler(event):
-            """Handle mouse release to save new position after dragging"""
-            if hasattr(self, "node_data") and hasattr(self, "controller"):
-                # Get the new position
-                new_pos = graphics_item.pos()
-
-                # Update the database with the new position
-                try:
-                    update_data = {
-                        "id": self.node_data.id,
-                        "x_position": float(new_pos.x()),
-                        "y_position": float(new_pos.y()),
-                        "storyline_id": self.controller.current_storyline_id,
-                    }
-                    self.controller.model.update_row("litography_node", update_data)
-
-                    print(
-                        f"Saved node {self.node_data.id} position: ({new_pos.x()}, {new_pos.y()})"
-                    )
-
-                    # Update all connections after move
-                    self.controller.update_all_connections()
-
-                except Exception as e:
-                    print(f"Error saving node position: {e}")
-
-            # Call the original mouse release event
-            original_mouse_release(event)
-
-        # Assign the new handlers
-        graphics_item.mouseMoveEvent = mouse_move_handler
-        graphics_item.mouseReleaseEvent = mouse_release_handler
-
-
-class BaseNodeItem:
-    """Base class for all node shapes"""
-
-    def __init__(self, x, y, width, height, node_data, controller):
-        self.node_data = node_data
-        self.controller = controller
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-
-    def setup_flags(self, item):
-        """Setup common flags for all node items"""
-        item.setFlag(item.GraphicsItemFlag.ItemIsSelectable, True)
-
-    def setup_mouse_events(self, item):
-        """Setup mouse event handling"""
-        original_mouse_press = item.mousePressEvent
-
-        def mouse_press_event(event):
-            original_mouse_press(event)
-            self.controller.on_node_clicked(self.node_data)
-
-        item.mousePressEvent = mouse_press_event
+        self.input_point = None
+        self.output_point = None
+        
+    def create_connection_points(self, scene):
+        """Create input and output connection points"""
+        center_y = self.y + self.height / 2
+        
+        # Input point on left side
+        input_x = self.x - 5
+        self.input_point = ConnectionPoint(input_x, center_y, True, self)
+        scene.addItem(self.input_point)
+        
+        # Output point on right side  
+        output_x = self.x + self.width + 5
+        self.output_point = ConnectionPoint(output_x, center_y, False, self)
+        scene.addItem(self.output_point)
 
 
 class RectangleNodeItem(QGraphicsRectItem, NodeMixin):
     """Rectangle node for EXPOSITION"""
 
     def __init__(self, x, y, width, height, node_data, controller):
-        super().__init__(x, y, width, height)
+        QGraphicsRectItem.__init__(self, x, y, width, height)
         self.init_node_data(x, y, width, height, node_data, controller)
         self.setFlag(QGraphicsRectItem.GraphicsItemFlag.ItemIsSelectable, True)
-        self.setFlag(QGraphicsRectItem.GraphicsItemFlag.ItemIsMovable, True)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.RightButton:
@@ -390,10 +162,9 @@ class CircleNodeItem(QGraphicsEllipseItem, NodeMixin):
     """Circle node for REACTION"""
 
     def __init__(self, x, y, width, height, node_data, controller):
-        super().__init__(x, y, width, height)
+        QGraphicsEllipseItem.__init__(self, x, y, width, height)
         self.init_node_data(x, y, width, height, node_data, controller)
         self.setFlag(QGraphicsEllipseItem.GraphicsItemFlag.ItemIsSelectable, True)
-        self.setFlag(QGraphicsEllipseItem.GraphicsItemFlag.ItemIsMovable, True)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.RightButton:
@@ -418,10 +189,9 @@ class DiamondNodeItem(QGraphicsPolygonItem, NodeMixin):
                 QPointF(x, center_y),  # Left
             ]
         )
-        super().__init__(diamond)
+        QGraphicsPolygonItem.__init__(self, diamond)
         self.init_node_data(x, y, width, height, node_data, controller)
         self.setFlag(QGraphicsPolygonItem.GraphicsItemFlag.ItemIsSelectable, True)
-        self.setFlag(QGraphicsPolygonItem.GraphicsItemFlag.ItemIsMovable, True)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.RightButton:
@@ -456,10 +226,9 @@ class StarNodeItem(QGraphicsPolygonItem, NodeMixin):
             points.append(QPointF(px, py))
 
         star = QPolygonF(points)
-        super().__init__(star)
+        QGraphicsPolygonItem.__init__(self, star)
         self.init_node_data(x, y, width, height, node_data, controller)
         self.setFlag(QGraphicsPolygonItem.GraphicsItemFlag.ItemIsSelectable, True)
-        self.setFlag(QGraphicsPolygonItem.GraphicsItemFlag.ItemIsMovable, True)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.RightButton:
@@ -488,10 +257,9 @@ class HexagonNodeItem(QGraphicsPolygonItem, NodeMixin):
             points.append(QPointF(px, py))
 
         hexagon = QPolygonF(points)
-        super().__init__(hexagon)
+        QGraphicsPolygonItem.__init__(self, hexagon)
         self.init_node_data(x, y, width, height, node_data, controller)
         self.setFlag(QGraphicsPolygonItem.GraphicsItemFlag.ItemIsSelectable, True)
-        self.setFlag(QGraphicsPolygonItem.GraphicsItemFlag.ItemIsMovable, True)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.RightButton:
@@ -513,26 +281,9 @@ class TriangleNodeItem(QGraphicsPolygonItem, NodeMixin):
                 QPointF(x, y + height),  # Bottom left
             ]
         )
-        super().__init__(triangle)
+        QGraphicsPolygonItem.__init__(self, triangle)
         self.init_node_data(x, y, width, height, node_data, controller)
         self.setFlag(QGraphicsPolygonItem.GraphicsItemFlag.ItemIsSelectable, True)
-        self.setFlag(QGraphicsPolygonItem.GraphicsItemFlag.ItemIsMovable, True)
-
-    def get_input_connection_pos(self):
-        """Get absolute position of input connection point for triangle"""
-        node_pos = self.pos()
-        # Left side of triangle (approximate)
-        return QPointF(
-            node_pos.x() - 5, node_pos.y() + self.height * 0.75
-        )  # Lower left
-
-    def get_output_connection_pos(self):
-        """Get absolute position of output connection point for triangle"""
-        node_pos = self.pos()
-        # Right side of triangle (approximate)
-        return QPointF(
-            node_pos.x() + self.width + 5, node_pos.y() + self.height * 0.75
-        )  # Lower right
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.RightButton:
@@ -750,10 +501,11 @@ class DeleteNodeButton(QGraphicsPathItem):
         super().hoverLeaveEvent(event)
 
 
-class MainWindowController:
+class MainWindowController(QObject):
     """Controller for the main window"""
 
     def __init__(self, view: MainView, model: BaseModel):
+        super().__init__()
         self.view = view
         self.model = model
         self.current_storyline_id = 1  # Default to storyline 1
@@ -763,7 +515,6 @@ class MainWindowController:
         self.current_foreign_keys = {}
         self.edit_form_widgets = {}
         self.add_form_widgets = {}
-        self.connection_lines = []  # Store connection lines for updates
 
         # --- Set up Lorekeeper models ---
         self.db_tree_model = QStandardItemModel()
@@ -775,13 +526,16 @@ class MainWindowController:
         self.node_scene = QGraphicsScene()
         self.view.ui.nodeGraphView.setScene(self.node_scene)
 
-        # Enable context menu on graphics view
+        # Enable zoom and pan functionality
+        self.setup_graphics_view_navigation()
+
+        # Disable context menu on graphics view (using right-click for panning)
         self.view.ui.nodeGraphView.setContextMenuPolicy(
-            Qt.ContextMenuPolicy.CustomContextMenu
+            Qt.ContextMenuPolicy.NoContextMenu
         )
-        self.view.ui.nodeGraphView.customContextMenuRequested.connect(
-            self.on_litographer_context_menu
-        )
+        
+        # Set up double-click to add nodes
+        self.view.ui.nodeGraphView.mouseDoubleClickEvent = self.on_graphics_view_double_click
 
         # --- Set up node editing side panel ---
         self.setup_node_editing_panel()
@@ -789,6 +543,10 @@ class MainWindowController:
         self.current_plot_section_id = None
         self.current_plot_id = 1  # Default to first plot
         self.section_tab_ids = []  # Store section IDs corresponding to tab indices
+        
+        # --- Set up new node system ---
+        self.connection_start_point = None
+        self.current_node_type = NodeType.OTHER
 
         # --- Set up backup system ---
         import os
@@ -832,6 +590,53 @@ class MainWindowController:
             return True
         except Exception as e:
             return False
+
+    def setup_graphics_view_navigation(self):
+        """Enable zoom functionality for the node graphics view"""
+        graphics_view = self.view.ui.nodeGraphView
+        
+        # Set interactive mode for node interaction
+        graphics_view.setInteractive(True)
+        
+        # Enable transformations (zoom only)
+        graphics_view.setTransformationAnchor(graphics_view.ViewportAnchor.AnchorUnderMouse)
+        graphics_view.setResizeAnchor(graphics_view.ViewportAnchor.AnchorUnderMouse)
+        
+        # Enable scroll bars for navigation
+        graphics_view.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        graphics_view.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        
+        # Install event filter for mouse wheel zoom only
+        graphics_view.installEventFilter(self)
+
+    def eventFilter(self, a0, a1):
+        """Handle mouse wheel events for zooming"""
+        graphics_view = self.view.ui.nodeGraphView
+        if a0 != graphics_view:
+            return super().eventFilter(a0, a1)
+        
+        event_type = a1.type()
+        
+        # Handle mouse wheel for zooming
+        if event_type == QEvent.Type.Wheel:
+            wheel_event = a1
+            if isinstance(wheel_event, QWheelEvent):
+                # Zoom factor
+                zoom_in_factor = 1.25
+                zoom_out_factor = 1 / zoom_in_factor
+                
+                # Set zoom factor based on wheel direction
+                if wheel_event.angleDelta().y() > 0:
+                    zoom_factor = zoom_in_factor
+                else:
+                    zoom_factor = zoom_out_factor
+                
+                # Apply zoom
+                graphics_view.scale(zoom_factor, zoom_factor)
+                
+                return True
+        
+        return super().eventFilter(a0, a1)
 
     def setup_node_editing_panel(self):
         """Create the node editing side panel"""
@@ -878,49 +683,12 @@ class MainWindowController:
             node_info_layout.addRow("Node Type:", self.node_type_combo)
             node_info_layout.addRow("Height (Tension):", self.node_height_spin)
 
-            # Connections section
-            connections_group = QGroupBox("Connections")
-            connections_layout = QVBoxLayout(connections_group)
+            # Connections section (new system shows connection info in status bar)
+            connections_group = QGroupBox("Plot Section")
+            connections_layout = QFormLayout(connections_group)
 
-            # Instructions
-            instructions_label = QLabel(
-                "Drag from red output points to green input points to connect nodes."
-            )
-            instructions_label.setWordWrap(True)
-            instructions_label.setStyleSheet(
-                "color: #888888; font-size: 10px; padding: 5px;"
-            )
-            connections_layout.addWidget(instructions_label)
-
-            # Input connections list
-            input_label = QLabel("Input Connections:")
-            input_label.setStyleSheet("font-weight: bold; color: #4CAF50;")
-            connections_layout.addWidget(input_label)
-
-            self.input_connections_list = QListWidget()
-            self.input_connections_list.setMaximumHeight(80)
-            connections_layout.addWidget(self.input_connections_list)
-
-            # Output connections list
-            output_label = QLabel("Output Connections:")
-            output_label.setStyleSheet("font-weight: bold; color: #FF5722;")
-            connections_layout.addWidget(output_label)
-
-            self.output_connections_list = QListWidget()
-            self.output_connections_list.setMaximumHeight(80)
-            connections_layout.addWidget(self.output_connections_list)
-
-            # Section selector (keep this)
-            section_form_layout = QFormLayout()
             self.section_combo = QComboBox()
-            section_form_layout.addRow("Plot Section:", self.section_combo)
-            connections_layout.addLayout(section_form_layout)
-
-            # Keep the old combos for backward compatibility with existing save logic
-            self.previous_node_combo = QComboBox()
-            self.next_node_combo = QComboBox()
-            self.previous_node_combo.hide()  # Hide them from UI
-            self.next_node_combo.hide()
+            connections_layout.addRow("Plot Section:", self.section_combo)
 
             # Notes section
             notes_group = QGroupBox("Notes")
@@ -1171,8 +939,8 @@ class MainWindowController:
         self.node_type_combo.setCurrentText(node_data.node_type.value)
         self.node_height_spin.setValue(node_data.node_height)
 
-        # Populate connection combos
-        self.populate_connection_combos(node_data)
+        # Show current connections (new system)
+        self.show_node_connections(node_data)
 
         # Populate section combo
         self.populate_section_combo(node_data)
@@ -1180,79 +948,27 @@ class MainWindowController:
         # Load notes for this node
         self.load_notes_for_node(node_data.id)
 
-    def populate_connection_combos(self, current_node):
-        """Populate connection lists with current connections"""
-        # Clear the connection lists
-        self.input_connections_list.clear()
-        self.output_connections_list.clear()
-
-        # Get all nodes for reference
-        all_nodes = self.model.get_litography_nodes(
-            storyline_id=self.current_storyline_id
-        )
-        nodes_dict = {node.id: node for node in all_nodes}
-
-        # Get current connections from database
-        with Session(self.model.engine) as session:
-            # Get input connections (where this node is the input)
-            input_connections = (
-                session.query(NodeConnection)
-                .filter_by(input_node_id=current_node.id)
-                .all()
-            )
-
-            # Get output connections (where this node is the output)
-            output_connections = (
-                session.query(NodeConnection)
-                .filter_by(output_node_id=current_node.id)
-                .all()
-            )
-
-            # Populate input connections list
-            for conn in input_connections:
-                if conn.output_node_id in nodes_dict:
-                    source_node = nodes_dict[conn.output_node_id]
-                    display_text = (
-                        f"← Node {source_node.id} ({source_node.node_type.value})"
-                    )
-                    self.input_connections_list.addItem(display_text)
-
-            # Populate output connections list
-            for conn in output_connections:
-                if conn.input_node_id in nodes_dict:
-                    target_node = nodes_dict[conn.input_node_id]
-                    display_text = (
-                        f"→ Node {target_node.id} ({target_node.node_type.value})"
-                    )
-                    self.output_connections_list.addItem(display_text)
-
-            # Update hidden combos for backward compatibility with save logic
-            self.previous_node_combo.clear()
-            self.next_node_combo.clear()
-            self.previous_node_combo.addItem("None", None)
-            self.next_node_combo.addItem("None", None)
-
-            # Add all other nodes to hidden combos
-            for node in all_nodes:
-                if node.id != current_node.id:
-                    display_text = f"Node {node.id} ({node.node_type.value})"
-                    self.previous_node_combo.addItem(display_text, node.id)
-                    self.next_node_combo.addItem(display_text, node.id)
-
-            # Set first connection in hidden combos for compatibility
-            if input_connections:
-                first_input = input_connections[0].output_node_id
-                for i in range(self.previous_node_combo.count()):
-                    if self.previous_node_combo.itemData(i) == first_input:
-                        self.previous_node_combo.setCurrentIndex(i)
-                        break
-
-            if output_connections:
-                first_output = output_connections[0].input_node_id
-                for i in range(self.next_node_combo.count()):
-                    if self.next_node_combo.itemData(i) == first_output:
-                        self.next_node_combo.setCurrentIndex(i)
-                        break
+    def show_node_connections(self, current_node):
+        """Show connections for the current node (new system)"""
+        try:
+            with Session(self.model.engine) as session:
+                # Get outgoing connections (this node as output)
+                outgoing = session.query(NodeConnection).filter_by(output_node_id=current_node.id).all()
+                
+                # Get incoming connections (this node as input)
+                incoming = session.query(NodeConnection).filter_by(input_node_id=current_node.id).all()
+                
+                # Update status to show connection info
+                out_count = len(outgoing)
+                in_count = len(incoming)
+                connection_info = f"Connections: {in_count} inputs, {out_count} outputs"
+                
+                # Update the status bar or node info if available
+                if hasattr(self.view.ui, 'statusbar'):
+                    self.view.ui.statusbar.showMessage(connection_info, 3000)
+                    
+        except Exception as e:
+            print(f"Error showing node connections: {e}")
 
     def populate_section_combo(self, current_node):
         """Populate the plot section combo box"""
@@ -1295,17 +1011,6 @@ class MainWindowController:
         except Exception as e:
             print(f"Error populating section combo: {e}")
 
-    def get_node_ui_position(self, node_id):
-        """Get the current UI position of a node from the graphics scene"""
-        for item in self.node_scene.items():
-            if hasattr(item, "node_data") and item.node_data.id == node_id:
-                pos = item.pos()
-                return float(pos.x()), float(pos.y())
-        # Fallback to database position
-        return getattr(self.selected_node, "x_position", 100), getattr(
-            self.selected_node, "y_position", 200
-        )
-
     def on_save_node_changes(self):
         """Save changes to the selected node"""
         if not self.selected_node:
@@ -1315,57 +1020,30 @@ class MainWindowController:
             # Get values from the form
             new_type = self.node_type_combo.currentData()
             new_height = self.node_height_spin.value()
-            new_previous = self.previous_node_combo.currentData()
-            new_next = self.next_node_combo.currentData()
-            # Get section ID from combo index
-            section_index = self.section_combo.currentIndex()
-            new_section = (
-                self.section_combo_sections[section_index].id
-                if section_index >= 0
-                and hasattr(self, "section_combo_sections")
-                and section_index < len(self.section_combo_sections)
-                else None
-            )
+            
+            # Get section ID from combo index (if section combo exists)
+            new_section = None
+            if hasattr(self, 'section_combo'):
+                section_index = self.section_combo.currentIndex()
+                new_section = (
+                    self.section_combo_sections[section_index].id
+                    if section_index >= 0
+                    and hasattr(self, "section_combo_sections")
+                    and section_index < len(self.section_combo_sections)
+                    else None
+                )
 
-            # Get current UI position to preserve it
-            current_x, current_y = self.get_node_ui_position(self.selected_node.id)
-
-            # Update the node with new schema (no previous_node/next_node)
+            # Update the node (keep existing position)
             update_data = {
                 "id": self.selected_node.id,
                 "node_type": new_type.value if new_type else None,
                 "node_height": new_height,
-                "x_position": current_x,
-                "y_position": current_y,
+                "x_position": getattr(self.selected_node, 'x_position', 100),
+                "y_position": getattr(self.selected_node, 'y_position', 200),
                 "storyline_id": self.current_storyline_id,
             }
 
             self.model.update_row("litography_node", update_data)
-
-            # Handle connections separately using the new system
-            with Session(self.model.engine) as session:
-                current_node_id = self.selected_node.id
-
-                # Clear existing connections for this node
-                session.query(NodeConnection).filter(
-                    (NodeConnection.output_node_id == current_node_id)
-                    | (NodeConnection.input_node_id == current_node_id)
-                ).delete()
-
-                # Add new connections based on combo box selection
-                if new_previous:
-                    new_conn = NodeConnection(
-                        output_node_id=new_previous, input_node_id=current_node_id
-                    )
-                    session.add(new_conn)
-
-                if new_next:
-                    new_conn = NodeConnection(
-                        output_node_id=current_node_id, input_node_id=new_next
-                    )
-                    session.add(new_conn)
-
-                session.commit()
 
             # Handle section change if needed
             if new_section:
@@ -1389,19 +1067,11 @@ class MainWindowController:
             # Delete the node and its notes using SQLAlchemy directly since BaseModel doesn't have delete_row
 
             with Session(self.model.engine) as session:
-                node_id = self.selected_node.id
-
-                # First delete all connections involving this node
-                session.query(NodeConnection).filter(
-                    (NodeConnection.output_node_id == node_id)
-                    | (NodeConnection.input_node_id == node_id)
-                ).delete()
-
-                # Delete all notes associated with this node
+                # First delete all notes associated with this node
                 notes_to_delete = (
                     session.query(LitographyNotes)
                     .filter_by(
-                        linked_node_id=node_id,
+                        linked_node_id=self.selected_node.id,
                         storyline_id=self.current_storyline_id,
                     )
                     .all()
@@ -1413,7 +1083,9 @@ class MainWindowController:
                 # Then find and delete the node
                 node_to_delete = (
                     session.query(LitographyNode)
-                    .filter_by(id=node_id, storyline_id=self.current_storyline_id)
+                    .filter_by(
+                        id=self.selected_node.id, storyline_id=self.current_storyline_id
+                    )
                     .first()
                 )
 
@@ -1421,8 +1093,7 @@ class MainWindowController:
                     session.delete(node_to_delete)
                     session.commit()
                     self.view.ui.statusbar.showMessage(
-                        "Node, connections, and associated notes deleted successfully",
-                        3000,
+                        "Node and associated notes deleted successfully", 3000
                     )
                 else:
                     self.view.ui.statusbar.showMessage("Node not found", 3000)
@@ -1437,17 +1108,44 @@ class MainWindowController:
             self.view.ui.statusbar.showMessage(f"Error deleting node: {e}", 5000)
 
     def on_add_node_button_clicked(self, position_type, reference_node_id):
-        """Handle clicking '+' button to add a node (simplified for new Blender-style system)"""
+        """Handle clicking '+' button - now redirects to double-click method"""
+        # Old add button functionality is disabled - use double-click instead
+        self.view.ui.statusbar.showMessage("Use double-click to add nodes", 2000)
+        return
         try:
-            # In the new Blender-style system, nodes are added independently
-            # and connected via visual connection points later
+            # First validate UI and database are in sync
+            self.validate_ui_database_sync()
 
-            # Determine position based on reference node or default
-            x_pos = 100.0
-            y_pos = 200.0
+            # Import the NodeType enum
 
-            if reference_node_id:
-                # Find the reference node to position near it
+            # Create new node data with default values
+            new_node_data = {
+                "node_type": NodeType.OTHER.value,  # Use the enum value
+                "node_height": 0.5,
+                "storyline_id": self.current_storyline_id,
+                "previous_node": None,
+                "next_node": None,
+            }
+
+            # Handle starting the first node
+            if position_type == "start":
+                # Just add a standalone node
+                self.model.add_row("litography_node", new_node_data)
+
+                # Get the newly created node and add to current section
+                if self.current_plot_section_id:
+                    all_nodes_after = self.model.get_litography_nodes(
+                        storyline_id=self.current_storyline_id
+                    )
+                    new_node = max(all_nodes_after, key=lambda n: n.id)
+                    self.add_node_to_section(new_node.id, self.current_plot_section_id)
+
+                self.view.ui.statusbar.showMessage("Added first node", 3000)
+                self.load_and_draw_nodes()
+                return
+
+            if position_type == "before" and reference_node_id:
+                # Find the reference node
                 all_nodes = self.model.get_litography_nodes(
                     storyline_id=self.current_storyline_id
                 )
@@ -1455,48 +1153,106 @@ class MainWindowController:
                     (n for n in all_nodes if n.id == reference_node_id), None
                 )
 
+                if not reference_node:
+                    self.view.ui.statusbar.showMessage(
+                        "Reference node no longer exists", 3000
+                    )
+                    self.load_and_draw_nodes()
+                    return
+
                 if reference_node:
-                    ref_x = getattr(reference_node, "x_position", 100)
-                    ref_y = getattr(reference_node, "y_position", 200)
+                    # Set connections: new_node -> reference_node
+                    new_node_data["next_node"] = reference_node_id
+                    if reference_node.previous_node:
+                        new_node_data["previous_node"] = reference_node.previous_node
+                        # Update the old previous node to point to new node
+                        old_previous_data = {
+                            "id": reference_node.previous_node,
+                            "next_node": None,  # Will be set after we create the new node
+                            "storyline_id": self.current_storyline_id,
+                        }
 
-                    # Position new node relative to reference
-                    if position_type == "before":
-                        x_pos = ref_x - 150  # To the left
-                        y_pos = ref_y
-                    elif position_type == "after":
-                        x_pos = ref_x + 150  # To the right
-                        y_pos = ref_y
-                    else:  # "start" or default
-                        x_pos = ref_x
-                        y_pos = ref_y + 100  # Below
+            elif position_type == "after" and reference_node_id:
+                # Find the reference node
+                all_nodes = self.model.get_litography_nodes(
+                    storyline_id=self.current_storyline_id
+                )
+                reference_node = next(
+                    (n for n in all_nodes if n.id == reference_node_id), None
+                )
 
-            # Create new node data with new schema
-            new_node_data = {
-                "node_type": NodeType.OTHER.value,
-                "node_height": 0.5,
-                "storyline_id": self.current_storyline_id,
-                "x_position": x_pos,
-                "y_position": y_pos,
-            }
+                if not reference_node:
+                    self.view.ui.statusbar.showMessage(
+                        "Reference node no longer exists", 3000
+                    )
+                    self.load_and_draw_nodes()
+                    return
+
+                if reference_node:
+                    # Set connections: reference_node -> new_node
+                    new_node_data["previous_node"] = reference_node_id
+                    if reference_node.next_node:
+                        new_node_data["next_node"] = reference_node.next_node
 
             # Add the new node to database
             self.model.add_row("litography_node", new_node_data)
 
+            # Get the newly created node to get its ID
+            all_nodes_after = self.model.get_litography_nodes(
+                storyline_id=self.current_storyline_id
+            )
+            new_node = max(
+                all_nodes_after, key=lambda n: n.id
+            )  # Get the node with highest ID (newest)
+
             # Add to current section if we have one
             if self.current_plot_section_id:
-                all_nodes_after = self.model.get_litography_nodes(
-                    storyline_id=self.current_storyline_id
-                )
-                new_node = max(all_nodes_after, key=lambda n: n.id)
                 self.add_node_to_section(new_node.id, self.current_plot_section_id)
 
+            # Update connections in existing nodes
+            if position_type == "before" and reference_node_id:
+                # Update reference node to point back to new node
+                reference_update = {
+                    "id": reference_node_id,
+                    "previous_node": new_node.id,
+                    "storyline_id": self.current_storyline_id,
+                }
+                self.model.update_row("litography_node", reference_update)
+
+                # Update old previous node if it exists
+                if reference_node and reference_node.previous_node:
+                    old_previous_update = {
+                        "id": reference_node.previous_node,
+                        "next_node": new_node.id,
+                        "storyline_id": self.current_storyline_id,
+                    }
+                    self.model.update_row("litography_node", old_previous_update)
+
+            elif position_type == "after" and reference_node_id:
+                # Update reference node to point to new node
+                reference_update = {
+                    "id": reference_node_id,
+                    "next_node": new_node.id,
+                    "storyline_id": self.current_storyline_id,
+                }
+                self.model.update_row("litography_node", reference_update)
+
+                # Update old next node if it exists
+                if reference_node and reference_node.next_node:
+                    old_next_update = {
+                        "id": reference_node.next_node,
+                        "previous_node": new_node.id,
+                        "storyline_id": self.current_storyline_id,
+                    }
+                    self.model.update_row("litography_node", old_next_update)
+
             self.view.ui.statusbar.showMessage(
-                "Added new node - use connection points to link nodes", 3000
+                f"Added new node {position_type} existing node", 3000
             )
             self.load_and_draw_nodes()
 
         except Exception as e:
-            print(f"Error adding node: {e}")
+            print(f"Error adding connected node: {e}")
             self.view.ui.statusbar.showMessage(f"Error adding node: {e}", 5000)
 
     def on_node_context_menu(self, node_data, position):
@@ -2005,31 +1761,41 @@ class MainWindowController:
     def on_delete_node_button_clicked(self, node_id):
         """Handle clicking '-' button to delete a node"""
         try:
-            # First validate UI and database are in sync
-            self.validate_ui_database_sync()
-
-            # Debug: Check what nodes actually exist in database
-            all_db_nodes = self.model.get_litography_nodes(
-                storyline_id=self.current_storyline_id
-            )
-            existing_ids = [n.id for n in all_db_nodes]
-
-            # First verify the node exists in the database directly
-
+            # Delete all connections involving this node
             with Session(self.model.engine) as session:
-                node_to_delete_db = (
-                    session.query(LitographyNode)
-                    .filter_by(id=node_id, storyline_id=self.current_storyline_id)
-                    .first()
-                )
+                # Delete incoming connections
+                session.query(NodeConnection).filter_by(input_node_id=node_id).delete()
+                # Delete outgoing connections
+                session.query(NodeConnection).filter_by(output_node_id=node_id).delete()
+                session.commit()
 
-                if not node_to_delete_db:
-                    self.view.ui.statusbar.showMessage(
-                        f"Node {node_id} no longer exists, refreshing...", 3000
-                    )
-                    # Force refresh the display since the node is gone
-                    self.load_and_draw_nodes()
-                    return
+            # Delete the node itself
+            with Session(self.model.engine) as session:
+                node_to_delete = session.get(LitographyNode, node_id)
+                if node_to_delete:
+                    session.delete(node_to_delete)
+                    session.commit()
+            
+            self.view.ui.statusbar.showMessage("Node deleted", 3000)
+            self.load_and_draw_nodes()
+
+        except Exception as e:
+            print(f"Error deleting node: {e}")
+            self.view.ui.statusbar.showMessage(f"Error deleting node: {e}", 5000)
+
+    def connect_signals(self):
+            session.query(LitographyNode)
+                .filter_by(id=node_id, storyline_id=self.current_storyline_id)
+                .first()
+            )
+
+            if not node_to_delete_db:
+                self.view.ui.statusbar.showMessage(
+                    f"Node {node_id} no longer exists, refreshing...", 3000
+                )
+                # Force refresh the display since the node is gone
+                self.load_and_draw_nodes()
+                return
 
             # Get fresh node data to understand its connections
             all_nodes = self.model.get_litography_nodes(
@@ -2044,19 +1810,65 @@ class MainWindowController:
                 self.load_and_draw_nodes()
                 return
 
-            # In the new schema, we just need to delete connections involving this node
-            # No need to update other nodes since connections are separate entities
+            # Update connections: connect previous and next nodes directly
+            # First verify that the connected nodes actually exist
+            all_current_nodes = self.model.get_litography_nodes(
+                storyline_id=self.current_storyline_id
+            )
+            existing_node_ids = {n.id for n in all_current_nodes}
+
+            # Only update connections if the referenced nodes actually exist
+            if (
+                node_to_delete.previous_node
+                and node_to_delete.previous_node in existing_node_ids
+                and node_to_delete.next_node
+                and node_to_delete.next_node in existing_node_ids
+            ):
+                # Connect previous -> next (bypass the deleted node)
+                previous_update = {
+                    "id": node_to_delete.previous_node,
+                    "next_node": node_to_delete.next_node,
+                    "storyline_id": self.current_storyline_id,
+                }
+                self.model.update_row("litography_node", previous_update)
+
+                next_update = {
+                    "id": node_to_delete.next_node,
+                    "previous_node": node_to_delete.previous_node,
+                    "storyline_id": self.current_storyline_id,
+                }
+                self.model.update_row("litography_node", next_update)
+
+            elif (
+                node_to_delete.previous_node
+                and node_to_delete.previous_node in existing_node_ids
+            ):
+                # Only has valid previous node - disconnect it
+                previous_update = {
+                    "id": node_to_delete.previous_node,
+                    "next_node": None,
+                    "storyline_id": self.current_storyline_id,
+                }
+                self.model.update_row("litography_node", previous_update)
+
+            elif (
+                node_to_delete.next_node
+                and node_to_delete.next_node in existing_node_ids
+            ):
+                # Only has valid next node - disconnect it
+                next_update = {
+                    "id": node_to_delete.next_node,
+                    "previous_node": None,
+                    "storyline_id": self.current_storyline_id,
+                }
+                self.model.update_row("litography_node", next_update)
+            else:
+                pass  # No valid connections to update
 
             # Delete the node and its associated notes from database
 
             with Session(self.model.engine) as session:
-                # First delete all connections involving this node
-                session.query(NodeConnection).filter(
-                    (NodeConnection.output_node_id == node_id)
-                    | (NodeConnection.input_node_id == node_id)
-                ).delete()
-
-                # Delete all notes associated with this node
+                # First delete all notes associated with this node
                 notes_to_delete = (
                     session.query(LitographyNotes)
                     .filter_by(
@@ -2079,8 +1891,7 @@ class MainWindowController:
                     session.delete(node_to_delete_db)
                     session.commit()
                     self.view.ui.statusbar.showMessage(
-                        "Node, connections, and associated notes deleted successfully",
-                        3000,
+                        "Node and associated notes deleted successfully", 3000
                     )
                 else:
                     self.view.ui.statusbar.showMessage(
@@ -2619,24 +2430,6 @@ class MainWindowController:
         except Exception as e:
             print(f"Error moving node to section: {e}")
 
-    def add_node_at_position(self, x, y, node_type):
-        """Add a node at specific coordinates (for testing and programmatic use)"""
-        new_node_data = {
-            "node_type": node_type,
-            "node_height": 0.5,  # Default height
-            "x_position": x,
-            "y_position": y,
-            "storyline_id": self.current_storyline_id,
-        }
-
-        try:
-            self.model.add_row("litography_node", new_node_data)
-            self.load_and_draw_nodes()
-            return True
-        except Exception as e:
-            print(f"Error adding node at position: {e}")
-            return False
-
     def on_add_node_clicked(self):
         """Handles the 'Add Node' action by opening a dialog."""
         dialog = AddNodeDialog(self.view)
@@ -2666,8 +2459,9 @@ class MainWindowController:
                 self.view.ui.statusbar.showMessage(f"Error: {e}", 5000)
 
     def load_and_draw_nodes(self):
-        """Fetches node data from the model and draws them using stored positions."""
+        """Fetches node data from the model and draws them on the scene with connection points."""
         self.node_scene.clear()
+        self.connection_start_point = None
 
         # Get nodes filtered by current plot section
         if self.current_plot_section_id:
@@ -2692,18 +2486,20 @@ class MainWindowController:
 
         # Draw nodes at their stored positions
         for node in all_nodes:
-            x_pos = getattr(node, "x_position", 100 + (node.id * 150))
-            y_pos = getattr(node, "y_position", 200)
+            x_pos = getattr(node, 'x_position', 100 + (node.id * 150))
+            y_pos = getattr(node, 'y_position', 200)
 
             # Get color based on node type
             node_color = node_colors.get(node.node_type.name, node_colors["OTHER"])
 
             # Create the appropriate shape based on node type
-            node_item = create_node_item(0, 0, 80, 80, node, self)  # Create at origin
+            node_item = create_node_item(x_pos, y_pos, 80, 80, node, self)
             node_item.setBrush(QBrush(QColor(node_color)))
             node_item.setPen(QPen(QColor("#333333"), 2))
             self.node_scene.addItem(node_item)
-            node_item.setPos(x_pos, y_pos)  # Position after adding to scene
+
+            # Create connection points
+            node_item.create_connection_points(self.node_scene)
 
             # Add note indicator if node has notes
             if self.node_has_notes(node.id):
@@ -2712,80 +2508,109 @@ class MainWindowController:
                 note_indicator.setFont(QFont("Arial", 12))
                 self.node_scene.addItem(note_indicator)
 
-        # Draw connections using new system
+        # Draw connections
         self.draw_connections(all_nodes)
 
     def draw_connections(self, nodes):
         """Draw connections between nodes using the new NodeConnection system"""
-        try:
-            # Clear existing connection lines
-            self.connection_lines = []
+        with Session(self.model.engine) as session:
+            connections = session.query(NodeConnection).join(
+                LitographyNode, NodeConnection.output_node_id == LitographyNode.id
+            ).filter(LitographyNode.storyline_id == self.current_storyline_id).all()
+            
+            for connection in connections:
+                output_node = next((n for n in nodes if n.id == connection.output_node_id), None)
+                input_node = next((n for n in nodes if n.id == connection.input_node_id), None)
+                
+                if output_node and input_node:
+                    # Get node positions
+                    output_x = getattr(output_node, 'x_position', 100 + (output_node.id * 150))
+                    output_y = getattr(output_node, 'y_position', 200)
+                    
+                    input_x = getattr(input_node, 'x_position', 100 + (input_node.id * 150))
+                    input_y = getattr(input_node, 'y_position', 200)
+                    
+                    # Connection points are at the edges
+                    start_x = output_x + 85  # Right edge + 5 for connection point
+                    start_y = output_y + 40  # Center
+                    end_x = input_x - 5      # Left edge - 5 for connection point
+                    end_y = input_y + 40     # Center
+                    
+                    # Draw connection line
+                    line_item = QGraphicsLineItem(start_x, start_y, end_x, end_y)
+                    line_item.setPen(QPen(QColor("#FFFFFF"), 2))
+                    self.node_scene.addItem(line_item)
 
-            with Session(self.model.engine) as session:
-                connections = (
-                    session.query(NodeConnection)
-                    .join(
-                        LitographyNode,
-                        NodeConnection.output_node_id == LitographyNode.id,
+    def start_connection(self, connection_point):
+        """Start dragging a connection from an output point"""
+        if not connection_point.is_input:  # Only start from output points
+            self.connection_start_point = connection_point
+            
+    def end_connection(self, connection_point):
+        """End dragging a connection to an input point"""
+        if (self.connection_start_point and 
+            connection_point.is_input and 
+            connection_point.node_item.node_data.id != self.connection_start_point.node_item.node_data.id):
+            
+            # Create new connection in database
+            try:
+                with Session(self.model.engine) as session:
+                    new_connection = NodeConnection(
+                        output_node_id=self.connection_start_point.node_item.node_data.id,
+                        input_node_id=connection_point.node_item.node_data.id
                     )
-                    .filter(LitographyNode.storyline_id == self.current_storyline_id)
-                    .all()
-                )
+                    session.add(new_connection)
+                    session.commit()
+                    
+                self.load_and_draw_nodes()  # Refresh the display
+                self.view.ui.statusbar.showMessage("Connection created", 2000)
+                
+            except Exception as e:
+                self.view.ui.statusbar.showMessage(f"Error creating connection: {e}", 5000)
+        
+        self.connection_start_point = None
 
-                # Find node items in the scene
-                node_items = {}
-                for item in self.node_scene.items():
-                    if hasattr(item, "node_data") and hasattr(
-                        item, "get_output_connection_pos"
-                    ):
-                        node_items[item.node_data.id] = item
-
-                for connection in connections:
-                    output_item = node_items.get(connection.output_node_id)
-                    input_item = node_items.get(connection.input_node_id)
-
-                    if output_item and input_item:
-                        # Get connection points from the actual node items
-                        start_pos = output_item.get_output_connection_pos()
-                        end_pos = input_item.get_input_connection_pos()
-
-                        # Create connection line
-                        line_item = QGraphicsLineItem(
-                            start_pos.x(), start_pos.y(), end_pos.x(), end_pos.y()
-                        )
-                        line_item.setPen(QPen(QColor("#FFFFFF"), 2))
-                        line_item.setZValue(1)  # Behind nodes but above background
-
-                        # Store connection info for updates
-                        line_item.output_item = output_item
-                        line_item.input_item = input_item
-
-                        self.node_scene.addItem(line_item)
-                        self.connection_lines.append(line_item)
-
-        except Exception as e:
-            print(f"Error drawing connections: {e}")
-
-    def update_all_connections(self):
-        """Update all connection line positions"""
+    def add_node_at_position(self, x, y, node_type=None):
+        """Add a new node at the specified position"""
         try:
-            for line_item in getattr(self, "connection_lines", []):
-                if hasattr(line_item, "output_item") and hasattr(
-                    line_item, "input_item"
-                ):
-                    start_pos = line_item.output_item.get_output_connection_pos()
-                    end_pos = line_item.input_item.get_input_connection_pos()
-
-                    line_item.setLine(
-                        start_pos.x(), start_pos.y(), end_pos.x(), end_pos.y()
-                    )
+            if not node_type:
+                node_type = NodeType.OTHER
+                
+            new_node_data = {
+                "node_type": node_type.value,
+                "node_height": 0.5,
+                "x_position": x,
+                "y_position": y,
+                "storyline_id": self.current_storyline_id,
+            }
+            
+            self.model.add_row("litography_node", new_node_data)
+            self.load_and_draw_nodes()
+            self.view.ui.statusbar.showMessage(f"Added {node_type.value} node", 2000)
+            
         except Exception as e:
-            print(f"Error updating connections: {e}")
+            self.view.ui.statusbar.showMessage(f"Error adding node: {e}", 5000)
 
-    def order_nodes_by_links(self, nodes):
-        """Order nodes using new connection system (no specific order needed)."""
-        # In the new system, nodes don't need specific ordering since they're positioned manually
-        return nodes
+    def setup_node_toolbox(self):
+        """Create a toolbox with buttons for different node types"""
+        if hasattr(self.view.ui, 'nodeToolBox'):
+            toolbox = self.view.ui.nodeToolBox
+            toolbox.clear()
+            
+            for node_type in NodeType:
+                button = QPushButton(node_type.value)
+                button.clicked.connect(lambda checked, nt=node_type: self.set_current_node_type(nt))
+                toolbox.addWidget(button)
+    
+    def set_current_node_type(self, node_type):
+        """Set the currently selected node type for placement"""
+        self.current_node_type = node_type
+        self.view.ui.statusbar.showMessage(f"Selected: {node_type.value}", 2000)
+
+    def on_graphics_view_double_click(self, event):
+        """Handle double-click on graphics view to add new node"""
+        scene_pos = self.view.ui.nodeGraphView.mapToScene(event.pos())
+        self.add_node_at_position(scene_pos.x(), scene_pos.y(), self.current_node_type)
 
     # --- Lorekeeper Methods ---
 
