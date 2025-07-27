@@ -108,7 +108,7 @@ class NewLorekeeperPage(QWidget):
         layout = QVBoxLayout()
 
         # Welcome message
-        welcome_label = QLabel("Welcome to the World Builder")
+        welcome_label = QLabel("Welcome to the Lorekeeper")
         font = QFont()
         font.setPointSize(20)
         font.setBold(True)

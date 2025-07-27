@@ -20,10 +20,11 @@ from storymaster.model.lorekeeper.entity_mappings import get_entity_mapping
 class EntitySelectionDialog(QDialog):
     """Dialog for selecting entities to add to relationships"""
 
-    def __init__(self, relationship_type: str, model_adapter, parent=None):
+    def __init__(self, relationship_type: str, model_adapter, current_entity=None, parent=None):
         super().__init__(parent)
         self.relationship_type = relationship_type
         self.model_adapter = model_adapter
+        self.current_entity = current_entity
         self.selected_entity = None
         self.entities = []
         self.setup_ui()
@@ -94,31 +95,125 @@ class EntitySelectionDialog(QDialog):
         self.populate_list(self.entities)
 
     def get_target_tables_for_relationship(self) -> list:
-        """Get the target entity types for this relationship"""
-        # Mapping of relationship types to target entity types
+        """Get the target entity types for this relationship based on current entity"""
+        if not self.current_entity:
+            # Fallback to old static mapping if no current entity
+            return self._get_static_target_tables()
+        
+        current_entity_type = self.current_entity.__class__.__name__
+        
+        # Dynamic mapping based on current entity type and relationship
+        if self.relationship_type == "actor_a_on_b_relations":
+            return ["actor"]  # Always show other actors
+        elif self.relationship_type == "faction_members":
+            if current_entity_type == "Actor":
+                return ["faction"]  # Character joining organizations
+            elif current_entity_type == "Faction":
+                return ["actor"]  # Organization gaining members
+        elif self.relationship_type == "residents":
+            if current_entity_type == "Actor":
+                return ["location_"]  # Character living in places
+            elif current_entity_type == "Location":
+                return ["actor"]  # Location gaining residents
+        elif self.relationship_type == "object_to_owner":
+            if current_entity_type == "Actor":
+                return ["object_"]  # Character owning objects
+            elif current_entity_type == "Object_":
+                return ["actor"]  # Object being owned by characters
+        elif self.relationship_type == "location_to_faction":
+            if current_entity_type == "Location":
+                return ["faction"]  # Location controlled by factions
+            elif current_entity_type == "Faction":
+                return ["location_"]  # Faction controlling locations
+        elif self.relationship_type == "actor_to_skills":
+            if current_entity_type == "Actor":
+                return ["skills"]  # Character learning skills
+            elif current_entity_type == "Skills":
+                return ["actor"]  # Skill known by characters
+        elif self.relationship_type == "actor_to_race":
+            if current_entity_type == "Actor":
+                return ["race"]  # Character having heritage
+            elif current_entity_type == "Race":
+                return ["actor"]  # Heritage belonging to characters
+        elif self.relationship_type == "actor_to_class":
+            if current_entity_type == "Actor":
+                return ["class"]  # Character having professions
+            elif current_entity_type == "Class_":
+                return ["actor"]  # Profession practiced by characters
+        elif self.relationship_type == "actor_to_stat":
+            if current_entity_type == "Actor":
+                return ["stat"]  # Character having stats
+            elif current_entity_type == "Stat":
+                return ["actor"]  # Stat belonging to characters
+        elif self.relationship_type == "history_actor":
+            if current_entity_type == "Actor":
+                return ["history"]  # Character involved in events
+            elif current_entity_type == "History":
+                return ["actor"]  # Event involving characters
+        elif self.relationship_type == "history_location":
+            if current_entity_type == "Location":
+                return ["history"]  # Location involved in events
+            elif current_entity_type == "History":
+                return ["location_"]  # Event involving locations
+        elif self.relationship_type == "history_faction":
+            if current_entity_type == "Faction":
+                return ["history"]  # Faction involved in events
+            elif current_entity_type == "History":
+                return ["faction"]  # Event involving factions
+        elif self.relationship_type == "history_object":
+            if current_entity_type == "Object_":
+                return ["history"]  # Object involved in events
+            elif current_entity_type == "History":
+                return ["object_"]  # Event involving objects
+        elif self.relationship_type == "history_world_data":
+            if current_entity_type == "WorldData":
+                return ["history"]  # Lore connected to events
+            elif current_entity_type == "History":
+                return ["world_data"]  # Event connected to lore
+        elif self.relationship_type == "location_a_on_b_relations":
+            return ["location_"]  # Locations relating to other locations
+        elif self.relationship_type == "location_geographic_relations":
+            return ["location_"]  # Geographic connections between locations
+        elif self.relationship_type == "location_political_relations":
+            return ["location_"]  # Political relationships between locations
+        elif self.relationship_type == "location_economic_relations":
+            return ["location_"]  # Economic relationships between locations
+        elif self.relationship_type == "location_hierarchy":
+            return ["location_"]  # Hierarchical relationships between locations
+        
+        # Fallback to static mapping
+        return self._get_static_target_tables()
+    
+    def _get_static_target_tables(self) -> list:
+        """Static fallback mapping (old behavior)"""
         relationship_mappings = {
             "actor_a_on_b_relations": ["actor"],
-            "faction_members": ["actor"],
-            "residents": ["actor"],
+            "faction_members": ["faction"],
+            "residents": ["location_"],
             "actor_to_skills": ["skills"],
             "actor_to_race": ["race"],
             "actor_to_class": ["class"],
             "actor_to_stat": ["stat"],
-            "object_to_owner": ["actor"],
-            "history_actor": ["actor"],
-            "history_location": ["location_"],
-            "history_faction": ["faction"],
-            "history_object": ["object_"],
-            "history_world_data": ["world_data"],
             "arc_to_actor": ["actor"],
+            "faction_a_on_b_relations": ["faction"],
             "location_to_faction": ["faction"],
             "location_dungeon": ["location_"],
             "location_city": ["location_"],
             "location_city_districts": ["location_"],
             "location_flora_fauna": ["location_"],
+            "object_to_owner": ["object_"],
+            "history_actor": ["history"],
+            "history_location": ["history"],
+            "history_faction": ["history"],
+            "history_object": ["history"],
+            "history_world_data": ["history"],
+            "location_a_on_b_relations": ["location_"],
+            "location_geographic_relations": ["location_"],
+            "location_political_relations": ["location_"],
+            "location_economic_relations": ["location_"],
+            "location_hierarchy": ["location_"],
         }
-
-        # Default to all main entity types if relationship not mapped
+        
         return relationship_mappings.get(
             self.relationship_type,
             ["actor", "faction", "location_", "object_", "history", "world_data"],

@@ -208,7 +208,7 @@ class LorekeeperNavigation(QWidget):
         layout = QVBoxLayout()
 
         # Header
-        header = QLabel("World Builder")
+        header = QLabel("Lorekeeper")
         font = QFont()
         font.setPointSize(18)
         font.setBold(True)

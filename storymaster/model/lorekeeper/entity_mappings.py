@@ -16,6 +16,8 @@ class FieldSection:
     display_name: str
     fields: List[str]
     description: Optional[str] = None
+    conditional_field: Optional[str] = None  # Field that controls whether this section shows
+    is_checkbox_section: bool = False  # Whether this section contains checkboxes
 
 
 @dataclass
@@ -142,14 +144,40 @@ ENTITY_MAPPINGS = {
                 fields=["coordinates"],
                 description="Where this place is located",
             ),
+            FieldSection(
+                name="location_types",
+                display_name="Location Types",
+                fields=["is_dungeon", "is_city"],
+                description="Check the types that apply to this location",
+                is_checkbox_section=True,
+            ),
+            FieldSection(
+                name="dungeon_details",
+                display_name="Dungeon Details",
+                fields=["dangers", "traps", "secrets"],
+                description="Details specific to dungeons and dangerous locations",
+                conditional_field="is_dungeon",
+            ),
+            FieldSection(
+                name="city_details", 
+                display_name="City Details",
+                fields=["government"],
+                description="Details specific to cities and settlements",
+                conditional_field="is_city",
+            ),
         ],
         relationships={
             "residents": "Who Lives Here",
             "location_to_faction": "Controlling Organizations",
+            "location_a_on_b_relations": "Relations with Other Places",
+            "location_geographic_relations": "Geographic Connections",
+            "location_political_relations": "Political Relationships",
+            "location_economic_relations": "Economic Relationships", 
+            "location_hierarchy": "Administrative Hierarchy",
             "location_dungeon": "Dungeon Details",
             "location_city": "City Details",
             "location_city_districts": "Districts & Neighborhoods",
-            "location_flora_fauna": "Local Wildlife",
+            "location_flora_fauna": "Flora & Fauna",
             "history_location": "Historical Events",
         },
     ),

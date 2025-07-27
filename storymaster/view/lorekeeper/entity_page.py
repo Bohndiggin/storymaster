@@ -17,6 +17,7 @@ from PyQt6.QtWidgets import (
     QListWidgetItem,
     QFrame,
     QSplitter,
+    QCheckBox,
 )
 from PyQt6.QtGui import QFont, QPalette
 
@@ -29,6 +30,9 @@ from storymaster.model.lorekeeper.entity_mappings import (
 
 class SectionWidget(QGroupBox):
     """Widget for displaying a logical section of entity fields"""
+    
+    # Signal emitted when a checkbox changes (field_name, checked)
+    checkbox_changed = pyqtSignal(str, bool)
 
     def __init__(self, section: FieldSection, model_adapter=None, parent=None):
         super().__init__(section.display_name, parent)
@@ -86,6 +90,8 @@ class SectionWidget(QGroupBox):
             "traps",
             "secrets",
             "government",
+            "flora_fauna_description",
+            "district_description",
         ]
 
         # Foreign key fields that need dropdowns
@@ -100,8 +106,20 @@ class SectionWidget(QGroupBox):
             "skill_id",
             "object_id",
         ]
+        
+        # Boolean fields that need checkboxes
+        boolean_fields = [
+            "is_dungeon",
+            "is_city",
+        ]
 
-        if field_name in multiline_fields:
+        if field_name in boolean_fields:
+            widget = QCheckBox()
+            # Connect checkbox changes to signal if this is a checkbox section
+            if self.section.is_checkbox_section:
+                widget.stateChanged.connect(lambda state, field=field_name: 
+                    self.checkbox_changed.emit(field, state == Qt.CheckState.Checked.value))
+        elif field_name in multiline_fields:
             widget = QTextEdit()
             widget.setMaximumHeight(100)
             widget.setAcceptRichText(False)
@@ -143,6 +161,12 @@ class SectionWidget(QGroupBox):
             "object_value": "Value",
             "event_year": "Year",
             "world_data": "Lore Category",
+            "is_dungeon": "Dungeon",
+            "is_city": "City",
+            "dangers": "Dangers",
+            "traps": "Traps",
+            "secrets": "Secrets", 
+            "government": "Government Type",
         }
 
         return field_mappings.get(field_name, field_name.replace("_", " ").title())
@@ -172,6 +196,8 @@ class SectionWidget(QGroupBox):
                 data[field_name] = widget.toPlainText()
             elif isinstance(widget, QComboBox):
                 data[field_name] = widget.currentData()
+            elif isinstance(widget, QCheckBox):
+                data[field_name] = widget.isChecked()
         return data
 
     def set_field_data(self, data: dict):
@@ -188,6 +214,8 @@ class SectionWidget(QGroupBox):
                     index = widget.findData(value)
                     if index >= 0:
                         widget.setCurrentIndex(index)
+                elif isinstance(widget, QCheckBox):
+                    widget.setChecked(bool(value) if value is not None else False)
 
 
 class RelationshipWidget(QGroupBox):
@@ -372,6 +400,15 @@ class EntityDetailPage(QWidget):
             for section in self.entity_mapping.sections:
                 section_widget = SectionWidget(section, self.model_adapter)
                 self.section_widgets[section.name] = section_widget
+                
+                # Connect checkbox signals for conditional sections
+                if section.is_checkbox_section:
+                    section_widget.checkbox_changed.connect(self.on_checkbox_changed)
+                
+                # Hide conditional sections initially
+                if section.conditional_field:
+                    section_widget.setVisible(False)
+                
                 sections_layout.addWidget(section_widget)
 
         sections_layout.addStretch()
@@ -438,8 +475,17 @@ class EntityDetailPage(QWidget):
 
         # Update section data
         entity_dict = self.current_entity.as_dict()
+        
+        # For locations, also get additional details
+        if self.table_name == "location_" and self.model_adapter:
+            location_details = self.model_adapter.get_location_details(self.current_entity)
+            entity_dict.update(location_details)
+        
         for section_name, section_widget in self.section_widgets.items():
             section_widget.set_field_data(entity_dict)
+        
+        # Update conditional section visibility
+        self.update_conditional_sections()
         
         # Load relationships
         self.load_relationships()
@@ -483,6 +529,10 @@ class EntityDetailPage(QWidget):
             if hasattr(self.current_entity, field_name):
                 setattr(self.current_entity, field_name, value)
 
+        # For locations, also save additional details
+        if self.table_name == "location_" and self.model_adapter:
+            self.model_adapter.save_location_details(self.current_entity, all_data)
+
         self.entity_saved.emit(self.current_entity)
 
     def delete_entity(self):
@@ -510,7 +560,7 @@ class EntityDetailPage(QWidget):
             return
         
         # Show entity selection dialog
-        dialog = EntitySelectionDialog(relationship_type, self.model_adapter, self)
+        dialog = EntitySelectionDialog(relationship_type, self.model_adapter, self.current_entity, self)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             selected_entity = dialog.get_selected_entity()
             if selected_entity:
@@ -524,12 +574,7 @@ class EntityDetailPage(QWidget):
                 )
                 
                 if success:
-                    QMessageBox.information(
-                        self, 
-                        "Relationship Added", 
-                        f"Successfully added '{entity_name}' to {relationship_type.replace('_', ' ')}"
-                    )
-                    # Refresh the relationship display
+                    # Refresh the relationship display (no popup)
                     self.refresh_relationship_display(relationship_type)
                 else:
                     QMessageBox.warning(
@@ -560,12 +605,7 @@ class EntityDetailPage(QWidget):
             )
             
             if success:
-                QMessageBox.information(
-                    self,
-                    "Relationship Removed", 
-                    f"Successfully removed '{entity_name}' from {relationship_type.replace('_', ' ')}"
-                )
-                # Refresh the relationship display
+                # Refresh the relationship display (no popup)
                 self.refresh_relationship_display(relationship_type)
             else:
                 QMessageBox.warning(
@@ -609,12 +649,7 @@ class EntityDetailPage(QWidget):
             )
             
             if success:
-                QMessageBox.information(
-                    self,
-                    "Relationship Updated",
-                    f"Successfully updated relationship with '{entity_name}'\n\nDetails: {len(relationship_data)} fields modified"
-                )
-                # Refresh the relationship display
+                # Refresh the relationship display (no popup)
                 self.refresh_relationship_display(relationship_type)
             else:
                 QMessageBox.warning(
@@ -664,3 +699,30 @@ class EntityDetailPage(QWidget):
                 rel_type
             )
             rel_widget.set_related_entities(related_entities)
+    
+    def on_checkbox_changed(self, field_name: str, checked: bool):
+        """Handle checkbox changes for conditional sections"""
+        if not self.entity_mapping:
+            return
+            
+        # Find sections that depend on this field
+        for section in self.entity_mapping.sections:
+            if section.conditional_field == field_name:
+                section_widget = self.section_widgets.get(section.name)
+                if section_widget:
+                    section_widget.setVisible(checked)
+    
+    def update_conditional_sections(self):
+        """Update visibility of conditional sections based on current data"""
+        if not self.current_entity or not self.entity_mapping:
+            return
+            
+        entity_dict = self.current_entity.as_dict()
+        
+        for section in self.entity_mapping.sections:
+            if section.conditional_field:
+                # Check if the controlling field is true
+                field_value = entity_dict.get(section.conditional_field, False)
+                section_widget = self.section_widgets.get(section.name)
+                if section_widget:
+                    section_widget.setVisible(bool(field_value))

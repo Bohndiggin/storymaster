@@ -431,94 +431,57 @@ class RelationshipDetailsDialog(QDialog):
     
     def parse_actor_relationship_data(self, data):
         """Parse actor relationship data from database format"""
-        overall = data.get('overall', '')
-        power_dynamic = data.get('power_dynamic', '')
-        economically = data.get('economically', '')
+        # Use new structured fields directly
+        self.description_edit.setPlainText(data.get('description', ''))
+        self.notes_edit.setPlainText(data.get('notes', ''))
+        self.timeline_edit.setPlainText(data.get('timeline', ''))
+        self.how_met_edit.setPlainText(data.get('how_met', ''))
+        self.shared_history_edit.setPlainText(data.get('shared_history', ''))
+        self.current_status_edit.setText(data.get('current_status', ''))
         
-        # Parse overall field for descriptions
-        if 'Description:' in overall:
-            desc_part = overall.split('Description:')[1].split('|')[0].strip()
-            self.description_edit.setPlainText(desc_part)
-        
-        if 'How they met:' in overall:
-            met_part = overall.split('How they met:')[1].split('|')[0].strip()
-            self.how_met_edit.setPlainText(met_part)
-            
-        if 'Shared history:' in overall:
-            history_part = overall.split('Shared history:')[1].split('|')[0].strip()
-            self.shared_history_edit.setPlainText(history_part)
-            
-        if 'Timeline:' in overall:
-            timeline_part = overall.split('Timeline:')[1].split('|')[0].strip()
-            self.timeline_edit.setPlainText(timeline_part)
-            
-        if 'Notes:' in overall:
-            notes_part = overall.split('Notes:')[1].strip()
-            self.notes_edit.setPlainText(notes_part)
-        
-        # Parse power_dynamic field
-        if 'Type:' in power_dynamic:
-            type_part = power_dynamic.split('Type:')[1].split('|')[0].strip()
-            index = self.char_relationship_type.findText(type_part)
+        # Set relationship type
+        rel_type = data.get('relationship_type', '')
+        if rel_type:
+            index = self.char_relationship_type.findText(rel_type)
             if index >= 0:
                 self.char_relationship_type.setCurrentIndex(index)
-                
-        if 'Trust:' in power_dynamic:
-            trust_part = power_dynamic.split('Trust:')[1].split('/')[0].strip()
-            try:
-                trust_value = int(trust_part)
-                self.trust_slider.setValue(trust_value)
-            except ValueError:
-                pass
-                
-        self.is_mutual.setChecked('One-sided' not in power_dynamic)
         
-        # Parse economically field
-        if 'Status:' in economically:
-            status_part = economically.split('Status:')[1].split('|')[0].strip()
-            index = self.status_combo.findText(status_part)
+        # Set status
+        status = data.get('status', '')
+        if status:
+            index = self.status_combo.findText(status)
             if index >= 0:
                 self.status_combo.setCurrentIndex(index)
-                
-        if 'Strength:' in economically:
-            strength_part = economically.split('Strength:')[1].split('/')[0].strip()
-            try:
-                strength_value = int(strength_part)
-                self.strength_slider.setValue(strength_value)
-            except ValueError:
-                pass
-                
-        if 'Current:' in economically:
-            current_part = economically.split('Current:')[1].strip()
-            self.current_status_edit.setText(current_part)
+        
+        # Set sliders
+        self.strength_slider.setValue(data.get('strength', 5))
+        self.trust_slider.setValue(data.get('trust_level', 5))
+        
+        # Set checkboxes
+        self.is_mutual.setChecked(data.get('is_mutual', True))
+        self.is_public.setChecked(data.get('is_public', True))
     
     def parse_membership_data(self, data):
         """Parse faction membership data from database format"""
-        actor_role = data.get('actor_role', '')
-        relative_power = data.get('relative_power', 1)
+        # Use new structured fields directly
+        self.role_edit.setText(data.get('role', ''))
+        self.rank_spin.setValue(data.get('rank', 1))
+        self.responsibilities_edit.setPlainText(data.get('responsibilities', ''))
+        self.loyalty_slider.setValue(data.get('loyalty', 7))
         
-        # Parse actor_role field
-        if '|' in actor_role:
-            parts = actor_role.split('|')
-            if parts:
-                self.role_edit.setText(parts[0].strip())
-            
-            for part in parts:
-                if part.strip().startswith('(') and part.strip().endswith(')'):
-                    status = part.strip()[1:-1]  # Remove parentheses
-                    index = self.membership_status.findText(status)
-                    if index >= 0:
-                        self.membership_status.setCurrentIndex(index)
-                        
-                if 'Duties:' in part:
-                    duties = part.split('Duties:')[1].strip()
-                    self.responsibilities_edit.setPlainText(duties)
-        else:
-            self.role_edit.setText(actor_role)
-        
-        # Set rank
-        if relative_power is not None:
-            self.rank_spin.setValue(relative_power)
+        # Set membership status
+        membership_status = data.get('membership_status', '')
+        if membership_status:
+            index = self.membership_status.findText(membership_status)
+            if index >= 0:
+                self.membership_status.setCurrentIndex(index)
+                
+        # Set join date if available
+        join_date = data.get('join_date', '')
+        if join_date:
+            # Parse join date string and set the date widget
+            # For now, just store it as string format
+            pass
     
     def save_relationship(self):
         """Save the relationship data"""

@@ -18,6 +18,10 @@ from storymaster.model.database.schema.base import (
     SubRace,
     Alignment,
     Stat,
+    LocationDungeon,
+    LocationCity,
+    LocationCityDistricts,
+    LocationFloraFauna,
 )
 
 
@@ -194,18 +198,318 @@ class LorekeeperModelAdapter:
                     return related_entities
                 
                 elif relationship_name == "faction_members":
-                    from storymaster.model.database.schema.base import FactionMembers
-                    if hasattr(entity, 'members'):  # Faction entity
-                        return [member.actor for member in entity.members]
-                    elif hasattr(entity, 'faction_memberships'):  # Actor entity
-                        return [membership.faction for membership in entity.faction_memberships]
+                    from storymaster.model.database.schema.base import FactionMembers, Actor, Faction
+                    
+                    # Query database directly for fresh data
+                    if entity.__class__.__name__ == 'Faction':
+                        # Get actors who are members of this faction
+                        memberships = session.query(FactionMembers).filter(
+                            FactionMembers.faction_id == entity.id
+                        ).all()
+                        return [session.get(Actor, membership.actor_id) for membership in memberships if membership.actor_id]
+                    elif entity.__class__.__name__ == 'Actor':
+                        # Get factions this actor is a member of
+                        memberships = session.query(FactionMembers).filter(
+                            FactionMembers.actor_id == entity.id
+                        ).all()
+                        return [session.get(Faction, membership.faction_id) for membership in memberships if membership.faction_id]
                 
                 elif relationship_name == "residents":
-                    from storymaster.model.database.schema.base import Resident
-                    if hasattr(entity, 'residents'):  # Location entity
-                        return [resident.actor for resident in entity.residents]
-                    elif hasattr(entity, 'residences'):  # Actor entity
-                        return [residence.location for residence in entity.residences]
+                    from storymaster.model.database.schema.base import Resident, Actor, Location
+                    
+                    # Query database directly for fresh data
+                    if entity.__class__.__name__ == 'Location':
+                        # Get actors who live in this location
+                        residencies = session.query(Resident).filter(
+                            Resident.location_id == entity.id
+                        ).all()
+                        return [session.get(Actor, residency.actor_id) for residency in residencies if residency.actor_id]
+                    elif entity.__class__.__name__ == 'Actor':
+                        # Get locations where this actor lives
+                        residencies = session.query(Resident).filter(
+                            Resident.actor_id == entity.id
+                        ).all()
+                        return [session.get(Location, residency.location_id) for residency in residencies if residency.location_id]
+                elif relationship_name == "object_to_owner":
+                    from storymaster.model.database.schema.base import ObjectToOwner, Actor, Object_
+                    
+                    # Query database directly for fresh data
+                    if entity.__class__.__name__ == 'Object_':
+                        # Get actors who own this object
+                        ownerships = session.query(ObjectToOwner).filter(
+                            ObjectToOwner.object_id == entity.id
+                        ).all()
+                        return [session.get(Actor, ownership.actor_id) for ownership in ownerships if ownership.actor_id]
+                    elif entity.__class__.__name__ == 'Actor':
+                        # Get objects this actor owns
+                        ownerships = session.query(ObjectToOwner).filter(
+                            ObjectToOwner.actor_id == entity.id
+                        ).all()
+                        return [session.get(Object_, ownership.object_id) for ownership in ownerships if ownership.object_id]
+                
+                elif relationship_name == "location_to_faction":
+                    from storymaster.model.database.schema.base import LocationToFaction, Location, Faction
+                    
+                    # Query database directly for fresh data
+                    if entity.__class__.__name__ == 'Location':
+                        # Get factions that control this location
+                        controls = session.query(LocationToFaction).filter(
+                            LocationToFaction.location_id == entity.id
+                        ).all()
+                        return [session.get(Faction, control.faction_id) for control in controls if control.faction_id]
+                    elif entity.__class__.__name__ == 'Faction':
+                        # Get locations this faction controls
+                        controls = session.query(LocationToFaction).filter(
+                            LocationToFaction.faction_id == entity.id
+                        ).all()
+                        return [session.get(Location, control.location_id) for control in controls if control.location_id]
+                
+                elif relationship_name == "actor_to_skills":
+                    from storymaster.model.database.schema.base import ActorToSkills, Actor, Skills
+                    
+                    # Query database directly for fresh data
+                    if entity.__class__.__name__ == 'Actor':
+                        # Get skills this actor has
+                        skill_relations = session.query(ActorToSkills).filter(
+                            ActorToSkills.actor_id == entity.id
+                        ).all()
+                        return [session.get(Skills, skill_rel.skill_id) for skill_rel in skill_relations if skill_rel.skill_id]
+                    elif entity.__class__.__name__ == 'Skills':
+                        # Get actors who have this skill
+                        skill_relations = session.query(ActorToSkills).filter(
+                            ActorToSkills.skill_id == entity.id
+                        ).all()
+                        return [session.get(Actor, skill_rel.actor_id) for skill_rel in skill_relations if skill_rel.actor_id]
+                
+                elif relationship_name == "actor_to_race":
+                    from storymaster.model.database.schema.base import ActorToRace, Actor, Race
+                    
+                    # Query database directly for fresh data
+                    if entity.__class__.__name__ == 'Actor':
+                        # Get races this actor belongs to
+                        race_relations = session.query(ActorToRace).filter(
+                            ActorToRace.actor_id == entity.id
+                        ).all()
+                        return [session.get(Race, race_rel.race_id) for race_rel in race_relations if race_rel.race_id]
+                    elif entity.__class__.__name__ == 'Race':
+                        # Get actors of this race
+                        race_relations = session.query(ActorToRace).filter(
+                            ActorToRace.race_id == entity.id
+                        ).all()
+                        return [session.get(Actor, race_rel.actor_id) for race_rel in race_relations if race_rel.actor_id]
+                
+                elif relationship_name == "actor_to_class":
+                    from storymaster.model.database.schema.base import ActorToClass, Actor, Class_
+                    
+                    # Query database directly for fresh data
+                    if entity.__class__.__name__ == 'Actor':
+                        # Get classes this actor has
+                        class_relations = session.query(ActorToClass).filter(
+                            ActorToClass.actor_id == entity.id
+                        ).all()
+                        return [session.get(Class_, class_rel.class_id) for class_rel in class_relations if class_rel.class_id]
+                    elif entity.__class__.__name__ == 'Class_':
+                        # Get actors who have this class
+                        class_relations = session.query(ActorToClass).filter(
+                            ActorToClass.class_id == entity.id
+                        ).all()
+                        return [session.get(Actor, class_rel.actor_id) for class_rel in class_relations if class_rel.actor_id]
+                
+                elif relationship_name == "actor_to_stat":
+                    from storymaster.model.database.schema.base import ActorToStat, Actor, Stat
+                    
+                    # Query database directly for fresh data
+                    if entity.__class__.__name__ == 'Actor':
+                        # Get stats this actor has
+                        stat_relations = session.query(ActorToStat).filter(
+                            ActorToStat.actor_id == entity.id
+                        ).all()
+                        return [session.get(Stat, stat_rel.stat_id) for stat_rel in stat_relations if stat_rel.stat_id]
+                    elif entity.__class__.__name__ == 'Stat':
+                        # Get actors who have this stat
+                        stat_relations = session.query(ActorToStat).filter(
+                            ActorToStat.stat_id == entity.id
+                        ).all()
+                        return [session.get(Actor, stat_rel.actor_id) for stat_rel in stat_relations if stat_rel.actor_id]
+                
+                elif relationship_name == "history_actor":
+                    from storymaster.model.database.schema.base import HistoryActor, Actor, History
+                    
+                    # Query database directly for fresh data
+                    if entity.__class__.__name__ == 'Actor':
+                        # Get historical events this actor was involved in
+                        history_relations = session.query(HistoryActor).filter(
+                            HistoryActor.actor_id == entity.id
+                        ).all()
+                        return [session.get(History, hist_rel.history_id) for hist_rel in history_relations if hist_rel.history_id]
+                    elif entity.__class__.__name__ == 'History':
+                        # Get actors involved in this historical event
+                        history_relations = session.query(HistoryActor).filter(
+                            HistoryActor.history_id == entity.id
+                        ).all()
+                        return [session.get(Actor, hist_rel.actor_id) for hist_rel in history_relations if hist_rel.actor_id]
+                
+                elif relationship_name == "faction_a_on_b_relations":
+                    from storymaster.model.database.schema.base import FactionAOnBRelations, Faction
+                    
+                    # Query database directly for fresh data
+                    relations = session.query(FactionAOnBRelations).filter(
+                        (FactionAOnBRelations.faction_a_id == entity.id) |
+                        (FactionAOnBRelations.faction_b_id == entity.id)
+                    ).all()
+                    
+                    related_entities = []
+                    for rel in relations:
+                        if rel.faction_a_id == entity.id:
+                            related_entities.append(session.get(Faction, rel.faction_b_id))
+                        else:
+                            related_entities.append(session.get(Faction, rel.faction_a_id))
+                    return [entity for entity in related_entities if entity is not None]
+                
+                elif relationship_name == "history_faction":
+                    from storymaster.model.database.schema.base import HistoryFaction, Faction, History
+                    
+                    # Query database directly for fresh data
+                    if entity.__class__.__name__ == 'Faction':
+                        # Get historical events this faction was involved in
+                        history_relations = session.query(HistoryFaction).filter(
+                            HistoryFaction.faction_id == entity.id
+                        ).all()
+                        return [session.get(History, hist_rel.history_id) for hist_rel in history_relations if hist_rel.history_id]
+                    elif entity.__class__.__name__ == 'History':
+                        # Get factions involved in this historical event
+                        history_relations = session.query(HistoryFaction).filter(
+                            HistoryFaction.history_id == entity.id
+                        ).all()
+                        return [session.get(Faction, hist_rel.faction_id) for hist_rel in history_relations if hist_rel.faction_id]
+                
+                elif relationship_name == "location_a_on_b_relations":
+                    from storymaster.model.database.schema.base import LocationAOnBRelations, Location
+                    
+                    # Query database directly for fresh data
+                    relations = session.query(LocationAOnBRelations).filter(
+                        (LocationAOnBRelations.location_a_id == entity.id) |
+                        (LocationAOnBRelations.location_b_id == entity.id)
+                    ).all()
+                    
+                    related_entities = []
+                    for rel in relations:
+                        if rel.location_a_id == entity.id:
+                            related_entities.append(session.get(Location, rel.location_b_id))
+                        else:
+                            related_entities.append(session.get(Location, rel.location_a_id))
+                    return [entity for entity in related_entities if entity is not None]
+                
+                elif relationship_name == "location_geographic_relations":
+                    from storymaster.model.database.schema.base import LocationGeographicRelations, Location
+                    
+                    # Query database directly for fresh data
+                    relations = session.query(LocationGeographicRelations).filter(
+                        (LocationGeographicRelations.location_a_id == entity.id) |
+                        (LocationGeographicRelations.location_b_id == entity.id)
+                    ).all()
+                    
+                    related_entities = []
+                    for rel in relations:
+                        if rel.location_a_id == entity.id:
+                            related_entities.append(session.get(Location, rel.location_b_id))
+                        else:
+                            related_entities.append(session.get(Location, rel.location_a_id))
+                    return [entity for entity in related_entities if entity is not None]
+                
+                elif relationship_name == "location_political_relations":
+                    from storymaster.model.database.schema.base import LocationPoliticalRelations, Location
+                    
+                    # Query database directly for fresh data
+                    relations = session.query(LocationPoliticalRelations).filter(
+                        (LocationPoliticalRelations.location_a_id == entity.id) |
+                        (LocationPoliticalRelations.location_b_id == entity.id)
+                    ).all()
+                    
+                    related_entities = []
+                    for rel in relations:
+                        if rel.location_a_id == entity.id:
+                            related_entities.append(session.get(Location, rel.location_b_id))
+                        else:
+                            related_entities.append(session.get(Location, rel.location_a_id))
+                    return [entity for entity in related_entities if entity is not None]
+                
+                elif relationship_name == "location_economic_relations":
+                    from storymaster.model.database.schema.base import LocationEconomicRelations, Location
+                    
+                    # Query database directly for fresh data
+                    relations = session.query(LocationEconomicRelations).filter(
+                        (LocationEconomicRelations.location_a_id == entity.id) |
+                        (LocationEconomicRelations.location_b_id == entity.id)
+                    ).all()
+                    
+                    related_entities = []
+                    for rel in relations:
+                        if rel.location_a_id == entity.id:
+                            related_entities.append(session.get(Location, rel.location_b_id))
+                        else:
+                            related_entities.append(session.get(Location, rel.location_a_id))
+                    return [entity for entity in related_entities if entity is not None]
+                
+                elif relationship_name == "location_hierarchy":
+                    from storymaster.model.database.schema.base import LocationHierarchy, Location
+                    
+                    # Query database directly for fresh data
+                    if entity.__class__.__name__ == 'Location':
+                        # Get both parent and child locations
+                        parent_relations = session.query(LocationHierarchy).filter(
+                            LocationHierarchy.child_location_id == entity.id
+                        ).all()
+                        child_relations = session.query(LocationHierarchy).filter(
+                            LocationHierarchy.parent_location_id == entity.id
+                        ).all()
+                        
+                        related_entities = []
+                        # Add parent locations
+                        for rel in parent_relations:
+                            related_entities.append(session.get(Location, rel.parent_location_id))
+                        # Add child locations
+                        for rel in child_relations:
+                            related_entities.append(session.get(Location, rel.child_location_id))
+                        
+                        return [entity for entity in related_entities if entity is not None]
+                
+                elif relationship_name == "location_city_districts":
+                    from storymaster.model.database.schema.base import LocationCityDistricts, Location
+                    
+                    # Query database directly for fresh data
+                    if entity.__class__.__name__ == 'Location':
+                        # Get districts in this city or cities this location is a district of
+                        city_relations = session.query(LocationCityDistricts).filter(
+                            LocationCityDistricts.location_id == entity.id
+                        ).all()
+                        district_relations = session.query(LocationCityDistricts).filter(
+                            LocationCityDistricts.district_id == entity.id
+                        ).all()
+                        
+                        related_entities = []
+                        # Add districts of this city
+                        for rel in city_relations:
+                            if rel.district_id:
+                                related_entities.append(session.get(Location, rel.district_id))
+                        # Add cities this location is a district of
+                        for rel in district_relations:
+                            if rel.location_id:
+                                related_entities.append(session.get(Location, rel.location_id))
+                        
+                        return [entity for entity in related_entities if entity is not None]
+                
+                elif relationship_name == "location_flora_fauna":
+                    from storymaster.model.database.schema.base import LocationFloraFauna
+                    
+                    # Query database directly for fresh data
+                    if entity.__class__.__name__ == 'Location':
+                        # Get flora/fauna entries for this location
+                        flora_fauna_entries = session.query(LocationFloraFauna).filter(
+                            LocationFloraFauna.location_id == entity.id
+                        ).all()
+                        
+                        return flora_fauna_entries
                 
                 # Add more relationship types as needed
                 return []
@@ -291,6 +595,378 @@ class LorekeeperModelAdapter:
                     )
                     session.add(new_residency)
                 
+                elif relationship_name == "object_to_owner":
+                    from storymaster.model.database.schema.base import ObjectToOwner
+                    
+                    # Check if ownership already exists
+                    existing = session.query(ObjectToOwner).filter(
+                        (ObjectToOwner.actor_id == entity.id) &
+                        (ObjectToOwner.object_id == related_entity.id)
+                    ).first()
+                    
+                    if existing:
+                        return False  # Ownership already exists
+                    
+                    # Create new ownership
+                    new_ownership = ObjectToOwner(
+                        actor_id=entity.id,
+                        object_id=related_entity.id,
+                        setting_id=self.setting_id
+                    )
+                    session.add(new_ownership)
+                
+                elif relationship_name == "location_to_faction":
+                    from storymaster.model.database.schema.base import LocationToFaction
+                    
+                    # Check if control already exists
+                    existing = session.query(LocationToFaction).filter(
+                        (LocationToFaction.location_id == entity.id) &
+                        (LocationToFaction.faction_id == related_entity.id)
+                    ).first()
+                    
+                    if existing:
+                        return False  # Control already exists
+                    
+                    # Create new control
+                    new_control = LocationToFaction(
+                        location_id=entity.id,
+                        faction_id=related_entity.id,
+                        setting_id=self.setting_id
+                    )
+                    session.add(new_control)
+                
+                elif relationship_name == "actor_to_skills":
+                    from storymaster.model.database.schema.base import ActorToSkills
+                    
+                    # Check if skill relation already exists
+                    existing = session.query(ActorToSkills).filter(
+                        (ActorToSkills.actor_id == entity.id) &
+                        (ActorToSkills.skill_id == related_entity.id)
+                    ).first()
+                    
+                    if existing:
+                        return False  # Skill relation already exists
+                    
+                    # Create new skill relation
+                    new_skill_relation = ActorToSkills(
+                        actor_id=entity.id,
+                        skill_id=related_entity.id,
+                        setting_id=self.setting_id,
+                        skill_level=1  # Default skill level
+                    )
+                    session.add(new_skill_relation)
+                
+                elif relationship_name == "actor_to_race":
+                    from storymaster.model.database.schema.base import ActorToRace
+                    
+                    # Check if race relation already exists
+                    existing = session.query(ActorToRace).filter(
+                        (ActorToRace.actor_id == entity.id) &
+                        (ActorToRace.race_id == related_entity.id)
+                    ).first()
+                    
+                    if existing:
+                        return False  # Race relation already exists
+                    
+                    # Create new race relation
+                    new_race_relation = ActorToRace(
+                        actor_id=entity.id,
+                        race_id=related_entity.id,
+                        setting_id=self.setting_id
+                    )
+                    session.add(new_race_relation)
+                
+                elif relationship_name == "actor_to_class":
+                    from storymaster.model.database.schema.base import ActorToClass
+                    
+                    # Check if class relation already exists
+                    existing = session.query(ActorToClass).filter(
+                        (ActorToClass.actor_id == entity.id) &
+                        (ActorToClass.class_id == related_entity.id)
+                    ).first()
+                    
+                    if existing:
+                        return False  # Class relation already exists
+                    
+                    # Create new class relation
+                    new_class_relation = ActorToClass(
+                        actor_id=entity.id,
+                        class_id=related_entity.id,
+                        setting_id=self.setting_id,
+                        level=1  # Default level
+                    )
+                    session.add(new_class_relation)
+                
+                elif relationship_name == "actor_to_stat":
+                    from storymaster.model.database.schema.base import ActorToStat
+                    
+                    # Check if stat relation already exists
+                    existing = session.query(ActorToStat).filter(
+                        (ActorToStat.actor_id == entity.id) &
+                        (ActorToStat.stat_id == related_entity.id)
+                    ).first()
+                    
+                    if existing:
+                        return False  # Stat relation already exists
+                    
+                    # Create new stat relation
+                    new_stat_relation = ActorToStat(
+                        actor_id=entity.id,
+                        stat_id=related_entity.id,
+                        setting_id=self.setting_id,
+                        stat_value=10  # Default stat value
+                    )
+                    session.add(new_stat_relation)
+                
+                elif relationship_name == "history_actor":
+                    from storymaster.model.database.schema.base import HistoryActor
+                    
+                    # Check if history relation already exists
+                    existing = session.query(HistoryActor).filter(
+                        (HistoryActor.actor_id == entity.id) &
+                        (HistoryActor.history_id == related_entity.id)
+                    ).first()
+                    
+                    if existing:
+                        return False  # History relation already exists
+                    
+                    # Create new history relation
+                    new_history_relation = HistoryActor(
+                        actor_id=entity.id,
+                        history_id=related_entity.id,
+                        setting_id=self.setting_id
+                    )
+                    session.add(new_history_relation)
+                
+                elif relationship_name == "faction_a_on_b_relations":
+                    from storymaster.model.database.schema.base import FactionAOnBRelations
+                    
+                    # Check if relationship already exists
+                    existing = session.query(FactionAOnBRelations).filter(
+                        ((FactionAOnBRelations.faction_a_id == entity.id) & 
+                         (FactionAOnBRelations.faction_b_id == related_entity.id)) |
+                        ((FactionAOnBRelations.faction_a_id == related_entity.id) & 
+                         (FactionAOnBRelations.faction_b_id == entity.id))
+                    ).first()
+                    
+                    if existing:
+                        return False  # Relationship already exists
+                    
+                    # Create new relationship
+                    new_relation = FactionAOnBRelations(
+                        faction_a_id=entity.id,
+                        faction_b_id=related_entity.id,
+                        setting_id=self.setting_id,
+                        description=relationship_data.get('description', '') if relationship_data else '',
+                        relationship_type=relationship_data.get('relationship_type', '') if relationship_data else '',
+                        status=relationship_data.get('status', '') if relationship_data else '',
+                        strength=relationship_data.get('strength', 5) if relationship_data else 5,
+                        trust_level=relationship_data.get('trust_level', 5) if relationship_data else 5,
+                        is_mutual=relationship_data.get('is_mutual', True) if relationship_data else True,
+                        is_public=relationship_data.get('is_public', True) if relationship_data else True,
+                        overall=relationship_data.get('overall', '') if relationship_data else '',
+                        economically=relationship_data.get('economically', '') if relationship_data else '',
+                        politically=relationship_data.get('politically', '') if relationship_data else '',
+                        opinion=relationship_data.get('opinion', '') if relationship_data else ''
+                    )
+                    session.add(new_relation)
+                
+                elif relationship_name == "history_faction":
+                    from storymaster.model.database.schema.base import HistoryFaction
+                    
+                    # Check if history relation already exists
+                    existing = session.query(HistoryFaction).filter(
+                        (HistoryFaction.faction_id == entity.id) &
+                        (HistoryFaction.history_id == related_entity.id)
+                    ).first()
+                    
+                    if existing:
+                        return False  # History relation already exists
+                    
+                    # Create new history relation
+                    new_history_relation = HistoryFaction(
+                        faction_id=entity.id,
+                        history_id=related_entity.id,
+                        setting_id=self.setting_id,
+                        role_in_event=relationship_data.get('role_in_event', '') if relationship_data else '',
+                        involvement_level=relationship_data.get('involvement_level', '') if relationship_data else '',
+                        impact_on_faction=relationship_data.get('impact_on_faction', '') if relationship_data else '',
+                        faction_perspective=relationship_data.get('faction_perspective', '') if relationship_data else '',
+                        consequences=relationship_data.get('consequences', '') if relationship_data else ''
+                    )
+                    session.add(new_history_relation)
+                
+                elif relationship_name == "location_a_on_b_relations":
+                    from storymaster.model.database.schema.base import LocationAOnBRelations
+                    
+                    # Check if relationship already exists
+                    existing = session.query(LocationAOnBRelations).filter(
+                        ((LocationAOnBRelations.location_a_id == entity.id) & 
+                         (LocationAOnBRelations.location_b_id == related_entity.id)) |
+                        ((LocationAOnBRelations.location_a_id == related_entity.id) & 
+                         (LocationAOnBRelations.location_b_id == entity.id))
+                    ).first()
+                    
+                    if existing:
+                        return False  # Relationship already exists
+                    
+                    # Create new relationship
+                    new_relation = LocationAOnBRelations(
+                        location_a_id=entity.id,
+                        location_b_id=related_entity.id,
+                        setting_id=self.setting_id,
+                        description=relationship_data.get('description', '') if relationship_data else '',
+                        relationship_type=relationship_data.get('relationship_type', '') if relationship_data else '',
+                        status=relationship_data.get('status', '') if relationship_data else '',
+                        strength=relationship_data.get('strength', 5) if relationship_data else 5,
+                        is_mutual=relationship_data.get('is_mutual', True) if relationship_data else True,
+                        is_public=relationship_data.get('is_public', True) if relationship_data else True
+                    )
+                    session.add(new_relation)
+                
+                elif relationship_name == "location_geographic_relations":
+                    from storymaster.model.database.schema.base import LocationGeographicRelations
+                    
+                    # Check if relationship already exists
+                    existing = session.query(LocationGeographicRelations).filter(
+                        ((LocationGeographicRelations.location_a_id == entity.id) & 
+                         (LocationGeographicRelations.location_b_id == related_entity.id)) |
+                        ((LocationGeographicRelations.location_a_id == related_entity.id) & 
+                         (LocationGeographicRelations.location_b_id == entity.id))
+                    ).first()
+                    
+                    if existing:
+                        return False  # Relationship already exists
+                    
+                    # Create new geographic relationship
+                    new_relation = LocationGeographicRelations(
+                        location_a_id=entity.id,
+                        location_b_id=related_entity.id,
+                        setting_id=self.setting_id,
+                        geographic_type=relationship_data.get('geographic_type', '') if relationship_data else '',
+                        distance=relationship_data.get('distance', '') if relationship_data else '',
+                        travel_time=relationship_data.get('travel_time', '') if relationship_data else '',
+                        travel_difficulty=relationship_data.get('travel_difficulty', '') if relationship_data else '',
+                        travel_method=relationship_data.get('travel_method', '') if relationship_data else '',
+                        description=relationship_data.get('description', '') if relationship_data else ''
+                    )
+                    session.add(new_relation)
+                
+                elif relationship_name == "location_political_relations":
+                    from storymaster.model.database.schema.base import LocationPoliticalRelations
+                    
+                    # Check if relationship already exists
+                    existing = session.query(LocationPoliticalRelations).filter(
+                        ((LocationPoliticalRelations.location_a_id == entity.id) & 
+                         (LocationPoliticalRelations.location_b_id == related_entity.id)) |
+                        ((LocationPoliticalRelations.location_a_id == related_entity.id) & 
+                         (LocationPoliticalRelations.location_b_id == entity.id))
+                    ).first()
+                    
+                    if existing:
+                        return False  # Relationship already exists
+                    
+                    # Create new political relationship
+                    new_relation = LocationPoliticalRelations(
+                        location_a_id=entity.id,
+                        location_b_id=related_entity.id,
+                        setting_id=self.setting_id,
+                        political_type=relationship_data.get('political_type', '') if relationship_data else '',
+                        treaty_name=relationship_data.get('treaty_name', '') if relationship_data else '',
+                        treaty_date=relationship_data.get('treaty_date', '') if relationship_data else '',
+                        status=relationship_data.get('status', '') if relationship_data else '',
+                        description=relationship_data.get('description', '') if relationship_data else ''
+                    )
+                    session.add(new_relation)
+                
+                elif relationship_name == "location_economic_relations":
+                    from storymaster.model.database.schema.base import LocationEconomicRelations
+                    
+                    # Check if relationship already exists
+                    existing = session.query(LocationEconomicRelations).filter(
+                        ((LocationEconomicRelations.location_a_id == entity.id) & 
+                         (LocationEconomicRelations.location_b_id == related_entity.id)) |
+                        ((LocationEconomicRelations.location_a_id == related_entity.id) & 
+                         (LocationEconomicRelations.location_b_id == entity.id))
+                    ).first()
+                    
+                    if existing:
+                        return False  # Relationship already exists
+                    
+                    # Create new economic relationship
+                    new_relation = LocationEconomicRelations(
+                        location_a_id=entity.id,
+                        location_b_id=related_entity.id,
+                        setting_id=self.setting_id,
+                        economic_type=relationship_data.get('economic_type', '') if relationship_data else '',
+                        trade_goods=relationship_data.get('trade_goods', '') if relationship_data else '',
+                        trade_volume=relationship_data.get('trade_volume', '') if relationship_data else '',
+                        trade_frequency=relationship_data.get('trade_frequency', '') if relationship_data else '',
+                        trade_value=relationship_data.get('trade_value', '') if relationship_data else '',
+                        description=relationship_data.get('description', '') if relationship_data else ''
+                    )
+                    session.add(new_relation)
+                
+                elif relationship_name == "location_hierarchy":
+                    from storymaster.model.database.schema.base import LocationHierarchy
+                    
+                    # Check if relationship already exists
+                    existing = session.query(LocationHierarchy).filter(
+                        (LocationHierarchy.parent_location_id == entity.id) &
+                        (LocationHierarchy.child_location_id == related_entity.id)
+                    ).first()
+                    
+                    if existing:
+                        return False  # Relationship already exists
+                    
+                    # Create new hierarchy relationship (entity is parent, related_entity is child)
+                    new_relation = LocationHierarchy(
+                        parent_location_id=entity.id,
+                        child_location_id=related_entity.id,
+                        setting_id=self.setting_id,
+                        hierarchy_type=relationship_data.get('hierarchy_type', '') if relationship_data else '',
+                        parent_type=relationship_data.get('parent_type', '') if relationship_data else '',
+                        child_type=relationship_data.get('child_type', '') if relationship_data else '',
+                        administrative_level=relationship_data.get('administrative_level', 1) if relationship_data else 1,
+                        governance_type=relationship_data.get('governance_type', '') if relationship_data else '',
+                        description=relationship_data.get('description', '') if relationship_data else ''
+                    )
+                    session.add(new_relation)
+                
+                elif relationship_name == "location_city_districts":
+                    from storymaster.model.database.schema.base import LocationCityDistricts
+                    
+                    # Check if relationship already exists
+                    existing = session.query(LocationCityDistricts).filter(
+                        (LocationCityDistricts.location_id == entity.id) &
+                        (LocationCityDistricts.district_id == related_entity.id)
+                    ).first()
+                    
+                    if existing:
+                        return False  # Relationship already exists
+                    
+                    # Create new district relationship (entity is city, related_entity is district)
+                    new_relation = LocationCityDistricts(
+                        location_id=entity.id,
+                        district_id=related_entity.id,
+                        setting_id=self.setting_id
+                    )
+                    session.add(new_relation)
+                
+                elif relationship_name == "location_flora_fauna":
+                    from storymaster.model.database.schema.base import LocationFloraFauna
+                    
+                    # For flora/fauna, we're adding a new entry, not linking to another entity
+                    # The related_entity in this case would be the data for the flora/fauna
+                    new_flora_fauna = LocationFloraFauna(
+                        location_id=entity.id,
+                        setting_id=self.setting_id,
+                        name=relationship_data.get('name', '') if relationship_data else '',
+                        description=relationship_data.get('description', '') if relationship_data else '',
+                        living_type=relationship_data.get('living_type', '') if relationship_data else ''
+                    )
+                    session.add(new_flora_fauna)
+                
                 # Add more relationship types as needed
                 
                 session.commit()
@@ -369,58 +1045,19 @@ class LorekeeperModelAdapter:
                     ).first()
                     
                     if relation:
-                        # Map comprehensive relationship data to available database fields
-                        # overall: store the main description and key details
-                        description = relationship_data.get('description', '')
-                        notes = relationship_data.get('notes', '')
-                        timeline = relationship_data.get('timeline', '')
-                        how_met = relationship_data.get('how_met', '')
-                        shared_history = relationship_data.get('shared_history', '')
-                        
-                        # Combine all descriptive text into the overall field
-                        overall_parts = []
-                        if description:
-                            overall_parts.append(f"Description: {description}")
-                        if how_met:
-                            overall_parts.append(f"How they met: {how_met}")
-                        if shared_history:
-                            overall_parts.append(f"Shared history: {shared_history}")
-                        if timeline:
-                            overall_parts.append(f"Timeline: {timeline}")
-                        if notes:
-                            overall_parts.append(f"Notes: {notes}")
-                        
-                        relation.overall = " | ".join(overall_parts) if overall_parts else relation.overall
-                        
-                        # power_dynamic: store relationship type and trust info
-                        rel_type = relationship_data.get('relationship_type', '')
-                        trust_level = relationship_data.get('trust_level', '')
-                        is_mutual = relationship_data.get('is_mutual', True)
-                        
-                        power_parts = []
-                        if rel_type:
-                            power_parts.append(f"Type: {rel_type}")
-                        if trust_level:
-                            power_parts.append(f"Trust: {trust_level}/10")
-                        if not is_mutual:
-                            power_parts.append("One-sided")
-                        
-                        relation.power_dynamic = " | ".join(power_parts) if power_parts else relation.power_dynamic
-                        
-                        # economically: store current status and strength
-                        current_status = relationship_data.get('current_status', '')
-                        status = relationship_data.get('status', '')
-                        strength = relationship_data.get('strength', '')
-                        
-                        econ_parts = []
-                        if status:
-                            econ_parts.append(f"Status: {status}")
-                        if strength:
-                            econ_parts.append(f"Strength: {strength}/10")
-                        if current_status:
-                            econ_parts.append(f"Current: {current_status}")
-                        
-                        relation.economically = " | ".join(econ_parts) if econ_parts else relation.economically
+                        # Map relationship data to dedicated database columns
+                        relation.description = relationship_data.get('description')
+                        relation.notes = relationship_data.get('notes')
+                        relation.timeline = relationship_data.get('timeline')
+                        relation.relationship_type = relationship_data.get('relationship_type')
+                        relation.status = relationship_data.get('status')
+                        relation.strength = relationship_data.get('strength')
+                        relation.trust_level = relationship_data.get('trust_level')
+                        relation.is_mutual = relationship_data.get('is_mutual', True)
+                        relation.is_public = relationship_data.get('is_public', True)
+                        relation.how_met = relationship_data.get('how_met')
+                        relation.shared_history = relationship_data.get('shared_history')
+                        relation.current_status = relationship_data.get('current_status')
                 
                 elif relationship_name == "faction_members":
                     from storymaster.model.database.schema.base import FactionMembers
@@ -431,26 +1068,13 @@ class LorekeeperModelAdapter:
                     ).first()
                     
                     if membership:
-                        # Map membership dialog data to database fields
-                        role = relationship_data.get('role', '')
-                        membership_status = relationship_data.get('membership_status', '')
-                        responsibilities = relationship_data.get('responsibilities', '')
-                        
-                        # Combine role information into actor_role field
-                        role_parts = []
-                        if role:
-                            role_parts.append(role)
-                        if membership_status:
-                            role_parts.append(f"({membership_status})")
-                        if responsibilities:
-                            role_parts.append(f"Duties: {responsibilities}")
-                        
-                        membership.actor_role = " | ".join(role_parts) if role_parts else membership.actor_role
-                        
-                        # Update rank/power level
-                        rank = relationship_data.get('rank')
-                        if rank is not None:
-                            membership.relative_power = rank
+                        # Map membership data to dedicated database columns
+                        membership.role = relationship_data.get('role')
+                        membership.rank = relationship_data.get('rank')
+                        membership.membership_status = relationship_data.get('membership_status')
+                        membership.responsibilities = relationship_data.get('responsibilities')
+                        membership.loyalty = relationship_data.get('loyalty')
+                        membership.join_date = relationship_data.get('join_date')
                 
                 # Add more relationship types as needed
                 
@@ -479,6 +1103,20 @@ class LorekeeperModelAdapter:
                     
                     if relation:
                         return {
+                            # New structured fields
+                            'description': relation.description or '',
+                            'notes': relation.notes or '',
+                            'timeline': relation.timeline or '',
+                            'relationship_type': relation.relationship_type or '',
+                            'status': relation.status or '',
+                            'strength': relation.strength or 5,
+                            'trust_level': relation.trust_level or 5,
+                            'is_mutual': relation.is_mutual if relation.is_mutual is not None else True,
+                            'is_public': relation.is_public if relation.is_public is not None else True,
+                            'how_met': relation.how_met or '',
+                            'shared_history': relation.shared_history or '',
+                            'current_status': relation.current_status or '',
+                            # Legacy fields (for backward compatibility)
                             'overall': relation.overall or '',
                             'power_dynamic': relation.power_dynamic or '',
                             'economically': relation.economically or ''
@@ -494,6 +1132,14 @@ class LorekeeperModelAdapter:
                     
                     if membership:
                         return {
+                            # New structured fields
+                            'role': membership.role or '',
+                            'rank': membership.rank or 1,
+                            'membership_status': membership.membership_status or '',
+                            'responsibilities': membership.responsibilities or '',
+                            'loyalty': membership.loyalty or 7,
+                            'join_date': membership.join_date or '',
+                            # Legacy fields (for backward compatibility)
                             'actor_role': membership.actor_role or '',
                             'relative_power': membership.relative_power or 1
                         }
@@ -536,3 +1182,78 @@ class LorekeeperModelAdapter:
         except Exception as e:
             print(f"Error searching entities in {table_name}: {e}")
             return []
+    
+    def get_location_details(self, location_entity: Any) -> Dict[str, Any]:
+        """Get additional location details (dungeon, city, etc.) for a location"""
+        details = {}
+        
+        try:
+            with Session(self.model.engine) as session:
+                location = session.merge(location_entity)
+                
+                # Get dungeon details if exists
+                if hasattr(location, 'is_dungeon') and location.is_dungeon:
+                    dungeon = session.query(LocationDungeon).filter_by(location_id=location.id).first()
+                    if dungeon:
+                        details.update({
+                            'dangers': dungeon.dangers,
+                            'traps': dungeon.traps,
+                            'secrets': dungeon.secrets,
+                        })
+                
+                # Get city details if exists
+                if hasattr(location, 'is_city') and location.is_city:
+                    city = session.query(LocationCity).filter_by(location_id=location.id).first()
+                    if city:
+                        details.update({
+                            'government': city.government,
+                        })
+                
+                
+                return details
+                
+        except Exception as e:
+            print(f"Error getting location details: {e}")
+            return {}
+    
+    def save_location_details(self, location_entity: Any, details_data: Dict[str, Any]) -> bool:
+        """Save additional location details based on location type flags"""
+        try:
+            with Session(self.model.engine) as session:
+                location = session.merge(location_entity)
+                
+                # Handle dungeon details
+                if hasattr(location, 'is_dungeon') and location.is_dungeon:
+                    dungeon = session.query(LocationDungeon).filter_by(location_id=location.id).first()
+                    if not dungeon:
+                        dungeon = LocationDungeon(
+                            location_id=location.id,
+                            setting_id=self.setting_id
+                        )
+                        session.add(dungeon)
+                    
+                    # Update dungeon fields
+                    dungeon.dangers = details_data.get('dangers', '')
+                    dungeon.traps = details_data.get('traps', '')
+                    dungeon.secrets = details_data.get('secrets', '')
+                
+                # Handle city details
+                if hasattr(location, 'is_city') and location.is_city:
+                    city = session.query(LocationCity).filter_by(location_id=location.id).first()
+                    if not city:
+                        city = LocationCity(
+                            location_id=location.id,
+                            setting_id=self.setting_id
+                        )
+                        session.add(city)
+                    
+                    # Update city fields
+                    city.government = details_data.get('government', '')
+                
+                
+                session.commit()
+                return True
+                
+        except Exception as e:
+            print(f"Error saving location details: {e}")
+            return False
