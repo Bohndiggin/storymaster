@@ -90,6 +90,7 @@ from storymaster.view.common.user_switcher_dialog import UserSwitcherDialog
 from storymaster.view.litographer.add_node_dialog import AddNodeDialog
 from storymaster.view.litographer.node_notes_dialog import NodeNotesDialog
 from storymaster.view.character_arcs.character_arc_widget import CharacterArcWidget
+from storymaster.view.lorekeeper.new_lorekeeper_page import NewLorekeeperPage
 
 
 class ConnectionPoint(QGraphicsEllipseItem):
@@ -822,6 +823,9 @@ class MainWindowController:
         character_arcs_layout = QVBoxLayout(self.view.ui.characterArcsContainer)
         character_arcs_layout.setContentsMargins(0, 0, 0, 0)
         character_arcs_layout.addWidget(self.character_arc_widget)
+
+        # Initialize new Lorekeeper page
+        self.new_lorekeeper_widget = None  # Will be initialized when needed
 
         self.connect_signals()
         self.on_litographer_selected()  # Start on the litographer page
@@ -2352,9 +2356,17 @@ class MainWindowController:
                     self.view.ui.statusbar.showMessage(
                         f"Switched to setting: {setting_name}", 5000
                     )
-                    # TODO: Refresh lorekeeper views to show new setting data
+                    # Refresh lorekeeper views to show new setting data
                     if self.db_tree_model.rowCount() > 0:
                         self.load_database_structure()
+                    
+                    # Reinitialize new Lorekeeper widget with new setting
+                    if self.new_lorekeeper_widget is not None:
+                        # Remove old widget
+                        self.view.ui.newLorekeeperPage.layout().removeWidget(self.new_lorekeeper_widget)
+                        self.new_lorekeeper_widget.deleteLater()
+                        self.new_lorekeeper_widget = None
+                    
                     self.update_status_indicators()
                     print(f"Switched to setting: {setting_name}")
                 except Exception as e:
@@ -3255,13 +3267,27 @@ class MainWindowController:
 
     def on_lorekeeper_selected(self):
         """Handle switching to the Lorekeeper page."""
-        self.view.ui.pageStack.setCurrentIndex(1)
-        if self.db_tree_model.rowCount() == 0:
-            self.load_database_structure()
+        # Initialize the new Lorekeeper widget if not already done
+        if self.new_lorekeeper_widget is None and self.current_setting_id is not None:
+            self.new_lorekeeper_widget = NewLorekeeperPage(self.model, self.current_setting_id)
+            
+            # Add the widget to the new Lorekeeper page
+            new_lorekeeper_layout = QVBoxLayout(self.view.ui.newLorekeeperPage)
+            new_lorekeeper_layout.setContentsMargins(0, 0, 0, 0)
+            new_lorekeeper_layout.addWidget(self.new_lorekeeper_widget)
+        
+        # Switch to the new Lorekeeper page (index 3 - after litographer, old lorekeeper, character arcs)
+        if self.new_lorekeeper_widget is not None:
+            self.view.ui.pageStack.setCurrentWidget(self.view.ui.newLorekeeperPage)
+        else:
+            # Fallback to old interface if no setting is available
+            self.view.ui.pageStack.setCurrentIndex(1)
+            if self.db_tree_model.rowCount() == 0:
+                self.load_database_structure()
 
     def on_character_arcs_selected(self):
         """Handle switching to the Character Arcs page."""
-        self.view.ui.pageStack.setCurrentIndex(2)
+        self.view.ui.pageStack.setCurrentIndex(3)  # Updated index for character arcs page
         self.character_arc_widget.refresh_arcs(self.current_storyline_id)
 
     def load_database_structure(self):
