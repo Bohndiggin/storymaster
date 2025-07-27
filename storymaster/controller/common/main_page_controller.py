@@ -91,6 +91,13 @@ from storymaster.view.litographer.add_node_dialog import AddNodeDialog
 from storymaster.view.litographer.node_notes_dialog import NodeNotesDialog
 from storymaster.view.character_arcs.new_character_arcs_page import NewCharacterArcsPage
 from storymaster.view.lorekeeper.new_lorekeeper_page import NewLorekeeperPage
+from storymaster.view.common.theme import (
+    get_button_style,
+    get_input_style,
+    get_group_box_style,
+    COLORS,
+    FONTS
+)
 
 
 class ConnectionPoint(QGraphicsEllipseItem):
@@ -900,9 +907,10 @@ class MainWindowController:
             # Right side: Node editing panel
             self.node_panel = QWidget()
             self.node_panel.setFixedWidth(300)
-            self.node_panel.setStyleSheet(
-                "background-color: #1e1e1e; border-left: 1px solid #424242;"
-            )
+            self.node_panel.setStyleSheet(f"""
+                background-color: {COLORS['bg_main']}; 
+                border-left: 1px solid {COLORS['border_main']};
+            """)
 
             panel_layout = QVBoxLayout(self.node_panel)
 
@@ -925,14 +933,16 @@ class MainWindowController:
                 "Drag from red output points to green input points to connect nodes."
             )
             instructions_label.setWordWrap(True)
-            instructions_label.setStyleSheet(
-                "color: #888888; font-size: 10px; padding: 5px;"
-            )
+            instructions_label.setStyleSheet(f"""
+                color: {COLORS['text_muted']}; 
+                font-size: {FONTS['size_small']}; 
+                padding: 5px;
+            """)
             connections_layout.addWidget(instructions_label)
 
             # Input connections list
             input_label = QLabel("Input Connections:")
-            input_label.setStyleSheet("font-weight: bold; color: #4CAF50;")
+            input_label.setStyleSheet(f"font-weight: bold; color: {COLORS['success']};")
             connections_layout.addWidget(input_label)
 
             self.input_connections_list = QListWidget()
@@ -941,7 +951,7 @@ class MainWindowController:
 
             # Output connections list
             output_label = QLabel("Output Connections:")
-            output_label.setStyleSheet("font-weight: bold; color: #FF5722;")
+            output_label.setStyleSheet(f"font-weight: bold; color: {COLORS['warning']};")
             connections_layout.addWidget(output_label)
 
             self.output_connections_list = QListWidget()
@@ -990,10 +1000,9 @@ class MainWindowController:
             # Buttons
             button_layout = QHBoxLayout()
             self.save_node_btn = QPushButton("Save Changes")
+            self.save_node_btn.setStyleSheet(get_button_style('primary'))
             self.delete_node_btn = QPushButton("Delete Node")
-            self.delete_node_btn.setStyleSheet(
-                "QPushButton { background-color: #8B0000; }"
-            )
+            self.delete_node_btn.setStyleSheet(get_button_style('danger'))
 
             button_layout.addWidget(self.save_node_btn)
             button_layout.addWidget(self.delete_node_btn)
@@ -1025,41 +1034,41 @@ class MainWindowController:
         # Section selector container
         section_container = QWidget()
         section_container.setFixedHeight(60)
-        section_container.setStyleSheet(
-            "background-color: #1a1a1a; border-bottom: 1px solid #424242;"
-        )
+        section_container.setStyleSheet(f"""
+            background-color: {COLORS['bg_main']}; 
+            border-bottom: 1px solid {COLORS['border_main']};
+        """)
 
         section_layout = QHBoxLayout(section_container)
         section_layout.setContentsMargins(10, 10, 10, 10)
 
         # Label
         section_label = QLabel("Plot Sections:")
-        section_label.setStyleSheet("color: #dcdcdc; font-weight: bold;")
+        section_label.setStyleSheet(f"color: {COLORS['text_secondary']}; font-weight: bold;")
         section_layout.addWidget(section_label)
 
         # Tab widget for sections
         self.section_tabs = QTabWidget()
-        self.section_tabs.setStyleSheet(
-            """
-            QTabWidget::pane {
-                border: 1px solid #424242;
-                background-color: #2e2e2e;
-            }
-            QTabBar::tab {
-                background-color: #3a3a3a;
-                color: #dcdcdc;
+        self.section_tabs.setStyleSheet(f"""
+            QTabWidget::pane {{
+                border: 1px solid {COLORS['border_main']};
+                background-color: {COLORS['bg_secondary']};
+            }}
+            QTabBar::tab {{
+                background-color: {COLORS['bg_tertiary']};
+                color: {COLORS['text_secondary']};
                 padding: 8px 16px;
                 margin-right: 2px;
-            }
-            QTabBar::tab:selected {
-                background-color: #5c4a8e;
-                color: #ffffff;
-            }
-            QTabBar::tab:hover {
-                background-color: #4a4a4a;
-            }
-        """
-        )
+                border-radius: 4px 4px 0 0;
+            }}
+            QTabBar::tab:selected {{
+                background-color: {COLORS['primary']};
+                color: {COLORS['text_primary']};
+            }}
+            QTabBar::tab:hover {{
+                background-color: {COLORS['border_light']};
+            }}
+        """)
         self.section_tabs.currentChanged.connect(self.on_section_changed)
 
         # Enable context menu on tabs
@@ -1072,20 +1081,7 @@ class MainWindowController:
 
         # Add section button
         add_section_btn = QPushButton("+ Add Section")
-        add_section_btn.setStyleSheet(
-            """
-            QPushButton {
-                background-color: #4CAF50;
-                color: white;
-                border: none;
-                padding: 6px 12px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #66BB6A;
-            }
-        """
-        )
+        add_section_btn.setStyleSheet(get_button_style('primary'))
         add_section_btn.clicked.connect(self.on_add_section_clicked)
         section_layout.addWidget(add_section_btn)
 

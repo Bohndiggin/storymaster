@@ -9,6 +9,14 @@ from PyQt6.QtWidgets import (QComboBox, QDialog, QDialogButtonBox, QFormLayout,
                              QPushButton, QSplitter, QTextEdit, QVBoxLayout)
 
 from storymaster.model.database.schema.base import NoteType
+from storymaster.view.common.theme import (
+    get_button_style,
+    get_input_style,
+    get_group_box_style,
+    get_splitter_style,
+    get_list_style,
+    get_dialog_style
+)
 
 
 class NodeNotesDialog(QDialog):
@@ -26,6 +34,7 @@ class NodeNotesDialog(QDialog):
             f"Notes for Node (Type: {node_data.node_type.name.title()})"
         )
         self.setMinimumSize(600, 400)
+        self.setStyleSheet(get_dialog_style())
 
         self.setup_ui()
         self.load_notes()
@@ -36,6 +45,7 @@ class NodeNotesDialog(QDialog):
 
         # Node info section
         node_info_group = QGroupBox("Node Information")
+        node_info_group.setStyleSheet(get_group_box_style())
         node_info_layout = QFormLayout()
         node_info_layout.addRow(
             "Node Type:", QLabel(self.node_data.node_type.name.title())
@@ -45,19 +55,24 @@ class NodeNotesDialog(QDialog):
 
         # Main content splitter
         splitter = QSplitter(Qt.Orientation.Horizontal)
+        splitter.setStyleSheet(get_splitter_style())
 
         # Left side - Notes list
         left_widget = QGroupBox("Notes")
+        left_widget.setStyleSheet(get_group_box_style())
         left_layout = QVBoxLayout()
 
         self.notes_list = QListWidget()
+        self.notes_list.setStyleSheet(get_list_style())
         self.notes_list.itemSelectionChanged.connect(self.on_note_selected)
         left_layout.addWidget(self.notes_list)
 
         # List control buttons
         list_buttons_layout = QHBoxLayout()
         self.add_note_btn = QPushButton("Add Note")
+        self.add_note_btn.setStyleSheet(get_button_style('primary'))
         self.delete_note_btn = QPushButton("Delete Note")
+        self.delete_note_btn.setStyleSheet(get_button_style('danger'))
         self.delete_note_btn.setEnabled(False)
 
         self.add_note_btn.clicked.connect(self.add_note)
@@ -72,14 +87,18 @@ class NodeNotesDialog(QDialog):
 
         # Right side - Note editor
         right_widget = QGroupBox("Note Editor")
+        right_widget.setStyleSheet(get_group_box_style())
         right_layout = QFormLayout()
 
         self.note_type_combo = QComboBox()
+        self.note_type_combo.setStyleSheet(get_input_style())
         for note_type in NoteType:
             self.note_type_combo.addItem(note_type.name.title(), note_type)
 
         self.note_title_edit = QLineEdit()
+        self.note_title_edit.setStyleSheet(get_input_style())
         self.note_description_edit = QTextEdit()
+        self.note_description_edit.setStyleSheet(get_input_style())
 
         right_layout.addRow("Note Type:", self.note_type_combo)
         right_layout.addRow("Title:", self.note_title_edit)
@@ -87,9 +106,11 @@ class NodeNotesDialog(QDialog):
 
         # Lore associations section
         associations_group = QGroupBox("Lore Associations")
+        associations_group.setStyleSheet(get_group_box_style())
         associations_layout = QVBoxLayout()
 
         self.associations_list = QListWidget()
+        self.associations_list.setStyleSheet(get_list_style())
         self.associations_list.setMaximumHeight(100)
         associations_layout.addWidget(QLabel("Associated Lore Entities:"))
         associations_layout.addWidget(self.associations_list)
@@ -97,7 +118,9 @@ class NodeNotesDialog(QDialog):
         # Association control buttons
         assoc_buttons_layout = QHBoxLayout()
         self.add_association_btn = QPushButton("Add Association")
+        self.add_association_btn.setStyleSheet(get_button_style())
         self.remove_association_btn = QPushButton("Remove Association")
+        self.remove_association_btn.setStyleSheet(get_button_style('danger'))
         self.remove_association_btn.setEnabled(False)
 
         self.add_association_btn.clicked.connect(self.add_association)
@@ -116,7 +139,9 @@ class NodeNotesDialog(QDialog):
         # Note editor buttons
         editor_buttons_layout = QHBoxLayout()
         self.save_note_btn = QPushButton("Save Note")
+        self.save_note_btn.setStyleSheet(get_button_style('primary'))
         self.cancel_edit_btn = QPushButton("Cancel")
+        self.cancel_edit_btn.setStyleSheet(get_button_style())
 
         self.save_note_btn.clicked.connect(self.save_note)
         self.cancel_edit_btn.clicked.connect(self.cancel_edit)

@@ -19,6 +19,7 @@ from storymaster.view.lorekeeper.lorekeeper_navigation import (
 from storymaster.view.lorekeeper.entity_page import EntityDetailPage
 from storymaster.view.lorekeeper.lorekeeper_model_adapter import LorekeeperModelAdapter
 from storymaster.model.lorekeeper.entity_mappings import get_entity_mapping
+from storymaster.view.common.theme import get_splitter_style, COLORS, FONTS
 
 
 class NewLorekeeperPage(QWidget):
@@ -47,21 +48,7 @@ class NewLorekeeperPage(QWidget):
         # Create main splitter
         splitter = QSplitter(Qt.Orientation.Horizontal)
         splitter.setHandleWidth(3)
-        splitter.setStyleSheet("""
-            QSplitter::handle {
-                background: #555;
-                border: 1px solid #777;
-                border-radius: 2px;
-            }
-            QSplitter::handle:hover {
-                background: #666;
-                border-color: #888;
-            }
-            QSplitter::handle:pressed {
-                background: #0d7d7e;
-                border-color: #0d7d7e;
-            }
-        """)
+        splitter.setStyleSheet(get_splitter_style())
 
         # Left panel: Navigation and browser
         left_panel = self.create_left_panel()
@@ -88,22 +75,7 @@ class NewLorekeeperPage(QWidget):
         # Create vertical splitter for navigation and browser
         left_splitter = QSplitter(Qt.Orientation.Vertical)
         left_splitter.setHandleWidth(3)
-        left_splitter.setStyleSheet("""
-            QSplitter::handle {
-                background: #444;
-                border: 1px solid #666;
-                border-radius: 1px;
-                margin: 2px;
-            }
-            QSplitter::handle:hover {
-                background: #555;
-                border-color: #777;
-            }
-            QSplitter::handle:pressed {
-                background: #0d7d7e;
-                border-color: #0d7d7e;
-            }
-        """)
+        left_splitter.setStyleSheet(get_splitter_style())
 
         # Navigation
         self.navigation = LorekeeperNavigation()
@@ -156,7 +128,7 @@ class NewLorekeeperPage(QWidget):
         font.setBold(True)
         welcome_label.setFont(font)
         welcome_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        welcome_label.setStyleSheet("color: #0d7d7e; margin: 32px;")
+        welcome_label.setStyleSheet(f"color: {COLORS['text_accent']}; margin: 32px;")
 
         description = QLabel(
             "Create and manage the people, places, organizations, and events in your story world.\n\n"
@@ -166,7 +138,7 @@ class NewLorekeeperPage(QWidget):
             "• Use the search bar to quickly find what you're looking for"
         )
         description.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        description.setStyleSheet("color: #ccc; font-size: 14px; line-height: 1.5;")
+        description.setStyleSheet(f"color: {COLORS['text_secondary']}; font-size: {FONTS['size_large']}; line-height: 1.5;")
         description.setWordWrap(True)
 
         layout.addStretch()

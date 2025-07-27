@@ -25,6 +25,14 @@ from storymaster.model.lorekeeper.entity_mappings import (
     get_entity_icon,
     get_plural_name,
 )
+from storymaster.view.common.theme import (
+    COLORS, 
+    DIMENSIONS, 
+    FONTS,
+    get_list_style,
+    get_button_style,
+    get_splitter_style
+)
 
 
 
@@ -36,28 +44,7 @@ class EntityListWidget(QListWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.itemDoubleClicked.connect(self.on_item_double_clicked)
-        self.setStyleSheet(
-            """
-            QListWidget {
-                border: 1px solid #555;
-                border-radius: 4px;
-                background-color: #2b2b2b;
-                color: white;
-                alternate-background-color: #323232;
-            }
-            QListWidget::item {
-                padding: 4px 6px;
-                border-bottom: 1px solid #444;
-                min-height: 20px;
-            }
-            QListWidget::item:selected {
-                background-color: #0d7d7e;
-            }
-            QListWidget::item:hover {
-                background-color: #3c3c3c;
-            }
-        """
-        )
+        self.setStyleSheet(get_list_style())
 
     def set_entities(self, entities: list, table_name: str):
         """Set the list of entities to display"""
@@ -181,28 +168,13 @@ class LorekeeperNavigation(QWidget):
         font.setBold(True)
         header.setFont(font)
         header.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        header.setStyleSheet("color: #0d7d7e; margin: 4px 0;")
+        header.setStyleSheet(f"color: {COLORS['text_accent']}; margin: {DIMENSIONS['margin_medium']} 0;")
         layout.addWidget(header)
 
         # Create vertical splitter for the two category sections
         categories_splitter = QSplitter(Qt.Orientation.Vertical)
         categories_splitter.setHandleWidth(2)
-        categories_splitter.setStyleSheet("""
-            QSplitter::handle {
-                background: #333;
-                border: 1px solid #555;
-                border-radius: 1px;
-                margin: 1px;
-            }
-            QSplitter::handle:hover {
-                background: #444;
-                border-color: #666;
-            }
-            QSplitter::handle:pressed {
-                background: #0d7d7e;
-                border-color: #0d7d7e;
-            }
-        """)
+        categories_splitter.setStyleSheet(get_splitter_style())
 
         # Main categories section
         main_section = self.create_category_section("Main Categories", MAIN_CATEGORIES)
@@ -230,17 +202,15 @@ class LorekeeperNavigation(QWidget):
         """Create a section of category list"""
         section = QFrame()
         section.setFrameStyle(QFrame.Shape.StyledPanel)
-        section.setStyleSheet(
-            """
-            QFrame {
-                border: 1px solid #555;
-                border-radius: 4px;
-                background-color: #1e1e1e;
-                margin: 2px;
-                padding: 4px;
-            }
-        """
-        )
+        section.setStyleSheet(f"""
+            QFrame {{
+                border: 1px solid {COLORS['border_main']};
+                border-radius: {DIMENSIONS['border_radius']};
+                background-color: {COLORS['bg_main']};
+                margin: {DIMENSIONS['margin_small']};
+                padding: {DIMENSIONS['padding_small']};
+            }}
+        """)
 
         layout = QVBoxLayout()
         layout.setSpacing(1)
@@ -252,35 +222,33 @@ class LorekeeperNavigation(QWidget):
         font.setPointSize(10)
         font.setBold(True)
         title_label.setFont(font)
-        title_label.setStyleSheet("color: #ccc; margin-bottom: 2px;")
+        title_label.setStyleSheet(f"color: {COLORS['text_secondary']}; margin-bottom: {DIMENSIONS['margin_small']};")
         layout.addWidget(title_label)
 
         # Category list
         category_list = QListWidget()
         # Remove fixed height constraints to allow dynamic resizing
         category_list.setMinimumHeight(60)  # Minimum to show at least 2-3 items
-        category_list.setStyleSheet(
-            """
-            QListWidget {
+        category_list.setStyleSheet(f"""
+            QListWidget {{
                 border: none;
-                background-color: #2b2b2b;
-                color: white;
-                font-size: 11px;
-            }
-            QListWidget::item {
-                padding: 2px 6px;
+                background-color: {COLORS['bg_secondary']};
+                color: {COLORS['text_primary']};
+                font-size: {FONTS['size_small']};
+            }}
+            QListWidget::item {{
+                padding: {DIMENSIONS['margin_small']} {DIMENSIONS['padding_medium']};
                 border: none;
-                border-radius: 2px;
+                border-radius: {DIMENSIONS['border_radius_small']};
                 margin: 0px;
-            }
-            QListWidget::item:selected {
-                background-color: #0d7d7e;
-            }
-            QListWidget::item:hover {
-                background-color: #3c3c3c;
-            }
-        """
-        )
+            }}
+            QListWidget::item:selected {{
+                background-color: {COLORS['primary']};
+            }}
+            QListWidget::item:hover {{
+                background-color: {COLORS['bg_tertiary']};
+            }}
+        """)
         
         for table_name in categories:
             mapping = get_entity_mapping(table_name)
@@ -368,24 +336,7 @@ class LorekeeperBrowser(QWidget):
 
         self.new_button = QPushButton("New")
         self.new_button.clicked.connect(self.new_entity_requested.emit)
-        self.new_button.setStyleSheet(
-            """
-            QPushButton {
-                background-color: #0d7d7e;
-                color: white;
-                border: none;
-                padding: 8px 16px;
-                border-radius: 4px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #0e8d8e;
-            }
-            QPushButton:pressed {
-                background-color: #0c6d6e;
-            }
-        """
-        )
+        self.new_button.setStyleSheet(get_button_style('primary'))
         header_layout.addWidget(self.new_button)
 
         layout.addLayout(header_layout)

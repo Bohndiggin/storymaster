@@ -2,6 +2,12 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (QDialog, QHBoxLayout, QLabel, QLineEdit,
                              QListWidget, QListWidgetItem, QMessageBox,
                              QPushButton, QVBoxLayout)
+from storymaster.view.common.theme import (
+    get_button_style,
+    get_input_style,
+    get_list_style,
+    get_dialog_style
+)
 
 
 class PlotManagerDialog(QDialog):
@@ -11,6 +17,7 @@ class PlotManagerDialog(QDialog):
         self.setModal(True)
         self.resize(400, 300)
         self.selected_plot_id = None
+        self.setStyleSheet(get_dialog_style())
         self.setup_ui()
 
     def setup_ui(self):
@@ -21,6 +28,7 @@ class PlotManagerDialog(QDialog):
         layout.addWidget(list_label)
 
         self.plot_list = QListWidget()
+        self.plot_list.setStyleSheet(get_list_style())
         self.plot_list.itemSelectionChanged.connect(self.on_selection_changed)
         layout.addWidget(self.plot_list)
 
@@ -28,7 +36,9 @@ class PlotManagerDialog(QDialog):
         new_plot_layout = QHBoxLayout()
         new_plot_label = QLabel("New Plot Name:")
         self.new_plot_input = QLineEdit()
+        self.new_plot_input.setStyleSheet(get_input_style())
         self.add_plot_btn = QPushButton("Add Plot")
+        self.add_plot_btn.setStyleSheet(get_button_style('primary'))
         self.add_plot_btn.clicked.connect(self.on_add_plot)
 
         new_plot_layout.addWidget(new_plot_label)
@@ -40,14 +50,17 @@ class PlotManagerDialog(QDialog):
         button_layout = QHBoxLayout()
 
         self.switch_btn = QPushButton("Switch to Plot")
+        self.switch_btn.setStyleSheet(get_button_style('primary'))
         self.switch_btn.setEnabled(False)
         self.switch_btn.clicked.connect(self.on_switch_plot)
 
         self.delete_btn = QPushButton("Delete Plot")
+        self.delete_btn.setStyleSheet(get_button_style('danger'))
         self.delete_btn.setEnabled(False)
         self.delete_btn.clicked.connect(self.on_delete_plot)
 
         self.cancel_btn = QPushButton("Cancel")
+        self.cancel_btn.setStyleSheet(get_button_style())
         self.cancel_btn.clicked.connect(self.reject)
 
         button_layout.addWidget(self.switch_btn)

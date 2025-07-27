@@ -26,6 +26,14 @@ from storymaster.model.lorekeeper.entity_mappings import (
     FieldSection,
     get_entity_mapping,
 )
+from storymaster.view.common.theme import (
+    get_button_style,
+    get_input_style,
+    get_group_box_style,
+    get_splitter_style,
+    COLORS,
+    FONTS
+)
 
 
 class SectionWidget(QGroupBox):
@@ -39,6 +47,7 @@ class SectionWidget(QGroupBox):
         self.section = section
         self.model_adapter = model_adapter
         self.field_widgets = {}
+        self.setStyleSheet(get_group_box_style())
         self.setup_ui()
 
     def setup_ui(self):
@@ -49,9 +58,7 @@ class SectionWidget(QGroupBox):
         # Add description if available
         if self.section.description:
             desc_label = QLabel(self.section.description)
-            desc_label.setStyleSheet(
-                "color: #888; font-style: italic; margin-bottom: 8px;"
-            )
+            desc_label.setStyleSheet(f"color: {COLORS['text_muted']}; font-style: italic; margin-bottom: 8px;")
             desc_label.setWordWrap(True)
             layout.addRow(desc_label)
 
@@ -124,9 +131,11 @@ class SectionWidget(QGroupBox):
             widget = QTextEdit()
             widget.setMaximumHeight(100)
             widget.setAcceptRichText(False)
+            widget.setStyleSheet(get_input_style())
         elif field_name in foreign_key_fields:
             widget = QComboBox()
             widget.setEditable(True)
+            widget.setStyleSheet(get_input_style())
             # Populate foreign key dropdown if model adapter is available
             if self.model_adapter:
                 self.populate_foreign_key_dropdown(widget, field_name)
@@ -140,8 +149,10 @@ class SectionWidget(QGroupBox):
         ]:
             widget = QLineEdit()
             widget.setPlaceholderText("Enter a number")
+            widget.setStyleSheet(get_input_style())
         else:
             widget = QLineEdit()
+            widget.setStyleSheet(get_input_style())
 
         return widget
 
@@ -347,6 +358,7 @@ class EntityDetailPage(QWidget):
 
         # Create splitter for resizable sections
         splitter = QSplitter(Qt.Orientation.Horizontal)
+        splitter.setStyleSheet(get_splitter_style())
 
         # Left panel: Entity details
         left_panel = self.create_details_panel()
@@ -383,7 +395,9 @@ class EntityDetailPage(QWidget):
         header_layout.addStretch()
 
         self.save_button = QPushButton("Save")
+        self.save_button.setStyleSheet(get_button_style('primary'))
         self.delete_button = QPushButton("Delete")
+        self.delete_button.setStyleSheet(get_button_style('danger'))
         self.save_button.clicked.connect(self.save_entity)
         self.delete_button.clicked.connect(self.delete_entity)
 

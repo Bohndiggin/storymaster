@@ -3,6 +3,13 @@
 from PyQt6.QtWidgets import QDialog, QMessageBox, QListWidgetItem
 from PyQt6.QtCore import Qt
 from .character_arc_dialog_ui import Ui_CharacterArcDialog
+from storymaster.view.common.theme import (
+    get_button_style,
+    get_input_style,
+    get_list_style,
+    get_dialog_style,
+    COLORS
+)
 
 
 class CharacterArcDialog(QDialog):
@@ -19,6 +26,9 @@ class CharacterArcDialog(QDialog):
         self.ui = Ui_CharacterArcDialog()
         self.ui.setupUi(self)
         
+        # Apply theming
+        self.setStyleSheet(get_dialog_style())
+        
         self.setup_ui()
         self.load_data()
         
@@ -32,6 +42,21 @@ class CharacterArcDialog(QDialog):
         else:
             # Add mode
             self.ui.titleLabel.setText("Add Character Arc")
+            
+        # Apply component theming
+        self.ui.titleLabel.setStyleSheet(f"color: {COLORS['text_accent']};")
+        self.ui.arcTitleEdit.setStyleSheet(get_input_style())
+        self.ui.arcTypeComboBox.setStyleSheet(get_input_style())
+        self.ui.charactersListWidget.setStyleSheet(get_list_style())
+        self.ui.descriptionEdit.setStyleSheet(get_input_style())
+        
+        # Style button box
+        ok_button = self.ui.buttonBox.button(self.ui.buttonBox.StandardButton.Ok)
+        cancel_button = self.ui.buttonBox.button(self.ui.buttonBox.StandardButton.Cancel)
+        if ok_button:
+            ok_button.setStyleSheet(get_button_style('primary'))
+        if cancel_button:
+            cancel_button.setStyleSheet(get_button_style())
             
         # Connect signals
         self.ui.buttonBox.accepted.connect(self.accept)

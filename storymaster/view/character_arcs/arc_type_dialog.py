@@ -3,6 +3,12 @@
 from PyQt6.QtWidgets import QDialog, QMessageBox
 from PyQt6.QtCore import Qt
 from .arc_type_dialog_ui import Ui_ArcTypeDialog
+from storymaster.view.common.theme import (
+    get_button_style,
+    get_input_style,
+    get_dialog_style,
+    COLORS
+)
 
 
 class ArcTypeDialog(QDialog):
@@ -18,6 +24,9 @@ class ArcTypeDialog(QDialog):
         self.ui = Ui_ArcTypeDialog()
         self.ui.setupUi(self)
         
+        # Apply theming
+        self.setStyleSheet(get_dialog_style())
+        
         self.setup_ui()
         
     def setup_ui(self):
@@ -30,6 +39,19 @@ class ArcTypeDialog(QDialog):
         else:
             # Add mode
             self.ui.titleLabel.setText("Add Arc Type")
+            
+        # Apply component theming
+        self.ui.titleLabel.setStyleSheet(f"color: {COLORS['text_accent']};")
+        self.ui.nameEdit.setStyleSheet(get_input_style())
+        self.ui.descriptionEdit.setStyleSheet(get_input_style())
+        
+        # Style button box
+        ok_button = self.ui.buttonBox.button(self.ui.buttonBox.StandardButton.Ok)
+        cancel_button = self.ui.buttonBox.button(self.ui.buttonBox.StandardButton.Cancel)
+        if ok_button:
+            ok_button.setStyleSheet(get_button_style('primary'))
+        if cancel_button:
+            cancel_button.setStyleSheet(get_button_style())
             
         # Connect signals
         self.ui.buttonBox.accepted.connect(self.accept)

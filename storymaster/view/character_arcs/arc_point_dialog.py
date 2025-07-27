@@ -3,6 +3,12 @@
 from PyQt6.QtWidgets import QDialog, QMessageBox
 from PyQt6.QtCore import Qt
 from .arc_point_dialog_ui import Ui_ArcPointDialog
+from storymaster.view.common.theme import (
+    get_button_style,
+    get_input_style,
+    get_dialog_style,
+    COLORS
+)
 
 
 class ArcPointDialog(QDialog):
@@ -18,6 +24,9 @@ class ArcPointDialog(QDialog):
         # Setup UI
         self.ui = Ui_ArcPointDialog()
         self.ui.setupUi(self)
+        
+        # Apply theming
+        self.setStyleSheet(get_dialog_style())
         
         self.setup_ui()
         self.load_nodes()
@@ -51,6 +60,25 @@ class ArcPointDialog(QDialog):
                 self.ui.orderSpinBox.setValue(next_order)
             except Exception:
                 self.ui.orderSpinBox.setValue(1)
+                
+        # Apply component theming
+        self.ui.titleLabel.setStyleSheet(f"color: {COLORS['text_accent']};")
+        self.ui.titleEdit.setStyleSheet(get_input_style())
+        self.ui.orderSpinBox.setStyleSheet(get_input_style())
+        self.ui.descriptionEdit.setStyleSheet(get_input_style())
+        self.ui.emotionalStateEdit.setStyleSheet(get_input_style())
+        self.ui.relationshipsEdit.setStyleSheet(get_input_style())
+        self.ui.goalsEdit.setStyleSheet(get_input_style())
+        self.ui.conflictEdit.setStyleSheet(get_input_style())
+        self.ui.nodeComboBox.setStyleSheet(get_input_style())
+        
+        # Style button box
+        ok_button = self.ui.buttonBox.button(self.ui.buttonBox.StandardButton.Ok)
+        cancel_button = self.ui.buttonBox.button(self.ui.buttonBox.StandardButton.Cancel)
+        if ok_button:
+            ok_button.setStyleSheet(get_button_style('primary'))
+        if cancel_button:
+            cancel_button.setStyleSheet(get_button_style())
                 
         # Connect signals
         self.ui.buttonBox.accepted.connect(self.accept)

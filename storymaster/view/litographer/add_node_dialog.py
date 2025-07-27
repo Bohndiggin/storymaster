@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import (QComboBox, QDialog, QDialogButtonBox,
                              QFormLayout, QVBoxLayout)
 
 from storymaster.model.database import schema
+from storymaster.view.common.theme import get_input_style, get_dialog_style, get_button_style
 
 
 class AddNodeDialog(QDialog):
@@ -17,9 +18,11 @@ class AddNodeDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Add New Node")
         self.setMinimumWidth(300)
+        self.setStyleSheet(get_dialog_style())
 
         # --- Create Widgets ---
         self.node_type_combo = QComboBox()
+        self.node_type_combo.setStyleSheet(get_input_style())
 
         # --- Configure Widgets ---
         # Populate the node type combo box from the NodeType enum

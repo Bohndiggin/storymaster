@@ -28,6 +28,16 @@ from storymaster.model.database import schema
 from .arc_type_manager_dialog import ArcTypeManagerDialog
 from .arc_point_dialog import ArcPointDialog
 from .character_arc_dialog import CharacterArcDialog
+from storymaster.view.common.theme import (
+    get_button_style,
+    get_input_style,
+    get_group_box_style,
+    get_splitter_style,
+    get_list_style,
+    get_dialog_style,
+    COLORS,
+    FONTS
+)
 
 
 class CharacterArcBrowser(QWidget):
@@ -52,6 +62,7 @@ class CharacterArcBrowser(QWidget):
         header_layout.addStretch()
         
         self.new_arc_button = QPushButton("New Arc")
+        self.new_arc_button.setStyleSheet(get_button_style('primary'))
         self.new_arc_button.clicked.connect(self.new_arc_requested.emit)
         header_layout.addWidget(self.new_arc_button)
         
@@ -59,6 +70,7 @@ class CharacterArcBrowser(QWidget):
         
         # Arc list
         self.arc_list = QListWidget()
+        self.arc_list.setStyleSheet(get_list_style())
         self.arc_list.itemSelectionChanged.connect(self.on_selection_changed)
         layout.addWidget(self.arc_list)
         
@@ -139,6 +151,7 @@ class CharacterArcDetailPage(QWidget):
         
         # Create splitter for resizable sections
         splitter = QSplitter(Qt.Orientation.Horizontal)
+        splitter.setStyleSheet(get_splitter_style())
         
         # Left panel: Arc details
         left_panel = self.create_details_panel()
@@ -177,6 +190,11 @@ class CharacterArcDetailPage(QWidget):
         self.delete_button = QPushButton("Delete")
         self.manage_types_button = QPushButton("Manage Arc Types")
         
+        # Apply button styling
+        self.edit_button.setStyleSheet(get_button_style())
+        self.delete_button.setStyleSheet(get_button_style('danger'))
+        self.manage_types_button.setStyleSheet(get_button_style())
+        
         self.edit_button.clicked.connect(self.edit_arc)
         self.delete_button.clicked.connect(self.delete_arc)
         self.manage_types_button.clicked.connect(self.manage_arc_types)
@@ -197,14 +215,18 @@ class CharacterArcDetailPage(QWidget):
         
         # Arc information section
         info_group = QGroupBox("Arc Information")
+        info_group.setStyleSheet(get_group_box_style())
         info_layout = QFormLayout()
         
         self.arc_type_edit = QLineEdit()
         self.arc_type_edit.setReadOnly(True)
+        self.arc_type_edit.setStyleSheet(get_input_style())
         self.characters_edit = QLineEdit()
         self.characters_edit.setReadOnly(True)
+        self.characters_edit.setStyleSheet(get_input_style())
         self.description_edit = QTextEdit()
         self.description_edit.setReadOnly(True)
+        self.description_edit.setStyleSheet(get_input_style())
         self.description_edit.setMaximumHeight(100)
         
         info_layout.addRow("Arc Type:", self.arc_type_edit)
@@ -236,13 +258,17 @@ class CharacterArcDetailPage(QWidget):
         font.setPointSize(14)
         font.setBold(True)
         header.setFont(font)
+        header.setStyleSheet(f"color: {COLORS['text_accent']};")
         header_layout.addWidget(header)
         
         header_layout.addStretch()
         
         self.new_point_button = QPushButton("New Point")
+        self.new_point_button.setStyleSheet(get_button_style('primary'))
         self.edit_point_button = QPushButton("Edit Point")
+        self.edit_point_button.setStyleSheet(get_button_style())
         self.delete_point_button = QPushButton("Delete Point")
+        self.delete_point_button.setStyleSheet(get_button_style('danger'))
         
         self.new_point_button.clicked.connect(self.new_arc_point)
         self.edit_point_button.clicked.connect(self.edit_arc_point)
@@ -266,6 +292,34 @@ class CharacterArcDetailPage(QWidget):
         self.arc_points_tree.setSortingEnabled(True)
         self.arc_points_tree.sortByColumn(0, Qt.SortOrder.AscendingOrder)
         self.arc_points_tree.itemSelectionChanged.connect(self.on_arc_point_selection_changed)
+        
+        # Apply theming to tree widget
+        tree_style = f"""
+            QTreeWidget {{
+                background-color: {COLORS['bg_main']};
+                color: {COLORS['text_primary']};
+                border: 1px solid {COLORS['border_main']};
+                gridline-color: {COLORS['border_main']};
+                selection-background-color: {COLORS['primary']};
+                alternate-background-color: {COLORS['bg_secondary']};
+            }}
+            QTreeWidget::item {{
+                padding: 6px;
+                border-bottom: 1px solid {COLORS['border_main']};
+            }}
+            QTreeWidget::item:selected {{
+                background-color: {COLORS['primary']};
+                color: {COLORS['text_primary']};
+            }}
+            QHeaderView::section {{
+                background-color: {COLORS['bg_secondary']};
+                color: {COLORS['text_primary']};
+                padding: 6px;
+                border: 1px solid {COLORS['border_main']};
+                font-weight: bold;
+            }}
+        """
+        self.arc_points_tree.setStyleSheet(tree_style)
         
         layout.addWidget(self.arc_points_tree)
         panel.setLayout(layout)
@@ -494,7 +548,7 @@ class WelcomePage(QWidget):
         description_label = QLabel("Select a character arc from the list to view and edit its details, or create a new arc to get started.")
         description_label.setWordWrap(True)
         description_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        description_label.setStyleSheet("color: #666; margin: 20px;")
+        description_label.setStyleSheet(f"color: {COLORS['text_secondary']}; margin: 20px;")
         center_layout.addWidget(description_label)
         
         layout.addLayout(center_layout)
@@ -519,6 +573,7 @@ class NewCharacterArcsPage(QWidget):
         
         # Create main splitter
         splitter = QSplitter(Qt.Orientation.Horizontal)
+        splitter.setStyleSheet(get_splitter_style())
         
         # Left panel: Arc browser
         left_panel = self.create_left_panel()

@@ -4,6 +4,11 @@ from PyQt6.QtWidgets import QDialog, QTableWidgetItem, QMessageBox, QHeaderView
 from PyQt6.QtCore import Qt
 from .arc_type_dialog import ArcTypeDialog
 from .arc_type_manager_dialog_ui import Ui_ArcTypeManagerDialog
+from storymaster.view.common.theme import (
+    get_button_style,
+    get_dialog_style,
+    COLORS
+)
 
 
 class ArcTypeManagerDialog(QDialog):
@@ -19,6 +24,9 @@ class ArcTypeManagerDialog(QDialog):
         self.ui = Ui_ArcTypeManagerDialog()
         self.ui.setupUi(self)
         
+        # Apply theming
+        self.setStyleSheet(get_dialog_style())
+        
         self.setup_ui()
         self.connect_signals()
         self.refresh_arc_types()
@@ -29,6 +37,39 @@ class ArcTypeManagerDialog(QDialog):
         self.ui.arcTypesTable.setSelectionBehavior(self.ui.arcTypesTable.SelectionBehavior.SelectRows)
         self.ui.arcTypesTable.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.ui.arcTypesTable.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        
+        # Apply component theming
+        self.ui.addArcTypeButton.setStyleSheet(get_button_style('primary'))
+        self.ui.editArcTypeButton.setStyleSheet(get_button_style())
+        self.ui.deleteArcTypeButton.setStyleSheet(get_button_style('danger'))
+        
+        # Apply dark theme to table
+        table_style = f"""
+            QTableWidget {{
+                background-color: {COLORS['bg_main']};
+                color: {COLORS['text_primary']};
+                border: 1px solid {COLORS['border_main']};
+                gridline-color: {COLORS['border_main']};
+                selection-background-color: {COLORS['primary']};
+                alternate-background-color: {COLORS['bg_secondary']};
+            }}
+            QTableWidget::item {{
+                padding: 8px;
+                border-bottom: 1px solid {COLORS['border_main']};
+            }}
+            QTableWidget::item:selected {{
+                background-color: {COLORS['primary']};
+                color: {COLORS['text_primary']};
+            }}
+            QHeaderView::section {{
+                background-color: {COLORS['bg_secondary']};
+                color: {COLORS['text_primary']};
+                padding: 8px;
+                border: 1px solid {COLORS['border_main']};
+                font-weight: bold;
+            }}
+        """
+        self.ui.arcTypesTable.setStyleSheet(table_style)
         
     def connect_signals(self):
         """Connect widget signals"""
