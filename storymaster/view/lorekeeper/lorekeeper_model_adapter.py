@@ -22,6 +22,7 @@ from storymaster.model.database.schema.base import (
     LocationCity,
     LocationCityDistricts,
     LocationFloraFauna,
+    LitographyNotes,
 )
 
 
@@ -47,6 +48,7 @@ class LorekeeperModelAdapter:
             "sub_race": SubRace,
             "alignment": Alignment,
             "stat": Stat,
+            "litography_notes": LitographyNotes,
         }
 
     def get_entities(self, table_name: str) -> List[Any]:
@@ -57,11 +59,25 @@ class LorekeeperModelAdapter:
 
         try:
             with Session(self.model.engine) as session:
-                return (
-                    session.query(table_class)
-                    .filter_by(setting_id=self.setting_id)
-                    .all()
-                )
+                # Notes use storyline_id instead of setting_id
+                if table_name == "litography_notes":
+                    # For now, get all storylines for this setting and get notes for all of them
+                    from storymaster.model.database.schema.base import Storyline, StorylineToSetting
+                    storylines = session.query(Storyline).join(StorylineToSetting).filter(
+                        StorylineToSetting.setting_id == self.setting_id
+                    ).all()
+                    
+                    all_notes = []
+                    for storyline in storylines:
+                        notes = session.query(table_class).filter_by(storyline_id=storyline.id).all()
+                        all_notes.extend(notes)
+                    return all_notes
+                else:
+                    return (
+                        session.query(table_class)
+                        .filter_by(setting_id=self.setting_id)
+                        .all()
+                    )
         except Exception as e:
             print(f"Error loading entities for {table_name}: {e}")
             return []
@@ -74,11 +90,15 @@ class LorekeeperModelAdapter:
 
         try:
             with Session(self.model.engine) as session:
-                return (
-                    session.query(table_class)
-                    .filter_by(id=entity_id, setting_id=self.setting_id)
-                    .first()
-                )
+                if table_name == "litography_notes":
+                    # Notes don't have setting_id, just get by ID
+                    return session.query(table_class).filter_by(id=entity_id).first()
+                else:
+                    return (
+                        session.query(table_class)
+                        .filter_by(id=entity_id, setting_id=self.setting_id)
+                        .first()
+                    )
         except Exception as e:
             print(f"Error loading entity {entity_id} from {table_name}: {e}")
             return None
@@ -510,6 +530,79 @@ class LorekeeperModelAdapter:
                         ).all()
                         
                         return flora_fauna_entries
+                
+                elif relationship_name == "litography_note_to_world_data":
+                    from storymaster.model.database.schema.base import LitographyNoteToWorldData, WorldData, LitographyNotes
+                    
+                    # Query database directly for fresh data
+                    if entity.__class__.__name__ == 'LitographyNotes':
+                        # Get lore entries associated with this note
+                        note_relations = session.query(LitographyNoteToWorldData).filter(
+                            LitographyNoteToWorldData.note_id == entity.id
+                        ).all()
+                        return [session.get(WorldData, rel.world_data_id) for rel in note_relations if rel.world_data_id]
+                    elif entity.__class__.__name__ == 'WorldData':
+                        # Get notes associated with this lore entry
+                        note_relations = session.query(LitographyNoteToWorldData).filter(
+                            LitographyNoteToWorldData.world_data_id == entity.id
+                        ).all()
+                        return [session.get(LitographyNotes, rel.note_id) for rel in note_relations if rel.note_id]
+                
+                elif relationship_name == "litography_note_to_actor":
+                    from storymaster.model.database.schema.base import LitographyNoteToActor, Actor, LitographyNotes
+                    
+                    if entity.__class__.__name__ == 'LitographyNotes':
+                        note_relations = session.query(LitographyNoteToActor).filter(
+                            LitographyNoteToActor.note_id == entity.id
+                        ).all()
+                        return [session.get(Actor, rel.actor_id) for rel in note_relations if rel.actor_id]
+                    elif entity.__class__.__name__ == 'Actor':
+                        note_relations = session.query(LitographyNoteToActor).filter(
+                            LitographyNoteToActor.actor_id == entity.id
+                        ).all()
+                        return [session.get(LitographyNotes, rel.note_id) for rel in note_relations if rel.note_id]
+                
+                elif relationship_name == "litography_note_to_location":
+                    from storymaster.model.database.schema.base import LitographyNoteToLocation, Location, LitographyNotes
+                    
+                    if entity.__class__.__name__ == 'LitographyNotes':
+                        note_relations = session.query(LitographyNoteToLocation).filter(
+                            LitographyNoteToLocation.note_id == entity.id
+                        ).all()
+                        return [session.get(Location, rel.location_id) for rel in note_relations if rel.location_id]
+                    elif entity.__class__.__name__ == 'Location':
+                        note_relations = session.query(LitographyNoteToLocation).filter(
+                            LitographyNoteToLocation.location_id == entity.id
+                        ).all()
+                        return [session.get(LitographyNotes, rel.note_id) for rel in note_relations if rel.note_id]
+                
+                elif relationship_name == "litography_note_to_object":
+                    from storymaster.model.database.schema.base import LitographyNoteToObject, Object_, LitographyNotes
+                    
+                    if entity.__class__.__name__ == 'LitographyNotes':
+                        note_relations = session.query(LitographyNoteToObject).filter(
+                            LitographyNoteToObject.note_id == entity.id
+                        ).all()
+                        return [session.get(Object_, rel.object_id) for rel in note_relations if rel.object_id]
+                    elif entity.__class__.__name__ == 'Object_':
+                        note_relations = session.query(LitographyNoteToObject).filter(
+                            LitographyNoteToObject.object_id == entity.id
+                        ).all()
+                        return [session.get(LitographyNotes, rel.note_id) for rel in note_relations if rel.note_id]
+                
+                elif relationship_name == "litography_note_to_faction":
+                    from storymaster.model.database.schema.base import LitographyNoteToFaction, Faction, LitographyNotes
+                    
+                    if entity.__class__.__name__ == 'LitographyNotes':
+                        note_relations = session.query(LitographyNoteToFaction).filter(
+                            LitographyNoteToFaction.note_id == entity.id
+                        ).all()
+                        return [session.get(Faction, rel.faction_id) for rel in note_relations if rel.faction_id]
+                    elif entity.__class__.__name__ == 'Faction':
+                        note_relations = session.query(LitographyNoteToFaction).filter(
+                            LitographyNoteToFaction.faction_id == entity.id
+                        ).all()
+                        return [session.get(LitographyNotes, rel.note_id) for rel in note_relations if rel.note_id]
                 
                 # Add more relationship types as needed
                 return []
@@ -966,6 +1059,93 @@ class LorekeeperModelAdapter:
                         living_type=relationship_data.get('living_type', '') if relationship_data else ''
                     )
                     session.add(new_flora_fauna)
+                
+                elif relationship_name == "litography_note_to_world_data":
+                    from storymaster.model.database.schema.base import LitographyNoteToWorldData
+                    
+                    # Check if relationship already exists
+                    existing = session.query(LitographyNoteToWorldData).filter(
+                        (LitographyNoteToWorldData.note_id == entity.id) &
+                        (LitographyNoteToWorldData.world_data_id == related_entity.id)
+                    ).first()
+                    
+                    if existing:
+                        return False  # Relationship already exists
+                    
+                    # Create new note-to-lore relationship
+                    new_relation = LitographyNoteToWorldData(
+                        note_id=entity.id,
+                        world_data_id=related_entity.id
+                    )
+                    session.add(new_relation)
+                
+                elif relationship_name == "litography_note_to_actor":
+                    from storymaster.model.database.schema.base import LitographyNoteToActor
+                    
+                    existing = session.query(LitographyNoteToActor).filter(
+                        (LitographyNoteToActor.note_id == entity.id) &
+                        (LitographyNoteToActor.actor_id == related_entity.id)
+                    ).first()
+                    
+                    if existing:
+                        return False
+                    
+                    new_relation = LitographyNoteToActor(
+                        note_id=entity.id,
+                        actor_id=related_entity.id
+                    )
+                    session.add(new_relation)
+                
+                elif relationship_name == "litography_note_to_location":
+                    from storymaster.model.database.schema.base import LitographyNoteToLocation
+                    
+                    existing = session.query(LitographyNoteToLocation).filter(
+                        (LitographyNoteToLocation.note_id == entity.id) &
+                        (LitographyNoteToLocation.location_id == related_entity.id)
+                    ).first()
+                    
+                    if existing:
+                        return False
+                    
+                    new_relation = LitographyNoteToLocation(
+                        note_id=entity.id,
+                        location_id=related_entity.id
+                    )
+                    session.add(new_relation)
+                
+                elif relationship_name == "litography_note_to_object":
+                    from storymaster.model.database.schema.base import LitographyNoteToObject
+                    
+                    existing = session.query(LitographyNoteToObject).filter(
+                        (LitographyNoteToObject.note_id == entity.id) &
+                        (LitographyNoteToObject.object_id == related_entity.id)
+                    ).first()
+                    
+                    if existing:
+                        return False
+                    
+                    new_relation = LitographyNoteToObject(
+                        note_id=entity.id,
+                        object_id=related_entity.id
+                    )
+                    session.add(new_relation)
+                
+                elif relationship_name == "litography_note_to_faction":
+                    from storymaster.model.database.schema.base import LitographyNoteToFaction
+                    
+                    existing = session.query(LitographyNoteToFaction).filter(
+                        (LitographyNoteToFaction.note_id == entity.id) &
+                        (LitographyNoteToFaction.faction_id == related_entity.id)
+                    ).first()
+                    
+                    if existing:
+                        return False
+                    
+                    new_relation = LitographyNoteToFaction(
+                        note_id=entity.id,
+                        faction_id=related_entity.id
+                    )
+                    session.add(new_relation)
                 
                 # Add more relationship types as needed
                 

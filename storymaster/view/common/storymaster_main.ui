@@ -286,14 +286,38 @@ QLabel#pageTitleLabel {
       <widget class="QWidget" name="lorekeeperPage">
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
-         <widget class="QLabel" name="pageTitleLabel_2">
-          <property name="text">
-           <string>Lorekeeper - Database</string>
-          </property>
-          <property name="objectName">
-           <string>pageTitleLabel</string>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="lorekeeperHeaderLayout">
+          <item>
+           <widget class="QLabel" name="pageTitleLabel_2">
+            <property name="text">
+             <string>Lorekeeper - Database</string>
+            </property>
+            <property name="objectName">
+             <string>pageTitleLabel</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="configureTablesButton">
+            <property name="text">
+             <string>Configure Tables</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item>
          <widget class="QSplitter" name="lorekeeperSplitter">
@@ -440,18 +464,9 @@ QLabel#pageTitleLabel {
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="newLorekeeperPage"/>
       <widget class="QWidget" name="characterArcsPage">
        <layout class="QVBoxLayout" name="characterArcsLayout">
-        <item>
-         <widget class="QLabel" name="characterArcsTitleLabel">
-          <property name="text">
-           <string>Character Arcs</string>
-          </property>
-          <property name="objectName">
-           <string>pageTitleLabel</string>
-          </property>
-         </widget>
-        </item>
         <item>
          <widget class="QWidget" name="characterArcsContainer" native="true">
           <!-- Character arc widget will be loaded here programmatically -->

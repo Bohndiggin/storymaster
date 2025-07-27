@@ -527,11 +527,7 @@ class RelationshipDetailsDialog(QDialog):
             )
             
             if success:
-                QMessageBox.information(
-                    self,
-                    "Relationship Saved",
-                    f"Relationship details have been saved to the database!"
-                )
+                # Success - close dialog without message, user can see changes immediately
                 self.accept()
             else:
                 QMessageBox.warning(

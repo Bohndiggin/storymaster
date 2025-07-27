@@ -89,7 +89,7 @@ from storymaster.view.common.user_switcher_dialog import UserSwitcherDialog
 # Import the dialogs
 from storymaster.view.litographer.add_node_dialog import AddNodeDialog
 from storymaster.view.litographer.node_notes_dialog import NodeNotesDialog
-from storymaster.view.character_arcs.character_arc_widget import CharacterArcWidget
+from storymaster.view.character_arcs.new_character_arcs_page import NewCharacterArcsPage
 from storymaster.view.lorekeeper.new_lorekeeper_page import NewLorekeeperPage
 
 
@@ -816,13 +816,13 @@ class MainWindowController:
         # Start automatic backups
         self.backup_manager.start_automatic_backups()
 
-        # Initialize character arc widget
-        self.character_arc_widget = CharacterArcWidget(self.model, self.view)
+        # Initialize character arc page
+        self.character_arc_page = NewCharacterArcsPage(self.model, self.view)
         
-        # Add the character arc widget to the character arcs page
+        # Add the character arc page to the character arcs container
         character_arcs_layout = QVBoxLayout(self.view.ui.characterArcsContainer)
         character_arcs_layout.setContentsMargins(0, 0, 0, 0)
-        character_arcs_layout.addWidget(self.character_arc_widget)
+        character_arcs_layout.addWidget(self.character_arc_page)
 
         # Initialize new Lorekeeper page
         self.new_lorekeeper_widget = None  # Will be initialized when needed
@@ -3288,7 +3288,7 @@ class MainWindowController:
     def on_character_arcs_selected(self):
         """Handle switching to the Character Arcs page."""
         self.view.ui.pageStack.setCurrentIndex(3)  # Updated index for character arcs page
-        self.character_arc_widget.refresh_arcs(self.current_storyline_id)
+        self.character_arc_page.refresh_arcs(self.current_storyline_id)
 
     def load_database_structure(self):
         """Fetches table names from the model and populates the tree view."""

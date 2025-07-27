@@ -42,54 +42,96 @@ class NewLorekeeperPage(QWidget):
         """Set up the user interface"""
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(2)
 
         # Create main splitter
         splitter = QSplitter(Qt.Orientation.Horizontal)
+        splitter.setHandleWidth(3)
+        splitter.setStyleSheet("""
+            QSplitter::handle {
+                background: #555;
+                border: 1px solid #777;
+                border-radius: 2px;
+            }
+            QSplitter::handle:hover {
+                background: #666;
+                border-color: #888;
+            }
+            QSplitter::handle:pressed {
+                background: #0d7d7e;
+                border-color: #0d7d7e;
+            }
+        """)
 
         # Left panel: Navigation and browser
         left_panel = self.create_left_panel()
+        left_panel.setMinimumWidth(200)  # Minimum width for navigation/browser
         splitter.addWidget(left_panel)
 
         # Right panel: Entity details
         right_panel = self.create_right_panel()
+        right_panel.setMinimumWidth(300)  # Minimum width for detail panel
         splitter.addWidget(right_panel)
 
-        # Set splitter proportions (navigation smaller, details larger)
+        # Set splitter proportions (left panel for navigation/browser, right panel for details)
         splitter.setStretchFactor(0, 1)
-        splitter.setStretchFactor(1, 2)
+        splitter.setStretchFactor(1, 3)
+        
+        # Set initial sizes (left panel ~300px, right panel gets the rest)
+        splitter.setSizes([300, 700])
 
         layout.addWidget(splitter)
         self.setLayout(layout)
 
     def create_left_panel(self) -> QWidget:
         """Create the left navigation and browser panel"""
-        panel = QWidget()
-        layout = QVBoxLayout()
-        layout.setContentsMargins(8, 8, 4, 8)
+        # Create vertical splitter for navigation and browser
+        left_splitter = QSplitter(Qt.Orientation.Vertical)
+        left_splitter.setHandleWidth(3)
+        left_splitter.setStyleSheet("""
+            QSplitter::handle {
+                background: #444;
+                border: 1px solid #666;
+                border-radius: 1px;
+                margin: 2px;
+            }
+            QSplitter::handle:hover {
+                background: #555;
+                border-color: #777;
+            }
+            QSplitter::handle:pressed {
+                background: #0d7d7e;
+                border-color: #0d7d7e;
+            }
+        """)
 
         # Navigation
         self.navigation = LorekeeperNavigation()
         self.navigation.category_changed.connect(self.on_category_changed)
-        layout.addWidget(self.navigation)
+        self.navigation.setMinimumHeight(150)  # Minimum height to keep navigation usable
+        left_splitter.addWidget(self.navigation)
 
         # Browser
         self.browser = LorekeeperBrowser()
         self.browser.entity_selected.connect(self.on_entity_selected)
         self.browser.new_entity_requested.connect(self.on_new_entity_requested)
-        layout.addWidget(self.browser)
+        self.browser.setMinimumHeight(200)  # Minimum height to show meaningful content
+        left_splitter.addWidget(self.browser)
 
-        # Set proportions (navigation smaller, browser larger)
-        layout.setStretchFactor(self.navigation, 0)
-        layout.setStretchFactor(self.browser, 1)
+        # Set initial proportions (navigation smaller, browser larger)
+        left_splitter.setStretchFactor(0, 0)  # Navigation - don't stretch
+        left_splitter.setStretchFactor(1, 1)  # Browser - stretches
 
-        panel.setLayout(layout)
-        return panel
+        # Set initial sizes (navigation ~250px, browser gets the rest)
+        left_splitter.setSizes([250, 400])
+
+        return left_splitter
 
     def create_right_panel(self) -> QWidget:
         """Create the right entity details panel"""
         panel = QWidget()
         layout = QVBoxLayout()
-        layout.setContentsMargins(4, 8, 8, 8)
+        layout.setContentsMargins(2, 4, 4, 4)
 
         # Stacked widget for different entity detail pages
         self.detail_stack = QStackedWidget()
@@ -206,12 +248,7 @@ class NewLorekeeperPage(QWidget):
             # Refresh the entity list
             self.load_entities(self.current_table_name)
 
-            # Show success message
-            mapping = get_entity_mapping(self.current_table_name)
-            entity_type = mapping.display_name if mapping else "Entity"
-            QMessageBox.information(
-                self, "Success", f"{entity_type} saved successfully!"
-            )
+            # Success - no message needed, user can see the updated entity list
 
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to save entity: {str(e)}")
@@ -242,10 +279,7 @@ class NewLorekeeperPage(QWidget):
                 self.detail_stack.setCurrentWidget(self.welcome_page)
                 self.current_entity = None
 
-                # Show success message
-                QMessageBox.information(
-                    self, "Success", f"{entity_type.title()} deleted successfully!"
-                )
+                # Success - no message needed, entity is removed from list
 
             except Exception as e:
                 QMessageBox.critical(

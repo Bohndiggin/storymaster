@@ -274,117 +274,67 @@ class NodeNotesDialog(QDialog):
             return
 
         try:
-            associations = self.controller.get_note_associations(note_id)
+            # Get setting_id and create model adapter
+            setting_id = getattr(self.controller, 'current_setting_id', None)
+            if not setting_id:
+                self.associations_list.clear()
+                return
+                
+            from storymaster.view.lorekeeper.lorekeeper_model_adapter import LorekeeperModelAdapter
+            adapter = LorekeeperModelAdapter(self.controller.model, setting_id)
+            
+            # Get the current note entity
+            note_entity = adapter.get_entity_by_id("litography_notes", note_id)
+            if not note_entity:
+                self.associations_list.clear()
+                return
+                
             self.associations_list.clear()
-
-            for entity_type, assoc_list in associations.items():
-                for assoc in assoc_list:
-                    if entity_type == "actors" and assoc.actor:
-                        name = f"{assoc.actor.first_name or ''} {assoc.actor.last_name or ''}".strip()
-                        if not name:
-                            name = f"Actor #{assoc.actor.id}"
-                        item_text = f"Actor: {name}"
-                        item = QListWidgetItem(item_text)
-                        item.setData(
-                            Qt.ItemDataRole.UserRole, ("actor", assoc.actor_id)
-                        )
-                        self.associations_list.addItem(item)
-                    elif entity_type == "backgrounds" and assoc.background:
-                        name = (
-                            assoc.background.background_name
-                            or f"Background #{assoc.background.id}"
-                        )
-                        item_text = f"Background: {name}"
-                        item = QListWidgetItem(item_text)
-                        item.setData(
-                            Qt.ItemDataRole.UserRole,
-                            ("background", assoc.background_id),
-                        )
-                        self.associations_list.addItem(item)
-                    elif entity_type == "classes" and assoc.class_:
-                        name = assoc.class_.class_name or f"Class #{assoc.class_.id}"
-                        item_text = f"Class: {name}"
-                        item = QListWidgetItem(item_text)
-                        item.setData(
-                            Qt.ItemDataRole.UserRole, ("class", assoc.class_id)
-                        )
-                        self.associations_list.addItem(item)
-                    elif entity_type == "factions" and assoc.faction:
-                        name = (
-                            assoc.faction.faction_name or f"Faction #{assoc.faction.id}"
-                        )
-                        item_text = f"Faction: {name}"
-                        item = QListWidgetItem(item_text)
-                        item.setData(
-                            Qt.ItemDataRole.UserRole, ("faction", assoc.faction_id)
-                        )
-                        self.associations_list.addItem(item)
-                    elif entity_type == "histories" and assoc.history:
-                        name = (
-                            assoc.history.event_name or f"History #{assoc.history.id}"
-                        )
-                        item_text = f"History: {name}"
-                        item = QListWidgetItem(item_text)
-                        item.setData(
-                            Qt.ItemDataRole.UserRole, ("history", assoc.history_id)
-                        )
-                        self.associations_list.addItem(item)
-                    elif entity_type == "locations" and assoc.location:
-                        name = (
-                            assoc.location.location_name
-                            or f"Location #{assoc.location.id}"
-                        )
-                        item_text = f"Location: {name}"
-                        item = QListWidgetItem(item_text)
-                        item.setData(
-                            Qt.ItemDataRole.UserRole, ("location", assoc.location_id)
-                        )
-                        self.associations_list.addItem(item)
-                    elif entity_type == "objects" and assoc.object:
-                        name = assoc.object.object_name or f"Object #{assoc.object.id}"
-                        item_text = f"Object: {name}"
-                        item = QListWidgetItem(item_text)
-                        item.setData(
-                            Qt.ItemDataRole.UserRole, ("object", assoc.object_id)
-                        )
-                        self.associations_list.addItem(item)
-                    elif entity_type == "races" and assoc.race:
-                        name = assoc.race.race_name or f"Race #{assoc.race.id}"
-                        item_text = f"Race: {name}"
-                        item = QListWidgetItem(item_text)
-                        item.setData(Qt.ItemDataRole.UserRole, ("race", assoc.race_id))
-                        self.associations_list.addItem(item)
-                    elif entity_type == "skills" and assoc.skill:
-                        name = assoc.skill.skill_name or f"Skill #{assoc.skill.id}"
-                        item_text = f"Skill: {name}"
-                        item = QListWidgetItem(item_text)
-                        item.setData(
-                            Qt.ItemDataRole.UserRole, ("skill", assoc.skill_id)
-                        )
-                        self.associations_list.addItem(item)
-                    elif entity_type == "sub_races" and assoc.sub_race:
-                        name = (
-                            assoc.sub_race.sub_race_name
-                            or f"SubRace #{assoc.sub_race.id}"
-                        )
-                        item_text = f"Sub-Race: {name}"
-                        item = QListWidgetItem(item_text)
-                        item.setData(
-                            Qt.ItemDataRole.UserRole, ("sub_race", assoc.sub_race_id)
-                        )
-                        self.associations_list.addItem(item)
-                    elif entity_type == "world_data" and assoc.world_data:
-                        name = (
-                            assoc.world_data.data_name
-                            or f"World Data #{assoc.world_data.id}"
-                        )
-                        item_text = f"World Data: {name}"
-                        item = QListWidgetItem(item_text)
-                        item.setData(
-                            Qt.ItemDataRole.UserRole,
-                            ("world_data", assoc.world_data_id),
-                        )
-                        self.associations_list.addItem(item)
+            
+            # Define relationship types to check
+            relationship_types = [
+                ("litography_note_to_world_data", "World Data"),
+                ("litography_note_to_actor", "Actor"),
+                ("litography_note_to_location", "Location"),
+                ("litography_note_to_object", "Object"),
+                ("litography_note_to_faction", "Faction"),
+            ]
+            
+            for relationship_name, display_type in relationship_types:
+                try:
+                    related_entities = adapter.get_relationship_entities(note_entity, relationship_name)
+                    for entity in related_entities:
+                        if entity:
+                            # Create display name based on entity type
+                            if hasattr(entity, 'name') and entity.name:
+                                display_name = entity.name
+                            elif hasattr(entity, 'first_name') and entity.first_name:
+                                name_parts = [entity.first_name]
+                                if hasattr(entity, 'last_name') and entity.last_name:
+                                    name_parts.append(entity.last_name)
+                                display_name = " ".join(name_parts)
+                            elif hasattr(entity, 'title') and entity.title:
+                                display_name = entity.title
+                            else:
+                                display_name = f"ID: {entity.id}"
+                            
+                            item_text = f"{display_type}: {display_name}"
+                            item = QListWidgetItem(item_text)
+                            
+                            # Map relationship back to entity type
+                            entity_type_mapping = {
+                                "litography_note_to_world_data": "world_data",
+                                "litography_note_to_actor": "actor",
+                                "litography_note_to_location": "location",
+                                "litography_note_to_object": "object",
+                                "litography_note_to_faction": "faction",
+                            }
+                            entity_type = entity_type_mapping.get(relationship_name)
+                            item.setData(Qt.ItemDataRole.UserRole, (entity_type, entity.id))
+                            self.associations_list.addItem(item)
+                except Exception as rel_e:
+                    print(f"Error loading {relationship_name}: {rel_e}")
+                    continue
 
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to load associations: {str(e)}")
@@ -408,14 +358,46 @@ class NodeNotesDialog(QDialog):
             entity_type, entity_id = dialog.get_selected_entity()
             if entity_type and entity_id:
                 try:
-                    success = self.controller.create_note_association(
-                        self.current_note.id, entity_type, entity_id
-                    )
+                    # Get setting_id and create model adapter
+                    setting_id = getattr(self.controller, 'current_setting_id', None)
+                    if not setting_id:
+                        QMessageBox.warning(self, "Error", "No setting configured")
+                        return
+                        
+                    from storymaster.view.lorekeeper.lorekeeper_model_adapter import LorekeeperModelAdapter
+                    adapter = LorekeeperModelAdapter(self.controller.model, setting_id)
+                    
+                    # Get the note and related entity
+                    note_entity = adapter.get_entity_by_id("litography_notes", self.current_note.id)
+                    related_entity = adapter.get_entity_by_id(entity_type, entity_id)
+                    
+                    if not note_entity or not related_entity:
+                        QMessageBox.warning(self, "Error", "Could not find note or entity")
+                        return
+                    
+                    # Map entity type to relationship name
+                    type_to_relationship = {
+                        "world_data": "litography_note_to_world_data",
+                        "actor": "litography_note_to_actor",
+                        "location_": "litography_note_to_location",
+                        "location": "litography_note_to_location",
+                        "object_": "litography_note_to_object",
+                        "object": "litography_note_to_object",
+                        "faction": "litography_note_to_faction",
+                    }
+                    
+                    relationship_name = type_to_relationship.get(entity_type)
+                    if not relationship_name:
+                        QMessageBox.warning(self, "Error", f"Unsupported entity type: {entity_type}")
+                        return
+                    
+                    # Add the relationship
+                    success = adapter.add_relationship(note_entity, relationship_name, related_entity)
                     if success:
                         self.load_associations(self.current_note.id)
                     else:
                         QMessageBox.warning(
-                            self, "Error", "Failed to create association."
+                            self, "Error", "Association already exists or failed to create."
                         )
                 except Exception as e:
                     QMessageBox.critical(
@@ -440,9 +422,41 @@ class NodeNotesDialog(QDialog):
 
         if reply == QMessageBox.StandardButton.Yes:
             try:
-                success = self.controller.delete_note_association(
-                    self.current_note.id, entity_type, entity_id
-                )
+                # Get setting_id and create model adapter
+                setting_id = getattr(self.controller, 'current_setting_id', None)
+                if not setting_id:
+                    QMessageBox.warning(self, "Error", "No setting configured")
+                    return
+                    
+                from storymaster.view.lorekeeper.lorekeeper_model_adapter import LorekeeperModelAdapter
+                adapter = LorekeeperModelAdapter(self.controller.model, setting_id)
+                
+                # Get the note and related entity
+                note_entity = adapter.get_entity_by_id("litography_notes", self.current_note.id)
+                related_entity = adapter.get_entity_by_id(entity_type, entity_id)
+                
+                if not note_entity or not related_entity:
+                    QMessageBox.warning(self, "Error", "Could not find note or entity")
+                    return
+                
+                # Map entity type to relationship name
+                type_to_relationship = {
+                    "world_data": "litography_note_to_world_data",
+                    "actor": "litography_note_to_actor",
+                    "location_": "litography_note_to_location",
+                    "location": "litography_note_to_location",
+                    "object_": "litography_note_to_object",
+                    "object": "litography_note_to_object",
+                    "faction": "litography_note_to_faction",
+                }
+                
+                relationship_name = type_to_relationship.get(entity_type)
+                if not relationship_name:
+                    QMessageBox.warning(self, "Error", f"Unsupported entity type: {entity_type}")
+                    return
+                
+                # Remove the relationship
+                success = adapter.remove_relationship(note_entity, relationship_name, related_entity)
                 if success:
                     self.load_associations(self.current_note.id)
                 else:
@@ -513,16 +527,58 @@ class LoreSelectionDialog(QDialog):
 
     def load_entities(self):
         """Load entities for the current type"""
-        # For now, we'll need to get the setting_id from somewhere
-        # This is a simplified implementation
         self.entity_list.clear()
 
         try:
-            # This would need the actual setting_id from the storyline
-            # For now, we'll add a placeholder
-            self.entity_list.addItem(
-                "(Feature requires storyline setting configuration)"
-            )
+            # Get setting_id from controller
+            setting_id = getattr(self.controller, 'current_setting_id', None)
+            if not setting_id:
+                self.entity_list.addItem("(No setting configured)")
+                return
+            
+            # Create Lorekeeper model adapter
+            from storymaster.view.lorekeeper.lorekeeper_model_adapter import LorekeeperModelAdapter
+            adapter = LorekeeperModelAdapter(self.controller.model, setting_id)
+            
+            # Map UI types to table names
+            type_mapping = {
+                "Actors": "actor",
+                "Backgrounds": "background", 
+                "Classes": "class",
+                "Factions": "faction",
+                "Histories": "history",
+                "Locations": "location_",
+                "Objects": "object_",
+                "Races": "race",
+                "Skills": "skills",
+                "Sub-Races": "sub_race",
+                "World Data": "world_data",
+            }
+            
+            current_type = self.entity_type_combo.currentText()
+            table_name = type_mapping.get(current_type)
+            
+            if table_name:
+                entities = adapter.get_entities(table_name)
+                for entity in entities:
+                    # Create display name based on entity type
+                    if hasattr(entity, 'name') and entity.name:
+                        display_name = entity.name
+                    elif hasattr(entity, 'first_name') and entity.first_name:
+                        name_parts = [entity.first_name]
+                        if hasattr(entity, 'last_name') and entity.last_name:
+                            name_parts.append(entity.last_name)
+                        display_name = " ".join(name_parts)
+                    elif hasattr(entity, 'title') and entity.title:
+                        display_name = entity.title
+                    else:
+                        display_name = f"ID: {entity.id}"
+                    
+                    item = QListWidgetItem(display_name)
+                    # Store entity type and ID for selection
+                    item.setData(Qt.ItemDataRole.UserRole, (table_name, entity.id))
+                    self.entity_list.addItem(item)
+                    
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to load entities: {str(e)}")
 
@@ -533,6 +589,22 @@ class LoreSelectionDialog(QDialog):
     def get_selected_entity(self):
         """Get the selected entity type and ID"""
         current_item = self.entity_list.currentItem()
-        if current_item:
-            return current_item.data(Qt.ItemDataRole.UserRole) or (None, None)
+        if current_item and current_item.data(Qt.ItemDataRole.UserRole):
+            table_name, entity_id = current_item.data(Qt.ItemDataRole.UserRole)
+            # Convert table name back to the format expected by the controller
+            table_to_type_mapping = {
+                "actor": "actor",
+                "background": "background",
+                "class": "class", 
+                "faction": "faction",
+                "history": "history",
+                "location_": "location",
+                "object_": "object",
+                "race": "race",
+                "skills": "skill",
+                "sub_race": "sub_race",
+                "world_data": "world_data",
+            }
+            entity_type = table_to_type_mapping.get(table_name, table_name)
+            return (entity_type, entity_id)
         return (None, None)

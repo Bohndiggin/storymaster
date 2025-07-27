@@ -84,6 +84,7 @@ ENTITY_MAPPINGS = {
             "object_to_owner": "Possessions",
             "history_actor": "Historical Events",
             "arc_to_actor": "Character Arcs",
+            "litography_note_to_actor": "Associated Notes",
         },
     ),
     "faction": EntityMapping(
@@ -117,6 +118,7 @@ ENTITY_MAPPINGS = {
             "faction_a_on_b_relations": "Relations with Other Organizations",
             "location_to_faction": "Territories & Influence",
             "history_faction": "Historical Events",
+            "litography_note_to_faction": "Associated Notes",
         },
     ),
     "location_": EntityMapping(
@@ -179,6 +181,7 @@ ENTITY_MAPPINGS = {
             "location_city_districts": "Districts & Neighborhoods",
             "location_flora_fauna": "Flora & Fauna",
             "history_location": "Historical Events",
+            "litography_note_to_location": "Associated Notes",
         },
     ),
     "object_": EntityMapping(
@@ -204,6 +207,7 @@ ENTITY_MAPPINGS = {
         relationships={
             "object_to_owner": "Current Owner",
             "history_object": "Historical Events",
+            "litography_note_to_object": "Associated Notes",
         },
     ),
     "history": EntityMapping(
@@ -242,7 +246,32 @@ ENTITY_MAPPINGS = {
                 description="Information about this lore element",
             )
         ],
-        relationships={"history_world_data": "Related Historical Events"},
+        relationships={
+            "history_world_data": "Related Historical Events",
+            "litography_note_to_world_data": "Associated Notes",
+        },
+    ),
+    "litography_notes": EntityMapping(
+        table_name="litography_notes",
+        display_name="Story Note",
+        plural_name="Story Notes",
+        icon="📝",
+        description="Notes and annotations tied to specific story nodes",
+        sections=[
+            FieldSection(
+                name="basic_info",
+                display_name="Note Details", 
+                fields=["title", "description", "note_type"],
+                description="The content of this story note",
+            )
+        ],
+        relationships={
+            "litography_note_to_world_data": "Associated Lore",
+            "litography_note_to_actor": "Associated Characters",
+            "litography_note_to_location": "Associated Places",
+            "litography_note_to_object": "Associated Items",
+            "litography_note_to_faction": "Associated Organizations",
+        },
     ),
 }
 
@@ -315,7 +344,7 @@ SUPPORTING_MAPPINGS = {
 }
 
 # Main navigation categories
-MAIN_CATEGORIES = ["actor", "faction", "location_", "object_", "history", "world_data"]
+MAIN_CATEGORIES = ["actor", "faction", "location_", "object_", "history", "world_data", "litography_notes"]
 SUPPORTING_CATEGORIES = ["background", "race", "class", "skills"]
 
 

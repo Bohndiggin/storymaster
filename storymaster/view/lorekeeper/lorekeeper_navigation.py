@@ -14,8 +14,6 @@ from PyQt6.QtWidgets import (
     QFrame,
     QSplitter,
     QStackedWidget,
-    QToolButton,
-    QButtonGroup,
 )
 from PyQt6.QtGui import QFont, QIcon
 
@@ -28,47 +26,6 @@ from storymaster.model.lorekeeper.entity_mappings import (
     get_plural_name,
 )
 
-
-class CategoryButton(QToolButton):
-    """Custom button for entity categories"""
-
-    def __init__(self, table_name: str, parent=None):
-        super().__init__(parent)
-        self.table_name = table_name
-        mapping = get_entity_mapping(table_name)
-
-        if mapping:
-            self.setText(f"{mapping.icon} {mapping.plural_name}")
-            self.setToolTip(mapping.description)
-        else:
-            self.setText(table_name.replace("_", " ").title())
-
-        self.setCheckable(True)
-        self.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
-        self.setMinimumHeight(40)
-        self.setStyleSheet(
-            """
-            QToolButton {
-                text-align: left;
-                padding: 8px 16px;
-                border: 1px solid #555;
-                border-radius: 4px;
-                background-color: #2b2b2b;
-                color: white;
-            }
-            QToolButton:checked {
-                background-color: #0d7d7e;
-                border-color: #0d7d7e;
-            }
-            QToolButton:hover {
-                background-color: #3c3c3c;
-                border-color: #777;
-            }
-            QToolButton:checked:hover {
-                background-color: #0e8d8e;
-            }
-        """
-        )
 
 
 class EntityListWidget(QListWidget):
@@ -89,8 +46,9 @@ class EntityListWidget(QListWidget):
                 alternate-background-color: #323232;
             }
             QListWidget::item {
-                padding: 8px;
+                padding: 4px 6px;
                 border-bottom: 1px solid #444;
+                min-height: 20px;
             }
             QListWidget::item:selected {
                 background-color: #0d7d7e;
@@ -132,19 +90,26 @@ class EntityListWidget(QListWidget):
             if name_parts:
                 name = " ".join(name_parts)
                 if hasattr(entity, "title") and entity.title:
-                    return f"{entity.title} {name}"
-                return name
+                    full_name = f"{entity.title} {name}"
+                    return self.truncate_text(full_name, 40)
+                return self.truncate_text(name, 40)
 
         # Generic name field
         if hasattr(entity, "name") and entity.name:
-            return entity.name
+            return self.truncate_text(entity.name, 40)
 
         # Title field (for plots, arcs, etc.)
         if hasattr(entity, "title") and entity.title:
-            return entity.title
+            return self.truncate_text(entity.title, 40)
 
         # Fallback to ID
         return f"ID: {entity.id}"
+
+    def truncate_text(self, text: str, max_length: int) -> str:
+        """Truncate text if it's too long"""
+        if len(text) <= max_length:
+            return text
+        return text[:max_length-3] + "..."
 
     def on_item_double_clicked(self, item: QListWidgetItem):
         """Handle item double-click"""
@@ -166,6 +131,7 @@ class SearchBar(QWidget):
     def setup_ui(self):
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(4)
 
         # Search field
         self.search_field = QLineEdit()
@@ -200,34 +166,60 @@ class LorekeeperNavigation(QWidget):
         super().__init__(parent)
         self.current_category = None
         self.category_buttons = {}
-        self.button_group = QButtonGroup()
         self.setup_ui()
 
     def setup_ui(self):
         """Set up the user interface"""
         layout = QVBoxLayout()
+        layout.setSpacing(2)
+        layout.setContentsMargins(2, 2, 2, 2)
 
         # Header
         header = QLabel("Lorekeeper")
         font = QFont()
-        font.setPointSize(18)
+        font.setPointSize(14)
         font.setBold(True)
         header.setFont(font)
         header.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        header.setStyleSheet("color: #0d7d7e; margin: 16px 0;")
+        header.setStyleSheet("color: #0d7d7e; margin: 4px 0;")
         layout.addWidget(header)
+
+        # Create vertical splitter for the two category sections
+        categories_splitter = QSplitter(Qt.Orientation.Vertical)
+        categories_splitter.setHandleWidth(2)
+        categories_splitter.setStyleSheet("""
+            QSplitter::handle {
+                background: #333;
+                border: 1px solid #555;
+                border-radius: 1px;
+                margin: 1px;
+            }
+            QSplitter::handle:hover {
+                background: #444;
+                border-color: #666;
+            }
+            QSplitter::handle:pressed {
+                background: #0d7d7e;
+                border-color: #0d7d7e;
+            }
+        """)
 
         # Main categories section
         main_section = self.create_category_section("Main Categories", MAIN_CATEGORIES)
-        layout.addWidget(main_section)
+        main_section.setMinimumHeight(80)  # Minimum height for main categories
+        categories_splitter.addWidget(main_section)
 
         # Supporting categories section
         supporting_section = self.create_category_section(
             "Supporting", SUPPORTING_CATEGORIES
         )
-        layout.addWidget(supporting_section)
+        supporting_section.setMinimumHeight(80)  # Minimum height for supporting categories
+        categories_splitter.addWidget(supporting_section)
 
-        layout.addStretch()
+        # Set initial sizes for the category sections
+        categories_splitter.setSizes([120, 100])  # Main gets slightly more space initially
+        
+        layout.addWidget(categories_splitter)
         self.setLayout(layout)
 
         # Select first category by default
@@ -235,44 +227,91 @@ class LorekeeperNavigation(QWidget):
             self.select_category(MAIN_CATEGORIES[0])
 
     def create_category_section(self, title: str, categories: list) -> QWidget:
-        """Create a section of category buttons"""
+        """Create a section of category list"""
         section = QFrame()
         section.setFrameStyle(QFrame.Shape.StyledPanel)
         section.setStyleSheet(
             """
             QFrame {
                 border: 1px solid #555;
-                border-radius: 8px;
+                border-radius: 4px;
                 background-color: #1e1e1e;
-                margin: 4px;
-                padding: 8px;
+                margin: 2px;
+                padding: 4px;
             }
         """
         )
 
         layout = QVBoxLayout()
+        layout.setSpacing(1)
+        layout.setContentsMargins(2, 2, 2, 2)
 
         # Section title
         title_label = QLabel(title)
         font = QFont()
-        font.setPointSize(12)
+        font.setPointSize(10)
         font.setBold(True)
         title_label.setFont(font)
-        title_label.setStyleSheet("color: #ccc; margin-bottom: 8px;")
+        title_label.setStyleSheet("color: #ccc; margin-bottom: 2px;")
         layout.addWidget(title_label)
 
-        # Category buttons
+        # Category list
+        category_list = QListWidget()
+        # Remove fixed height constraints to allow dynamic resizing
+        category_list.setMinimumHeight(60)  # Minimum to show at least 2-3 items
+        category_list.setStyleSheet(
+            """
+            QListWidget {
+                border: none;
+                background-color: #2b2b2b;
+                color: white;
+                font-size: 11px;
+            }
+            QListWidget::item {
+                padding: 2px 6px;
+                border: none;
+                border-radius: 2px;
+                margin: 0px;
+            }
+            QListWidget::item:selected {
+                background-color: #0d7d7e;
+            }
+            QListWidget::item:hover {
+                background-color: #3c3c3c;
+            }
+        """
+        )
+        
         for table_name in categories:
-            button = CategoryButton(table_name)
-            button.clicked.connect(
-                lambda checked, tn=table_name: self.select_category(tn)
-            )
-            self.category_buttons[table_name] = button
-            self.button_group.addButton(button)
-            layout.addWidget(button)
+            mapping = get_entity_mapping(table_name)
+            if mapping:
+                item_text = f"{mapping.icon} {mapping.plural_name}"
+            else:
+                item_text = table_name.replace("_", " ").title()
+            
+            item = QListWidgetItem(item_text)
+            item.setData(Qt.ItemDataRole.UserRole, table_name)
+            category_list.addItem(item)
+        
+        category_list.itemClicked.connect(self.on_category_item_clicked)
+        layout.addWidget(category_list)
+        
+        # Set stretch factors: title doesn't stretch (0), list stretches (1)
+        layout.setStretchFactor(title_label, 0)
+        layout.setStretchFactor(category_list, 1)
+        
+        # Store reference for selection updates
+        setattr(section, 'category_list', category_list)
+        self.category_buttons[title] = category_list
 
         section.setLayout(layout)
         return section
+
+    def on_category_item_clicked(self, item: QListWidgetItem):
+        """Handle category item click"""
+        table_name = item.data(Qt.ItemDataRole.UserRole)
+        if table_name:
+            self.select_category(table_name)
 
     def select_category(self, table_name: str):
         """Select a category and update the display"""
@@ -281,9 +320,18 @@ class LorekeeperNavigation(QWidget):
 
         self.current_category = table_name
 
-        # Update button states
-        for tn, button in self.category_buttons.items():
-            button.setChecked(tn == table_name)
+        # Update list selections
+        for section_title, list_widget in self.category_buttons.items():
+            if isinstance(list_widget, QListWidget):
+                # Clear previous selection
+                list_widget.clearSelection()
+                
+                # Find and select the matching item
+                for i in range(list_widget.count()):
+                    item = list_widget.item(i)
+                    if item.data(Qt.ItemDataRole.UserRole) == table_name:
+                        item.setSelected(True)
+                        break
 
         self.category_changed.emit(table_name)
 
@@ -303,6 +351,8 @@ class LorekeeperBrowser(QWidget):
     def setup_ui(self):
         """Set up the user interface"""
         layout = QVBoxLayout()
+        layout.setSpacing(2)
+        layout.setContentsMargins(0, 0, 0, 0)
 
         # Header with title and new button
         header_layout = QHBoxLayout()

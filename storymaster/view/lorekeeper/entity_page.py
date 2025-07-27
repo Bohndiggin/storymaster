@@ -43,7 +43,8 @@ class SectionWidget(QGroupBox):
 
     def setup_ui(self):
         layout = QFormLayout()
-        layout.setSpacing(8)
+        layout.setSpacing(4)
+        layout.setContentsMargins(8, 8, 8, 8)
 
         # Add description if available
         if self.section.description:
@@ -341,6 +342,8 @@ class EntityDetailPage(QWidget):
     def setup_ui(self):
         """Set up the user interface"""
         layout = QHBoxLayout()
+        layout.setContentsMargins(4, 4, 4, 4)
+        layout.setSpacing(4)
 
         # Create splitter for resizable sections
         splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -364,6 +367,8 @@ class EntityDetailPage(QWidget):
         """Create the entity details panel"""
         panel = QWidget()
         layout = QVBoxLayout()
+        layout.setContentsMargins(4, 4, 4, 4)
+        layout.setSpacing(4)
 
         # Header with entity name and actions
         header_layout = QHBoxLayout()
@@ -394,6 +399,8 @@ class EntityDetailPage(QWidget):
 
         sections_widget = QWidget()
         sections_layout = QVBoxLayout()
+        sections_layout.setContentsMargins(4, 4, 4, 4)
+        sections_layout.setSpacing(6)
 
         # Create section widgets
         if self.entity_mapping:
@@ -423,6 +430,8 @@ class EntityDetailPage(QWidget):
         """Create the relationships panel"""
         panel = QWidget()
         layout = QVBoxLayout()
+        layout.setContentsMargins(4, 4, 4, 4)
+        layout.setSpacing(4)
 
         # Header
         header = QLabel("Relationships")
@@ -439,6 +448,8 @@ class EntityDetailPage(QWidget):
 
         relationships_widget = QWidget()
         relationships_layout = QVBoxLayout()
+        relationships_layout.setContentsMargins(4, 4, 4, 4)
+        relationships_layout.setSpacing(4)
 
         # Create relationship widgets
         if self.entity_mapping:

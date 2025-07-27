@@ -351,6 +351,37 @@ def main():
             session.commit()
             print(f"   Created {len(nodes)} story nodes")
             
+            # Create sample notes
+            notes = [
+                schema.LitographyNotes(
+                    id=1,
+                    title="Magic System Notes",
+                    description="Crystal magic requires a deep understanding of elemental harmonics",
+                    note_type=schema.NoteType.HOW,
+                    linked_node_id=1,
+                    storyline_id=1
+                ),
+                schema.LitographyNotes(
+                    id=2,
+                    title="Political Tensions",
+                    description="The alliance between the Mage's Guild and City Watch is crucial for maintaining order",
+                    note_type=schema.NoteType.WHY,
+                    linked_node_id=2,
+                    storyline_id=1
+                ),
+                schema.LitographyNotes(
+                    id=3,
+                    title="Historical Context",
+                    description="The shadow caverns were formed during the Great Mage War",
+                    note_type=schema.NoteType.WHEN,
+                    linked_node_id=3,
+                    storyline_id=1
+                ),
+            ]
+            session.add_all(notes)
+            session.commit()
+            print(f"   Created {len(notes)} story notes")
+            
             # Create sample arc points
             arc_points = [
                 # Kael's Hero Journey arc points
@@ -795,9 +826,43 @@ def main():
                 ),
             ]
             session.add_all(location_districts)
+            
+            # Create note-to-lore associations
+            note_to_lore = [
+                schema.LitographyNoteToWorldData(
+                    id=1, note_id=1, world_data_id=1  # Magic System Notes -> Crystal Magic
+                ),
+                schema.LitographyNoteToWorldData(
+                    id=2, note_id=2, world_data_id=2  # Political Tensions -> Code of the Watch
+                ),
+                schema.LitographyNoteToWorldData(
+                    id=3, note_id=3, world_data_id=1  # Historical Context -> Crystal Magic
+                ),
+            ]
+            session.add_all(note_to_lore)
+            
+            # Create note-to-actor associations  
+            note_to_actor = [
+                schema.LitographyNoteToActor(
+                    id=1, note_id=1, actor_id=1  # Magic System Notes -> Eldara
+                ),
+                schema.LitographyNoteToActor(
+                    id=2, note_id=2, actor_id=2  # Political Tensions -> Thorgan
+                ),
+            ]
+            session.add_all(note_to_actor)
+            
+            # Create note-to-location associations
+            note_to_location = [
+                schema.LitographyNoteToLocation(
+                    id=1, note_id=3, location_id=4  # Historical Context -> Shadow Caverns
+                ),
+            ]
+            session.add_all(note_to_location)
 
             session.commit()
             print("   Created sample relationships and location details connecting all the entities")
+            print("   Created note associations with lore, characters, and locations")
             
         except Exception as e:
             print(f"   Warning: Error creating additional content: {e}")
