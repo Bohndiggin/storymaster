@@ -21,6 +21,12 @@ def print_header():
     print("Cross-platform executable creation")
     print("=" * 60)
     print()
+    print("💡 Progress Monitoring Options:")
+    print("   • This script shows real-time progress")
+    print("   • Run 'python monitor_build.py' in another terminal for file counts")
+    print("   • Run 'python build_verbose.py' for detailed debug output")
+    print("   • Use Ctrl+C to cancel build if needed")
+    print()
 
 
 def check_dependencies():
@@ -88,30 +94,89 @@ def clean_previous_builds():
 
 def build_executable():
     """Build the executable using PyInstaller"""
+    import time
+    import threading
+    
     print("\n[COMPILE] Building executable...")
     print("   This may take 5-10 minutes for Windows builds...")
     print("   Optimized for faster builds by excluding unnecessary Qt modules")
+    print("   Progress indicators will be shown below...")
+    print()
 
     try:
-        # Run PyInstaller with our spec file and optimizations
-        cmd = [sys.executable, "-m", "PyInstaller", "--clean", "--log-level=WARN", "storymaster.spec"]
+        # Run PyInstaller with our spec file and real-time output
+        cmd = [sys.executable, "-m", "PyInstaller", "--clean", "--log-level=INFO", "storymaster.spec"]
 
         print(f"   Running: {' '.join(cmd)}")
-        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+        print("   " + "=" * 50)
+        
+        start_time = time.time()
+        
+        # Start progress indicator in a separate thread
+        progress_active = threading.Event()
+        progress_active.set()
+        
+        def show_progress():
+            chars = ['|', '/', '-', '\\']
+            i = 0
+            while progress_active.is_set():
+                elapsed = int(time.time() - start_time)
+                mins, secs = divmod(elapsed, 60)
+                print(f"\r   Building... {chars[i % len(chars)]} ({mins:02d}:{secs:02d})", end='', flush=True)
+                time.sleep(0.5)
+                i += 1
+        
+        progress_thread = threading.Thread(target=show_progress, daemon=True)
+        progress_thread.start()
+        
+        # Run PyInstaller with real-time output
+        process = subprocess.Popen(
+            cmd, 
+            stdout=subprocess.PIPE, 
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
+            universal_newlines=True
+        )
+        
+        # Show real-time output
+        output_lines = []
+        for line in process.stdout:
+            line = line.strip()
+            if line:
+                output_lines.append(line)
+                # Show key progress messages
+                if any(keyword in line.lower() for keyword in [
+                    'analyzing', 'building', 'collecting', 'copying', 'executing', 'writing'
+                ]):
+                    progress_active.clear()  # Stop progress spinner
+                    print(f"\r   {line}")
+                    progress_active.set()  # Restart progress spinner
+        
+        process.wait()
+        progress_active.clear()  # Stop progress indicator
+        
+        elapsed_time = time.time() - start_time
+        mins, secs = divmod(int(elapsed_time), 60)
+        
+        print(f"\r   Build completed in {mins:02d}:{secs:02d}")
+        print("   " + "=" * 50)
 
-        if result.returncode == 0:
+        if process.returncode == 0:
             print("[OK] Executable built successfully!")
             return True
         else:
-            print(f"[ERROR] Build failed: {result.stderr}")
+            print(f"[ERROR] Build failed with return code: {process.returncode}")
+            print("\nLast few output lines:")
+            for line in output_lines[-10:]:
+                print(f"   {line}")
             return False
 
     except subprocess.CalledProcessError as e:
         print(f"[ERROR] PyInstaller failed: {e}")
-        if e.stdout:
-            print("STDOUT:", e.stdout)
-        if e.stderr:
-            print("STDERR:", e.stderr)
+        return False
+    except Exception as e:
+        print(f"[ERROR] Unexpected build error: {e}")
         return False
 
 
