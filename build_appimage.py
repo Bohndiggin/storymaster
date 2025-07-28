@@ -187,13 +187,16 @@ exec $PYTHON_CMD storymaster/main.py "$@"
 Version=1.0
 Type=Application
 Name=Storymaster
-Comment=Visual Story Plotting & World-Building Tool
-Exec=storymaster 
+Comment=Visual Story Plotting & World-Building Tool  
+GenericName=Story Writing Tool
+Exec=storymaster %F
 Icon=storymaster
 Terminal=false
-Categories=Office;Publishing;
-Keywords=writing;story;plot;worldbuilding;creative;
+Categories=Office;Publishing;Writing;
+Keywords=writing;story;plot;worldbuilding;creative;novel;screenplay;
 StartupNotify=true
+MimeType=application/x-storymaster;
+StartupWMClass=storymaster
 """
 
         with open(desktop_entry, "w") as f:

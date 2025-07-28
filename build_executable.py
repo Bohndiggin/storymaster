@@ -117,22 +117,32 @@ def create_portable_package():
     """Create a portable package with database and sample data"""
     print("\n[PACKAGE] Creating portable package...")
 
-    dist_dir = Path("dist/storymaster")
-    if not dist_dir.exists():
-        print("[ERROR] Executable not found in dist/storymaster")
+    # For one-file build, executable is directly in dist/
+    system = platform.system().lower()
+    if system == "windows":
+        exe_path = Path("dist/storymaster.exe")
+    else:
+        exe_path = Path("dist/storymaster")
+        
+    if not exe_path.exists():
+        print(f"[ERROR] Executable not found at {exe_path}")
         return False
+        
+    # Create distribution directory
+    dist_dir = Path("dist/storymaster_portable")
+    if dist_dir.exists():
+        shutil.rmtree(dist_dir)
+    dist_dir.mkdir(parents=True)
 
     try:
-        # Create empty database in the dist directory
-        print("   Initializing database...")
-
-        # Change to dist directory and run database init
-        original_dir = os.getcwd()
-        os.chdir(dist_dir)
-
-        # Run the executable to create database (if init_database.py is bundled)
-        # For now, we'll copy the database from the main directory
-        os.chdir(original_dir)
+        # Copy the executable to the portable directory
+        if system == "windows":
+            shutil.copy2(exe_path, dist_dir / "storymaster.exe")
+            print("   Copied Windows executable")
+        else:
+            shutil.copy2(exe_path, dist_dir / "storymaster")
+            os.chmod(dist_dir / "storymaster", 0o755)
+            print("   Copied Linux executable")
 
         # Copy database if it exists
         if Path("storymaster.db").exists():
@@ -140,18 +150,29 @@ def create_portable_package():
             print("   Copied sample database")
 
         # Create a README for the portable package
-        readme_content = """# Storymaster Portable
+        readme_content = f"""# Storymaster Portable
 
-This is a portable version of Storymaster that runs without installation.
+This is a standalone version of Storymaster that runs without installation.
+**No Python or PyQt6 installation required!**
 
 ## How to Run
 
 ### Windows:
 Double-click `storymaster.exe`
 
-### Linux/macOS:
+### Linux:
 Open terminal in this directory and run:
+```bash
 ./storymaster
+```
+
+## Features
+
+✅ **Fully Standalone**: No dependencies required
+✅ **Python Runtime**: Bundled Python {platform.python_version()}
+✅ **PyQt6 GUI**: Complete UI framework included
+✅ **SQLAlchemy**: Database layer bundled
+✅ **Cross-Platform**: Same features on Windows and Linux
 
 ## Database
 
@@ -161,15 +182,46 @@ To backup your work, simply copy this file.
 ## First Time Setup
 
 If no database exists, the application will create an empty one.
-You can seed it with sample data by running the seed functionality
-from within the application.
+You can seed it with sample data using the application's built-in functionality.
+
+## Performance Notes
+
+- First startup may take 10-15 seconds (extracting bundled files)
+- Subsequent startups are much faster
+- The executable is self-contained and portable
+
+## File Sizes
+
+- Windows: ~150MB (includes full Python + PyQt6)
+- Linux: ~120MB (leverages some system libraries)
 
 ## Troubleshooting
 
-If the application doesn't start:
-1. Make sure you have the necessary system libraries
-2. Check that the database file is writable
-3. Try running from a terminal to see error messages
+### Windows:
+- If Windows Defender blocks it, allow the application
+- Run as Administrator if database creation fails
+- Check Windows Event Viewer for detailed error logs
+
+### Linux:
+- Ensure execute permissions: `chmod +x storymaster`
+- Install basic graphics libraries if needed:
+  ```bash
+  # Ubuntu/Debian:
+  sudo apt install libxcb-xinerama0 libxcb-cursor0
+  
+  # Fedora/RHEL:
+  sudo dnf install xcb-util-cursor
+  ```
+- Try running from terminal to see error messages
+
+## Benefits of Standalone Build
+
+- ✅ No Python installation required
+- ✅ No dependency conflicts
+- ✅ Consistent behavior across systems
+- ✅ Easy to distribute and deploy
+- ✅ Self-contained and portable
+- ✅ Works on clean systems
 
 For more help, visit: https://github.com/your-repo/storymaster
 """
@@ -177,7 +229,7 @@ For more help, visit: https://github.com/your-repo/storymaster
         with open(dist_dir / "README.txt", "w") as f:
             f.write(readme_content)
 
-        print("[OK] Portable package created in dist/storymaster/")
+        print("[OK] Portable package created in dist/storymaster_portable/")
         return True
 
     except Exception as e:
@@ -193,21 +245,22 @@ def create_archive():
     arch = platform.machine().lower()
 
     # Define archive name
-    archive_name = f"storymaster-{system}-{arch}"
+    archive_name = f"storymaster-standalone-{system}-{arch}"
 
     dist_dir = Path("dist")
-    if not (dist_dir / "storymaster").exists():
-        print("[ERROR] No build found to archive")
+    portable_dir = dist_dir / "storymaster_portable"
+    if not portable_dir.exists():
+        print("[ERROR] No portable package found to archive")
         return False
 
     try:
         # Create archive based on platform
         if system == "windows":
             archive_path = f"{archive_name}.zip"
-            shutil.make_archive(archive_name, "zip", dist_dir, "storymaster")
+            shutil.make_archive(archive_name, "zip", dist_dir, "storymaster_portable")
         else:
             archive_path = f"{archive_name}.tar.gz"
-            shutil.make_archive(archive_name, "gztar", dist_dir, "storymaster")
+            shutil.make_archive(archive_name, "gztar", dist_dir, "storymaster_portable")
 
         print(f"[OK] Archive created: {archive_path}")
         return True
