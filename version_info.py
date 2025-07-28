@@ -1,10 +1,4 @@
-# Version info for Windows executable to reduce false positives
-from PyInstaller.utils.win32.versioninfo import (
-    VSVersionInfo, FixedFileInfo, StringFileInfo, StringTable, 
-    StringStruct, VarFileInfo, VarStruct
-)
-
-version_info = VSVersionInfo(
+VSVersionInfo(
   ffi=FixedFileInfo(
     filevers=(1, 0, 0, 0),
     prodvers=(1, 0, 0, 0),
