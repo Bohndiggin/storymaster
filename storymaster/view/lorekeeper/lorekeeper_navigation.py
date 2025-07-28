@@ -33,6 +33,10 @@ from storymaster.view.common.theme import (
     get_button_style,
     get_splitter_style
 )
+from storymaster.view.common.tooltips import (
+    apply_general_tooltips,
+    apply_lorekeeper_tooltips
+)
 
 
 
@@ -124,12 +128,14 @@ class SearchBar(QWidget):
         self.search_field = QLineEdit()
         self.search_field.setPlaceholderText("Search...")
         self.search_field.textChanged.connect(self.search_changed.emit)
+        apply_general_tooltips(self.search_field, "search_field")
         layout.addWidget(self.search_field)
 
         # Filter dropdown
         self.filter_combo = QComboBox()
         self.filter_combo.addItem("All", "")
         self.filter_combo.currentTextChanged.connect(self.filter_changed.emit)
+        apply_general_tooltips(self.filter_combo, "filter_dropdown")
         layout.addWidget(self.filter_combo)
 
         self.setLayout(layout)
@@ -337,6 +343,7 @@ class LorekeeperBrowser(QWidget):
         self.new_button = QPushButton("New")
         self.new_button.clicked.connect(self.new_entity_requested.emit)
         self.new_button.setStyleSheet(get_button_style('primary'))
+        apply_general_tooltips(self.new_button, "new_button")
         header_layout.addWidget(self.new_button)
 
         layout.addLayout(header_layout)

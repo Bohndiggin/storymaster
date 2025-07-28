@@ -9,6 +9,9 @@ from storymaster.view.common.theme import (
     get_dialog_style,
     COLORS
 )
+from storymaster.view.common.custom_widgets import (
+    enable_smart_tab_navigation
+)
 
 
 class ArcTypeDialog(QDialog):
@@ -56,6 +59,9 @@ class ArcTypeDialog(QDialog):
         # Connect signals
         self.ui.buttonBox.accepted.connect(self.accept)
         self.ui.buttonBox.rejected.connect(self.reject)
+        
+        # Set up enhanced tab navigation
+        enable_smart_tab_navigation(self)
         
     def accept(self):
         """Handle OK button click"""

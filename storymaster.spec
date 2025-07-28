@@ -90,7 +90,7 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
+    upx=False,  # Disable UPX compression - reduces false positives
     upx_exclude=[],
     runtime_tmpdir=None,
     console=False,  # Set to True for debugging
@@ -100,7 +100,7 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     icon='assets/storymaster_icon.ico',  # Icon for Windows
-    version=None,
+    version='version_info.py',  # Add version info to reduce false positives
 )
 
 # Note: For one-file mode, no COLLECT is needed

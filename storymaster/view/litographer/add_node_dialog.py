@@ -7,6 +7,8 @@ from PyQt6.QtWidgets import (QComboBox, QDialog, QDialogButtonBox,
 
 from storymaster.model.database import schema
 from storymaster.view.common.theme import get_input_style, get_dialog_style, get_button_style
+from storymaster.view.common.tooltips import apply_litographer_tooltips
+from storymaster.view.common.custom_widgets import enable_smart_tab_navigation
 
 
 class AddNodeDialog(QDialog):
@@ -23,6 +25,7 @@ class AddNodeDialog(QDialog):
         # --- Create Widgets ---
         self.node_type_combo = QComboBox()
         self.node_type_combo.setStyleSheet(get_input_style())
+        apply_litographer_tooltips(self.node_type_combo, "node_type")
 
         # --- Configure Widgets ---
         # Populate the node type combo box from the NodeType enum
@@ -49,6 +52,9 @@ class AddNodeDialog(QDialog):
         main_layout.addWidget(self.button_box)
 
         self.setLayout(main_layout)
+        
+        # Set up enhanced tab navigation
+        enable_smart_tab_navigation(self)
 
     def get_data(self) -> dict | None:
         """

@@ -10,6 +10,13 @@ from storymaster.view.common.theme import (
     get_dialog_style,
     COLORS
 )
+from storymaster.view.common.tooltips import (
+    apply_character_arc_tooltips,
+    apply_general_tooltips
+)
+from storymaster.view.common.custom_widgets import (
+    enable_smart_tab_navigation
+)
 
 
 class CharacterArcDialog(QDialog):
@@ -46,9 +53,16 @@ class CharacterArcDialog(QDialog):
         # Apply component theming
         self.ui.titleLabel.setStyleSheet(f"color: {COLORS['text_accent']};")
         self.ui.arcTitleEdit.setStyleSheet(get_input_style())
+        apply_character_arc_tooltips(self.ui.arcTitleEdit, "arc_title")
+        
         self.ui.arcTypeComboBox.setStyleSheet(get_input_style())
+        apply_character_arc_tooltips(self.ui.arcTypeComboBox, "arc_type")
+        
         self.ui.charactersListWidget.setStyleSheet(get_list_style())
+        apply_character_arc_tooltips(self.ui.charactersListWidget, "arc_characters")
+        
         self.ui.descriptionEdit.setStyleSheet(get_input_style())
+        apply_character_arc_tooltips(self.ui.descriptionEdit, "arc_description")
         
         # Style button box
         ok_button = self.ui.buttonBox.button(self.ui.buttonBox.StandardButton.Ok)
@@ -61,6 +75,9 @@ class CharacterArcDialog(QDialog):
         # Connect signals
         self.ui.buttonBox.accepted.connect(self.accept)
         self.ui.buttonBox.rejected.connect(self.reject)
+        
+        # Set up enhanced tab navigation
+        enable_smart_tab_navigation(self)
         
     def load_data(self):
         """Load arc types and characters"""

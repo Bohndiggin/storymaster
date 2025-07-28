@@ -98,6 +98,9 @@ from storymaster.view.common.theme import (
     COLORS,
     FONTS
 )
+from storymaster.view.common.tooltips import (
+    apply_general_tooltips
+)
 
 
 class ConnectionPoint(QGraphicsEllipseItem):
@@ -2143,8 +2146,13 @@ class MainWindowController:
         """Connect all UI signals to their handler methods."""
         # --- Page Navigation ---
         self.view.ui.litographerNavButton.released.connect(self.on_litographer_selected)
+        apply_general_tooltips(self.view.ui.litographerNavButton, "litographer_tab")
+        
         self.view.ui.lorekeeperNavButton.released.connect(self.on_lorekeeper_selected)
+        apply_general_tooltips(self.view.ui.lorekeeperNavButton, "lorekeeper_tab")
+        
         self.view.ui.characterArcsNavButton.released.connect(self.on_character_arcs_selected)
+        apply_general_tooltips(self.view.ui.characterArcsNavButton, "character_arcs_tab")
         
         # --- Lorekeeper Configure Tables Button ---
         self.view.ui.configureTablesButton.clicked.connect(self.on_configure_tables_clicked)

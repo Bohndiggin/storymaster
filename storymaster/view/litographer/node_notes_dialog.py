@@ -17,6 +17,13 @@ from storymaster.view.common.theme import (
     get_list_style,
     get_dialog_style
 )
+from storymaster.view.common.tooltips import (
+    apply_notes_tooltips,
+    apply_general_tooltips
+)
+from storymaster.view.common.custom_widgets import (
+    enable_smart_tab_navigation
+)
 
 
 class NodeNotesDialog(QDialog):
@@ -92,13 +99,17 @@ class NodeNotesDialog(QDialog):
 
         self.note_type_combo = QComboBox()
         self.note_type_combo.setStyleSheet(get_input_style())
+        apply_notes_tooltips(self.note_type_combo, "note_type")
         for note_type in NoteType:
             self.note_type_combo.addItem(note_type.name.title(), note_type)
 
         self.note_title_edit = QLineEdit()
         self.note_title_edit.setStyleSheet(get_input_style())
+        apply_notes_tooltips(self.note_title_edit, "note_title")
+        
         self.note_description_edit = QTextEdit()
         self.note_description_edit.setStyleSheet(get_input_style())
+        apply_notes_tooltips(self.note_description_edit, "note_description")
 
         right_layout.addRow("Note Type:", self.note_type_combo)
         right_layout.addRow("Title:", self.note_title_edit)
@@ -119,9 +130,12 @@ class NodeNotesDialog(QDialog):
         assoc_buttons_layout = QHBoxLayout()
         self.add_association_btn = QPushButton("Add Association")
         self.add_association_btn.setStyleSheet(get_button_style())
+        apply_notes_tooltips(self.add_association_btn, "add_association")
+        
         self.remove_association_btn = QPushButton("Remove Association")
         self.remove_association_btn.setStyleSheet(get_button_style('danger'))
         self.remove_association_btn.setEnabled(False)
+        apply_notes_tooltips(self.remove_association_btn, "remove_association")
 
         self.add_association_btn.clicked.connect(self.add_association)
         self.remove_association_btn.clicked.connect(self.remove_association)
@@ -164,6 +178,9 @@ class NodeNotesDialog(QDialog):
         main_layout.addWidget(button_box)
 
         self.setLayout(main_layout)
+        
+        # Set up enhanced tab navigation
+        enable_smart_tab_navigation(self)
 
     def set_editor_enabled(self, enabled):
         """Enable or disable the note editor"""

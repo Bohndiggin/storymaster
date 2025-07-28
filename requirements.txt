@@ -2,6 +2,9 @@
 PyQt6==6.4.2
 SQLAlchemy==2.0.41
 
+# Spell checking support (optional - falls back to basic word list if not available)
+pyenchant==3.2.2
+
 # Development and testing dependencies (optional)
 pytest==8.4.1
 black==25.1.0

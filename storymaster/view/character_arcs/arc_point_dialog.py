@@ -9,6 +9,13 @@ from storymaster.view.common.theme import (
     get_dialog_style,
     COLORS
 )
+from storymaster.view.common.tooltips import (
+    apply_character_arc_tooltips,
+    apply_general_tooltips
+)
+from storymaster.view.common.custom_widgets import (
+    enable_smart_tab_navigation
+)
 
 
 class ArcPointDialog(QDialog):
@@ -61,16 +68,32 @@ class ArcPointDialog(QDialog):
             except Exception:
                 self.ui.orderSpinBox.setValue(1)
                 
-        # Apply component theming
+        # Apply component theming and tooltips
         self.ui.titleLabel.setStyleSheet(f"color: {COLORS['text_accent']};")
+        
         self.ui.titleEdit.setStyleSheet(get_input_style())
+        apply_character_arc_tooltips(self.ui.titleEdit, "arc_point_title")
+        
         self.ui.orderSpinBox.setStyleSheet(get_input_style())
+        apply_character_arc_tooltips(self.ui.orderSpinBox, "arc_point_order")
+        
         self.ui.descriptionEdit.setStyleSheet(get_input_style())
+        apply_character_arc_tooltips(self.ui.descriptionEdit, "arc_point_description")
+        
         self.ui.emotionalStateEdit.setStyleSheet(get_input_style())
+        apply_character_arc_tooltips(self.ui.emotionalStateEdit, "arc_point_emotional_state")
+        
         self.ui.relationshipsEdit.setStyleSheet(get_input_style())
+        apply_character_arc_tooltips(self.ui.relationshipsEdit, "arc_point_relationships")
+        
         self.ui.goalsEdit.setStyleSheet(get_input_style())
+        apply_character_arc_tooltips(self.ui.goalsEdit, "arc_point_goals")
+        
         self.ui.conflictEdit.setStyleSheet(get_input_style())
+        apply_character_arc_tooltips(self.ui.conflictEdit, "arc_point_conflict")
+        
         self.ui.nodeComboBox.setStyleSheet(get_input_style())
+        apply_character_arc_tooltips(self.ui.nodeComboBox, "arc_point_node")
         
         # Style button box
         ok_button = self.ui.buttonBox.button(self.ui.buttonBox.StandardButton.Ok)
@@ -83,6 +106,9 @@ class ArcPointDialog(QDialog):
         # Connect signals
         self.ui.buttonBox.accepted.connect(self.accept)
         self.ui.buttonBox.rejected.connect(self.reject)
+        
+        # Set up enhanced tab navigation
+        enable_smart_tab_navigation(self)
         
     def load_nodes(self):
         """Load available story nodes into the combo box"""

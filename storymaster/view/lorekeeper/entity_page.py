@@ -34,6 +34,17 @@ from storymaster.view.common.theme import (
     COLORS,
     FONTS
 )
+from storymaster.view.common.tooltips import (
+    apply_lorekeeper_tooltips,
+    apply_general_tooltips,
+    LOREKEEPER_TOOLTIPS
+)
+from storymaster.view.common.custom_widgets import (
+    TabNavigationTextEdit,
+    TabNavigationLineEdit,
+    TabNavigationComboBox,
+    enable_smart_tab_navigation
+)
 
 
 class SectionWidget(QGroupBox):
@@ -128,12 +139,12 @@ class SectionWidget(QGroupBox):
                 widget.stateChanged.connect(lambda state, field=field_name: 
                     self.checkbox_changed.emit(field, state == Qt.CheckState.Checked.value))
         elif field_name in multiline_fields:
-            widget = QTextEdit()
+            widget = TabNavigationTextEdit()
             widget.setMaximumHeight(100)
             widget.setAcceptRichText(False)
             widget.setStyleSheet(get_input_style())
         elif field_name in foreign_key_fields:
-            widget = QComboBox()
+            widget = TabNavigationComboBox()
             widget.setEditable(True)
             widget.setStyleSheet(get_input_style())
             # Populate foreign key dropdown if model adapter is available
@@ -147,13 +158,16 @@ class SectionWidget(QGroupBox):
             "skill_level",
             "stat_value",
         ]:
-            widget = QLineEdit()
+            widget = TabNavigationLineEdit()
             widget.setPlaceholderText("Enter a number")
             widget.setStyleSheet(get_input_style())
         else:
-            widget = QLineEdit()
+            widget = TabNavigationLineEdit()
             widget.setStyleSheet(get_input_style())
-
+        
+        # Apply tooltips based on field name
+        self.apply_field_tooltip(widget, field_name)
+        
         return widget
 
     def get_field_display_name(self, field_name: str) -> str:
@@ -228,6 +242,30 @@ class SectionWidget(QGroupBox):
                         widget.setCurrentIndex(index)
                 elif isinstance(widget, QCheckBox):
                     widget.setChecked(bool(value) if value is not None else False)
+                    
+    def apply_field_tooltip(self, widget, field_name: str):
+        """Apply appropriate tooltip to a field widget"""
+        # Create tooltip key by combining entity type context with field name
+        entity_context = getattr(self, 'entity_type', '')
+        
+        # Try specific field combinations first
+        tooltip_keys = [
+            f"{entity_context}_{field_name}",  # e.g., "actor_first_name"
+            field_name,  # e.g., "first_name"
+        ]
+        
+        tooltip_text = None
+        for key in tooltip_keys:
+            if key in LOREKEEPER_TOOLTIPS:
+                tooltip_text = LOREKEEPER_TOOLTIPS[key]
+                break
+        
+        # If no specific tooltip found, create a helpful generic one
+        if not tooltip_text:
+            display_name = self.get_field_display_name(field_name)
+            tooltip_text = f"Enter the {display_name.lower()} for this item. This information helps build your story world."
+        
+        widget.setToolTip(tooltip_text)
 
 
 class RelationshipWidget(QGroupBox):
@@ -374,6 +412,9 @@ class EntityDetailPage(QWidget):
 
         layout.addWidget(splitter)
         self.setLayout(layout)
+        
+        # Set up enhanced tab navigation for all form fields
+        enable_smart_tab_navigation(self)
 
     def create_details_panel(self) -> QWidget:
         """Create the entity details panel"""
@@ -396,8 +437,12 @@ class EntityDetailPage(QWidget):
 
         self.save_button = QPushButton("Save")
         self.save_button.setStyleSheet(get_button_style('primary'))
+        apply_general_tooltips(self.save_button, "save_button")
+        
         self.delete_button = QPushButton("Delete")
         self.delete_button.setStyleSheet(get_button_style('danger'))
+        apply_general_tooltips(self.delete_button, "delete_button")
+        
         self.save_button.clicked.connect(self.save_entity)
         self.delete_button.clicked.connect(self.delete_entity)
 

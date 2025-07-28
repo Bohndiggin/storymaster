@@ -20,6 +20,7 @@ from storymaster.view.lorekeeper.entity_page import EntityDetailPage
 from storymaster.view.lorekeeper.lorekeeper_model_adapter import LorekeeperModelAdapter
 from storymaster.model.lorekeeper.entity_mappings import get_entity_mapping
 from storymaster.view.common.theme import get_splitter_style, COLORS, FONTS
+from storymaster.view.common.custom_widgets import enable_smart_tab_navigation
 
 
 class NewLorekeeperPage(QWidget):
@@ -69,6 +70,9 @@ class NewLorekeeperPage(QWidget):
 
         layout.addWidget(splitter)
         self.setLayout(layout)
+        
+        # Set up enhanced tab navigation
+        enable_smart_tab_navigation(self)
 
     def create_left_panel(self) -> QWidget:
         """Create the left navigation and browser panel"""
