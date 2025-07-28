@@ -4,7 +4,11 @@ Comprehensive tests for UI components and interactions
 
 import pytest
 from unittest.mock import Mock, patch, MagicMock
-from PyQt6.QtWidgets import (
+from tests.test_qt_utils import QT_AVAILABLE, (, QContextMenuEvent, QKeyEvent, QMouseEvent, QPoint, Qt
+
+# Skip all tests in this module if Qt is not available
+pytestmark = pytest.mark.skipif(not QT_AVAILABLE, reason="PyQt6 not available in headless environment")
+
     QApplication,
     QDialog,
     QWidget,
@@ -15,8 +19,6 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QLabel,
 )
-from PyQt6.QtCore import Qt, QPoint
-from PyQt6.QtGui import QKeyEvent, QMouseEvent, QContextMenuEvent
 
 # Import UI components to test
 from storymaster.view.common.custom_widgets import (

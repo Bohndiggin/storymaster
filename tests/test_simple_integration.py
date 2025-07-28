@@ -4,11 +4,13 @@ Simplified integration tests for core Storymaster functionality
 
 import pytest
 from unittest.mock import Mock, patch
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QKeyEvent
 
 from storymaster.view.common.custom_widgets import (
+from tests.test_qt_utils import QT_AVAILABLE, QApplication, QKeyEvent, QVBoxLayout, QWidget, Qt
+
+# Skip all tests in this module if Qt is not available
+pytestmark = pytest.mark.skipif(not QT_AVAILABLE, reason="PyQt6 not available in headless environment")
+
     TabNavigationTextEdit,
     TabNavigationLineEdit,
     TabNavigationComboBox,

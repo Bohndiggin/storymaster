@@ -3,8 +3,10 @@ Test suite for node type change functionality
 """
 
 import pytest
-from PyQt6.QtCore import QPointF
-from PyQt6.QtWidgets import QApplication, QGraphicsScene
+from tests.test_qt_utils import QT_AVAILABLE, QPointF, QApplication, QGraphicsScene
+
+# Skip all tests in this module if Qt is not available
+pytestmark = pytest.mark.skipif(not QT_AVAILABLE, reason="PyQt6 not available in headless environment")
 
 from storymaster.controller.common.main_page_controller import create_node_item
 

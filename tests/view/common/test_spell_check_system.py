@@ -4,11 +4,13 @@ Comprehensive tests for the spell check system
 
 import pytest
 from unittest.mock import Mock, patch, MagicMock
-from PyQt6.QtWidgets import QTextEdit, QLineEdit, QApplication
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QKeyEvent, QContextMenuEvent
 
 from storymaster.view.common.spellcheck import (
+from tests.test_qt_utils import QT_AVAILABLE, QApplication, QContextMenuEvent, QKeyEvent, QLineEdit, QTextEdit, Qt
+
+# Skip all tests in this module if Qt is not available
+pytestmark = pytest.mark.skipif(not QT_AVAILABLE, reason="PyQt6 not available in headless environment")
+
     SpellChecker,
     SpellCheckTextEdit,
     SpellCheckLineEdit,

@@ -4,7 +4,10 @@ Test suite for storyline-to-setting management functionality
 
 import pytest
 from unittest.mock import Mock, patch
-from PyQt6.QtWidgets import QApplication
+from tests.test_qt_utils import QT_AVAILABLE, QApplication, QMessageBox
+
+# Skip all tests in this module if Qt is not available
+pytestmark = pytest.mark.skipif(not QT_AVAILABLE, reason="PyQt6 not available in headless environment")
 
 from storymaster.model.database.schema.base import (
     Storyline,
@@ -292,7 +295,7 @@ class TestStorylineSettingsDialog:
             with patch.object(dialog, "load_data") as mock_load_data:
                 with patch("PyQt6.QtWidgets.QMessageBox.question") as mock_question:
                     with patch("PyQt6.QtWidgets.QMessageBox.information") as mock_info:
-                        from PyQt6.QtWidgets import QMessageBox
+                        # QMessageBox imported from test_qt_utils
 
                         mock_question.return_value = QMessageBox.StandardButton.Yes
 
@@ -325,7 +328,7 @@ class TestStorylineSettingsDialog:
             mock_selected.return_value = [mock_item]
 
             with patch("PyQt6.QtWidgets.QMessageBox.question") as mock_question:
-                from PyQt6.QtWidgets import QMessageBox
+                # QMessageBox imported from test_qt_utils
 
                 mock_question.return_value = QMessageBox.StandardButton.No
 

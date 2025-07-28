@@ -8,11 +8,14 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
-from PyQt6.QtCore import QTimer
-from PyQt6.QtWidgets import QApplication
 
 from storymaster.model.common.backup_manager import BackupManager
 
+
+from tests.test_qt_utils import QT_AVAILABLE, QApplication, QTimer
+
+# Skip all tests in this module if Qt is not available
+pytestmark = pytest.mark.skipif(not QT_AVAILABLE, reason="PyQt6 not available in headless environment")
 
 @pytest.fixture
 def temp_database_file():

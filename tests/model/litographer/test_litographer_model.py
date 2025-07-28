@@ -5,9 +5,13 @@ Modernized to work with new testing infrastructure
 
 import pytest
 from unittest.mock import Mock, patch, MagicMock
-from PyQt6.QtWidgets import QApplication
 
 from storymaster.model.database.schema.base import (
+from tests.test_qt_utils import QT_AVAILABLE, QApplication
+
+# Skip all tests in this module if Qt is not available
+pytestmark = pytest.mark.skipif(not QT_AVAILABLE, reason="PyQt6 not available in headless environment")
+
     NodeType,
     NoteType,
     LitographyNode,
