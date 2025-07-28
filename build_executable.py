@@ -89,10 +89,12 @@ def clean_previous_builds():
 def build_executable():
     """Build the executable using PyInstaller"""
     print("\n[COMPILE] Building executable...")
+    print("   This may take 5-10 minutes for Windows builds...")
+    print("   Optimized for faster builds by excluding unnecessary Qt modules")
 
     try:
-        # Run PyInstaller with our spec file
-        cmd = [sys.executable, "-m", "PyInstaller", "--clean", "storymaster.spec"]
+        # Run PyInstaller with our spec file and optimizations
+        cmd = [sys.executable, "-m", "PyInstaller", "--clean", "--log-level=WARN", "storymaster.spec"]
 
         print(f"   Running: {' '.join(cmd)}")
         result = subprocess.run(cmd, check=True, capture_output=True, text=True)

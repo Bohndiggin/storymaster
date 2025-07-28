@@ -11,26 +11,31 @@ import glob
 
 datas = []
 
-# Include PyQt6 platform plugins (essential for Windows)
+# Include only essential PyQt6 platform plugins (for faster builds)
 import PyQt6
 pyqt6_path = Path(PyQt6.__file__).parent
 plugins_path = pyqt6_path / 'Qt6' / 'plugins'
 if plugins_path.exists():
-    # Include platform plugins
+    # Include only essential platform plugins
     platforms_path = plugins_path / 'platforms'
     if platforms_path.exists():
-        for platform_file in platforms_path.glob('*.dll'):
-            datas.append((str(platform_file), 'PyQt6/Qt6/plugins/platforms'))
-        for platform_file in platforms_path.glob('*.so'):
-            datas.append((str(platform_file), 'PyQt6/Qt6/plugins/platforms'))
+        # Only include Windows platform plugin to speed up build
+        essential_platforms = ['qwindows.dll', 'qwindows.so', 'qoffscreen.dll', 'qoffscreen.so']
+        for platform_name in essential_platforms:
+            platform_file = platforms_path / platform_name
+            if platform_file.exists():
+                datas.append((str(platform_file), 'PyQt6/Qt6/plugins/platforms'))
     
-    # Include image format plugins
+    # Include only essential image format plugins
     imageformats_path = plugins_path / 'imageformats'
     if imageformats_path.exists():
-        for img_file in imageformats_path.glob('*.dll'):
-            datas.append((str(img_file), 'PyQt6/Qt6/plugins/imageformats'))
-        for img_file in imageformats_path.glob('*.so'):
-            datas.append((str(img_file), 'PyQt6/Qt6/plugins/imageformats'))
+        # Only include common image formats to reduce size
+        essential_formats = ['qico.dll', 'qjpeg.dll', 'qpng.dll', 'qsvg.dll', 
+                            'qico.so', 'qjpeg.so', 'qpng.so', 'qsvg.so']
+        for format_name in essential_formats:
+            img_file = imageformats_path / format_name
+            if img_file.exists():
+                datas.append((str(img_file), 'PyQt6/Qt6/plugins/imageformats'))
 
 # Include test data CSVs for seeding
 test_data_path = project_dir / 'tests' / 'model' / 'database' / 'test_data'
@@ -60,49 +65,45 @@ for icon_file in icon_files:
 
 # Hidden imports needed for PyQt6 and SQLAlchemy
 hiddenimports = [
-    # Core PyQt6 modules
+    # Core PyQt6 modules (only what we actually use)
     'PyQt6.QtCore',
     'PyQt6.QtGui', 
     'PyQt6.QtWidgets',
     'PyQt6.QtSvg',
     'PyQt6.sip',
     
-    # Additional PyQt6 modules that may be needed
+    # Only essential additional PyQt6 modules 
     'PyQt6.QtPrintSupport',
-    'PyQt6.QtNetwork',
-    'PyQt6.QtOpenGL',
     
-    # PyQt6 platform plugins (critical for Windows)
-    'PyQt6.QtCore.QCoreApplication',
-    'PyQt6.QtWidgets.QApplication',
-    
-    # SQLAlchemy modules
+    # SQLAlchemy modules (only essential ones)
     'sqlalchemy.dialects.sqlite',
     'sqlalchemy.sql.default_comparator',
     'sqlalchemy.engine.default',
     'sqlalchemy.pool',
-    'sqlalchemy.engine.reflection',
-    'sqlalchemy.sql.sqltypes',
     
-    # Other dependencies
+    # Other minimal dependencies
     'pkg_resources.extern',
-    'email.mime.text',
-    'email.mime.multipart',
     
-    # Spell checking dependencies
+    # Spell checking dependencies (only if needed)
     'enchant',
     'enchant.checker',
-    'enchant.errors',
 ]
 
-# Include PyQt6 binaries for Windows
+# Include only essential PyQt6 binaries for Windows
 binaries = []
 if plugins_path.exists():
-    # Include Qt libraries that might be needed
+    # Include only essential Qt libraries to reduce build time
     qt_bin_path = pyqt6_path / 'Qt6' / 'bin'
     if qt_bin_path.exists():
-        for qt_lib in qt_bin_path.glob('*.dll'):
-            binaries.append((str(qt_lib), '.'))
+        # Only include core Qt DLLs, not all of them
+        essential_qt_libs = [
+            'Qt6Core.dll', 'Qt6Gui.dll', 'Qt6Widgets.dll', 
+            'Qt6Svg.dll', 'Qt6PrintSupport.dll'
+        ]
+        for lib_name in essential_qt_libs:
+            lib_path = qt_bin_path / lib_name
+            if lib_path.exists():
+                binaries.append((str(lib_path), '.'))
 
 a = Analysis(
     ['storymaster/main.py'],
@@ -114,7 +115,7 @@ a = Analysis(
     hooksconfig={},
     runtime_hooks=['runtime_hook_pyqt6.py'],
     excludes=[
-        # Exclude unnecessary modules to reduce size
+        # Exclude unnecessary modules to reduce size and build time
         'matplotlib',
         'numpy',
         'pandas',
@@ -123,9 +124,26 @@ a = Analysis(
         'jupyter',
         'notebook',
         'tkinter',
+        # Additional Qt modules we don't need
+        'PyQt6.QtNetwork',
+        'PyQt6.QtOpenGL',
+        'PyQt6.QtMultimedia',
+        'PyQt6.QtWebEngine',
+        'PyQt6.QtWebEngineCore',
+        'PyQt6.QtWebEngineWidgets',
+        'PyQt6.QtQuick',
+        'PyQt6.QtQml',
+        'PyQt6.QtTest',
+        'PyQt6.QtBluetooth',
+        'PyQt6.QtPositioning',
+        'PyQt6.QtSerialPort',
+        # Test modules
+        'pytest',
+        'unittest',
+        '_pytest',
     ],
     noarchive=False,
-    optimize=0,
+    optimize=2,  # Enable Python bytecode optimization
 )
 
 pyz = PYZ(a.pure)
