@@ -29,6 +29,7 @@ def clean_previous_builds():
             shutil.rmtree(dir_name)
             print(f"  Removed {dir_name}/")
     print("Clean complete")
+    return True
 
 def build_executable():
     """Build executable using optimized spec"""

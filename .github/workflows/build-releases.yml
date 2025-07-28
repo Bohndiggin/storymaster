@@ -49,7 +49,7 @@ jobs:
         name: storymaster-windows
         path: |
           dist/storymaster/
-          storymaster-*.zip
+          storymaster-windows-*.zip
 
   build-macos:
     runs-on: macos-latest
@@ -170,7 +170,7 @@ jobs:
         name: storymaster-linux
         path: |
           dist/storymaster/
-          storymaster-*.tar.gz
+          storymaster-linux-*.tar.gz
           *.AppImage
           ~/rpmbuild/RPMS/noarch/*.rpm
 
