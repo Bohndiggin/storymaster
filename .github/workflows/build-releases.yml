@@ -37,8 +37,9 @@ jobs:
         GITHUB_ACTIONS: true
         QT_QPA_PLATFORM: offscreen 
     
-    - name: Build Windows executable
-      run: python build_executable.py
+    - name: Build Windows executable (GitHub Actions optimized)
+      run: python build_executable_github.py
+      timeout-minutes: 10  # Faster build, shorter timeout
       env:
         PYTHONIOENCODING: utf-8
     
@@ -141,8 +142,9 @@ jobs:
         DISPLAY: :99
         QT_QPA_PLATFORM: offscreen
     
-    - name: Build Linux executable
-      run: xvfb-run -a python build_executable.py
+    - name: Build Linux executable (GitHub Actions optimized)
+      run: xvfb-run -a python build_executable_github.py
+      timeout-minutes: 8  # Linux builds faster
       env:
         DISPLAY: :99
     
