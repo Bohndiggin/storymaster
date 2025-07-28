@@ -23,7 +23,7 @@ try:
     from PyQt6.QtWidgets import QApplication, QGraphicsScene
     QT_AVAILABLE = True
 except ImportError as e:
-    print(f"⚠️  PyQt6 not available ({e})")
+    print(f"WARNING: PyQt6 not available ({e})")
     print("   Running in headless mode with mocked Qt components")
     QT_AVAILABLE = False
     
@@ -52,7 +52,7 @@ except ImportError as e:
 def run_ui_concept_tests():
     """Test the UI concepts our node system uses"""
 
-    print("🧪 Testing Node Connection UI Concepts")
+    print("Testing Node Connection UI Concepts")
     print("=" * 50)
 
     tests_passed = 0
@@ -65,10 +65,10 @@ def run_ui_concept_tests():
         scene = QGraphicsScene()
         assert scene is not None
         assert scene.items() == []
-        print("   ✅ PASS: Graphics scene creation works")
+        print("   PASS: Graphics scene creation works")
         tests_passed += 1
     except Exception as e:
-        print(f"   ❌ FAIL: {e}")
+        print(f"   FAIL: {e}")
 
     # Test 2: QPointF Creation
     print("\n2. Testing QPointF creation...")
@@ -77,10 +77,10 @@ def run_ui_concept_tests():
         point = QPointF(100, 200)
         assert point.x() == 100
         assert point.y() == 200
-        print("   ✅ PASS: QPointF creation works")
+        print("   PASS: QPointF creation works")
         tests_passed += 1
     except Exception as e:
-        print(f"   ❌ FAIL: {e}")
+        print(f"   FAIL: {e}")
 
     # Test 3: Position Tracking Concept
     print("\n3. Testing position tracking concept...")
@@ -104,10 +104,10 @@ def run_ui_concept_tests():
         x, y = positions.get(fallback_id, (100, 200))
         assert x == 100 and y == 200
 
-        print("   ✅ PASS: Position tracking concept works")
+        print("   PASS: Position tracking concept works")
         tests_passed += 1
     except Exception as e:
-        print(f"   ❌ FAIL: {e}")
+        print(f"   FAIL: {e}")
 
     # Test 4: Connection Point Positioning Math
     print("\n4. Testing connection point positioning math...")
@@ -142,10 +142,10 @@ def run_ui_concept_tests():
         assert new_output_x == 285  # 185 + 100
         assert new_output_y == 240  # 140 + 100
 
-        print("   ✅ PASS: Connection point positioning math works")
+        print("   PASS: Connection point positioning math works")
         tests_passed += 1
     except Exception as e:
-        print(f"   ❌ FAIL: {e}")
+        print(f"   FAIL: {e}")
 
     # Test 5: Node Type Change Position Preservation Concept
     print("\n5. Testing node type change position preservation concept...")
@@ -172,10 +172,10 @@ def run_ui_concept_tests():
         assert current_x != db_position["x_position"]
         assert current_y != db_position["y_position"]
 
-        print("   ✅ PASS: Node type change position preservation concept works")
+        print("   PASS: Node type change position preservation concept works")
         tests_passed += 1
     except Exception as e:
-        print(f"   ❌ FAIL: {e}")
+        print(f"   FAIL: {e}")
 
     return tests_passed, tests_total
 
@@ -183,7 +183,7 @@ def run_ui_concept_tests():
 def run_node_system_integration_tests():
     """Test integration with the actual node system (requires imports)"""
 
-    print("\n🔧 Testing Node System Integration")
+    print("\nTesting Node System Integration")
     print("=" * 50)
 
     tests_passed = 0
@@ -195,12 +195,12 @@ def run_node_system_integration_tests():
     try:
         if QT_AVAILABLE:
             from storymaster.controller.common.main_page_controller import create_node_item
-            print("   ✅ PASS: Node system imports work")
+            print("   PASS: Node system imports work")
         else:
-            print("   ✅ PASS: Node system imports skipped in headless mode")
+            print("   PASS: Node system imports skipped in headless mode")
         tests_passed += 1
     except Exception as e:
-        print(f"   ❌ FAIL: Import error - {e}")
+        print(f"   FAIL: Import error - {e}")
         if not QT_AVAILABLE:
             print("   (Expected in headless environment)")
             tests_passed += 1  # Don't fail in headless mode
@@ -233,12 +233,12 @@ def run_node_system_integration_tests():
             assert hasattr(node_item, "get_input_connection_pos")
             assert hasattr(node_item, "get_output_connection_pos")
 
-            print("   ✅ PASS: Mock node creation works")
+            print("   PASS: Mock node creation works")
         else:
-            print("   ✅ PASS: Mock node creation skipped in headless mode")
+            print("   PASS: Mock node creation skipped in headless mode")
         tests_passed += 1
     except Exception as e:
-        print(f"   ❌ FAIL: Mock node creation error - {e}")
+        print(f"   FAIL: Mock node creation error - {e}")
         if not QT_AVAILABLE:
             print("   (Expected in headless environment)")
             tests_passed += 1  # Don't fail in headless mode
@@ -281,12 +281,12 @@ def run_node_system_integration_tests():
             assert input_pos.x() >= 0 and input_pos.y() >= 0
             assert output_pos.x() >= 0 and output_pos.y() >= 0
 
-            print("   ✅ PASS: Connection point methods work")
+            print("   PASS: Connection point methods work")
         else:
-            print("   ✅ PASS: Connection point methods skipped in headless mode")
+            print("   PASS: Connection point methods skipped in headless mode")
         tests_passed += 1
     except Exception as e:
-        print(f"   ❌ FAIL: Connection point methods error - {e}")
+        print(f"   FAIL: Connection point methods error - {e}")
         if not QT_AVAILABLE:
             print("   (Expected in headless environment)")
             tests_passed += 1  # Don't fail in headless mode
@@ -297,7 +297,7 @@ def run_node_system_integration_tests():
 def run_extended_test_suite():
     """Run extended test suite covering more of the application"""
 
-    print("\n🧬 Testing Extended Application Components")
+    print("\nTesting Extended Application Components")
     print("=" * 50)
 
     tests_passed = 0
@@ -325,10 +325,10 @@ def run_extended_test_suite():
         assert user.username == "testuser"
         assert storyline.name == "Test Story"
 
-        print("   ✅ PASS: Database schema concepts work")
+        print("   PASS: Database schema concepts work")
         tests_passed += 1
     except Exception as e:
-        print(f"   ❌ FAIL: Database schema error - {e}")
+        print(f"   FAIL: Database schema error - {e}")
 
     # Test 2: Backup Manager Concepts
     print("\n2. Testing backup manager concepts...")
@@ -356,10 +356,10 @@ def run_extended_test_suite():
 
         Path(tmp_path).unlink()
 
-        print("   ✅ PASS: Backup manager concepts work")
+        print("   PASS: Backup manager concepts work")
         tests_passed += 1
     except Exception as e:
-        print(f"   ❌ FAIL: Backup manager error - {e}")
+        print(f"   FAIL: Backup manager error - {e}")
 
     # Test 3: Application Mode Concepts
     print("\n3. Testing application mode concepts...")
@@ -382,10 +382,10 @@ def run_extended_test_suite():
         current_mode = StorioModes.LOREKEEPER
         assert current_mode.value == "Lorekeeper"
 
-        print("   ✅ PASS: Application mode concepts work")
+        print("   PASS: Application mode concepts work")
         tests_passed += 1
     except Exception as e:
-        print(f"   ❌ FAIL: Application mode error - {e}")
+        print(f"   FAIL: Application mode error - {e}")
 
     # Test 4: Utility Functions
     print("\n4. Testing utility function concepts...")
@@ -414,10 +414,10 @@ def run_extended_test_suite():
         sanitized = sanitize_filename("My Story: The Beginning")
         assert sanitized == "My Story_ The Beginning"
 
-        print("   ✅ PASS: Utility function concepts work")
+        print("   PASS: Utility function concepts work")
         tests_passed += 1
     except Exception as e:
-        print(f"   ❌ FAIL: Utility function error - {e}")
+        print(f"   FAIL: Utility function error - {e}")
 
     # Test 5: Error Handling Concepts
     print("\n5. Testing error handling concepts...")
@@ -456,10 +456,10 @@ def run_extended_test_suite():
         assert not result["success"]
         assert "Test error" in result["error"]
 
-        print("   ✅ PASS: Error handling concepts work")
+        print("   PASS: Error handling concepts work")
         tests_passed += 1
     except Exception as e:
-        print(f"   ❌ FAIL: Error handling error - {e}")
+        print(f"   FAIL: Error handling error - {e}")
 
     return tests_passed, tests_total
 
@@ -471,10 +471,10 @@ def main():
     app = QApplication([])
     
     if not QT_AVAILABLE:
-        print("🤖 Storymaster Headless Test Suite")
+        print("Storymaster Headless Test Suite")
         print("   (Running with mocked Qt components)")
     else:
-        print("🚀 Storymaster Comprehensive Test Suite")
+        print("Storymaster Comprehensive Test Suite")
     print("=" * 60)
 
     total_passed = 0
@@ -497,28 +497,28 @@ def main():
 
     # Summary
     print("\n" + "=" * 60)
-    print(f"📊 TEST RESULTS: {total_passed}/{total_tests} tests passed")
+    print(f"TEST RESULTS: {total_passed}/{total_tests} tests passed")
 
     if total_passed == total_tests:
-        print("🎉 ALL TESTS PASSED!")
+        print("ALL TESTS PASSED!")
         print("\nVerified functionality:")
-        print("✅ Connection point positioning mathematics")
-        print("✅ Position tracking and preservation")
-        print("✅ Scene management concepts")
-        print("✅ Node type change position preservation fix")
-        print("✅ Node system integration")
-        print("✅ Mock object creation")
-        print("✅ Connection point methods")
-        print("✅ Database schema and model concepts")
-        print("✅ Backup manager functionality")
-        print("✅ Application mode switching")
-        print("✅ Utility function patterns")
-        print("✅ Error handling and validation")
+        print("- Connection point positioning mathematics")
+        print("- Position tracking and preservation")
+        print("- Scene management concepts")
+        print("- Node type change position preservation fix")
+        print("- Node system integration")
+        print("- Mock object creation")
+        print("- Connection point methods")
+        print("- Database schema and model concepts")
+        print("- Backup manager functionality")
+        print("- Application mode switching")
+        print("- Utility function patterns")
+        print("- Error handling and validation")
 
         success = True
     else:
         failed = total_tests - total_passed
-        print(f"❌ {failed} TEST(S) FAILED!")
+        print(f"{failed} TEST(S) FAILED!")
         success = False
 
     print("\n" + "=" * 60)

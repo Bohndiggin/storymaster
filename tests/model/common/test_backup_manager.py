@@ -9,10 +9,15 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from storymaster.model.common.backup_manager import BackupManager
-
-
 from tests.test_qt_utils import QT_AVAILABLE, QApplication, QTimer
+
+# Conditionally import Qt-dependent modules
+if QT_AVAILABLE:
+    from storymaster.model.common.backup_manager import BackupManager
+else:
+    # Mock for headless environments
+    from unittest.mock import MagicMock
+    BackupManager = MagicMock()
 
 # Skip all tests in this module if Qt is not available
 pytestmark = pytest.mark.skipif(not QT_AVAILABLE, reason="PyQt6 not available in headless environment")
