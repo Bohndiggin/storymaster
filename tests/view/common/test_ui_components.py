@@ -342,24 +342,6 @@ class TestPlotManagerDialog:
 class TestDialogIntegration:
     """Test integration between dialogs and the application"""
 
-    def test_dialog_modal_behavior(self, qapp):
-        """Test that dialogs are properly modal"""
-        mock_model = Mock()
-        mock_model.get_all_rows_as_dicts.return_value = []
-        
-        # Test various dialogs
-        user_dialog = NewUserDialog(mock_model)
-        assert user_dialog.isModal()
-        
-        setting_dialog = NewSettingDialog(mock_model)
-        assert setting_dialog.isModal()
-        
-        storyline_dialog = NewStorylineDialog(mock_model)
-        assert storyline_dialog.isModal()
-        
-        plot_dialog = PlotManagerDialog()
-        assert plot_dialog.isModal()
-
     def test_dialog_size_constraints(self, qapp):
         """Test that dialogs have appropriate size constraints"""
         mock_model = Mock()

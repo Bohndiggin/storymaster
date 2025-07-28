@@ -26,6 +26,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     
+    - name: Run tests
+      run: python -m pytest tests/ --tb=short -q
+    
     - name: Build Windows executable
       run: python build_executable.py
       env:
@@ -53,6 +56,9 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+    
+    - name: Run tests
+      run: python -m pytest tests/ --tb=short -q
     
     - name: Build macOS app bundle
       run: python build_macos.py --non-interactive
@@ -106,6 +112,11 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+    
+    - name: Run tests
+      run: xvfb-run -a python -m pytest tests/ --tb=short -q
+      env:
+        DISPLAY: :99
     
     - name: Build Linux executable
       run: xvfb-run -a python build_executable.py
