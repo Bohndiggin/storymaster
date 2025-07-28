@@ -8,11 +8,19 @@ from tests.test_qt_utils import QT_AVAILABLE, QPointF, QApplication, QGraphicsSc
 # Skip all tests in this module if Qt is not available
 pytestmark = pytest.mark.skipif(not QT_AVAILABLE, reason="PyQt6 not available in headless environment")
 
-from storymaster.controller.common.main_page_controller import (
-    CircleNodeItem,
-    RectangleNodeItem,
-    create_node_item,
-)
+# Conditionally import Qt-dependent modules
+if QT_AVAILABLE:
+    from storymaster.controller.common.main_page_controller import (
+        CircleNodeItem,
+        RectangleNodeItem,
+        create_node_item,
+    )
+else:
+    # Mock for headless environments
+    from unittest.mock import MagicMock
+    CircleNodeItem = MagicMock()
+    RectangleNodeItem = MagicMock()
+    create_node_item = MagicMock()
 
 
 class MockNodeData:

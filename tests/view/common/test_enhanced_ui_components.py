@@ -13,18 +13,29 @@ from tests.test_qt_utils import (
 # Skip all tests in this module if Qt is not available
 pytestmark = pytest.mark.skipif(not QT_AVAILABLE, reason="PyQt6 not available in headless environment")
 
-# Import UI components to test
-from storymaster.view.common.custom_widgets import (
-    TabNavigationTextEdit,
-    TabNavigationLineEdit,
-    TabNavigationComboBox,
-)
-from storymaster.view.common.tooltips import (
-    LOREKEEPER_TOOLTIPS,
-    LITOGRAPHER_TOOLTIPS,
-    CHARACTER_ARC_TOOLTIPS,
-)
-from storymaster.view.common.spell_check_config import SpellCheckConfigDialog
+# Conditionally import Qt-dependent modules
+if QT_AVAILABLE:
+    from storymaster.view.common.custom_widgets import (
+        TabNavigationTextEdit,
+        TabNavigationLineEdit,
+        TabNavigationComboBox,
+    )
+    from storymaster.view.common.tooltips import (
+        LOREKEEPER_TOOLTIPS,
+        LITOGRAPHER_TOOLTIPS,
+        CHARACTER_ARC_TOOLTIPS,
+    )
+    from storymaster.view.common.spell_check_config import SpellCheckConfigDialog
+else:
+    # Mock for headless environments
+    from unittest.mock import MagicMock
+    TabNavigationTextEdit = MagicMock()
+    TabNavigationLineEdit = MagicMock()
+    TabNavigationComboBox = MagicMock()
+    LOREKEEPER_TOOLTIPS = {}
+    LITOGRAPHER_TOOLTIPS = {}
+    CHARACTER_ARC_TOOLTIPS = {}
+    SpellCheckConfigDialog = MagicMock()
 
 
 @pytest.fixture(scope="session")

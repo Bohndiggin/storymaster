@@ -15,7 +15,14 @@ from storymaster.model.database.schema.base import (
     User,
     LitographyNode,
 )
-from storymaster.view.common.plot_manager_dialog import PlotManagerDialog
+
+# Conditionally import Qt-dependent modules
+if QT_AVAILABLE:
+    from storymaster.view.common.plot_manager_dialog import PlotManagerDialog
+else:
+    # Mock for headless environments
+    from unittest.mock import MagicMock
+    PlotManagerDialog = MagicMock()
 
 
 class TestPlotModelMethods:

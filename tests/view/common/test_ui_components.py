@@ -5,13 +5,21 @@ Test suite for UI components and dialog functionality
 import pytest
 from unittest.mock import Mock, patch, MagicMock
 
-from storymaster.view.common.new_user_dialog import NewUserDialog
-from storymaster.view.common.new_setting_dialog import NewSettingDialog
-from storymaster.view.common.new_storyline_dialog import NewStorylineDialog
-from storymaster.view.common.plot_manager_dialog import PlotManagerDialog
-
-
 from tests.test_qt_utils import QT_AVAILABLE, QApplication, QDialog, QMessageBox, Qt
+
+# Conditionally import Qt-dependent modules
+if QT_AVAILABLE:
+    from storymaster.view.common.new_user_dialog import NewUserDialog
+    from storymaster.view.common.new_setting_dialog import NewSettingDialog
+    from storymaster.view.common.new_storyline_dialog import NewStorylineDialog
+    from storymaster.view.common.plot_manager_dialog import PlotManagerDialog
+else:
+    # Mock for headless environments
+    from unittest.mock import MagicMock
+    NewUserDialog = MagicMock()
+    NewSettingDialog = MagicMock()
+    NewStorylineDialog = MagicMock()
+    PlotManagerDialog = MagicMock()
 
 # Skip all tests in this module if Qt is not available
 pytestmark = pytest.mark.skipif(not QT_AVAILABLE, reason="PyQt6 not available in headless environment")

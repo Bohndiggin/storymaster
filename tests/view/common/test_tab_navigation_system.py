@@ -12,16 +12,29 @@ from tests.test_qt_utils import (
 # Skip all tests in this module if Qt is not available
 pytestmark = pytest.mark.skipif(not QT_AVAILABLE, reason="PyQt6 not available in headless environment")
 
-from storymaster.view.common.custom_widgets import (
-    TabNavigationTextEdit,
-    TabNavigationLineEdit,
-    TabNavigationComboBox,
-    setup_tab_order,
-    setup_form_tab_navigation,
-    convert_textedit_to_tab_navigation,
-    setup_enhanced_tab_navigation,
-    enable_smart_tab_navigation,
-)
+# Conditionally import Qt-dependent modules
+if QT_AVAILABLE:
+    from storymaster.view.common.custom_widgets import (
+        TabNavigationTextEdit,
+        TabNavigationLineEdit,
+        TabNavigationComboBox,
+        setup_tab_order,
+        setup_form_tab_navigation,
+        convert_textedit_to_tab_navigation,
+        setup_enhanced_tab_navigation,
+        enable_smart_tab_navigation,
+    )
+else:
+    # Mock for headless environments
+    from unittest.mock import MagicMock
+    TabNavigationTextEdit = MagicMock()
+    TabNavigationLineEdit = MagicMock()
+    TabNavigationComboBox = MagicMock()
+    setup_tab_order = MagicMock()
+    setup_form_tab_navigation = MagicMock()
+    convert_textedit_to_tab_navigation = MagicMock()
+    setup_enhanced_tab_navigation = MagicMock()
+    enable_smart_tab_navigation = MagicMock()
 
 
 class TestTabNavigationTextEdit:

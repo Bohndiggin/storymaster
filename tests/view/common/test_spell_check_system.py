@@ -9,15 +9,27 @@ from tests.test_qt_utils import QT_AVAILABLE, QApplication, QContextMenuEvent, Q
 # Skip all tests in this module if Qt is not available
 pytestmark = pytest.mark.skipif(not QT_AVAILABLE, reason="PyQt6 not available in headless environment")
 
-from storymaster.view.common.spellcheck import (
-    SpellChecker,
-    SpellCheckTextEdit,
-    SpellCheckLineEdit,
-    SpellCheckHighlighter,
-    BasicWordList,
-    enable_spell_check,
-    get_spell_checker,
-)
+# Conditionally import Qt-dependent modules
+if QT_AVAILABLE:
+    from storymaster.view.common.spellcheck import (
+        SpellChecker,
+        SpellCheckTextEdit,
+        SpellCheckLineEdit,
+        SpellCheckHighlighter,
+        BasicWordList,
+        enable_spell_check,
+        get_spell_checker,
+    )
+else:
+    # Mock for headless environments
+    from unittest.mock import MagicMock
+    SpellChecker = MagicMock()
+    SpellCheckTextEdit = MagicMock()
+    SpellCheckLineEdit = MagicMock()
+    SpellCheckHighlighter = MagicMock()
+    BasicWordList = MagicMock()
+    enable_spell_check = MagicMock()
+    get_spell_checker = MagicMock()
 
 
 class TestSpellChecker:

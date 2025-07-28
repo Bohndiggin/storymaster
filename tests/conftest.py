@@ -5,7 +5,7 @@ Simple test configuration for Storymaster tests
 import pytest
 import os
 import sys
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, MagicMock
 
 # Handle headless environments (CI/CD)
 def setup_headless_qt():
@@ -17,12 +17,59 @@ def setup_headless_qt():
 if 'CI' in os.environ or 'GITHUB_ACTIONS' in os.environ or '--headless' in sys.argv:
     setup_headless_qt()
 
+# Mock problematic application modules before they're imported
+def mock_application_modules():
+    """Mock application modules that have Qt imports"""
+    if not QT_AVAILABLE:
+        # Mock the problematic application modules
+        problematic_modules = [
+            'storymaster.view.common.plot_manager_dialog',
+            'storymaster.controller.common.main_page_controller', 
+            'storymaster.view.common.custom_widgets',
+            'storymaster.view.common.spellcheck',
+            'storymaster.view.common.new_user_dialog',
+            'storymaster.view.common.new_setting_dialog',
+            'storymaster.view.common.new_storyline_dialog',
+            'storymaster.view.common.storyline_settings_dialog',
+            'storymaster.view.common.spell_check_config'
+        ]
+        
+        for module_name in problematic_modules:
+            if module_name not in sys.modules:
+                mock_module = MagicMock()
+                # Add common attributes that tests might expect
+                mock_module.PlotManagerDialog = MagicMock()
+                mock_module.create_node_item = MagicMock()
+                mock_module.TabNavigationTextEdit = MagicMock()
+                mock_module.TabNavigationLineEdit = MagicMock()
+                mock_module.TabNavigationComboBox = MagicMock()
+                mock_module.enable_smart_tab_navigation = MagicMock()
+                mock_module.SpellChecker = MagicMock()
+                mock_module.SpellCheckTextEdit = MagicMock()
+                mock_module.SpellCheckLineEdit = MagicMock()
+                mock_module.SpellCheckHighlighter = MagicMock()
+                mock_module.BasicWordList = MagicMock()
+                mock_module.enable_spell_check = MagicMock()
+                mock_module.get_spell_checker = MagicMock()
+                mock_module.NewUserDialog = MagicMock()
+                mock_module.NewSettingDialog = MagicMock()
+                mock_module.NewStorylineDialog = MagicMock()
+                mock_module.StorylineSettingsDialog = MagicMock() 
+                mock_module.SpellCheckConfigDialog = MagicMock()
+                sys.modules[module_name] = mock_module
+
+# Try to import Qt first to determine availability
 try:
     from PyQt6.QtWidgets import QApplication, QMessageBox
     QT_AVAILABLE = True
 except ImportError as e:
-    # Mock Qt classes when not available
     QT_AVAILABLE = False
+
+# Now mock application modules if Qt is not available
+mock_application_modules()
+
+# Continue with Qt mocking if needed
+if not QT_AVAILABLE:
     
     class MockQApplication:
         @staticmethod
