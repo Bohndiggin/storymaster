@@ -59,9 +59,18 @@ icon_files = [
     'assets/storymaster_icon_32.png',
     'assets/storymaster_icon_64.png'
 ]
+print("Checking icon files:")
 for icon_file in icon_files:
-    if (project_dir / icon_file).exists():
-        datas.append((str(project_dir / icon_file), 'assets'))
+    icon_path = project_dir / icon_file
+    if icon_path.exists():
+        print(f"  ✓ Found: {icon_path}")
+        datas.append((str(icon_path), 'assets'))
+    else:
+        print(f"  ✗ Missing: {icon_path}")
+
+# Check version info file
+version_file = project_dir / 'version_info.py'
+print(f"Version file: {version_file} - {'exists' if version_file.exists() else 'MISSING'}")
 
 # Hidden imports needed for PyQt6 and SQLAlchemy
 hiddenimports = [
@@ -168,8 +177,8 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='assets/storymaster_icon.ico',  # Icon for Windows
-    version='version_info.py',  # Add version info to reduce false positives
+    icon=str(project_dir / 'assets/storymaster_icon.ico') if (project_dir / 'assets/storymaster_icon.ico').exists() else None,
+    version=str(project_dir / 'version_info.py') if (project_dir / 'version_info.py').exists() else None,
 )
 
 # Note: For one-file mode, no COLLECT is needed

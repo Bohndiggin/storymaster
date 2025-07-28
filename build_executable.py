@@ -67,6 +67,21 @@ def ensure_icons_exist():
         print("Using icon from assets: assets/storymaster_icon.ico")
     return True
 
+def ensure_version_info():
+    """Ensure version info file exists"""
+    print("Checking version info...")
+    version_file = Path("version_info.py")
+    if not version_file.exists():
+        print("Creating version_info.py...")
+        try:
+            subprocess.run([sys.executable, "create_version_info.py"], check=True)
+            print("✓ Version info created")
+        except subprocess.CalledProcessError:
+            print("Warning: Could not create version info")
+    else:
+        print("✓ Version info exists")
+    return True
+
 
 def clean_previous_builds():
     """Clean up previous build artifacts"""
@@ -437,6 +452,7 @@ def main():
     steps = [
         ("Checking dependencies", check_dependencies),
         ("Ensuring icons exist", ensure_icons_exist),
+        ("Ensuring version info exists", ensure_version_info),
         ("Cleaning previous builds", clean_previous_builds),
         ("Building executable", build_executable),
         ("Testing executable", test_executable),
