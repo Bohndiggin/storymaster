@@ -123,11 +123,11 @@ def create_portable_package():
         exe_path = Path("dist/storymaster.exe")
     else:
         exe_path = Path("dist/storymaster")
-        
+
     if not exe_path.exists():
         print(f"[ERROR] Executable not found at {exe_path}")
         return False
-        
+
     # Create distribution directory
     dist_dir = Path("dist/storymaster_portable")
     if dist_dir.exists():

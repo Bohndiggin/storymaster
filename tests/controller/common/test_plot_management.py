@@ -4,11 +4,20 @@ Test suite for plot management functionality
 
 import pytest
 from unittest.mock import Mock, patch, MagicMock
-from PyQt6.QtWidgets import QApplication, QDialog, QMessageBox, QListWidget, QListWidgetItem
+from PyQt6.QtWidgets import (
+    QApplication,
+    QDialog,
+    QMessageBox,
+    QListWidget,
+    QListWidgetItem,
+)
 from PyQt6.QtCore import Qt
 
 from storymaster.model.database.schema.base import (
-    LitographyPlot, Storyline, User, LitographyNode
+    LitographyPlot,
+    Storyline,
+    User,
+    LitographyNode,
 )
 from storymaster.view.common.plot_manager_dialog import PlotManagerDialog
 
@@ -54,9 +63,7 @@ class TestPlotModelMethods:
         self.mock_model.create_plot.return_value = mock_plot
 
         result = self.mock_model.create_plot(
-            title="New Plot",
-            description="A newly created plot",
-            storyline_id=1
+            title="New Plot", description="A newly created plot", storyline_id=1
         )
 
         assert result.title == "New Plot"
@@ -66,7 +73,7 @@ class TestPlotModelMethods:
         """Test updating plot details"""
         update_data = {
             "title": "Updated Plot Title",
-            "description": "Updated description"
+            "description": "Updated description",
         }
 
         self.mock_model.update_plot.return_value = None
@@ -106,7 +113,9 @@ class TestPlotModelMethods:
         # Should not raise an exception
         self.mock_model.set_current_plot(plot_id=2, storyline_id=1)
 
-        self.mock_model.set_current_plot.assert_called_once_with(plot_id=2, storyline_id=1)
+        self.mock_model.set_current_plot.assert_called_once_with(
+            plot_id=2, storyline_id=1
+        )
 
     def test_get_plot_nodes(self):
         """Test getting nodes associated with a plot"""
@@ -142,9 +151,7 @@ class TestPlotModelMethods:
         self.mock_model.copy_plot.return_value = mock_copied_plot
 
         result = self.mock_model.copy_plot(
-            source_plot_id=1,
-            new_title="Original Plot (Copy)",
-            storyline_id=1
+            source_plot_id=1, new_title="Original Plot (Copy)", storyline_id=1
         )
 
         assert result.title == "Original Plot (Copy)"
@@ -159,9 +166,9 @@ class TestPlotModelMethods:
                 "action": 5,
                 "reaction": 4,
                 "twist": 2,
-                "development": 1
+                "development": 1,
             },
-            "completion_percentage": 80.0
+            "completion_percentage": 80.0,
         }
 
         self.mock_model.get_plot_statistics.return_value = mock_stats
@@ -196,9 +203,9 @@ class TestPlotManagerDialog:
         assert dialog.windowTitle() == "Manage Plots"
         assert dialog.selected_plot_id is None
         # action is not initialized until an action is taken
-        assert not hasattr(dialog, 'action') or dialog.action is None
+        assert not hasattr(dialog, "action") or dialog.action is None
         # new_plot_name is not a standard attribute
-        assert not hasattr(dialog, 'new_plot_name') or dialog.new_plot_name is None
+        assert not hasattr(dialog, "new_plot_name") or dialog.new_plot_name is None
 
     def test_populate_plots_with_data(self, qapp):
         """Test populating the dialog with plot data"""
@@ -242,7 +249,7 @@ class TestPlotManagerDialog:
         dialog.new_plot_input = Mock()
         dialog.new_plot_input.text.return_value = ""
 
-        with patch('PyQt6.QtWidgets.QMessageBox.warning') as mock_warning:
+        with patch("PyQt6.QtWidgets.QMessageBox.warning") as mock_warning:
             dialog.on_add_plot()
             mock_warning.assert_called_once()
 
@@ -254,7 +261,7 @@ class TestPlotManagerDialog:
         dialog.new_plot_input = Mock()
         dialog.new_plot_input.text.return_value = "   "
 
-        with patch('PyQt6.QtWidgets.QMessageBox.warning') as mock_warning:
+        with patch("PyQt6.QtWidgets.QMessageBox.warning") as mock_warning:
             dialog.on_add_plot()
             mock_warning.assert_called_once()
 
@@ -265,7 +272,7 @@ class TestPlotManagerDialog:
         dialog.new_plot_input = Mock()
         dialog.new_plot_input.text.return_value = "New Adventure"
 
-        with patch.object(dialog, 'accept') as mock_accept:
+        with patch.object(dialog, "accept") as mock_accept:
             dialog.on_add_plot()
 
             assert dialog.action == "add"
@@ -283,7 +290,7 @@ class TestPlotManagerDialog:
         dialog.on_switch_plot()
         # No warning should be shown - method just returns silently
         # Check that no action was set
-        assert not hasattr(dialog, 'action')
+        assert not hasattr(dialog, "action")
 
     def test_switch_plot_success(self, qapp):
         """Test successful plot switching"""
@@ -295,7 +302,7 @@ class TestPlotManagerDialog:
         dialog.plot_list = Mock()
         dialog.plot_list.selectedItems.return_value = [mock_item]
 
-        with patch.object(dialog, 'accept') as mock_accept:
+        with patch.object(dialog, "accept") as mock_accept:
             dialog.on_switch_plot()
 
             assert dialog.selected_plot_id == 3
@@ -315,7 +322,7 @@ class TestPlotManagerDialog:
 
         # Mock accept method to prevent dialog from closing
         dialog.accept = Mock()
-        
+
         dialog.on_switch_plot()
         # The method doesn't show information - it just switches
         # The UI prevents this by disabling the button
@@ -333,7 +340,7 @@ class TestPlotManagerDialog:
         dialog.on_delete_plot()
         # No warning should be shown - method just returns silently
         # Check that no action was set
-        assert not hasattr(dialog, 'action')
+        assert not hasattr(dialog, "action")
 
     def test_delete_current_plot_protection(self, qapp, mock_message_boxes):
         """Test protection against deleting current plot"""
@@ -349,7 +356,7 @@ class TestPlotManagerDialog:
 
         dialog.on_delete_plot()
         # Verify warning was called via the global mock
-        mock_message_boxes['warning'].assert_called_once()
+        mock_message_boxes["warning"].assert_called_once()
 
     def test_delete_plot_confirmation_cancel(self, qapp):
         """Test plot deletion when user cancels confirmation"""
@@ -363,13 +370,13 @@ class TestPlotManagerDialog:
         dialog.plot_list = Mock()
         dialog.plot_list.selectedItems.return_value = [mock_item]
 
-        with patch('PyQt6.QtWidgets.QMessageBox.question') as mock_question:
+        with patch("PyQt6.QtWidgets.QMessageBox.question") as mock_question:
             mock_question.return_value = QMessageBox.StandardButton.No
 
             dialog.on_delete_plot()
 
             # Should not set delete action (action may not exist if not set)
-            assert not hasattr(dialog, 'action') or dialog.action != "delete"
+            assert not hasattr(dialog, "action") or dialog.action != "delete"
 
     def test_delete_plot_confirmation_accept(self, qapp):
         """Test plot deletion when user confirms"""
@@ -383,8 +390,8 @@ class TestPlotManagerDialog:
         dialog.plot_list = Mock()
         dialog.plot_list.selectedItems.return_value = [mock_item]
 
-        with patch('PyQt6.QtWidgets.QMessageBox.question') as mock_question:
-            with patch.object(dialog, 'accept') as mock_accept:
+        with patch("PyQt6.QtWidgets.QMessageBox.question") as mock_question:
+            with patch.object(dialog, "accept") as mock_accept:
                 mock_question.return_value = QMessageBox.StandardButton.Yes
 
                 dialog.on_delete_plot()
@@ -458,7 +465,7 @@ class TestPlotManagementIntegration:
     def test_plot_switching_workflow(self, qapp):
         """Test the complete plot switching workflow"""
         mock_model = Mock()
-        
+
         # Mock current plot
         mock_current_plot = Mock()
         mock_current_plot.id = 1
@@ -543,7 +550,7 @@ class TestPlotManagementIntegration:
         source_nodes = [
             Mock(id=1, label="Scene 1", plot_id=1),
             Mock(id=2, label="Scene 2", plot_id=1),
-            Mock(id=3, label="Scene 3", plot_id=1)
+            Mock(id=3, label="Scene 3", plot_id=1),
         ]
 
         # Mock copied plot
@@ -554,7 +561,7 @@ class TestPlotManagementIntegration:
         copied_nodes = [
             Mock(id=10, label="Scene 1", plot_id=5),
             Mock(id=11, label="Scene 2", plot_id=5),
-            Mock(id=12, label="Scene 3", plot_id=5)
+            Mock(id=12, label="Scene 3", plot_id=5),
         ]
 
         mock_model.get_plot_nodes.return_value = source_nodes
@@ -566,11 +573,10 @@ class TestPlotManagementIntegration:
         new_plot = mock_model.copy_plot(
             source_plot_id=source_plot_id,
             new_title="Original Plot (Copy)",
-            storyline_id=1
+            storyline_id=1,
         )
         new_nodes = mock_model.copy_plot_nodes(
-            source_plot_id=source_plot_id,
-            target_plot_id=new_plot.id
+            source_plot_id=source_plot_id, target_plot_id=new_plot.id
         )
 
         assert len(original_nodes) == 3
@@ -586,9 +592,21 @@ class TestPlotManagementIntegration:
         storyline_id = 1
         plots = [
             Mock(id=1, title="Main Plot", is_current=True, storyline_id=storyline_id),
-            Mock(id=2, title="Romance Subplot", is_current=False, storyline_id=storyline_id),
-            Mock(id=3, title="Mystery Subplot", is_current=False, storyline_id=storyline_id),
-            Mock(id=4, title="Character Arc", is_current=False, storyline_id=storyline_id)
+            Mock(
+                id=2,
+                title="Romance Subplot",
+                is_current=False,
+                storyline_id=storyline_id,
+            ),
+            Mock(
+                id=3,
+                title="Mystery Subplot",
+                is_current=False,
+                storyline_id=storyline_id,
+            ),
+            Mock(
+                id=4, title="Character Arc", is_current=False, storyline_id=storyline_id
+            ),
         ]
 
         mock_model.get_plots_for_storyline.return_value = plots
@@ -605,7 +623,9 @@ class TestPlotManagementIntegration:
         plot_types = {
             "main": [plot for plot in storyline_plots if "Main" in plot.title],
             "subplots": [plot for plot in storyline_plots if "Subplot" in plot.title],
-            "character": [plot for plot in storyline_plots if "Character" in plot.title]
+            "character": [
+                plot for plot in storyline_plots if "Character" in plot.title
+            ],
         }
 
         assert len(plot_types["main"]) == 1
@@ -639,7 +659,7 @@ class TestPlotManagementEdgeCases:
             "A" * 1000,  # Very long
             "Title with\nnewlines\nand\ttabs",  # Special characters
             "Title with emoji 📚📖",  # Unicode
-            None  # None value
+            None,  # None value
         ]
 
         # Mock validation function
@@ -649,12 +669,14 @@ class TestPlotManagementEdgeCases:
             title_str = str(title).strip()
             return len(title_str) > 0 and len(title_str) <= 500
 
-        valid_titles = [title for title in edge_case_titles if validate_plot_title(title)]
+        valid_titles = [
+            title for title in edge_case_titles if validate_plot_title(title)
+        ]
 
         # Should accept reasonable titles
         assert "Title with emoji 📚📖" in valid_titles
         assert "Title with\nnewlines\nand\ttabs" in valid_titles
-        
+
         # Should reject empty, None, and overly long titles
         assert "" not in valid_titles
         assert None not in valid_titles
@@ -693,7 +715,9 @@ class TestPlotManagementEdgeCases:
         mock_model = Mock()
 
         # Mock database errors
-        mock_model.get_plots_for_storyline.side_effect = Exception("Database connection failed")
+        mock_model.get_plots_for_storyline.side_effect = Exception(
+            "Database connection failed"
+        )
         mock_model.create_plot.side_effect = Exception("Insert failed")
         mock_model.delete_plot.side_effect = Exception("Delete failed")
 
@@ -715,7 +739,7 @@ class TestPlotManagementEdgeCases:
         # Plot is deleted by another process while being accessed
         mock_model.get_plot_by_id.side_effect = [
             Mock(id=1, title="Existing Plot"),  # First call succeeds
-            None  # Second call returns None (plot was deleted)
+            None,  # Second call returns None (plot was deleted)
         ]
 
         # First access succeeds

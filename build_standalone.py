@@ -11,7 +11,7 @@ Supports:
 
 Features:
 - ✅ Complete Python runtime bundled
-- ✅ PyQt6 GUI framework included  
+- ✅ PyQt6 GUI framework included
 - ✅ SQLAlchemy database layer bundled
 - ✅ All UI files and assets included
 - ✅ Icon support for all platforms
@@ -42,11 +42,14 @@ def check_dependencies():
     # Check PyInstaller
     try:
         import PyInstaller
+
         print(f"   ✅ PyInstaller {PyInstaller.__version__} found")
     except ImportError:
         print("   📥 Installing PyInstaller...")
         try:
-            subprocess.run([sys.executable, "-m", "pip", "install", "pyinstaller>=6.0"], check=True)
+            subprocess.run(
+                [sys.executable, "-m", "pip", "install", "pyinstaller>=6.0"], check=True
+            )
             print("   ✅ PyInstaller installed successfully")
         except subprocess.CalledProcessError:
             print("   ❌ Failed to install PyInstaller")
@@ -68,26 +71,26 @@ def check_dependencies():
 def verify_assets():
     """Verify that icon assets exist"""
     print("\n🎨 Checking icon assets...")
-    
+
     required_icons = [
         "assets/storymaster_icon.ico",
         "assets/storymaster_icon.svg",
-        "assets/storymaster_icon_64.png"
+        "assets/storymaster_icon_64.png",
     ]
-    
+
     missing_icons = []
     for icon_path in required_icons:
         if not Path(icon_path).exists():
             missing_icons.append(icon_path)
         else:
             print(f"   ✅ Found {icon_path}")
-    
+
     if missing_icons:
         print(f"   ⚠️  Missing icons: {missing_icons}")
         print("   📝 Build will continue with fallback icons")
     else:
         print("   ✅ All icon assets found")
-        
+
     return True
 
 
@@ -116,24 +119,31 @@ def clean_build_artifacts():
 def build_standalone_executable():
     """Build standalone executable using PyInstaller"""
     print("\n🔨 Building standalone executable...")
-    
+
     system = platform.system().lower()
     print(f"   🖥️  Target platform: {system}")
 
     try:
         # Use the updated spec file that creates one-file executables
-        cmd = [sys.executable, "-m", "PyInstaller", "--clean", "--noconfirm", "storymaster.spec"]
-        
+        cmd = [
+            sys.executable,
+            "-m",
+            "PyInstaller",
+            "--clean",
+            "--noconfirm",
+            "storymaster.spec",
+        ]
+
         print(f"   ⚙️  Running: {' '.join(cmd)}")
         result = subprocess.run(cmd, check=True, capture_output=True, text=True)
-        
+
         if result.returncode == 0:
             # Check if executable was created
             if system == "windows":
                 exe_path = Path("dist/storymaster.exe")
             else:
                 exe_path = Path("dist/storymaster")
-                
+
             if exe_path.exists():
                 size_mb = exe_path.stat().st_size / (1024 * 1024)
                 print(f"   ✅ Standalone executable built successfully!")
@@ -161,9 +171,9 @@ def build_standalone_executable():
 def create_distribution_package():
     """Create a distribution package with documentation"""
     print("\n📦 Creating distribution package...")
-    
+
     system = platform.system().lower()
-    
+
     # Determine executable name and create package directory
     if system == "windows":
         exe_name = "storymaster.exe"
@@ -171,30 +181,30 @@ def create_distribution_package():
     else:
         exe_name = "storymaster"
         package_name = "storymaster-standalone-linux"
-    
+
     exe_path = Path(f"dist/{exe_name}")
     if not exe_path.exists():
         print(f"   ❌ Executable not found: {exe_path}")
         return False
-    
+
     # Create package directory
     package_dir = Path(f"dist/{package_name}")
     if package_dir.exists():
         shutil.rmtree(package_dir)
     package_dir.mkdir(parents=True)
-    
+
     try:
         # Copy executable
         shutil.copy2(exe_path, package_dir / exe_name)
         if system != "windows":
             os.chmod(package_dir / exe_name, 0o755)
         print(f"   📁 Copied {exe_name}")
-        
+
         # Copy sample database if it exists
         if Path("storymaster.db").exists():
             shutil.copy2("storymaster.db", package_dir / "storymaster.db")
             print("   📊 Copied sample database")
-        
+
         # Create comprehensive README
         readme_content = f"""# Storymaster Standalone - {system.title()}
 
@@ -344,7 +354,7 @@ For help and updates:
         with open(package_dir / "README.md", "w", encoding="utf-8") as f:
             f.write(readme_content)
         print("   📖 Created comprehensive README")
-        
+
         # Create quick start guide
         if system == "windows":
             quick_start = f"""@echo off
@@ -373,7 +383,7 @@ chmod +x {exe_name}
                 f.write(quick_start)
             os.chmod(start_script, 0o755)
             print("   🚀 Created START_HERE.sh")
-        
+
         print(f"   ✅ Distribution package created: {package_dir}")
         return package_dir
 
@@ -385,21 +395,25 @@ chmod +x {exe_name}
 def create_archive(package_dir):
     """Create compressed archive for distribution"""
     print("\n📦 Creating distribution archive...")
-    
+
     system = platform.system().lower()
     arch = platform.machine().lower()
-    
+
     package_name = package_dir.name
     archive_name = f"{package_name}-{arch}"
-    
+
     try:
         if system == "windows":
             archive_path = f"{archive_name}.zip"
-            shutil.make_archive(archive_name, "zip", package_dir.parent, package_dir.name)
+            shutil.make_archive(
+                archive_name, "zip", package_dir.parent, package_dir.name
+            )
         else:
             archive_path = f"{archive_name}.tar.gz"
-            shutil.make_archive(archive_name, "gztar", package_dir.parent, package_dir.name)
-        
+            shutil.make_archive(
+                archive_name, "gztar", package_dir.parent, package_dir.name
+            )
+
         archive_size = Path(archive_path).stat().st_size / (1024 * 1024)
         print(f"   ✅ Archive created: {archive_path}")
         print(f"   📦 Archive size: {archive_size:.1f} MB")
@@ -414,22 +428,22 @@ def print_success_summary(package_dir, archive_path):
     """Print build success summary"""
     system = platform.system()
     exe_name = "storymaster.exe" if system == "Windows" else "storymaster"
-    
+
     print("\n" + "=" * 70)
     print("🎉 STANDALONE BUILD COMPLETE!")
     print("=" * 70)
-    
+
     print(f"\n📁 Files Created:")
     print(f"   📦 Package: {package_dir}/")
     print(f"   🚀 Executable: {package_dir}/{exe_name}")
     print(f"   📖 README: {package_dir}/README.md")
     print(f"   🗜️ Archive: {archive_path}")
-    
+
     print(f"\n🎯 Distribution Ready:")
     print(f"   • Share the archive file ({archive_path})")
     print(f"   • Users extract and run {exe_name}")
     print(f"   • NO Python or PyQt6 installation required!")
-    
+
     print(f"\n✨ Key Benefits:")
     print(f"   ✅ Complete Python {platform.python_version()} runtime bundled")
     print(f"   ✅ PyQt6 GUI framework included")
@@ -437,7 +451,7 @@ def print_success_summary(package_dir, archive_path):
     print(f"   ✅ All dependencies self-contained")
     print(f"   ✅ Works on clean {system} systems")
     print(f"   ✅ Professional deployment ready")
-    
+
     print(f"\n🚀 Quick Test:")
     if system == "Windows":
         print(f"   cd {package_dir}")
@@ -445,40 +459,40 @@ def print_success_summary(package_dir, archive_path):
     else:
         print(f"   cd {package_dir}")
         print(f"   ./{exe_name}")
-    
+
     print("\n" + "=" * 70)
 
 
 def main():
     """Main build process"""
     print_header()
-    
+
     build_steps = [
         ("Checking dependencies", check_dependencies),
-        ("Verifying assets", verify_assets), 
+        ("Verifying assets", verify_assets),
         ("Cleaning previous builds", clean_build_artifacts),
         ("Building standalone executable", build_standalone_executable),
     ]
-    
+
     # Run core build steps
     for step_name, step_func in build_steps:
         print(f"🔄 {step_name}...")
         if not step_func():
             print(f"\n❌ Build failed at: {step_name}")
             sys.exit(1)
-    
+
     # Create distribution package
     package_dir = create_distribution_package()
     if not package_dir:
         print("\n❌ Failed to create distribution package")
         sys.exit(1)
-    
+
     # Create archive
     archive_path = create_archive(package_dir)
     if not archive_path:
         print("\n❌ Failed to create distribution archive")
         sys.exit(1)
-    
+
     # Print success summary
     print_success_summary(package_dir, archive_path)
 
@@ -492,5 +506,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ Unexpected error during build: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

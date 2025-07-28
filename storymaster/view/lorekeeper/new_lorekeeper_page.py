@@ -64,13 +64,13 @@ class NewLorekeeperPage(QWidget):
         # Set splitter proportions (left panel for navigation/browser, right panel for details)
         splitter.setStretchFactor(0, 1)
         splitter.setStretchFactor(1, 3)
-        
+
         # Set initial sizes (left panel ~300px, right panel gets the rest)
         splitter.setSizes([300, 700])
 
         layout.addWidget(splitter)
         self.setLayout(layout)
-        
+
         # Set up enhanced tab navigation
         enable_smart_tab_navigation(self)
 
@@ -84,7 +84,9 @@ class NewLorekeeperPage(QWidget):
         # Navigation
         self.navigation = LorekeeperNavigation()
         self.navigation.category_changed.connect(self.on_category_changed)
-        self.navigation.setMinimumHeight(150)  # Minimum height to keep navigation usable
+        self.navigation.setMinimumHeight(
+            150
+        )  # Minimum height to keep navigation usable
         left_splitter.addWidget(self.navigation)
 
         # Browser
@@ -142,7 +144,9 @@ class NewLorekeeperPage(QWidget):
             "• Use the search bar to quickly find what you're looking for"
         )
         description.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        description.setStyleSheet(f"color: {COLORS['text_secondary']}; font-size: {FONTS['size_large']}; line-height: 1.5;")
+        description.setStyleSheet(
+            f"color: {COLORS['text_secondary']}; font-size: {FONTS['size_large']}; line-height: 1.5;"
+        )
         description.setWordWrap(True)
 
         layout.addStretch()

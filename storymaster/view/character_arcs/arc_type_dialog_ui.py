@@ -26,29 +26,45 @@ class Ui_ArcTypeDialog(object):
         self.formLayout.setObjectName("formLayout")
         self.nameLabel = QtWidgets.QLabel(parent=ArcTypeDialog)
         self.nameLabel.setObjectName("nameLabel")
-        self.formLayout.setWidget(0, QtWidgets.QFormLayout.ItemRole.LabelRole, self.nameLabel)
+        self.formLayout.setWidget(
+            0, QtWidgets.QFormLayout.ItemRole.LabelRole, self.nameLabel
+        )
         self.nameEdit = QtWidgets.QLineEdit(parent=ArcTypeDialog)
         self.nameEdit.setObjectName("nameEdit")
-        self.formLayout.setWidget(0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.nameEdit)
+        self.formLayout.setWidget(
+            0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.nameEdit
+        )
         self.descriptionLabel = QtWidgets.QLabel(parent=ArcTypeDialog)
         self.descriptionLabel.setObjectName("descriptionLabel")
-        self.formLayout.setWidget(1, QtWidgets.QFormLayout.ItemRole.LabelRole, self.descriptionLabel)
+        self.formLayout.setWidget(
+            1, QtWidgets.QFormLayout.ItemRole.LabelRole, self.descriptionLabel
+        )
         self.descriptionEdit = QtWidgets.QTextEdit(parent=ArcTypeDialog)
         self.descriptionEdit.setMaximumSize(QtCore.QSize(16777215, 100))
         self.descriptionEdit.setObjectName("descriptionEdit")
-        self.formLayout.setWidget(2, QtWidgets.QFormLayout.ItemRole.SpanningRole, self.descriptionEdit)
+        self.formLayout.setWidget(
+            2, QtWidgets.QFormLayout.ItemRole.SpanningRole, self.descriptionEdit
+        )
         self.verticalLayout.addLayout(self.formLayout)
-        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
+        spacerItem = QtWidgets.QSpacerItem(
+            20,
+            40,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+        )
         self.verticalLayout.addItem(spacerItem)
         self.buttonBox = QtWidgets.QDialogButtonBox(parent=ArcTypeDialog)
         self.buttonBox.setOrientation(QtCore.Qt.Orientation.Horizontal)
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.StandardButton.Cancel|QtWidgets.QDialogButtonBox.StandardButton.Ok)
+        self.buttonBox.setStandardButtons(
+            QtWidgets.QDialogButtonBox.StandardButton.Cancel
+            | QtWidgets.QDialogButtonBox.StandardButton.Ok
+        )
         self.buttonBox.setObjectName("buttonBox")
         self.verticalLayout.addWidget(self.buttonBox)
 
         self.retranslateUi(ArcTypeDialog)
-        self.buttonBox.accepted.connect(ArcTypeDialog.accept) # type: ignore
-        self.buttonBox.rejected.connect(ArcTypeDialog.reject) # type: ignore
+        self.buttonBox.accepted.connect(ArcTypeDialog.accept)  # type: ignore
+        self.buttonBox.rejected.connect(ArcTypeDialog.reject)  # type: ignore
         QtCore.QMetaObject.connectSlotsByName(ArcTypeDialog)
 
     def retranslateUi(self, ArcTypeDialog):

@@ -96,11 +96,9 @@ from storymaster.view.common.theme import (
     get_input_style,
     get_group_box_style,
     COLORS,
-    FONTS
+    FONTS,
 )
-from storymaster.view.common.tooltips import (
-    apply_general_tooltips
-)
+from storymaster.view.common.tooltips import apply_general_tooltips
 
 
 class ConnectionPoint(QGraphicsEllipseItem):
@@ -780,7 +778,7 @@ class MainWindowController:
         self.edit_form_widgets = {}
         self.add_form_widgets = {}
         self.connection_lines = []  # Store connection lines for updates
-        
+
         # Table visibility management
         self.visible_tables = None  # None means show all available tables
         self.load_table_visibility_preferences()
@@ -828,7 +826,7 @@ class MainWindowController:
 
         # Initialize character arc page
         self.character_arc_page = NewCharacterArcsPage(self.model, self.view)
-        
+
         # Add the character arc page to the character arcs container
         character_arcs_layout = QVBoxLayout(self.view.ui.characterArcsContainer)
         character_arcs_layout.setContentsMargins(0, 0, 0, 0)
@@ -910,10 +908,12 @@ class MainWindowController:
             # Right side: Node editing panel
             self.node_panel = QWidget()
             self.node_panel.setFixedWidth(300)
-            self.node_panel.setStyleSheet(f"""
+            self.node_panel.setStyleSheet(
+                f"""
                 background-color: {COLORS['bg_main']}; 
                 border-left: 1px solid {COLORS['border_main']};
-            """)
+            """
+            )
 
             panel_layout = QVBoxLayout(self.node_panel)
 
@@ -936,11 +936,13 @@ class MainWindowController:
                 "Drag from red output points to green input points to connect nodes."
             )
             instructions_label.setWordWrap(True)
-            instructions_label.setStyleSheet(f"""
+            instructions_label.setStyleSheet(
+                f"""
                 color: {COLORS['text_muted']}; 
                 font-size: {FONTS['size_small']}; 
                 padding: 5px;
-            """)
+            """
+            )
             connections_layout.addWidget(instructions_label)
 
             # Input connections list
@@ -954,7 +956,9 @@ class MainWindowController:
 
             # Output connections list
             output_label = QLabel("Output Connections:")
-            output_label.setStyleSheet(f"font-weight: bold; color: {COLORS['warning']};")
+            output_label.setStyleSheet(
+                f"font-weight: bold; color: {COLORS['warning']};"
+            )
             connections_layout.addWidget(output_label)
 
             self.output_connections_list = QListWidget()
@@ -1003,9 +1007,9 @@ class MainWindowController:
             # Buttons
             button_layout = QHBoxLayout()
             self.save_node_btn = QPushButton("Save Changes")
-            self.save_node_btn.setStyleSheet(get_button_style('primary'))
+            self.save_node_btn.setStyleSheet(get_button_style("primary"))
             self.delete_node_btn = QPushButton("Delete Node")
-            self.delete_node_btn.setStyleSheet(get_button_style('danger'))
+            self.delete_node_btn.setStyleSheet(get_button_style("danger"))
 
             button_layout.addWidget(self.save_node_btn)
             button_layout.addWidget(self.delete_node_btn)
@@ -1037,22 +1041,27 @@ class MainWindowController:
         # Section selector container
         section_container = QWidget()
         section_container.setFixedHeight(60)
-        section_container.setStyleSheet(f"""
+        section_container.setStyleSheet(
+            f"""
             background-color: {COLORS['bg_main']}; 
             border-bottom: 1px solid {COLORS['border_main']};
-        """)
+        """
+        )
 
         section_layout = QHBoxLayout(section_container)
         section_layout.setContentsMargins(10, 10, 10, 10)
 
         # Label
         section_label = QLabel("Plot Sections:")
-        section_label.setStyleSheet(f"color: {COLORS['text_secondary']}; font-weight: bold;")
+        section_label.setStyleSheet(
+            f"color: {COLORS['text_secondary']}; font-weight: bold;"
+        )
         section_layout.addWidget(section_label)
 
         # Tab widget for sections
         self.section_tabs = QTabWidget()
-        self.section_tabs.setStyleSheet(f"""
+        self.section_tabs.setStyleSheet(
+            f"""
             QTabWidget::pane {{
                 border: 1px solid {COLORS['border_main']};
                 background-color: {COLORS['bg_secondary']};
@@ -1071,7 +1080,8 @@ class MainWindowController:
             QTabBar::tab:hover {{
                 background-color: {COLORS['border_light']};
             }}
-        """)
+        """
+        )
         self.section_tabs.currentChanged.connect(self.on_section_changed)
 
         # Enable context menu on tabs
@@ -1084,7 +1094,7 @@ class MainWindowController:
 
         # Add section button
         add_section_btn = QPushButton("+ Add Section")
-        add_section_btn.setStyleSheet(get_button_style('primary'))
+        add_section_btn.setStyleSheet(get_button_style("primary"))
         add_section_btn.clicked.connect(self.on_add_section_clicked)
         section_layout.addWidget(add_section_btn)
 
@@ -2147,15 +2157,21 @@ class MainWindowController:
         # --- Page Navigation ---
         self.view.ui.litographerNavButton.released.connect(self.on_litographer_selected)
         apply_general_tooltips(self.view.ui.litographerNavButton, "litographer_tab")
-        
+
         self.view.ui.lorekeeperNavButton.released.connect(self.on_lorekeeper_selected)
         apply_general_tooltips(self.view.ui.lorekeeperNavButton, "lorekeeper_tab")
-        
-        self.view.ui.characterArcsNavButton.released.connect(self.on_character_arcs_selected)
-        apply_general_tooltips(self.view.ui.characterArcsNavButton, "character_arcs_tab")
-        
+
+        self.view.ui.characterArcsNavButton.released.connect(
+            self.on_character_arcs_selected
+        )
+        apply_general_tooltips(
+            self.view.ui.characterArcsNavButton, "character_arcs_tab"
+        )
+
         # --- Lorekeeper Configure Tables Button ---
-        self.view.ui.configureTablesButton.clicked.connect(self.on_configure_tables_clicked)
+        self.view.ui.configureTablesButton.clicked.connect(
+            self.on_configure_tables_clicked
+        )
 
         # --- File Menu ---
         self.view.ui.actionOpen.triggered.connect(self.on_open_storyline_clicked)
@@ -2176,9 +2192,9 @@ class MainWindowController:
         self.view.ui.actionSwitchSetting.triggered.connect(
             self.on_switch_setting_clicked
         )
-        
+
         # Add storyline settings management (if action exists)
-        if hasattr(self.view.ui, 'actionManageStorylineSettings'):
+        if hasattr(self.view.ui, "actionManageStorylineSettings"):
             self.view.ui.actionManageStorylineSettings.triggered.connect(
                 self.on_manage_storyline_settings_clicked
             )
@@ -2329,18 +2345,20 @@ class MainWindowController:
                     )
 
     def on_manage_storyline_settings_clicked(self):
-        """Opens a dialog to manage storylines connected to settings."""        
+        """Opens a dialog to manage storylines connected to settings."""
         try:
-            from storymaster.view.common.setting_storylines_dialog import SettingStorylinesDialog
-            
+            from storymaster.view.common.setting_storylines_dialog import (
+                SettingStorylinesDialog,
+            )
+
             dialog = SettingStorylinesDialog(self.model, self.view)
             dialog.exec()
-            
+
         except Exception as e:
             QMessageBox.critical(
                 self.view,
                 "Error",
-                f"Failed to open storyline settings dialog: {str(e)}"
+                f"Failed to open storyline settings dialog: {str(e)}",
             )
 
     def on_switch_setting_clicked(self):
@@ -2363,14 +2381,16 @@ class MainWindowController:
                     # Refresh lorekeeper views to show new setting data
                     if self.db_tree_model.rowCount() > 0:
                         self.load_database_structure()
-                    
+
                     # Reinitialize new Lorekeeper widget with new setting
                     if self.new_lorekeeper_widget is not None:
                         # Remove old widget
-                        self.view.ui.newLorekeeperPage.layout().removeWidget(self.new_lorekeeper_widget)
+                        self.view.ui.newLorekeeperPage.layout().removeWidget(
+                            self.new_lorekeeper_widget
+                        )
                         self.new_lorekeeper_widget.deleteLater()
                         self.new_lorekeeper_widget = None
-                    
+
                     self.update_status_indicators()
                     print(f"Switched to setting: {setting_name}")
                 except Exception as e:
@@ -3140,51 +3160,54 @@ class MainWindowController:
 
     def _create_field_by_type(self, key: str, value):
         """Helper to create appropriate input field based on column type."""
-        column_type = self.current_column_types.get(key, 'string')
+        column_type = self.current_column_types.get(key, "string")
         str_value = str(value) if value is not None else ""
-        
-        if column_type == 'integer':
+
+        if column_type == "integer":
             field = self._create_integer_field(str_value)
-        elif column_type == 'float':
+        elif column_type == "float":
             field = self._create_float_field(str_value)
-        elif column_type == 'boolean':
+        elif column_type == "boolean":
             field = self._create_boolean_field(str_value)
-        elif column_type == 'text' or "\n" in str_value or len(str_value) > 60:
+        elif column_type == "text" or "\n" in str_value or len(str_value) > 60:
             field = QTextEdit(str_value)
             field.setMinimumHeight(80)
         else:
             # Default to string/text input
             field = QLineEdit(str_value)
-        
+
         return field
-    
+
     def _create_integer_field(self, str_value: str):
         """Create a QLineEdit with integer-only input validation."""
         from PyQt6.QtGui import QIntValidator
+
         field = QLineEdit(str_value)
         validator = QIntValidator()
         field.setValidator(validator)
         field.setPlaceholderText("Enter integer...")
         return field
-    
+
     def _create_float_field(self, str_value: str):
         """Create a QLineEdit with float input validation."""
         from PyQt6.QtGui import QDoubleValidator
+
         field = QLineEdit(str_value)
         validator = QDoubleValidator()
         validator.setNotation(QDoubleValidator.Notation.StandardNotation)
         field.setValidator(validator)
         field.setPlaceholderText("Enter number...")
         return field
-    
+
     def _create_boolean_field(self, str_value: str):
         """Create a QCheckBox for boolean values."""
         from PyQt6.QtWidgets import QCheckBox
+
         field = QCheckBox()
         # Convert string to boolean
-        if str_value.lower() in ('true', '1', 'yes', 'on'):
+        if str_value.lower() in ("true", "1", "yes", "on"):
             field.setChecked(True)
-        elif str_value.lower() in ('false', '0', 'no', 'off', ''):
+        elif str_value.lower() in ("false", "0", "no", "off", ""):
             field.setChecked(False)
         else:
             # Try to convert to int/bool
@@ -3193,7 +3216,7 @@ class MainWindowController:
             except (ValueError, TypeError):
                 field.setChecked(False)
         return field
-    
+
     def _create_text_field(self, value):
         """Helper to create a QLineEdit or QTextEdit based on content length."""
         str_value = str(value) if value is not None else ""
@@ -3234,7 +3257,7 @@ class MainWindowController:
                 form_data[key] = widget.toPlainText()
                 if widget.toPlainText().strip():
                     has_non_empty_data = True
-            elif hasattr(widget, 'isChecked'):  # QCheckBox
+            elif hasattr(widget, "isChecked"):  # QCheckBox
                 form_data[key] = widget.isChecked()
                 has_non_empty_data = True  # Checkbox always has a value
 
@@ -3273,13 +3296,15 @@ class MainWindowController:
         """Handle switching to the Lorekeeper page."""
         # Initialize the new Lorekeeper widget if not already done
         if self.new_lorekeeper_widget is None and self.current_setting_id is not None:
-            self.new_lorekeeper_widget = NewLorekeeperPage(self.model, self.current_setting_id)
-            
+            self.new_lorekeeper_widget = NewLorekeeperPage(
+                self.model, self.current_setting_id
+            )
+
             # Add the widget to the new Lorekeeper page
             new_lorekeeper_layout = QVBoxLayout(self.view.ui.newLorekeeperPage)
             new_lorekeeper_layout.setContentsMargins(0, 0, 0, 0)
             new_lorekeeper_layout.addWidget(self.new_lorekeeper_widget)
-        
+
         # Switch to the new Lorekeeper page (index 3 - after litographer, old lorekeeper, character arcs)
         if self.new_lorekeeper_widget is not None:
             self.view.ui.pageStack.setCurrentWidget(self.view.ui.newLorekeeperPage)
@@ -3291,7 +3316,9 @@ class MainWindowController:
 
     def on_character_arcs_selected(self):
         """Handle switching to the Character Arcs page."""
-        self.view.ui.pageStack.setCurrentIndex(3)  # Updated index for character arcs page
+        self.view.ui.pageStack.setCurrentIndex(
+            3
+        )  # Updated index for character arcs page
         self.character_arc_page.refresh_arcs(self.current_storyline_id)
 
     def load_database_structure(self):
@@ -3300,15 +3327,17 @@ class MainWindowController:
         self.db_tree_model.setHorizontalHeaderLabels(["Database Tables"])
         try:
             all_table_names = self.model.get_all_table_names()
-            
+
             # Filter tables based on visibility settings
             if self.visible_tables is not None:
                 # Only show tables that are in the visible set
-                table_names = [name for name in all_table_names if name in self.visible_tables]
+                table_names = [
+                    name for name in all_table_names if name in self.visible_tables
+                ]
             else:
                 # Show all available tables (default behavior)
                 table_names = all_table_names
-            
+
             for table_name in table_names:
                 item = QStandardItem(table_name)
                 item.setEditable(False)
@@ -3352,23 +3381,23 @@ class MainWindowController:
             headers, data_rows = self.model.get_table_data(
                 self.current_table_name, setting_id=self.current_setting_id
             )
-            
+
             # Hide ID column from display
             id_column_index = None
             filtered_headers = []
-            
+
             for i, header in enumerate(headers):
-                if header.lower() == 'id':
+                if header.lower() == "id":
                     id_column_index = i
                 else:
                     filtered_headers.append(header)
-            
+
             self.db_table_model.setHorizontalHeaderLabels(filtered_headers)
 
             for row_tuple in data_rows:
                 # Create full row dict for data storage (including ID)
                 row_dict = dict(zip(headers, row_tuple))
-                
+
                 # Create filtered row items (excluding ID column)
                 filtered_row_items = []
                 for i, field in enumerate(row_tuple):
@@ -3394,26 +3423,28 @@ class MainWindowController:
                 widget = item.widget()
                 if widget is not None:
                     widget.deleteLater()
-    
+
     def on_configure_tables_clicked(self):
         """Opens a dialog to configure which tables are visible in Lorekeeper."""
         try:
-            from storymaster.view.common.table_visibility_dialog import TableVisibilityDialog
-            
+            from storymaster.view.common.table_visibility_dialog import (
+                TableVisibilityDialog,
+            )
+
             dialog = TableVisibilityDialog(self.model, self, self.view)
             dialog.exec()
-            
+
         except Exception as e:
             QMessageBox.critical(
                 self.view,
                 "Error",
-                f"Failed to open table configuration dialog: {str(e)}"
+                f"Failed to open table configuration dialog: {str(e)}",
             )
-    
+
     def get_visible_tables(self) -> set[str] | None:
         """Get the current set of visible tables. None means show all available tables."""
         return self.visible_tables
-    
+
     def set_visible_tables(self, visible_tables: set[str]):
         """Set which tables should be visible in the Lorekeeper tree view."""
         self.visible_tables = visible_tables
@@ -3421,61 +3452,69 @@ class MainWindowController:
         self.save_table_visibility_preferences()
         # Refresh the database structure view
         self.load_database_structure()
-        
+
         # Clear current selection since the table might have been hidden
         self.current_table_name = None
         self.current_row_data = None
         self.db_table_model.clear()
         self._clear_form_widgets()
-    
+
     def _clear_form_widgets(self):
         """Clear the form widgets in both edit and add tabs."""
         # Clear edit form
         self._clear_layout(self.view.ui.editFormLayout)
         self.edit_form_widgets.clear()
-        
+
         # Clear add form
-        self._clear_layout(self.view.ui.addFormLayout) 
+        self._clear_layout(self.view.ui.addFormLayout)
         self.add_form_widgets.clear()
-    
+
     def save_table_visibility_preferences(self):
         """Save table visibility preferences to a file."""
         try:
             import json
             from pathlib import Path
-            
+
             # Use the same directory as the database
             config_dir = Path.home() / ".local" / "share" / "storymaster"
             config_dir.mkdir(parents=True, exist_ok=True)
             config_file = config_dir / "table_visibility.json"
-            
+
             # Prepare data to save
             data = {
-                "visible_tables": list(self.visible_tables) if self.visible_tables else None
+                "visible_tables": (
+                    list(self.visible_tables) if self.visible_tables else None
+                )
             }
-            
-            with open(config_file, 'w') as f:
+
+            with open(config_file, "w") as f:
                 json.dump(data, f, indent=2)
-                
+
         except Exception as e:
             print(f"Warning: Could not save table visibility preferences: {e}")
-    
+
     def load_table_visibility_preferences(self):
         """Load table visibility preferences from file."""
         try:
             import json
             from pathlib import Path
-            
-            config_file = Path.home() / ".local" / "share" / "storymaster" / "table_visibility.json"
-            
+
+            config_file = (
+                Path.home()
+                / ".local"
+                / "share"
+                / "storymaster"
+                / "table_visibility.json"
+            )
+
             if config_file.exists():
-                with open(config_file, 'r') as f:
+                with open(config_file, "r") as f:
                     data = json.load(f)
-                
+
                 visible_tables = data.get("visible_tables")
                 if visible_tables:
                     self.visible_tables = set(visible_tables)
-                    
+
         except Exception as e:
             print(f"Warning: Could not load table visibility preferences: {e}")
             # Continue with default behavior (show all tables)

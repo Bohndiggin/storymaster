@@ -6,63 +6,60 @@ Provides consistent styling across all pages and dialogs
 # Color palette
 COLORS = {
     # Main colors
-    'primary': '#0d7d7e',          # Teal accent
-    'primary_hover': '#0e8d8e',    # Lighter teal
-    'primary_pressed': '#0c6d6e',  # Darker teal
-    
+    "primary": "#0d7d7e",  # Teal accent
+    "primary_hover": "#0e8d8e",  # Lighter teal
+    "primary_pressed": "#0c6d6e",  # Darker teal
     # Background colors
-    'bg_main': '#1e1e1e',          # Main background
-    'bg_secondary': '#2b2b2b',     # Secondary background
-    'bg_tertiary': '#3c3c3c',      # Tertiary background
-    'bg_input': '#2b2b2b',         # Input fields
-    
+    "bg_main": "#1e1e1e",  # Main background
+    "bg_secondary": "#2b2b2b",  # Secondary background
+    "bg_tertiary": "#3c3c3c",  # Tertiary background
+    "bg_input": "#2b2b2b",  # Input fields
     # Border colors
-    'border_main': '#555',         # Main borders
-    'border_light': '#666',        # Light borders
-    'border_lighter': '#777',      # Lighter borders
-    'border_dark': '#444',         # Dark borders
-    
+    "border_main": "#555",  # Main borders
+    "border_light": "#666",  # Light borders
+    "border_lighter": "#777",  # Lighter borders
+    "border_dark": "#444",  # Dark borders
     # Text colors
-    'text_primary': '#ffffff',     # Primary text
-    'text_secondary': '#cccccc',   # Secondary text
-    'text_muted': '#888888',       # Muted text
-    'text_accent': '#0d7d7e',      # Accent text
-    
+    "text_primary": "#ffffff",  # Primary text
+    "text_secondary": "#cccccc",  # Secondary text
+    "text_muted": "#888888",  # Muted text
+    "text_accent": "#0d7d7e",  # Accent text
     # Status colors
-    'success': '#4a9eff',          # Success/info
-    'warning': '#ffa726',          # Warning
-    'error': '#ff5252',            # Error
+    "success": "#4a9eff",  # Success/info
+    "warning": "#ffa726",  # Warning
+    "error": "#ff5252",  # Error
 }
 
 # Common dimensions
 DIMENSIONS = {
-    'border_radius': '4px',
-    'border_radius_small': '2px',
-    'border_radius_large': '8px',
-    'padding_small': '4px',
-    'padding_medium': '8px',
-    'padding_large': '12px',
-    'margin_small': '2px',
-    'margin_medium': '4px',
-    'margin_large': '8px',
-    'button_height': '32px',
-    'input_height': '28px',
-    'splitter_width': '3px',
+    "border_radius": "4px",
+    "border_radius_small": "2px",
+    "border_radius_large": "8px",
+    "padding_small": "4px",
+    "padding_medium": "8px",
+    "padding_large": "12px",
+    "margin_small": "2px",
+    "margin_medium": "4px",
+    "margin_large": "8px",
+    "button_height": "32px",
+    "input_height": "28px",
+    "splitter_width": "3px",
 }
 
 # Fonts
 FONTS = {
-    'size_small': '10px',
-    'size_normal': '11px',
-    'size_medium': '12px',
-    'size_large': '14px',
-    'size_title': '16px',
-    'size_header': '18px',
-    'weight_normal': 'normal',
-    'weight_bold': 'bold',
+    "size_small": "10px",
+    "size_normal": "11px",
+    "size_medium": "12px",
+    "size_large": "14px",
+    "size_title": "16px",
+    "size_header": "18px",
+    "weight_normal": "normal",
+    "weight_bold": "bold",
 }
 
-def get_button_style(button_type='primary'):
+
+def get_button_style(button_type="primary"):
     """Get unified button styling"""
     base_style = f"""
         QPushButton {{
@@ -88,9 +85,11 @@ def get_button_style(button_type='primary'):
             border-color: {COLORS['border_dark']};
         }}
     """
-    
-    if button_type == 'primary':
-        return base_style + f"""
+
+    if button_type == "primary":
+        return (
+            base_style
+            + f"""
         QPushButton {{
             background-color: {COLORS['primary']};
             border-color: {COLORS['primary']};
@@ -105,8 +104,11 @@ def get_button_style(button_type='primary'):
             border-color: {COLORS['primary_pressed']};
         }}
         """
-    elif button_type == 'danger':
-        return base_style + f"""
+        )
+    elif button_type == "danger":
+        return (
+            base_style
+            + f"""
         QPushButton {{
             background-color: {COLORS['error']};
             border-color: {COLORS['error']};
@@ -120,8 +122,10 @@ def get_button_style(button_type='primary'):
             border-color: #e04848;
         }}
         """
-    
+        )
+
     return base_style
+
 
 def get_input_style():
     """Get unified input field styling"""
@@ -162,6 +166,7 @@ def get_input_style():
         }}
     """
 
+
 def get_list_style():
     """Get unified list widget styling"""
     return f"""
@@ -187,6 +192,7 @@ def get_list_style():
         }}
     """
 
+
 def get_group_box_style():
     """Get unified group box styling"""
     return f"""
@@ -208,6 +214,7 @@ def get_group_box_style():
         }}
     """
 
+
 def get_splitter_style():
     """Get unified splitter styling"""
     return f"""
@@ -225,6 +232,7 @@ def get_splitter_style():
             border-color: {COLORS['primary']};
         }}
     """
+
 
 def get_dialog_style():
     """Get unified dialog styling"""
@@ -248,13 +256,14 @@ def get_dialog_style():
         }}
     """
 
+
 def get_complete_style():
     """Get the complete unified style sheet"""
     return (
-        get_button_style('secondary') + 
-        get_input_style() + 
-        get_list_style() + 
-        get_group_box_style() + 
-        get_splitter_style() + 
-        get_dialog_style()
+        get_button_style("secondary")
+        + get_input_style()
+        + get_list_style()
+        + get_group_box_style()
+        + get_splitter_style()
+        + get_dialog_style()
     )

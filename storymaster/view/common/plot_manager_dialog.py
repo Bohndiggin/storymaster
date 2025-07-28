@@ -1,12 +1,20 @@
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import (QDialog, QHBoxLayout, QLabel, QLineEdit,
-                             QListWidget, QListWidgetItem, QMessageBox,
-                             QPushButton, QVBoxLayout)
+from PyQt6.QtWidgets import (
+    QDialog,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QListWidget,
+    QListWidgetItem,
+    QMessageBox,
+    QPushButton,
+    QVBoxLayout,
+)
 from storymaster.view.common.theme import (
     get_button_style,
     get_input_style,
     get_list_style,
-    get_dialog_style
+    get_dialog_style,
 )
 
 
@@ -38,7 +46,7 @@ class PlotManagerDialog(QDialog):
         self.new_plot_input = QLineEdit()
         self.new_plot_input.setStyleSheet(get_input_style())
         self.add_plot_btn = QPushButton("Add Plot")
-        self.add_plot_btn.setStyleSheet(get_button_style('primary'))
+        self.add_plot_btn.setStyleSheet(get_button_style("primary"))
         self.add_plot_btn.clicked.connect(self.on_add_plot)
 
         new_plot_layout.addWidget(new_plot_label)
@@ -50,12 +58,12 @@ class PlotManagerDialog(QDialog):
         button_layout = QHBoxLayout()
 
         self.switch_btn = QPushButton("Switch to Plot")
-        self.switch_btn.setStyleSheet(get_button_style('primary'))
+        self.switch_btn.setStyleSheet(get_button_style("primary"))
         self.switch_btn.setEnabled(False)
         self.switch_btn.clicked.connect(self.on_switch_plot)
 
         self.delete_btn = QPushButton("Delete Plot")
-        self.delete_btn.setStyleSheet(get_button_style('danger'))
+        self.delete_btn.setStyleSheet(get_button_style("danger"))
         self.delete_btn.setEnabled(False)
         self.delete_btn.clicked.connect(self.on_delete_plot)
 

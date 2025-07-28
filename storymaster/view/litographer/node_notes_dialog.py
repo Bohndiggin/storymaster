@@ -3,10 +3,23 @@ Dialog for managing notes linked to a litography node.
 """
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import (QComboBox, QDialog, QDialogButtonBox, QFormLayout,
-                             QGroupBox, QHBoxLayout, QLabel, QLineEdit,
-                             QListWidget, QListWidgetItem, QMessageBox,
-                             QPushButton, QSplitter, QTextEdit, QVBoxLayout)
+from PyQt6.QtWidgets import (
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
+    QFormLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QListWidget,
+    QListWidgetItem,
+    QMessageBox,
+    QPushButton,
+    QSplitter,
+    QTextEdit,
+    QVBoxLayout,
+)
 
 from storymaster.model.database.schema.base import NoteType
 from storymaster.view.common.theme import (
@@ -15,15 +28,13 @@ from storymaster.view.common.theme import (
     get_group_box_style,
     get_splitter_style,
     get_list_style,
-    get_dialog_style
+    get_dialog_style,
 )
 from storymaster.view.common.tooltips import (
     apply_notes_tooltips,
-    apply_general_tooltips
+    apply_general_tooltips,
 )
-from storymaster.view.common.custom_widgets import (
-    enable_smart_tab_navigation
-)
+from storymaster.view.common.custom_widgets import enable_smart_tab_navigation
 
 
 class NodeNotesDialog(QDialog):
@@ -77,9 +88,9 @@ class NodeNotesDialog(QDialog):
         # List control buttons
         list_buttons_layout = QHBoxLayout()
         self.add_note_btn = QPushButton("Add Note")
-        self.add_note_btn.setStyleSheet(get_button_style('primary'))
+        self.add_note_btn.setStyleSheet(get_button_style("primary"))
         self.delete_note_btn = QPushButton("Delete Note")
-        self.delete_note_btn.setStyleSheet(get_button_style('danger'))
+        self.delete_note_btn.setStyleSheet(get_button_style("danger"))
         self.delete_note_btn.setEnabled(False)
 
         self.add_note_btn.clicked.connect(self.add_note)
@@ -106,7 +117,7 @@ class NodeNotesDialog(QDialog):
         self.note_title_edit = QLineEdit()
         self.note_title_edit.setStyleSheet(get_input_style())
         apply_notes_tooltips(self.note_title_edit, "note_title")
-        
+
         self.note_description_edit = QTextEdit()
         self.note_description_edit.setStyleSheet(get_input_style())
         apply_notes_tooltips(self.note_description_edit, "note_description")
@@ -131,9 +142,9 @@ class NodeNotesDialog(QDialog):
         self.add_association_btn = QPushButton("Add Association")
         self.add_association_btn.setStyleSheet(get_button_style())
         apply_notes_tooltips(self.add_association_btn, "add_association")
-        
+
         self.remove_association_btn = QPushButton("Remove Association")
-        self.remove_association_btn.setStyleSheet(get_button_style('danger'))
+        self.remove_association_btn.setStyleSheet(get_button_style("danger"))
         self.remove_association_btn.setEnabled(False)
         apply_notes_tooltips(self.remove_association_btn, "remove_association")
 
@@ -153,7 +164,7 @@ class NodeNotesDialog(QDialog):
         # Note editor buttons
         editor_buttons_layout = QHBoxLayout()
         self.save_note_btn = QPushButton("Save Note")
-        self.save_note_btn.setStyleSheet(get_button_style('primary'))
+        self.save_note_btn.setStyleSheet(get_button_style("primary"))
         self.cancel_edit_btn = QPushButton("Cancel")
         self.cancel_edit_btn.setStyleSheet(get_button_style())
 
@@ -178,7 +189,7 @@ class NodeNotesDialog(QDialog):
         main_layout.addWidget(button_box)
 
         self.setLayout(main_layout)
-        
+
         # Set up enhanced tab navigation
         enable_smart_tab_navigation(self)
 
@@ -317,22 +328,25 @@ class NodeNotesDialog(QDialog):
 
         try:
             # Get setting_id and create model adapter
-            setting_id = getattr(self.controller, 'current_setting_id', None)
+            setting_id = getattr(self.controller, "current_setting_id", None)
             if not setting_id:
                 self.associations_list.clear()
                 return
-                
-            from storymaster.view.lorekeeper.lorekeeper_model_adapter import LorekeeperModelAdapter
+
+            from storymaster.view.lorekeeper.lorekeeper_model_adapter import (
+                LorekeeperModelAdapter,
+            )
+
             adapter = LorekeeperModelAdapter(self.controller.model, setting_id)
-            
+
             # Get the current note entity
             note_entity = adapter.get_entity_by_id("litography_notes", note_id)
             if not note_entity:
                 self.associations_list.clear()
                 return
-                
+
             self.associations_list.clear()
-            
+
             # Define relationship types to check
             relationship_types = [
                 ("litography_note_to_world_data", "World Data"),
@@ -341,28 +355,30 @@ class NodeNotesDialog(QDialog):
                 ("litography_note_to_object", "Object"),
                 ("litography_note_to_faction", "Faction"),
             ]
-            
+
             for relationship_name, display_type in relationship_types:
                 try:
-                    related_entities = adapter.get_relationship_entities(note_entity, relationship_name)
+                    related_entities = adapter.get_relationship_entities(
+                        note_entity, relationship_name
+                    )
                     for entity in related_entities:
                         if entity:
                             # Create display name based on entity type
-                            if hasattr(entity, 'name') and entity.name:
+                            if hasattr(entity, "name") and entity.name:
                                 display_name = entity.name
-                            elif hasattr(entity, 'first_name') and entity.first_name:
+                            elif hasattr(entity, "first_name") and entity.first_name:
                                 name_parts = [entity.first_name]
-                                if hasattr(entity, 'last_name') and entity.last_name:
+                                if hasattr(entity, "last_name") and entity.last_name:
                                     name_parts.append(entity.last_name)
                                 display_name = " ".join(name_parts)
-                            elif hasattr(entity, 'title') and entity.title:
+                            elif hasattr(entity, "title") and entity.title:
                                 display_name = entity.title
                             else:
                                 display_name = f"ID: {entity.id}"
-                            
+
                             item_text = f"{display_type}: {display_name}"
                             item = QListWidgetItem(item_text)
-                            
+
                             # Map relationship back to entity type
                             entity_type_mapping = {
                                 "litography_note_to_world_data": "world_data",
@@ -372,7 +388,9 @@ class NodeNotesDialog(QDialog):
                                 "litography_note_to_faction": "faction",
                             }
                             entity_type = entity_type_mapping.get(relationship_name)
-                            item.setData(Qt.ItemDataRole.UserRole, (entity_type, entity.id))
+                            item.setData(
+                                Qt.ItemDataRole.UserRole, (entity_type, entity.id)
+                            )
                             self.associations_list.addItem(item)
                 except Exception as rel_e:
                     print(f"Error loading {relationship_name}: {rel_e}")
@@ -401,22 +419,29 @@ class NodeNotesDialog(QDialog):
             if entity_type and entity_id:
                 try:
                     # Get setting_id and create model adapter
-                    setting_id = getattr(self.controller, 'current_setting_id', None)
+                    setting_id = getattr(self.controller, "current_setting_id", None)
                     if not setting_id:
                         QMessageBox.warning(self, "Error", "No setting configured")
                         return
-                        
-                    from storymaster.view.lorekeeper.lorekeeper_model_adapter import LorekeeperModelAdapter
+
+                    from storymaster.view.lorekeeper.lorekeeper_model_adapter import (
+                        LorekeeperModelAdapter,
+                    )
+
                     adapter = LorekeeperModelAdapter(self.controller.model, setting_id)
-                    
+
                     # Get the note and related entity
-                    note_entity = adapter.get_entity_by_id("litography_notes", self.current_note.id)
+                    note_entity = adapter.get_entity_by_id(
+                        "litography_notes", self.current_note.id
+                    )
                     related_entity = adapter.get_entity_by_id(entity_type, entity_id)
-                    
+
                     if not note_entity or not related_entity:
-                        QMessageBox.warning(self, "Error", "Could not find note or entity")
+                        QMessageBox.warning(
+                            self, "Error", "Could not find note or entity"
+                        )
                         return
-                    
+
                     # Map entity type to relationship name
                     type_to_relationship = {
                         "world_data": "litography_note_to_world_data",
@@ -427,19 +452,25 @@ class NodeNotesDialog(QDialog):
                         "object": "litography_note_to_object",
                         "faction": "litography_note_to_faction",
                     }
-                    
+
                     relationship_name = type_to_relationship.get(entity_type)
                     if not relationship_name:
-                        QMessageBox.warning(self, "Error", f"Unsupported entity type: {entity_type}")
+                        QMessageBox.warning(
+                            self, "Error", f"Unsupported entity type: {entity_type}"
+                        )
                         return
-                    
+
                     # Add the relationship
-                    success = adapter.add_relationship(note_entity, relationship_name, related_entity)
+                    success = adapter.add_relationship(
+                        note_entity, relationship_name, related_entity
+                    )
                     if success:
                         self.load_associations(self.current_note.id)
                     else:
                         QMessageBox.warning(
-                            self, "Error", "Association already exists or failed to create."
+                            self,
+                            "Error",
+                            "Association already exists or failed to create.",
                         )
                 except Exception as e:
                     QMessageBox.critical(
@@ -465,22 +496,27 @@ class NodeNotesDialog(QDialog):
         if reply == QMessageBox.StandardButton.Yes:
             try:
                 # Get setting_id and create model adapter
-                setting_id = getattr(self.controller, 'current_setting_id', None)
+                setting_id = getattr(self.controller, "current_setting_id", None)
                 if not setting_id:
                     QMessageBox.warning(self, "Error", "No setting configured")
                     return
-                    
-                from storymaster.view.lorekeeper.lorekeeper_model_adapter import LorekeeperModelAdapter
+
+                from storymaster.view.lorekeeper.lorekeeper_model_adapter import (
+                    LorekeeperModelAdapter,
+                )
+
                 adapter = LorekeeperModelAdapter(self.controller.model, setting_id)
-                
+
                 # Get the note and related entity
-                note_entity = adapter.get_entity_by_id("litography_notes", self.current_note.id)
+                note_entity = adapter.get_entity_by_id(
+                    "litography_notes", self.current_note.id
+                )
                 related_entity = adapter.get_entity_by_id(entity_type, entity_id)
-                
+
                 if not note_entity or not related_entity:
                     QMessageBox.warning(self, "Error", "Could not find note or entity")
                     return
-                
+
                 # Map entity type to relationship name
                 type_to_relationship = {
                     "world_data": "litography_note_to_world_data",
@@ -491,14 +527,18 @@ class NodeNotesDialog(QDialog):
                     "object": "litography_note_to_object",
                     "faction": "litography_note_to_faction",
                 }
-                
+
                 relationship_name = type_to_relationship.get(entity_type)
                 if not relationship_name:
-                    QMessageBox.warning(self, "Error", f"Unsupported entity type: {entity_type}")
+                    QMessageBox.warning(
+                        self, "Error", f"Unsupported entity type: {entity_type}"
+                    )
                     return
-                
+
                 # Remove the relationship
-                success = adapter.remove_relationship(note_entity, relationship_name, related_entity)
+                success = adapter.remove_relationship(
+                    note_entity, relationship_name, related_entity
+                )
                 if success:
                     self.load_associations(self.current_note.id)
                 else:
@@ -573,19 +613,22 @@ class LoreSelectionDialog(QDialog):
 
         try:
             # Get setting_id from controller
-            setting_id = getattr(self.controller, 'current_setting_id', None)
+            setting_id = getattr(self.controller, "current_setting_id", None)
             if not setting_id:
                 self.entity_list.addItem("(No setting configured)")
                 return
-            
+
             # Create Lorekeeper model adapter
-            from storymaster.view.lorekeeper.lorekeeper_model_adapter import LorekeeperModelAdapter
+            from storymaster.view.lorekeeper.lorekeeper_model_adapter import (
+                LorekeeperModelAdapter,
+            )
+
             adapter = LorekeeperModelAdapter(self.controller.model, setting_id)
-            
+
             # Map UI types to table names
             type_mapping = {
                 "Actors": "actor",
-                "Backgrounds": "background", 
+                "Backgrounds": "background",
                 "Classes": "class",
                 "Factions": "faction",
                 "Histories": "history",
@@ -596,31 +639,31 @@ class LoreSelectionDialog(QDialog):
                 "Sub-Races": "sub_race",
                 "World Data": "world_data",
             }
-            
+
             current_type = self.entity_type_combo.currentText()
             table_name = type_mapping.get(current_type)
-            
+
             if table_name:
                 entities = adapter.get_entities(table_name)
                 for entity in entities:
                     # Create display name based on entity type
-                    if hasattr(entity, 'name') and entity.name:
+                    if hasattr(entity, "name") and entity.name:
                         display_name = entity.name
-                    elif hasattr(entity, 'first_name') and entity.first_name:
+                    elif hasattr(entity, "first_name") and entity.first_name:
                         name_parts = [entity.first_name]
-                        if hasattr(entity, 'last_name') and entity.last_name:
+                        if hasattr(entity, "last_name") and entity.last_name:
                             name_parts.append(entity.last_name)
                         display_name = " ".join(name_parts)
-                    elif hasattr(entity, 'title') and entity.title:
+                    elif hasattr(entity, "title") and entity.title:
                         display_name = entity.title
                     else:
                         display_name = f"ID: {entity.id}"
-                    
+
                     item = QListWidgetItem(display_name)
                     # Store entity type and ID for selection
                     item.setData(Qt.ItemDataRole.UserRole, (table_name, entity.id))
                     self.entity_list.addItem(item)
-                    
+
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to load entities: {str(e)}")
 
@@ -637,7 +680,7 @@ class LoreSelectionDialog(QDialog):
             table_to_type_mapping = {
                 "actor": "actor",
                 "background": "background",
-                "class": "class", 
+                "class": "class",
                 "faction": "faction",
                 "history": "history",
                 "location_": "location",

@@ -151,19 +151,19 @@ class Setting(BaseTable):
         back_populates="setting"
     )
     arc_types: Mapped[list["ArcType"]] = relationship(back_populates="setting")
-    
+
     # Location relationship mappings
     location_relations: Mapped[list["LocationAOnBRelations"]] = relationship(
         back_populates="setting"
     )
-    location_geographic_relations: Mapped[list["LocationGeographicRelations"]] = relationship(
-        back_populates="setting"
+    location_geographic_relations: Mapped[list["LocationGeographicRelations"]] = (
+        relationship(back_populates="setting")
     )
-    location_political_relations: Mapped[list["LocationPoliticalRelations"]] = relationship(
-        back_populates="setting"
+    location_political_relations: Mapped[list["LocationPoliticalRelations"]] = (
+        relationship(back_populates="setting")
     )
-    location_economic_relations: Mapped[list["LocationEconomicRelations"]] = relationship(
-        back_populates="setting"
+    location_economic_relations: Mapped[list["LocationEconomicRelations"]] = (
+        relationship(back_populates="setting")
     )
     location_hierarchies: Mapped[list["LocationHierarchy"]] = relationship(
         back_populates="setting"
@@ -428,9 +428,7 @@ class LitographyArc(BaseTable):
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True, name="id"
     )
-    title: Mapped[str] = mapped_column(
-        String(250), nullable=False, name="title"
-    )
+    title: Mapped[str] = mapped_column(String(250), nullable=False, name="title")
     description: Mapped[str | None] = mapped_column(
         Text, nullable=True, name="description"
     )
@@ -465,9 +463,7 @@ class ArcPoint(BaseTable):
     order_index: Mapped[int] = mapped_column(
         Integer, nullable=False, name="order_index", default=0
     )
-    title: Mapped[str] = mapped_column(
-        String(250), nullable=False, name="title"
-    )
+    title: Mapped[str] = mapped_column(String(250), nullable=False, name="title")
     description: Mapped[str | None] = mapped_column(
         Text, nullable=True, name="description"
     )
@@ -477,9 +473,7 @@ class ArcPoint(BaseTable):
     character_relationships: Mapped[str | None] = mapped_column(
         Text, nullable=True, name="character_relationships"
     )
-    goals: Mapped[str | None] = mapped_column(
-        Text, nullable=True, name="goals"
-    )
+    goals: Mapped[str | None] = mapped_column(Text, nullable=True, name="goals")
     internal_conflict: Mapped[str | None] = mapped_column(
         Text, nullable=True, name="internal_conflict"
     )
@@ -660,12 +654,12 @@ class ActorAOnBRelations(BaseTable):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     actor_a_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
     actor_b_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
-    
+
     # Legacy fields (keep for backward compatibility)
     overall: Mapped[str | None] = mapped_column(String)
     economically: Mapped[str | None] = mapped_column(String)
     power_dynamic: Mapped[str | None] = mapped_column(String)
-    
+
     # New structured relationship fields
     description: Mapped[str | None] = mapped_column(Text)
     notes: Mapped[str | None] = mapped_column(Text)
@@ -679,7 +673,7 @@ class ActorAOnBRelations(BaseTable):
     how_met: Mapped[str | None] = mapped_column(Text)
     shared_history: Mapped[str | None] = mapped_column(Text)
     current_status: Mapped[str | None] = mapped_column(String(255))
-    
+
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
@@ -717,17 +711,21 @@ class ActorToSkills(BaseTable):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     actor_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
     skill_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("skills.id"))
-    
+
     # Legacy field
     skill_level: Mapped[int | None] = mapped_column(Integer)
-    
-    # New structured skill fields  
+
+    # New structured skill fields
     proficiency_level: Mapped[int | None] = mapped_column(Integer)  # 1-10 scale
-    how_learned: Mapped[str | None] = mapped_column(Text)  # How they acquired this skill
+    how_learned: Mapped[str | None] = mapped_column(
+        Text
+    )  # How they acquired this skill
     experience_years: Mapped[int | None] = mapped_column(Integer)  # Years of experience
-    specialty: Mapped[str | None] = mapped_column(String(255))  # Their particular specialty in this skill
+    specialty: Mapped[str | None] = mapped_column(
+        String(255)
+    )  # Their particular specialty in this skill
     notes: Mapped[str | None] = mapped_column(Text)
-    
+
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
@@ -744,14 +742,22 @@ class ActorToRace(BaseTable):
     actor_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
     race_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("race.id"))
     sub_race_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("sub_race.id"))
-    
+
     # New structured heritage fields
-    heritage_strength: Mapped[int | None] = mapped_column(Integer)  # How strongly they identify/show heritage
-    cultural_upbringing: Mapped[str | None] = mapped_column(Text)  # What culture they were raised in
-    community_standing: Mapped[str | None] = mapped_column(String(100))  # Standing in racial community
-    heritage_secrets: Mapped[str | None] = mapped_column(Text)  # Hidden aspects of heritage
+    heritage_strength: Mapped[int | None] = mapped_column(
+        Integer
+    )  # How strongly they identify/show heritage
+    cultural_upbringing: Mapped[str | None] = mapped_column(
+        Text
+    )  # What culture they were raised in
+    community_standing: Mapped[str | None] = mapped_column(
+        String(100)
+    )  # Standing in racial community
+    heritage_secrets: Mapped[str | None] = mapped_column(
+        Text
+    )  # Hidden aspects of heritage
     notes: Mapped[str | None] = mapped_column(Text)
-    
+
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
@@ -768,19 +774,25 @@ class ActorToClass(BaseTable):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     actor_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
     class_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("class.id"))
-    
+
     # Legacy field
     level: Mapped[int | None] = mapped_column(Integer)
-    
+
     # New structured class fields
     current_level: Mapped[int | None] = mapped_column(Integer)
     experience_points: Mapped[int | None] = mapped_column(Integer)
-    specialization: Mapped[str | None] = mapped_column(String(255))  # Their focus within the class
-    training_location: Mapped[str | None] = mapped_column(String(255))  # Where they trained
+    specialization: Mapped[str | None] = mapped_column(
+        String(255)
+    )  # Their focus within the class
+    training_location: Mapped[str | None] = mapped_column(
+        String(255)
+    )  # Where they trained
     mentor: Mapped[str | None] = mapped_column(String(255))  # Who taught them
-    status: Mapped[str | None] = mapped_column(String(50))  # Active, Former, Trainee, etc.
+    status: Mapped[str | None] = mapped_column(
+        String(50)
+    )  # Active, Former, Trainee, etc.
     notes: Mapped[str | None] = mapped_column(Text)
-    
+
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
@@ -796,16 +808,18 @@ class ActorToStat(BaseTable):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     actor_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
     stat_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("stat.id"))
-    
+
     # Legacy field
     stat_value: Mapped[int | None] = mapped_column(Integer)
-    
+
     # New structured stat fields
     base_value: Mapped[int | None] = mapped_column(Integer)  # Base stat value
-    modifier: Mapped[int | None] = mapped_column(Integer)  # Modifier from equipment/effects
+    modifier: Mapped[int | None] = mapped_column(
+        Integer
+    )  # Modifier from equipment/effects
     temporary_modifier: Mapped[int | None] = mapped_column(Integer)  # Temporary effects
     notes: Mapped[str | None] = mapped_column(Text)  # How they got this stat value
-    
+
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
@@ -852,13 +866,13 @@ class FactionAOnBRelations(BaseTable):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     faction_a_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("faction.id"))
     faction_b_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("faction.id"))
-    
+
     # Legacy fields (keep for backward compatibility)
     overall: Mapped[str | None] = mapped_column(Text)
     economically: Mapped[str | None] = mapped_column(Text)
     politically: Mapped[str | None] = mapped_column(Text)
     opinion: Mapped[str | None] = mapped_column(Text)
-    
+
     # New structured fields
     description: Mapped[str | None] = mapped_column(Text)
     notes: Mapped[str | None] = mapped_column(Text)
@@ -872,7 +886,7 @@ class FactionAOnBRelations(BaseTable):
     how_met: Mapped[str | None] = mapped_column(Text)
     shared_history: Mapped[str | None] = mapped_column(Text)
     current_status: Mapped[str | None] = mapped_column(Text)
-    
+
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
@@ -892,11 +906,11 @@ class FactionMembers(BaseTable):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     actor_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
     faction_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("faction.id"))
-    
+
     # Legacy field (keep for backward compatibility)
     actor_role: Mapped[str | None] = mapped_column(String(255))
     relative_power: Mapped[int | None] = mapped_column(Integer)
-    
+
     # New structured membership fields
     role: Mapped[str | None] = mapped_column(String(255))
     rank: Mapped[int | None] = mapped_column(Integer)
@@ -904,7 +918,7 @@ class FactionMembers(BaseTable):
     responsibilities: Mapped[str | None] = mapped_column(Text)
     loyalty: Mapped[int | None] = mapped_column(Integer)  # 1-10 scale
     join_date: Mapped[str | None] = mapped_column(String(50))  # Store as string for now
-    
+
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
@@ -927,11 +941,11 @@ class Location(BaseTable):
     feels: Mapped[str | None] = mapped_column(Text)
     tastes: Mapped[str | None] = mapped_column(Text)
     coordinates: Mapped[str | None] = mapped_column(String(255))
-    
+
     # Location type flags
     is_dungeon: Mapped[bool | None] = mapped_column(Boolean, default=False)
     is_city: Mapped[bool | None] = mapped_column(Boolean, default=False)
-    
+
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
@@ -956,7 +970,7 @@ class Location(BaseTable):
     notes_to: Mapped[list["LitographyNoteToLocation"]] = relationship(
         back_populates="location"
     )
-    
+
     # Location relationship mappings
     location_a_relations: Mapped[list["LocationAOnBRelations"]] = relationship(
         foreign_keys="LocationAOnBRelations.location_a_id", back_populates="location_a"
@@ -965,28 +979,36 @@ class Location(BaseTable):
         foreign_keys="LocationAOnBRelations.location_b_id", back_populates="location_b"
     )
     geographic_a_relations: Mapped[list["LocationGeographicRelations"]] = relationship(
-        foreign_keys="LocationGeographicRelations.location_a_id", back_populates="location_a"
+        foreign_keys="LocationGeographicRelations.location_a_id",
+        back_populates="location_a",
     )
     geographic_b_relations: Mapped[list["LocationGeographicRelations"]] = relationship(
-        foreign_keys="LocationGeographicRelations.location_b_id", back_populates="location_b"
+        foreign_keys="LocationGeographicRelations.location_b_id",
+        back_populates="location_b",
     )
     political_a_relations: Mapped[list["LocationPoliticalRelations"]] = relationship(
-        foreign_keys="LocationPoliticalRelations.location_a_id", back_populates="location_a"
+        foreign_keys="LocationPoliticalRelations.location_a_id",
+        back_populates="location_a",
     )
     political_b_relations: Mapped[list["LocationPoliticalRelations"]] = relationship(
-        foreign_keys="LocationPoliticalRelations.location_b_id", back_populates="location_b"
+        foreign_keys="LocationPoliticalRelations.location_b_id",
+        back_populates="location_b",
     )
     economic_a_relations: Mapped[list["LocationEconomicRelations"]] = relationship(
-        foreign_keys="LocationEconomicRelations.location_a_id", back_populates="location_a"
+        foreign_keys="LocationEconomicRelations.location_a_id",
+        back_populates="location_a",
     )
     economic_b_relations: Mapped[list["LocationEconomicRelations"]] = relationship(
-        foreign_keys="LocationEconomicRelations.location_b_id", back_populates="location_b"
+        foreign_keys="LocationEconomicRelations.location_b_id",
+        back_populates="location_b",
     )
     child_locations: Mapped[list["LocationHierarchy"]] = relationship(
-        foreign_keys="LocationHierarchy.parent_location_id", back_populates="parent_location"
+        foreign_keys="LocationHierarchy.parent_location_id",
+        back_populates="parent_location",
     )
     parent_locations: Mapped[list["LocationHierarchy"]] = relationship(
-        foreign_keys="LocationHierarchy.child_location_id", back_populates="child_location"
+        foreign_keys="LocationHierarchy.child_location_id",
+        back_populates="child_location",
     )
 
 
@@ -996,21 +1018,27 @@ class LocationToFaction(BaseTable):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     location_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
     faction_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("faction.id"))
-    
+
     # Legacy fields (keep for backward compatibility)
     faction_presence: Mapped[float | None] = mapped_column(Float)
     faction_power: Mapped[float | None] = mapped_column(Float)
     notes: Mapped[str | None] = mapped_column(Text)
-    
+
     # New structured territory control fields
-    control_type: Mapped[str | None] = mapped_column(String(100))  # Full Control, Influence, Claims, etc.
+    control_type: Mapped[str | None] = mapped_column(
+        String(100)
+    )  # Full Control, Influence, Claims, etc.
     control_strength: Mapped[int | None] = mapped_column(Integer)  # 1-10 scale
-    control_method: Mapped[str | None] = mapped_column(Text)  # How control was established
+    control_method: Mapped[str | None] = mapped_column(
+        Text
+    )  # How control was established
     resources_benefits: Mapped[str | None] = mapped_column(Text)  # What they gain
     challenges: Mapped[str | None] = mapped_column(Text)  # What challenges they face
     established_date: Mapped[str | None] = mapped_column(String(50))
-    status: Mapped[str | None] = mapped_column(String(50))  # Active, Disputed, Lost, etc.
-    
+    status: Mapped[str | None] = mapped_column(
+        String(50)
+    )  # Active, Disputed, Lost, etc.
+
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
@@ -1075,15 +1103,21 @@ class Resident(BaseTable):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     actor_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
     location_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
-    
+
     # Residency details
-    residency_type: Mapped[str | None] = mapped_column(String(100))  # Permanent, Temporary, Visitor, etc.
-    residency_status: Mapped[str | None] = mapped_column(String(50))  # Current, Former, Exile, etc.
+    residency_type: Mapped[str | None] = mapped_column(
+        String(100)
+    )  # Permanent, Temporary, Visitor, etc.
+    residency_status: Mapped[str | None] = mapped_column(
+        String(50)
+    )  # Current, Former, Exile, etc.
     move_in_date: Mapped[str | None] = mapped_column(String(50))
-    housing_type: Mapped[str | None] = mapped_column(String(100))  # House, Apartment, Inn, etc.
+    housing_type: Mapped[str | None] = mapped_column(
+        String(100)
+    )  # House, Apartment, Inn, etc.
     notes: Mapped[str | None] = mapped_column(Text)
     is_public_knowledge: Mapped[bool | None] = mapped_column(Boolean, default=True)
-    
+
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
@@ -1139,15 +1173,25 @@ class HistoryActor(BaseTable):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     history_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("history.id"))
     actor_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
-    
+
     # New structured historical involvement fields
-    role_in_event: Mapped[str | None] = mapped_column(String(255))  # What role they played
-    involvement_level: Mapped[str | None] = mapped_column(String(100))  # Central, Major, Minor, etc.
-    impact_on_character: Mapped[str | None] = mapped_column(Text)  # How event affected them
-    character_perspective: Mapped[str | None] = mapped_column(Text)  # Their view of the event
-    consequences: Mapped[str | None] = mapped_column(Text)  # What happened to them after
+    role_in_event: Mapped[str | None] = mapped_column(
+        String(255)
+    )  # What role they played
+    involvement_level: Mapped[str | None] = mapped_column(
+        String(100)
+    )  # Central, Major, Minor, etc.
+    impact_on_character: Mapped[str | None] = mapped_column(
+        Text
+    )  # How event affected them
+    character_perspective: Mapped[str | None] = mapped_column(
+        Text
+    )  # Their view of the event
+    consequences: Mapped[str | None] = mapped_column(
+        Text
+    )  # What happened to them after
     notes: Mapped[str | None] = mapped_column(Text)
-    
+
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
@@ -1174,23 +1218,32 @@ class HistoryLocation(BaseTable):
 
 class LocationAOnBRelations(BaseTable):
     """General location-to-location relationships"""
+
     __tablename__ = "location_a_on_b_relations"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    location_a_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
-    location_b_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
-    
+    location_a_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("location_.id")
+    )
+    location_b_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("location_.id")
+    )
+
     # Relationship details
     description: Mapped[str | None] = mapped_column(Text)
     notes: Mapped[str | None] = mapped_column(Text)
-    relationship_type: Mapped[str | None] = mapped_column(String(100))  # Political, Economic, Cultural, etc.
-    status: Mapped[str | None] = mapped_column(String(50))  # Active, Historical, Disputed, etc.
+    relationship_type: Mapped[str | None] = mapped_column(
+        String(100)
+    )  # Political, Economic, Cultural, etc.
+    status: Mapped[str | None] = mapped_column(
+        String(50)
+    )  # Active, Historical, Disputed, etc.
     strength: Mapped[int | None] = mapped_column(Integer)  # 1-10 scale
     is_mutual: Mapped[bool | None] = mapped_column(Boolean, default=True)
     is_public: Mapped[bool | None] = mapped_column(Boolean, default=True)
     established_date: Mapped[str | None] = mapped_column(String(100))
     current_status: Mapped[str | None] = mapped_column(Text)
-    
+
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
@@ -1206,26 +1259,41 @@ class LocationAOnBRelations(BaseTable):
 
 class LocationGeographicRelations(BaseTable):
     """Geographic relationships between locations (borders, contains, connected to, etc.)"""
+
     __tablename__ = "location_geographic_relations"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    location_a_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
-    location_b_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
-    
+    location_a_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("location_.id")
+    )
+    location_b_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("location_.id")
+    )
+
     # Geographic relationship details
-    geographic_type: Mapped[str | None] = mapped_column(String(100))  # borders, contains, part_of, connected_to, near, distant
-    distance: Mapped[str | None] = mapped_column(String(100))  # "50 miles", "3 days travel", etc.
+    geographic_type: Mapped[str | None] = mapped_column(
+        String(100)
+    )  # borders, contains, part_of, connected_to, near, distant
+    distance: Mapped[str | None] = mapped_column(
+        String(100)
+    )  # "50 miles", "3 days travel", etc.
     travel_time: Mapped[str | None] = mapped_column(String(100))
-    travel_difficulty: Mapped[str | None] = mapped_column(String(50))  # Easy, Moderate, Difficult, Dangerous
-    travel_method: Mapped[str | None] = mapped_column(String(100))  # Road, River, Mountain Pass, etc.
+    travel_difficulty: Mapped[str | None] = mapped_column(
+        String(50)
+    )  # Easy, Moderate, Difficult, Dangerous
+    travel_method: Mapped[str | None] = mapped_column(
+        String(100)
+    )  # Road, River, Mountain Pass, etc.
     description: Mapped[str | None] = mapped_column(Text)
     notes: Mapped[str | None] = mapped_column(Text)
-    
+
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
-    setting: Mapped["Setting"] = relationship(back_populates="location_geographic_relations")
+    setting: Mapped["Setting"] = relationship(
+        back_populates="location_geographic_relations"
+    )
     location_a: Mapped["Location"] = relationship(
         foreign_keys=[location_a_id], back_populates="geographic_a_relations"
     )
@@ -1236,25 +1304,36 @@ class LocationGeographicRelations(BaseTable):
 
 class LocationPoliticalRelations(BaseTable):
     """Political relationships between locations (allied territories, disputed borders, etc.)"""
+
     __tablename__ = "location_political_relations"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    location_a_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
-    location_b_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
-    
+    location_a_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("location_.id")
+    )
+    location_b_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("location_.id")
+    )
+
     # Political relationship details
-    political_type: Mapped[str | None] = mapped_column(String(100))  # allied, neutral, hostile, disputed, vassal, autonomous
+    political_type: Mapped[str | None] = mapped_column(
+        String(100)
+    )  # allied, neutral, hostile, disputed, vassal, autonomous
     treaty_name: Mapped[str | None] = mapped_column(String(255))
     treaty_date: Mapped[str | None] = mapped_column(String(100))
-    status: Mapped[str | None] = mapped_column(String(50))  # Active, Expired, Violated, Under Negotiation
+    status: Mapped[str | None] = mapped_column(
+        String(50)
+    )  # Active, Expired, Violated, Under Negotiation
     description: Mapped[str | None] = mapped_column(Text)
     notes: Mapped[str | None] = mapped_column(Text)
-    
+
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
-    setting: Mapped["Setting"] = relationship(back_populates="location_political_relations")
+    setting: Mapped["Setting"] = relationship(
+        back_populates="location_political_relations"
+    )
     location_a: Mapped["Location"] = relationship(
         foreign_keys=[location_a_id], back_populates="political_a_relations"
     )
@@ -1265,26 +1344,37 @@ class LocationPoliticalRelations(BaseTable):
 
 class LocationEconomicRelations(BaseTable):
     """Economic relationships between locations (trade routes, resource dependencies, etc.)"""
+
     __tablename__ = "location_economic_relations"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    location_a_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
-    location_b_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
-    
+    location_a_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("location_.id")
+    )
+    location_b_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("location_.id")
+    )
+
     # Economic relationship details
-    economic_type: Mapped[str | None] = mapped_column(String(100))  # trade_route, resource_dependency, market_competition, economic_alliance
+    economic_type: Mapped[str | None] = mapped_column(
+        String(100)
+    )  # trade_route, resource_dependency, market_competition, economic_alliance
     trade_goods: Mapped[str | None] = mapped_column(Text)  # What is traded
     trade_volume: Mapped[str | None] = mapped_column(String(100))  # High, Medium, Low
-    trade_frequency: Mapped[str | None] = mapped_column(String(100))  # Daily, Weekly, Seasonal, etc.
+    trade_frequency: Mapped[str | None] = mapped_column(
+        String(100)
+    )  # Daily, Weekly, Seasonal, etc.
     trade_value: Mapped[str | None] = mapped_column(String(100))  # Estimated value
     description: Mapped[str | None] = mapped_column(Text)
     notes: Mapped[str | None] = mapped_column(Text)
-    
+
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
-    setting: Mapped["Setting"] = relationship(back_populates="location_economic_relations")
+    setting: Mapped["Setting"] = relationship(
+        back_populates="location_economic_relations"
+    )
     location_a: Mapped["Location"] = relationship(
         foreign_keys=[location_a_id], back_populates="economic_a_relations"
     )
@@ -1295,21 +1385,36 @@ class LocationEconomicRelations(BaseTable):
 
 class LocationHierarchy(BaseTable):
     """Hierarchical relationships between locations (regions, countries, kingdoms, etc.)"""
+
     __tablename__ = "location_hierarchy"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    parent_location_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
-    child_location_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
-    
+    parent_location_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("location_.id")
+    )
+    child_location_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("location_.id")
+    )
+
     # Hierarchy details
-    hierarchy_type: Mapped[str | None] = mapped_column(String(100))  # administrative, geographic, cultural, military
-    parent_type: Mapped[str | None] = mapped_column(String(50))  # kingdom, country, region, province, etc.
-    child_type: Mapped[str | None] = mapped_column(String(50))  # city, town, village, district, etc.
-    administrative_level: Mapped[int | None] = mapped_column(Integer)  # 1=highest (kingdom), 2=region, 3=city, etc.
-    governance_type: Mapped[str | None] = mapped_column(String(100))  # direct_rule, autonomous, federated, etc.
+    hierarchy_type: Mapped[str | None] = mapped_column(
+        String(100)
+    )  # administrative, geographic, cultural, military
+    parent_type: Mapped[str | None] = mapped_column(
+        String(50)
+    )  # kingdom, country, region, province, etc.
+    child_type: Mapped[str | None] = mapped_column(
+        String(50)
+    )  # city, town, village, district, etc.
+    administrative_level: Mapped[int | None] = mapped_column(
+        Integer
+    )  # 1=highest (kingdom), 2=region, 3=city, etc.
+    governance_type: Mapped[str | None] = mapped_column(
+        String(100)
+    )  # direct_rule, autonomous, federated, etc.
     description: Mapped[str | None] = mapped_column(Text)
     notes: Mapped[str | None] = mapped_column(Text)
-    
+
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
@@ -1329,14 +1434,14 @@ class HistoryFaction(BaseTable):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     history_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("history.id"))
     faction_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("faction.id"))
-    
+
     # New structured fields
     role_in_event: Mapped[str | None] = mapped_column(String(255))
     involvement_level: Mapped[str | None] = mapped_column(String(100))
     impact_on_faction: Mapped[str | None] = mapped_column(Text)
     faction_perspective: Mapped[str | None] = mapped_column(Text)
     consequences: Mapped[str | None] = mapped_column(Text)
-    
+
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
@@ -1387,15 +1492,19 @@ class ObjectToOwner(BaseTable):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     object_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("object_.id"))
     actor_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
-    
+
     # Ownership details
-    ownership_type: Mapped[str | None] = mapped_column(String(100))  # Owned, Borrowed, Stolen, etc.
+    ownership_type: Mapped[str | None] = mapped_column(
+        String(100)
+    )  # Owned, Borrowed, Stolen, etc.
     acquisition_method: Mapped[str | None] = mapped_column(Text)  # How they got it
     acquisition_date: Mapped[str | None] = mapped_column(String(50))
-    ownership_status: Mapped[str | None] = mapped_column(String(50))  # Current, Lost, Hidden, etc.
+    ownership_status: Mapped[str | None] = mapped_column(
+        String(50)
+    )  # Current, Lost, Hidden, etc.
     notes: Mapped[str | None] = mapped_column(Text)
     is_public_knowledge: Mapped[bool | None] = mapped_column(Boolean, default=True)
-    
+
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )

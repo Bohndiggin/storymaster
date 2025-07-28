@@ -10,36 +10,42 @@ import subprocess
 
 def run_working_tests():
     """Run the test suites that are working correctly"""
-    
+
     print("🧪 Testing Successfully Implemented Storymaster Features")
     print("=" * 60)
     print()
-    
+
     working_tests = [
         ("Spell Check System", "tests/test_spell_check_system.py"),
         ("Simple Integration Tests", "tests/test_simple_integration.py"),
     ]
-    
+
     all_passed = True
     results = []
-    
+
     for test_name, test_file in working_tests:
         print(f"Running {test_name}...")
         print("-" * 40)
-        
+
         try:
-            result = subprocess.run([
-                sys.executable, "-m", "pytest", 
-                test_file, 
-                "-v", 
-                "--tb=short",
-                "--disable-warnings"
-            ], capture_output=True, text=True)
-            
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "pytest",
+                    test_file,
+                    "-v",
+                    "--tb=short",
+                    "--disable-warnings",
+                ],
+                capture_output=True,
+                text=True,
+            )
+
             if result.returncode == 0:
                 print(f"✅ {test_name} - ALL TESTS PASSED")
                 # Count tests
-                lines = result.stdout.split('\n')
+                lines = result.stdout.split("\n")
                 test_count = 0
                 for line in lines:
                     if " PASSED " in line:
@@ -49,33 +55,33 @@ def run_working_tests():
             else:
                 print(f"❌ {test_name} - SOME TESTS FAILED")
                 print("   Error output:")
-                print("   " + "\n   ".join(result.stdout.split('\n')[-10:]))
+                print("   " + "\n   ".join(result.stdout.split("\n")[-10:]))
                 results.append((test_name, "FAILED", 0))
                 all_passed = False
-                
+
         except Exception as e:
             print(f"💥 {test_name} - ERROR: {e}")
             results.append((test_name, "ERROR", 0))
             all_passed = False
-        
+
         print()
-    
+
     # Summary
     print("=" * 60)
     print("🎯 FEATURE TESTING SUMMARY")
     print("=" * 60)
-    
+
     total_tests = 0
     for test_name, status, count in results:
         icon = "✅" if status == "PASSED" else "❌" if status == "FAILED" else "💥"
         print(f"{icon} {test_name:<30} {status:<8} ({count} tests)")
         if status == "PASSED":
             total_tests += count
-    
+
     print()
     print(f"🏆 TOTAL WORKING TESTS: {total_tests}")
     print()
-    
+
     if all_passed:
         print("🎉 All tested features are working correctly!")
         print()
@@ -94,17 +100,19 @@ def run_working_tests():
         return 0
     else:
         print("⚠️  Some test suites have issues (likely due to complex database schema)")
-        print("   However, the core spell check and tab navigation features are working!")
+        print(
+            "   However, the core spell check and tab navigation features are working!"
+        )
         return 1
 
 
 def show_feature_status():
     """Show the status of implemented features"""
-    
+
     print("📋 STORYMASTER FEATURE IMPLEMENTATION STATUS")
     print("=" * 60)
     print()
-    
+
     features = [
         ("✅ Spell Check System", "Fully implemented and tested"),
         ("  • Multi-backend support", "PyEnchant, aspell, hunspell, fallback"),
@@ -130,13 +138,13 @@ def show_feature_status():
         ("⚠️  UI Component Tests", "Some issues with mocking"),
         ("⚠️  Full Integration Tests", "Database schema complexity"),
     ]
-    
+
     for feature, description in features:
         if feature == "":
             print()
         else:
             print(f"{feature:<35} {description}")
-    
+
     print()
     print("🎯 CONCLUSION:")
     print("   The core spell check and tab navigation features are fully")
@@ -150,7 +158,7 @@ def main():
     if len(sys.argv) > 1 and sys.argv[1] == "--status":
         show_feature_status()
         return 0
-    
+
     return run_working_tests()
 
 

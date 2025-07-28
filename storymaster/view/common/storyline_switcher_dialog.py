@@ -3,8 +3,15 @@ Defines the dialog for switching between storylines.
 """
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import (QDialog, QDialogButtonBox, QLabel, QListWidget,
-                             QListWidgetItem, QMessageBox, QVBoxLayout)
+from PyQt6.QtWidgets import (
+    QDialog,
+    QDialogButtonBox,
+    QLabel,
+    QListWidget,
+    QListWidgetItem,
+    QMessageBox,
+    QVBoxLayout,
+)
 
 from storymaster.model.common.common_model import BaseModel
 

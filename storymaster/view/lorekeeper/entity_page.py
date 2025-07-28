@@ -32,24 +32,24 @@ from storymaster.view.common.theme import (
     get_group_box_style,
     get_splitter_style,
     COLORS,
-    FONTS
+    FONTS,
 )
 from storymaster.view.common.tooltips import (
     apply_lorekeeper_tooltips,
     apply_general_tooltips,
-    LOREKEEPER_TOOLTIPS
+    LOREKEEPER_TOOLTIPS,
 )
 from storymaster.view.common.custom_widgets import (
     TabNavigationTextEdit,
     TabNavigationLineEdit,
     TabNavigationComboBox,
-    enable_smart_tab_navigation
+    enable_smart_tab_navigation,
 )
 
 
 class SectionWidget(QGroupBox):
     """Widget for displaying a logical section of entity fields"""
-    
+
     # Signal emitted when a checkbox changes (field_name, checked)
     checkbox_changed = pyqtSignal(str, bool)
 
@@ -69,7 +69,9 @@ class SectionWidget(QGroupBox):
         # Add description if available
         if self.section.description:
             desc_label = QLabel(self.section.description)
-            desc_label.setStyleSheet(f"color: {COLORS['text_muted']}; font-style: italic; margin-bottom: 8px;")
+            desc_label.setStyleSheet(
+                f"color: {COLORS['text_muted']}; font-style: italic; margin-bottom: 8px;"
+            )
             desc_label.setWordWrap(True)
             layout.addRow(desc_label)
 
@@ -125,7 +127,7 @@ class SectionWidget(QGroupBox):
             "skill_id",
             "object_id",
         ]
-        
+
         # Boolean fields that need checkboxes
         boolean_fields = [
             "is_dungeon",
@@ -136,8 +138,11 @@ class SectionWidget(QGroupBox):
             widget = QCheckBox()
             # Connect checkbox changes to signal if this is a checkbox section
             if self.section.is_checkbox_section:
-                widget.stateChanged.connect(lambda state, field=field_name: 
-                    self.checkbox_changed.emit(field, state == Qt.CheckState.Checked.value))
+                widget.stateChanged.connect(
+                    lambda state, field=field_name: self.checkbox_changed.emit(
+                        field, state == Qt.CheckState.Checked.value
+                    )
+                )
         elif field_name in multiline_fields:
             widget = TabNavigationTextEdit()
             widget.setMaximumHeight(100)
@@ -164,10 +169,10 @@ class SectionWidget(QGroupBox):
         else:
             widget = TabNavigationLineEdit()
             widget.setStyleSheet(get_input_style())
-        
+
         # Apply tooltips based on field name
         self.apply_field_tooltip(widget, field_name)
-        
+
         return widget
 
     def get_field_display_name(self, field_name: str) -> str:
@@ -191,7 +196,7 @@ class SectionWidget(QGroupBox):
             "is_city": "City",
             "dangers": "Dangers",
             "traps": "Traps",
-            "secrets": "Secrets", 
+            "secrets": "Secrets",
             "government": "Government Type",
         }
 
@@ -200,15 +205,17 @@ class SectionWidget(QGroupBox):
     def populate_foreign_key_dropdown(self, widget: QComboBox, field_name: str):
         """Populate a foreign key dropdown with available options"""
         try:
-            options = self.model_adapter.get_foreign_key_options("", field_name)  # table_name not needed for this call
-            
+            options = self.model_adapter.get_foreign_key_options(
+                "", field_name
+            )  # table_name not needed for this call
+
             # Add empty option
             widget.addItem("-- Select --", None)
-            
+
             # Add all available options
             for entity_id, display_name in options:
                 widget.addItem(display_name, entity_id)
-                
+
         except Exception as e:
             print(f"Error populating dropdown for {field_name}: {e}")
 
@@ -242,29 +249,29 @@ class SectionWidget(QGroupBox):
                         widget.setCurrentIndex(index)
                 elif isinstance(widget, QCheckBox):
                     widget.setChecked(bool(value) if value is not None else False)
-                    
+
     def apply_field_tooltip(self, widget, field_name: str):
         """Apply appropriate tooltip to a field widget"""
         # Create tooltip key by combining entity type context with field name
-        entity_context = getattr(self, 'entity_type', '')
-        
+        entity_context = getattr(self, "entity_type", "")
+
         # Try specific field combinations first
         tooltip_keys = [
             f"{entity_context}_{field_name}",  # e.g., "actor_first_name"
             field_name,  # e.g., "first_name"
         ]
-        
+
         tooltip_text = None
         for key in tooltip_keys:
             if key in LOREKEEPER_TOOLTIPS:
                 tooltip_text = LOREKEEPER_TOOLTIPS[key]
                 break
-        
+
         # If no specific tooltip found, create a helpful generic one
         if not tooltip_text:
             display_name = self.get_field_display_name(field_name)
             tooltip_text = f"Enter the {display_name.lower()} for this item. This information helps build your story world."
-        
+
         widget.setToolTip(tooltip_text)
 
 
@@ -412,7 +419,7 @@ class EntityDetailPage(QWidget):
 
         layout.addWidget(splitter)
         self.setLayout(layout)
-        
+
         # Set up enhanced tab navigation for all form fields
         enable_smart_tab_navigation(self)
 
@@ -436,13 +443,13 @@ class EntityDetailPage(QWidget):
         header_layout.addStretch()
 
         self.save_button = QPushButton("Save")
-        self.save_button.setStyleSheet(get_button_style('primary'))
+        self.save_button.setStyleSheet(get_button_style("primary"))
         apply_general_tooltips(self.save_button, "save_button")
-        
+
         self.delete_button = QPushButton("Delete")
-        self.delete_button.setStyleSheet(get_button_style('danger'))
+        self.delete_button.setStyleSheet(get_button_style("danger"))
         apply_general_tooltips(self.delete_button, "delete_button")
-        
+
         self.save_button.clicked.connect(self.save_entity)
         self.delete_button.clicked.connect(self.delete_entity)
 
@@ -466,15 +473,15 @@ class EntityDetailPage(QWidget):
             for section in self.entity_mapping.sections:
                 section_widget = SectionWidget(section, self.model_adapter)
                 self.section_widgets[section.name] = section_widget
-                
+
                 # Connect checkbox signals for conditional sections
                 if section.is_checkbox_section:
                     section_widget.checkbox_changed.connect(self.on_checkbox_changed)
-                
+
                 # Hide conditional sections initially
                 if section.conditional_field:
                     section_widget.setVisible(False)
-                
+
                 sections_layout.addWidget(section_widget)
 
         sections_layout.addStretch()
@@ -516,8 +523,12 @@ class EntityDetailPage(QWidget):
                 rel_widget = RelationshipWidget(rel_table, rel_display)
                 rel_widget.relationship_selected.connect(self.on_relationship_selected)
                 rel_widget.add_relationship_requested.connect(self.on_add_relationship)
-                rel_widget.remove_relationship_requested.connect(self.on_remove_relationship)
-                rel_widget.edit_relationship_requested.connect(self.on_edit_relationship)
+                rel_widget.remove_relationship_requested.connect(
+                    self.on_remove_relationship
+                )
+                rel_widget.edit_relationship_requested.connect(
+                    self.on_edit_relationship
+                )
                 self.relationship_widgets[rel_table] = rel_widget
                 relationships_layout.addWidget(rel_widget)
 
@@ -545,18 +556,20 @@ class EntityDetailPage(QWidget):
 
         # Update section data
         entity_dict = self.current_entity.as_dict()
-        
+
         # For locations, also get additional details
         if self.table_name == "location_" and self.model_adapter:
-            location_details = self.model_adapter.get_location_details(self.current_entity)
+            location_details = self.model_adapter.get_location_details(
+                self.current_entity
+            )
             entity_dict.update(location_details)
-        
+
         for section_name, section_widget in self.section_widgets.items():
             section_widget.set_field_data(entity_dict)
-        
+
         # Update conditional section visibility
         self.update_conditional_sections()
-        
+
         # Load relationships
         self.load_relationships()
 
@@ -619,113 +632,107 @@ class EntityDetailPage(QWidget):
     def on_add_relationship(self, relationship_type: str):
         """Handle adding a new relationship"""
         from PyQt6.QtWidgets import QMessageBox, QDialog
-        from storymaster.view.lorekeeper.entity_selection_dialog import EntitySelectionDialog
-        
+        from storymaster.view.lorekeeper.entity_selection_dialog import (
+            EntitySelectionDialog,
+        )
+
         if not self.model_adapter:
             QMessageBox.warning(
-                self, 
-                "Error", 
-                "Model adapter not available. Cannot add relationships."
+                self, "Error", "Model adapter not available. Cannot add relationships."
             )
             return
-        
+
         # Show entity selection dialog
-        dialog = EntitySelectionDialog(relationship_type, self.model_adapter, self.current_entity, self)
+        dialog = EntitySelectionDialog(
+            relationship_type, self.model_adapter, self.current_entity, self
+        )
         if dialog.exec() == QDialog.DialogCode.Accepted:
             selected_entity = dialog.get_selected_entity()
             if selected_entity:
                 entity_name = self.get_entity_display_name(selected_entity)
-                
+
                 # Actually create the relationship
                 success = self.model_adapter.add_relationship(
-                    self.current_entity, 
-                    relationship_type, 
-                    selected_entity
+                    self.current_entity, relationship_type, selected_entity
                 )
-                
+
                 if success:
                     # Refresh the relationship display (no popup)
                     self.refresh_relationship_display(relationship_type)
                 else:
                     QMessageBox.warning(
-                        self, 
-                        "Relationship Exists", 
-                        f"A relationship with '{entity_name}' already exists in {relationship_type.replace('_', ' ')}"
+                        self,
+                        "Relationship Exists",
+                        f"A relationship with '{entity_name}' already exists in {relationship_type.replace('_', ' ')}",
                     )
 
     def on_remove_relationship(self, relationship_type: str, related_entity):
         """Handle removing a relationship"""
         from PyQt6.QtWidgets import QMessageBox
-        
+
         entity_name = self.get_entity_display_name(related_entity)
         reply = QMessageBox.question(
             self,
             "Remove Relationship",
             f"Are you sure you want to remove '{entity_name}' from {relationship_type.replace('_', ' ')}?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.No
+            QMessageBox.StandardButton.No,
         )
-        
+
         if reply == QMessageBox.StandardButton.Yes:
             # Actually remove the relationship
             success = self.model_adapter.remove_relationship(
-                self.current_entity,
-                relationship_type,
-                related_entity
+                self.current_entity, relationship_type, related_entity
             )
-            
+
             if success:
                 # Refresh the relationship display (no popup)
                 self.refresh_relationship_display(relationship_type)
             else:
                 QMessageBox.warning(
-                    self,
-                    "Error",
-                    f"Failed to remove relationship with '{entity_name}'"
+                    self, "Error", f"Failed to remove relationship with '{entity_name}'"
                 )
 
     def on_edit_relationship(self, relationship_type: str, related_entity):
         """Handle editing a relationship"""
         from PyQt6.QtWidgets import QMessageBox, QDialog
-        from storymaster.view.lorekeeper.relationship_details_dialog import RelationshipDetailsDialog
-        
+        from storymaster.view.lorekeeper.relationship_details_dialog import (
+            RelationshipDetailsDialog,
+        )
+
         if not self.model_adapter:
             QMessageBox.warning(
-                self, 
-                "Error", 
-                "Model adapter not available. Cannot edit relationships."
+                self, "Error", "Model adapter not available. Cannot edit relationships."
             )
             return
-        
+
         # Open relationship details dialog
         dialog = RelationshipDetailsDialog(
-            relationship_type, 
-            self.current_entity, 
-            related_entity, 
-            self.model_adapter, 
-            self
+            relationship_type,
+            self.current_entity,
+            related_entity,
+            self.model_adapter,
+            self,
         )
-        
+
         if dialog.exec() == QDialog.DialogCode.Accepted:
             relationship_data = dialog.get_relationship_data()
             entity_name = self.get_entity_display_name(related_entity)
-            
+
             # Actually update the relationship in the database
             success = self.model_adapter.update_relationship(
                 self.current_entity,
                 relationship_type,
                 related_entity,
-                relationship_data
+                relationship_data,
             )
-            
+
             if success:
                 # Refresh the relationship display (no popup)
                 self.refresh_relationship_display(relationship_type)
             else:
                 QMessageBox.warning(
-                    self,
-                    "Error",
-                    f"Failed to update relationship with '{entity_name}'"
+                    self, "Error", f"Failed to update relationship with '{entity_name}'"
                 )
 
     def get_entity_display_name(self, entity) -> str:
@@ -746,49 +753,53 @@ class EntityDetailPage(QWidget):
         """Refresh the display of relationships"""
         if not self.current_entity or not self.model_adapter:
             return
-        
+
         # Refresh specific relationship type or all relationships
-        relationship_types = [relationship_type] if relationship_type else self.relationship_widgets.keys()
-        
+        relationship_types = (
+            [relationship_type]
+            if relationship_type
+            else self.relationship_widgets.keys()
+        )
+
         for rel_type in relationship_types:
             if rel_type in self.relationship_widgets:
                 related_entities = self.model_adapter.get_relationship_entities(
-                    self.current_entity, 
-                    rel_type
+                    self.current_entity, rel_type
                 )
-                self.relationship_widgets[rel_type].set_related_entities(related_entities)
+                self.relationship_widgets[rel_type].set_related_entities(
+                    related_entities
+                )
 
     def load_relationships(self):
         """Load and display all relationships for the current entity"""
         if not self.current_entity or not self.model_adapter:
             return
-        
+
         for rel_type, rel_widget in self.relationship_widgets.items():
             related_entities = self.model_adapter.get_relationship_entities(
-                self.current_entity, 
-                rel_type
+                self.current_entity, rel_type
             )
             rel_widget.set_related_entities(related_entities)
-    
+
     def on_checkbox_changed(self, field_name: str, checked: bool):
         """Handle checkbox changes for conditional sections"""
         if not self.entity_mapping:
             return
-            
+
         # Find sections that depend on this field
         for section in self.entity_mapping.sections:
             if section.conditional_field == field_name:
                 section_widget = self.section_widgets.get(section.name)
                 if section_widget:
                     section_widget.setVisible(checked)
-    
+
     def update_conditional_sections(self):
         """Update visibility of conditional sections based on current data"""
         if not self.current_entity or not self.entity_mapping:
             return
-            
+
         entity_dict = self.current_entity.as_dict()
-        
+
         for section in self.entity_mapping.sections:
             if section.conditional_field:
                 # Check if the controlling field is true

@@ -32,71 +32,112 @@ class Ui_ArcPointDialog(object):
         self.formLayout.setObjectName("formLayout")
         self.orderLabel = QtWidgets.QLabel(parent=self.scrollAreaWidgetContents)
         self.orderLabel.setObjectName("orderLabel")
-        self.formLayout.setWidget(0, QtWidgets.QFormLayout.ItemRole.LabelRole, self.orderLabel)
+        self.formLayout.setWidget(
+            0, QtWidgets.QFormLayout.ItemRole.LabelRole, self.orderLabel
+        )
         self.orderSpinBox = QtWidgets.QSpinBox(parent=self.scrollAreaWidgetContents)
         self.orderSpinBox.setMinimum(1)
         self.orderSpinBox.setMaximum(999)
         self.orderSpinBox.setObjectName("orderSpinBox")
-        self.formLayout.setWidget(0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.orderSpinBox)
+        self.formLayout.setWidget(
+            0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.orderSpinBox
+        )
         self.titleArcLabel = QtWidgets.QLabel(parent=self.scrollAreaWidgetContents)
         self.titleArcLabel.setObjectName("titleArcLabel")
-        self.formLayout.setWidget(1, QtWidgets.QFormLayout.ItemRole.LabelRole, self.titleArcLabel)
+        self.formLayout.setWidget(
+            1, QtWidgets.QFormLayout.ItemRole.LabelRole, self.titleArcLabel
+        )
         self.titleEdit = QtWidgets.QLineEdit(parent=self.scrollAreaWidgetContents)
         self.titleEdit.setObjectName("titleEdit")
-        self.formLayout.setWidget(1, QtWidgets.QFormLayout.ItemRole.FieldRole, self.titleEdit)
+        self.formLayout.setWidget(
+            1, QtWidgets.QFormLayout.ItemRole.FieldRole, self.titleEdit
+        )
         self.nodeLabel = QtWidgets.QLabel(parent=self.scrollAreaWidgetContents)
         self.nodeLabel.setObjectName("nodeLabel")
-        self.formLayout.setWidget(2, QtWidgets.QFormLayout.ItemRole.LabelRole, self.nodeLabel)
+        self.formLayout.setWidget(
+            2, QtWidgets.QFormLayout.ItemRole.LabelRole, self.nodeLabel
+        )
         self.nodeComboBox = QtWidgets.QComboBox(parent=self.scrollAreaWidgetContents)
         self.nodeComboBox.setObjectName("nodeComboBox")
         self.nodeComboBox.addItem("")
-        self.formLayout.setWidget(2, QtWidgets.QFormLayout.ItemRole.FieldRole, self.nodeComboBox)
+        self.formLayout.setWidget(
+            2, QtWidgets.QFormLayout.ItemRole.FieldRole, self.nodeComboBox
+        )
         self.descriptionLabel = QtWidgets.QLabel(parent=self.scrollAreaWidgetContents)
         self.descriptionLabel.setObjectName("descriptionLabel")
-        self.formLayout.setWidget(3, QtWidgets.QFormLayout.ItemRole.LabelRole, self.descriptionLabel)
+        self.formLayout.setWidget(
+            3, QtWidgets.QFormLayout.ItemRole.LabelRole, self.descriptionLabel
+        )
         self.descriptionEdit = QtWidgets.QTextEdit(parent=self.scrollAreaWidgetContents)
         self.descriptionEdit.setMaximumSize(QtCore.QSize(16777215, 80))
         self.descriptionEdit.setObjectName("descriptionEdit")
-        self.formLayout.setWidget(4, QtWidgets.QFormLayout.ItemRole.SpanningRole, self.descriptionEdit)
-        self.emotionalStateLabel = QtWidgets.QLabel(parent=self.scrollAreaWidgetContents)
+        self.formLayout.setWidget(
+            4, QtWidgets.QFormLayout.ItemRole.SpanningRole, self.descriptionEdit
+        )
+        self.emotionalStateLabel = QtWidgets.QLabel(
+            parent=self.scrollAreaWidgetContents
+        )
         self.emotionalStateLabel.setObjectName("emotionalStateLabel")
-        self.formLayout.setWidget(5, QtWidgets.QFormLayout.ItemRole.LabelRole, self.emotionalStateLabel)
-        self.emotionalStateEdit = QtWidgets.QTextEdit(parent=self.scrollAreaWidgetContents)
+        self.formLayout.setWidget(
+            5, QtWidgets.QFormLayout.ItemRole.LabelRole, self.emotionalStateLabel
+        )
+        self.emotionalStateEdit = QtWidgets.QTextEdit(
+            parent=self.scrollAreaWidgetContents
+        )
         self.emotionalStateEdit.setMaximumSize(QtCore.QSize(16777215, 80))
         self.emotionalStateEdit.setObjectName("emotionalStateEdit")
-        self.formLayout.setWidget(6, QtWidgets.QFormLayout.ItemRole.SpanningRole, self.emotionalStateEdit)
+        self.formLayout.setWidget(
+            6, QtWidgets.QFormLayout.ItemRole.SpanningRole, self.emotionalStateEdit
+        )
         self.relationshipsLabel = QtWidgets.QLabel(parent=self.scrollAreaWidgetContents)
         self.relationshipsLabel.setObjectName("relationshipsLabel")
-        self.formLayout.setWidget(7, QtWidgets.QFormLayout.ItemRole.LabelRole, self.relationshipsLabel)
-        self.relationshipsEdit = QtWidgets.QTextEdit(parent=self.scrollAreaWidgetContents)
+        self.formLayout.setWidget(
+            7, QtWidgets.QFormLayout.ItemRole.LabelRole, self.relationshipsLabel
+        )
+        self.relationshipsEdit = QtWidgets.QTextEdit(
+            parent=self.scrollAreaWidgetContents
+        )
         self.relationshipsEdit.setMaximumSize(QtCore.QSize(16777215, 80))
         self.relationshipsEdit.setObjectName("relationshipsEdit")
-        self.formLayout.setWidget(8, QtWidgets.QFormLayout.ItemRole.SpanningRole, self.relationshipsEdit)
+        self.formLayout.setWidget(
+            8, QtWidgets.QFormLayout.ItemRole.SpanningRole, self.relationshipsEdit
+        )
         self.goalsLabel = QtWidgets.QLabel(parent=self.scrollAreaWidgetContents)
         self.goalsLabel.setObjectName("goalsLabel")
-        self.formLayout.setWidget(9, QtWidgets.QFormLayout.ItemRole.LabelRole, self.goalsLabel)
+        self.formLayout.setWidget(
+            9, QtWidgets.QFormLayout.ItemRole.LabelRole, self.goalsLabel
+        )
         self.goalsEdit = QtWidgets.QTextEdit(parent=self.scrollAreaWidgetContents)
         self.goalsEdit.setMaximumSize(QtCore.QSize(16777215, 80))
         self.goalsEdit.setObjectName("goalsEdit")
-        self.formLayout.setWidget(10, QtWidgets.QFormLayout.ItemRole.SpanningRole, self.goalsEdit)
+        self.formLayout.setWidget(
+            10, QtWidgets.QFormLayout.ItemRole.SpanningRole, self.goalsEdit
+        )
         self.conflictLabel = QtWidgets.QLabel(parent=self.scrollAreaWidgetContents)
         self.conflictLabel.setObjectName("conflictLabel")
-        self.formLayout.setWidget(11, QtWidgets.QFormLayout.ItemRole.LabelRole, self.conflictLabel)
+        self.formLayout.setWidget(
+            11, QtWidgets.QFormLayout.ItemRole.LabelRole, self.conflictLabel
+        )
         self.conflictEdit = QtWidgets.QTextEdit(parent=self.scrollAreaWidgetContents)
         self.conflictEdit.setMaximumSize(QtCore.QSize(16777215, 80))
         self.conflictEdit.setObjectName("conflictEdit")
-        self.formLayout.setWidget(12, QtWidgets.QFormLayout.ItemRole.SpanningRole, self.conflictEdit)
+        self.formLayout.setWidget(
+            12, QtWidgets.QFormLayout.ItemRole.SpanningRole, self.conflictEdit
+        )
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.verticalLayout.addWidget(self.scrollArea)
         self.buttonBox = QtWidgets.QDialogButtonBox(parent=ArcPointDialog)
         self.buttonBox.setOrientation(QtCore.Qt.Orientation.Horizontal)
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.StandardButton.Cancel|QtWidgets.QDialogButtonBox.StandardButton.Ok)
+        self.buttonBox.setStandardButtons(
+            QtWidgets.QDialogButtonBox.StandardButton.Cancel
+            | QtWidgets.QDialogButtonBox.StandardButton.Ok
+        )
         self.buttonBox.setObjectName("buttonBox")
         self.verticalLayout.addWidget(self.buttonBox)
 
         self.retranslateUi(ArcPointDialog)
-        self.buttonBox.accepted.connect(ArcPointDialog.accept) # type: ignore
-        self.buttonBox.rejected.connect(ArcPointDialog.reject) # type: ignore
+        self.buttonBox.accepted.connect(ArcPointDialog.accept)  # type: ignore
+        self.buttonBox.rejected.connect(ArcPointDialog.reject)  # type: ignore
         QtCore.QMetaObject.connectSlotsByName(ArcPointDialog)
 
     def retranslateUi(self, ArcPointDialog):
@@ -108,7 +149,11 @@ class Ui_ArcPointDialog(object):
         self.nodeLabel.setText(_translate("ArcPointDialog", "Story Node:"))
         self.nodeComboBox.setItemText(0, _translate("ArcPointDialog", "No Node"))
         self.descriptionLabel.setText(_translate("ArcPointDialog", "Description:"))
-        self.emotionalStateLabel.setText(_translate("ArcPointDialog", "Emotional State:"))
-        self.relationshipsLabel.setText(_translate("ArcPointDialog", "Character Relationships:"))
+        self.emotionalStateLabel.setText(
+            _translate("ArcPointDialog", "Emotional State:")
+        )
+        self.relationshipsLabel.setText(
+            _translate("ArcPointDialog", "Character Relationships:")
+        )
         self.goalsLabel.setText(_translate("ArcPointDialog", "Goals:"))
         self.conflictLabel.setText(_translate("ArcPointDialog", "Internal Conflict:"))

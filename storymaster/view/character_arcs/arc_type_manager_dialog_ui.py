@@ -35,12 +35,19 @@ class Ui_ArcTypeManagerDialog(object):
         self.deleteArcTypeButton.setEnabled(False)
         self.deleteArcTypeButton.setObjectName("deleteArcTypeButton")
         self.toolbarLayout.addWidget(self.deleteArcTypeButton)
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        spacerItem = QtWidgets.QSpacerItem(
+            40,
+            20,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+        )
         self.toolbarLayout.addItem(spacerItem)
         self.verticalLayout.addLayout(self.toolbarLayout)
         self.arcTypesTable = QtWidgets.QTableWidget(parent=ArcTypeManagerDialog)
         self.arcTypesTable.setAlternatingRowColors(True)
-        self.arcTypesTable.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
+        self.arcTypesTable.setSelectionBehavior(
+            QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows
+        )
         self.arcTypesTable.setObjectName("arcTypesTable")
         self.arcTypesTable.setColumnCount(2)
         self.arcTypesTable.setRowCount(0)
@@ -51,21 +58,33 @@ class Ui_ArcTypeManagerDialog(object):
         self.verticalLayout.addWidget(self.arcTypesTable)
         self.buttonBox = QtWidgets.QDialogButtonBox(parent=ArcTypeManagerDialog)
         self.buttonBox.setOrientation(QtCore.Qt.Orientation.Horizontal)
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.StandardButton.Close)
+        self.buttonBox.setStandardButtons(
+            QtWidgets.QDialogButtonBox.StandardButton.Close
+        )
         self.buttonBox.setObjectName("buttonBox")
         self.verticalLayout.addWidget(self.buttonBox)
 
         self.retranslateUi(ArcTypeManagerDialog)
-        self.buttonBox.rejected.connect(ArcTypeManagerDialog.reject) # type: ignore
+        self.buttonBox.rejected.connect(ArcTypeManagerDialog.reject)  # type: ignore
         QtCore.QMetaObject.connectSlotsByName(ArcTypeManagerDialog)
 
     def retranslateUi(self, ArcTypeManagerDialog):
         _translate = QtCore.QCoreApplication.translate
-        ArcTypeManagerDialog.setWindowTitle(_translate("ArcTypeManagerDialog", "Manage Arc Types"))
-        self.titleLabel.setText(_translate("ArcTypeManagerDialog", "Arc Type Management"))
-        self.addArcTypeButton.setText(_translate("ArcTypeManagerDialog", "Add Arc Type"))
-        self.editArcTypeButton.setText(_translate("ArcTypeManagerDialog", "Edit Arc Type"))
-        self.deleteArcTypeButton.setText(_translate("ArcTypeManagerDialog", "Delete Arc Type"))
+        ArcTypeManagerDialog.setWindowTitle(
+            _translate("ArcTypeManagerDialog", "Manage Arc Types")
+        )
+        self.titleLabel.setText(
+            _translate("ArcTypeManagerDialog", "Arc Type Management")
+        )
+        self.addArcTypeButton.setText(
+            _translate("ArcTypeManagerDialog", "Add Arc Type")
+        )
+        self.editArcTypeButton.setText(
+            _translate("ArcTypeManagerDialog", "Edit Arc Type")
+        )
+        self.deleteArcTypeButton.setText(
+            _translate("ArcTypeManagerDialog", "Delete Arc Type")
+        )
         self.arcTypesTable.setSortingEnabled(True)
         item = self.arcTypesTable.horizontalHeaderItem(0)
         item.setText(_translate("ArcTypeManagerDialog", "Name"))

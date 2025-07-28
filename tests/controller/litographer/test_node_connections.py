@@ -80,8 +80,12 @@ class TestNodeConnectionPoints:
         node = node_class(0, 0, 80, 80, mock_node_data, mock_controller)
 
         # Test connection point methods exist
-        assert hasattr(node, "get_input_connection_pos"), f"{node_name} missing get_input_connection_pos"
-        assert hasattr(node, "get_output_connection_pos"), f"{node_name} missing get_output_connection_pos"
+        assert hasattr(
+            node, "get_input_connection_pos"
+        ), f"{node_name} missing get_input_connection_pos"
+        assert hasattr(
+            node, "get_output_connection_pos"
+        ), f"{node_name} missing get_output_connection_pos"
 
     @pytest.mark.parametrize(
         "node_name,node_class",
@@ -95,7 +99,13 @@ class TestNodeConnectionPoints:
         ],
     )
     def test_node_connection_points_work(
-        self, qapp, graphics_scene, node_name, node_class, mock_node_data, mock_controller
+        self,
+        qapp,
+        graphics_scene,
+        node_name,
+        node_class,
+        mock_node_data,
+        mock_controller,
     ):
         """Test that connection point methods return valid positions"""
         # Create test node
@@ -128,7 +138,13 @@ class TestNodeConnectionPoints:
         ],
     )
     def test_connection_points_have_child_items(
-        self, qapp, graphics_scene, node_name, node_class, mock_node_data, mock_controller
+        self,
+        qapp,
+        graphics_scene,
+        node_name,
+        node_class,
+        mock_node_data,
+        mock_controller,
     ):
         """Test that connection points exist as child items"""
         # Create test node
@@ -140,10 +156,18 @@ class TestNodeConnectionPoints:
         assert hasattr(node, "output_point"), f"{node_name} missing output_point"
 
         # Test relative positions exist
-        assert hasattr(node.input_point, "relative_x"), f"{node_name} input_point missing relative_x"
-        assert hasattr(node.input_point, "relative_y"), f"{node_name} input_point missing relative_y"
-        assert hasattr(node.output_point, "relative_x"), f"{node_name} output_point missing relative_x"
-        assert hasattr(node.output_point, "relative_y"), f"{node_name} output_point missing relative_y"
+        assert hasattr(
+            node.input_point, "relative_x"
+        ), f"{node_name} input_point missing relative_x"
+        assert hasattr(
+            node.input_point, "relative_y"
+        ), f"{node_name} input_point missing relative_y"
+        assert hasattr(
+            node.output_point, "relative_x"
+        ), f"{node_name} output_point missing relative_x"
+        assert hasattr(
+            node.output_point, "relative_y"
+        ), f"{node_name} output_point missing relative_y"
 
     def test_connection_points_move_with_node(
         self, qapp, graphics_scene, mock_node_data, mock_controller
@@ -166,10 +190,18 @@ class TestNodeConnectionPoints:
         new_output = node.get_output_connection_pos()
 
         # Positions should have moved by 50 pixels in both directions
-        assert abs(new_input.x() - initial_input.x() - 50) < 1, "Input connection didn't move correctly"
-        assert abs(new_input.y() - initial_input.y() - 50) < 1, "Input connection didn't move correctly"
-        assert abs(new_output.x() - initial_output.x() - 50) < 1, "Output connection didn't move correctly"
-        assert abs(new_output.y() - initial_output.y() - 50) < 1, "Output connection didn't move correctly"
+        assert (
+            abs(new_input.x() - initial_input.x() - 50) < 1
+        ), "Input connection didn't move correctly"
+        assert (
+            abs(new_input.y() - initial_input.y() - 50) < 1
+        ), "Input connection didn't move correctly"
+        assert (
+            abs(new_output.x() - initial_output.x() - 50) < 1
+        ), "Output connection didn't move correctly"
+        assert (
+            abs(new_output.y() - initial_output.y() - 50) < 1
+        ), "Output connection didn't move correctly"
 
     def test_different_nodes_have_separate_connection_points(
         self, qapp, graphics_scene, mock_controller
@@ -189,8 +221,12 @@ class TestNodeConnectionPoints:
         node2.setPos(300, 100)
 
         # Verify they're different objects
-        assert id(node1.input_point) != id(node2.input_point), "Input points are shared!"
-        assert id(node1.output_point) != id(node2.output_point), "Output points are shared!"
+        assert id(node1.input_point) != id(
+            node2.input_point
+        ), "Input points are shared!"
+        assert id(node1.output_point) != id(
+            node2.output_point
+        ), "Output points are shared!"
 
         # Move node1 and verify node2's connections don't move
         node1.setPos(200, 200)
@@ -199,5 +235,9 @@ class TestNodeConnectionPoints:
         node2_output = node2.get_output_connection_pos()
 
         # Node 2's positions should still be around (300, 100) + offsets
-        assert abs(node2_input.x() - 295.0) < 10.0, "Node 2 connection moved incorrectly"
-        assert abs(node2_input.y() - 140.0) < 10.0, "Node 2 connection moved incorrectly"
+        assert (
+            abs(node2_input.x() - 295.0) < 10.0
+        ), "Node 2 connection moved incorrectly"
+        assert (
+            abs(node2_input.y() - 140.0) < 10.0
+        ), "Node 2 connection moved incorrectly"

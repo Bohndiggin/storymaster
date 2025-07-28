@@ -2,11 +2,20 @@
 Defines the dialog for adding a new Litography Node.
 """
 
-from PyQt6.QtWidgets import (QComboBox, QDialog, QDialogButtonBox,
-                             QFormLayout, QVBoxLayout)
+from PyQt6.QtWidgets import (
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
+    QFormLayout,
+    QVBoxLayout,
+)
 
 from storymaster.model.database import schema
-from storymaster.view.common.theme import get_input_style, get_dialog_style, get_button_style
+from storymaster.view.common.theme import (
+    get_input_style,
+    get_dialog_style,
+    get_button_style,
+)
 from storymaster.view.common.tooltips import apply_litographer_tooltips
 from storymaster.view.common.custom_widgets import enable_smart_tab_navigation
 
@@ -35,7 +44,6 @@ class AddNodeDialog(QDialog):
                 node_type.name.title().replace("_", " "), node_type
             )
 
-
         # --- Layout ---
         form_layout = QFormLayout()
         form_layout.addRow("Node Type:", self.node_type_combo)
@@ -52,7 +60,7 @@ class AddNodeDialog(QDialog):
         main_layout.addWidget(self.button_box)
 
         self.setLayout(main_layout)
-        
+
         # Set up enhanced tab navigation
         enable_smart_tab_navigation(self)
 

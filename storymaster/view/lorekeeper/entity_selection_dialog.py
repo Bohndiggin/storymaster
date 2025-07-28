@@ -20,7 +20,9 @@ from storymaster.model.lorekeeper.entity_mappings import get_entity_mapping
 class EntitySelectionDialog(QDialog):
     """Dialog for selecting entities to add to relationships"""
 
-    def __init__(self, relationship_type: str, model_adapter, current_entity=None, parent=None):
+    def __init__(
+        self, relationship_type: str, model_adapter, current_entity=None, parent=None
+    ):
         super().__init__(parent)
         self.relationship_type = relationship_type
         self.model_adapter = model_adapter
@@ -99,9 +101,9 @@ class EntitySelectionDialog(QDialog):
         if not self.current_entity:
             # Fallback to old static mapping if no current entity
             return self._get_static_target_tables()
-        
+
         current_entity_type = self.current_entity.__class__.__name__
-        
+
         # Dynamic mapping based on current entity type and relationship
         if self.relationship_type == "actor_a_on_b_relations":
             return ["actor"]  # Always show other actors
@@ -180,10 +182,10 @@ class EntitySelectionDialog(QDialog):
             return ["location_"]  # Economic relationships between locations
         elif self.relationship_type == "location_hierarchy":
             return ["location_"]  # Hierarchical relationships between locations
-        
+
         # Fallback to static mapping
         return self._get_static_target_tables()
-    
+
     def _get_static_target_tables(self) -> list:
         """Static fallback mapping (old behavior)"""
         relationship_mappings = {
@@ -213,7 +215,7 @@ class EntitySelectionDialog(QDialog):
             "location_economic_relations": ["location_"],
             "location_hierarchy": ["location_"],
         }
-        
+
         return relationship_mappings.get(
             self.relationship_type,
             ["actor", "faction", "location_", "object_", "history", "world_data"],

@@ -35,7 +35,7 @@ class TestStorioModes:
         """Test that all expected modes are present"""
         expected_modes = {"Lorekeeper", "Litographer"}
         actual_modes = {mode.value for mode in StorioModes}
-        
+
         assert expected_modes == actual_modes
 
     def test_storio_modes_iteration(self):
@@ -65,11 +65,19 @@ class TestGroupListTypes:
     def test_group_list_types_completeness(self):
         """Test that all expected world-building types are present"""
         expected_types = {
-            "actors", "backgrounds", "classes", "factions", "history",
-            "locations", "objects", "races", "sub_races", "world_datas"
+            "actors",
+            "backgrounds",
+            "classes",
+            "factions",
+            "history",
+            "locations",
+            "objects",
+            "races",
+            "sub_races",
+            "world_datas",
         }
         actual_types = {group_type.value for group_type in GroupListTypes}
-        
+
         assert expected_types == actual_types
 
     def test_group_list_types_coverage(self):
@@ -81,7 +89,7 @@ class TestGroupListTypes:
             GroupListTypes.LOCATIONS,
             GroupListTypes.OBJECTS,
         ]
-        
+
         for entity in core_entities:
             assert entity in GroupListTypes
 
@@ -101,9 +109,9 @@ class TestGroupData:
             objects=[],
             races=[],
             sub_races=[],
-            world_datas=[]
+            world_datas=[],
         )
-        
+
         assert isinstance(group_data.actors, list)
         assert isinstance(group_data.backgrounds, list)
         assert isinstance(group_data.classes, list)
@@ -121,7 +129,7 @@ class TestGroupData:
         mock_actor = Actor(first_name="Test", last_name="Actor", setting_id=1)
         mock_faction = Faction(name="Test Faction", setting_id=1)
         mock_location = Location(name="Test Location", setting_id=1)
-        
+
         group_data = GroupData(
             actors=[mock_actor],
             backgrounds=[],
@@ -132,9 +140,9 @@ class TestGroupData:
             objects=[],
             races=[],
             sub_races=[],
-            world_datas=[]
+            world_datas=[],
         )
-        
+
         assert len(group_data.actors) == 1
         assert len(group_data.factions) == 1
         assert len(group_data.locations) == 1
@@ -146,16 +154,31 @@ class TestGroupData:
     def test_group_data_attributes_exist(self):
         """Test that GroupData has all expected attributes"""
         group_data = GroupData(
-            actors=[], backgrounds=[], classes=[], factions=[],
-            history=[], locations=[], objects=[], races=[],
-            sub_races=[], world_datas=[]
+            actors=[],
+            backgrounds=[],
+            classes=[],
+            factions=[],
+            history=[],
+            locations=[],
+            objects=[],
+            races=[],
+            sub_races=[],
+            world_datas=[],
         )
-        
+
         expected_attributes = [
-            'actors', 'backgrounds', 'classes', 'factions', 'history',
-            'locations', 'objects', 'races', 'sub_races', 'world_datas'
+            "actors",
+            "backgrounds",
+            "classes",
+            "factions",
+            "history",
+            "locations",
+            "objects",
+            "races",
+            "sub_races",
+            "world_datas",
         ]
-        
+
         for attr in expected_attributes:
             assert hasattr(group_data, attr), f"GroupData missing attribute: {attr}"
 
@@ -165,7 +188,7 @@ class TestGroupData:
         actor = Actor(first_name="Test", setting_id=1)
         background = Background(name="Test", setting_id=1)
         faction = Faction(name="Test", setting_id=1)
-        
+
         group_data = GroupData(
             actors=[actor],
             backgrounds=[background],
@@ -176,9 +199,9 @@ class TestGroupData:
             objects=[],
             races=[],
             sub_races=[],
-            world_datas=[]
+            world_datas=[],
         )
-        
+
         assert isinstance(group_data.actors[0], Actor)
         assert isinstance(group_data.backgrounds[0], Background)
         assert isinstance(group_data.factions[0], Faction)
@@ -198,7 +221,7 @@ class TestBaseModelConcepts:
         try:
             # This would normally require a database connection
             # but we're testing the interface concept
-            assert hasattr(BaseModel, '__init__')
+            assert hasattr(BaseModel, "__init__")
         except Exception:
             # Expected - would need database setup for actual instantiation
             pass
@@ -207,18 +230,20 @@ class TestBaseModelConcepts:
         """Test that BaseModel has expected methods"""
         # Test method existence conceptually
         expected_methods = [
-            'get_all_actors',
-            'get_litography_nodes',
-            'create_new_row',
-            'update_row',
-            'delete_row'
+            "get_all_actors",
+            "get_litography_nodes",
+            "create_new_row",
+            "update_row",
+            "delete_row",
         ]
-        
+
         for method_name in expected_methods:
             # BaseModel should have these methods defined
             # (even if they require database connection to work)
             try:
-                assert hasattr(BaseModel, method_name), f"BaseModel missing method: {method_name}"
+                assert hasattr(
+                    BaseModel, method_name
+                ), f"BaseModel missing method: {method_name}"
             except Exception:
                 # Some methods might not be accessible without instantiation
                 pass
@@ -230,7 +255,7 @@ class TestModelUtilities:
     def test_enum_integration(self):
         """Test that model enums integrate well together"""
         # Test that StorioModes and GroupListTypes work together conceptually
-        
+
         # Lorekeeper mode should work with all group types
         lorekeeper_mode = StorioModes.LOREKEEPER
         world_building_types = [
@@ -239,7 +264,7 @@ class TestModelUtilities:
             GroupListTypes.LOCATIONS,
             GroupListTypes.OBJECTS,
         ]
-        
+
         assert lorekeeper_mode.value == "Lorekeeper"
         for wb_type in world_building_types:
             assert wb_type in GroupListTypes
@@ -248,31 +273,40 @@ class TestModelUtilities:
         """Test that data structures are consistent"""
         # Test that GroupData attributes align with GroupListTypes
         group_list_values = {group_type.value for group_type in GroupListTypes}
-        
+
         # Create empty GroupData to check attributes
         group_data = GroupData(
-            actors=[], backgrounds=[], classes=[], factions=[],
-            history=[], locations=[], objects=[], races=[],
-            sub_races=[], world_datas=[]
+            actors=[],
+            backgrounds=[],
+            classes=[],
+            factions=[],
+            history=[],
+            locations=[],
+            objects=[],
+            races=[],
+            sub_races=[],
+            world_datas=[],
         )
-        
+
         # All GroupListTypes values should have corresponding GroupData attributes
         for group_type in GroupListTypes:
             attr_name = group_type.value
-            assert hasattr(group_data, attr_name), f"GroupData missing attribute for {attr_name}"
+            assert hasattr(
+                group_data, attr_name
+            ), f"GroupData missing attribute for {attr_name}"
 
     def test_world_building_completeness(self):
         """Test that world-building system is complete"""
         # Test that we have all major world-building categories
         essential_categories = [
-            GroupListTypes.ACTORS,      # Characters
-            GroupListTypes.FACTIONS,    # Organizations
-            GroupListTypes.LOCATIONS,   # Places
-            GroupListTypes.OBJECTS,     # Items
-            GroupListTypes.HISTORY,     # Events
-            GroupListTypes.WORLD_DATAS, # Lore/concepts
+            GroupListTypes.ACTORS,  # Characters
+            GroupListTypes.FACTIONS,  # Organizations
+            GroupListTypes.LOCATIONS,  # Places
+            GroupListTypes.OBJECTS,  # Items
+            GroupListTypes.HISTORY,  # Events
+            GroupListTypes.WORLD_DATAS,  # Lore/concepts
         ]
-        
+
         for category in essential_categories:
             assert category in GroupListTypes, f"Missing essential category: {category}"
 
@@ -280,8 +314,8 @@ class TestModelUtilities:
         """Test that application modes cover main functionality"""
         # Test that we have modes for both main features
         assert StorioModes.LITOGRAPHER in StorioModes  # Story plotting
-        assert StorioModes.LOREKEEPER in StorioModes   # World building
-        
+        assert StorioModes.LOREKEEPER in StorioModes  # World building
+
         # Test mode count (should be exactly 2 main modes)
         assert len(list(StorioModes)) == 2
 
@@ -293,7 +327,7 @@ class TestDataTypeValidation:
         """Test that enum values are strings as expected"""
         for mode in StorioModes:
             assert isinstance(mode.value, str)
-        
+
         for group_type in GroupListTypes:
             assert isinstance(group_type.value, str)
 
@@ -302,25 +336,41 @@ class TestDataTypeValidation:
         # StorioModes should be title case
         for mode in StorioModes:
             assert mode.value.istitle(), f"StorioMode {mode.value} should be title case"
-        
+
         # GroupListTypes should be lowercase with underscores
         for group_type in GroupListTypes:
             value = group_type.value
             assert value.islower(), f"GroupListType {value} should be lowercase"
-            assert ' ' not in value, f"GroupListType {value} should not contain spaces"
+            assert " " not in value, f"GroupListType {value} should not contain spaces"
 
     def test_list_type_annotations(self):
         """Test that GroupData type annotations are consistent"""
         # This is a conceptual test for type consistency
         group_data = GroupData(
-            actors=[], backgrounds=[], classes=[], factions=[],
-            history=[], locations=[], objects=[], races=[],
-            sub_races=[], world_datas=[]
+            actors=[],
+            backgrounds=[],
+            classes=[],
+            factions=[],
+            history=[],
+            locations=[],
+            objects=[],
+            races=[],
+            sub_races=[],
+            world_datas=[],
         )
-        
+
         # All attributes should be lists
-        for attr_name in ['actors', 'backgrounds', 'classes', 'factions', 
-                         'history', 'locations', 'objects', 'races',
-                         'sub_races', 'world_datas']:
+        for attr_name in [
+            "actors",
+            "backgrounds",
+            "classes",
+            "factions",
+            "history",
+            "locations",
+            "objects",
+            "races",
+            "sub_races",
+            "world_datas",
+        ]:
             attr_value = getattr(group_data, attr_name)
             assert isinstance(attr_value, list), f"{attr_name} should be a list"

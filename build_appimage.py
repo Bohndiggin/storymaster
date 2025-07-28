@@ -205,7 +205,7 @@ StartupWMClass=storymaster
         # Use the proper icon from assets
         icon_path = appdir / "usr/share/icons/hicolor/scalable/apps/storymaster.svg"
         assets_icon_svg = Path("assets/storymaster_icon.svg")
-        
+
         if assets_icon_svg.exists():
             # Copy the proper icon
             shutil.copy2(assets_icon_svg, icon_path)
@@ -219,7 +219,9 @@ StartupWMClass=storymaster
 </svg>"""
             with open(icon_path, "w") as f:
                 f.write(icon_content)
-            print("   Using fallback emoji icon (run create_icons.py to generate proper icons)")
+            print(
+                "   Using fallback emoji icon (run create_icons.py to generate proper icons)"
+            )
 
         # Copy icon and desktop file to AppDir root (required for AppImage)
         shutil.copy2(icon_path, appdir / "storymaster.svg")

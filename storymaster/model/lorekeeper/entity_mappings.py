@@ -16,7 +16,9 @@ class FieldSection:
     display_name: str
     fields: List[str]
     description: Optional[str] = None
-    conditional_field: Optional[str] = None  # Field that controls whether this section shows
+    conditional_field: Optional[str] = (
+        None  # Field that controls whether this section shows
+    )
     is_checkbox_section: bool = False  # Whether this section contains checkboxes
 
 
@@ -161,7 +163,7 @@ ENTITY_MAPPINGS = {
                 conditional_field="is_dungeon",
             ),
             FieldSection(
-                name="city_details", 
+                name="city_details",
                 display_name="City Details",
                 fields=["government"],
                 description="Details specific to cities and settlements",
@@ -174,7 +176,7 @@ ENTITY_MAPPINGS = {
             "location_a_on_b_relations": "Relations with Other Places",
             "location_geographic_relations": "Geographic Connections",
             "location_political_relations": "Political Relationships",
-            "location_economic_relations": "Economic Relationships", 
+            "location_economic_relations": "Economic Relationships",
             "location_hierarchy": "Administrative Hierarchy",
             "location_dungeon": "Dungeon Details",
             "location_city": "City Details",
@@ -260,7 +262,7 @@ ENTITY_MAPPINGS = {
         sections=[
             FieldSection(
                 name="basic_info",
-                display_name="Note Details", 
+                display_name="Note Details",
                 fields=["title", "description", "note_type"],
                 description="The content of this story note",
             )
@@ -344,7 +346,15 @@ SUPPORTING_MAPPINGS = {
 }
 
 # Main navigation categories
-MAIN_CATEGORIES = ["actor", "faction", "location_", "object_", "history", "world_data", "litography_notes"]
+MAIN_CATEGORIES = [
+    "actor",
+    "faction",
+    "location_",
+    "object_",
+    "history",
+    "world_data",
+    "litography_notes",
+]
 SUPPORTING_CATEGORIES = ["background", "race", "class", "skills"]
 
 

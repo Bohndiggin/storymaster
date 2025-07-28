@@ -103,98 +103,109 @@ def create_first_user(model: BaseModel) -> bool:
     # Step 2: Create Setting
     # Create a model with the new user ID for the dialogs
     user_model = BaseModel(new_user.id)
-    
+
     setting_dialog = NewSettingDialog(user_model)
-    setting_dialog.user_combo.setCurrentText(new_user.username)  # Pre-select the new user
+    setting_dialog.user_combo.setCurrentText(
+        new_user.username
+    )  # Pre-select the new user
     setting_dialog.user_combo.setEnabled(False)  # Don't let them change it
     setting_dialog.name_line_edit.setText("My First World")  # Provide a default name
-    
+
     setting_data = setting_dialog.get_setting_data()
-    
+
     if not setting_data:
         QMessageBox.information(
             None,
             "Setup Incomplete",
             "You can create a setting later from the Setting menu. "
-            "Your user account has been created successfully."
+            "Your user account has been created successfully.",
         )
         return True
-        
+
     try:
         user_model.add_row("setting", setting_data)
-        
+
         # Get the newly created setting
         settings = user_model.get_all_settings()
-        new_setting = next((s for s in settings if s.name == setting_data["name"]), None)
-        
+        new_setting = next(
+            (s for s in settings if s.name == setting_data["name"]), None
+        )
+
         if not new_setting:
             raise ValueError("Failed to retrieve newly created setting")
-            
+
         QMessageBox.information(
             None,
-            "Setting Created", 
+            "Setting Created",
             f"Excellent! Your setting '{new_setting.name}' has been created.\n\n"
-            "Now let's create your first storyline."
+            "Now let's create your first storyline.",
         )
     except Exception as e:
         QMessageBox.critical(
             None, "Error Creating Setting", f"Failed to create setting: {str(e)}"
         )
         return True  # User is still created, just continue
-    
+
     # Step 3: Create Storyline
     storyline_dialog = NewStorylineDialog(user_model)
-    storyline_dialog.user_combo.setCurrentText(new_user.username)  # Pre-select the new user
+    storyline_dialog.user_combo.setCurrentText(
+        new_user.username
+    )  # Pre-select the new user
     storyline_dialog.user_combo.setEnabled(False)  # Don't let them change it
     storyline_dialog.name_line_edit.setText("My First Story")  # Provide a default name
-    
+
     storyline_data = storyline_dialog.get_storyline_data()
-    
+
     if not storyline_data:
         QMessageBox.information(
             None,
             "Setup Incomplete",
             "You can create a storyline later from the Storyline menu. "
-            "Your user account and setting have been created successfully."
+            "Your user account and setting have been created successfully.",
         )
         return True
-        
+
     try:
         user_model.add_row("storyline", storyline_data)
-        
+
         # Get the newly created storyline
         storylines = user_model.get_all_storylines()
-        new_storyline = next((s for s in storylines if s.name == storyline_data["name"]), None)
-        
+        new_storyline = next(
+            (s for s in storylines if s.name == storyline_data["name"]), None
+        )
+
         if not new_storyline:
             raise ValueError("Failed to retrieve newly created storyline")
-        
+
         # Create the storyline-to-setting relationship
-        user_model.add_row("storyline_to_setting", {
-            "storyline_id": new_storyline.id,
-            "setting_id": new_setting.id
-        })
-        
+        user_model.add_row(
+            "storyline_to_setting",
+            {"storyline_id": new_storyline.id, "setting_id": new_setting.id},
+        )
+
         # Step 4: Create Initial Plot
         try:
-            user_model.add_row("litography_plot", {
-                "title": "Main Plot",
-                "description": "The main storyline",
-                "storyline_id": new_storyline.id
-            })
-            
+            user_model.add_row(
+                "litography_plot",
+                {
+                    "title": "Main Plot",
+                    "description": "The main storyline",
+                    "storyline_id": new_storyline.id,
+                },
+            )
+
             # For the success message, we don't need to retrieve the plot
             plot_title = "Main Plot"
-            
+
             QMessageBox.information(
                 None,
                 "Setup Complete!",
                 f"Perfect! Your setup is complete:\n\n"
                 f"• User: {new_user.username}\n"
-                f"• Setting: {new_setting.name}\n" 
+                f"• Setting: {new_setting.name}\n"
                 f"• Storyline: {new_storyline.name}\n"
                 f"• Plot: {plot_title}\n\n"
-                f"You're all ready to start creating your story!"
+                f"You're all ready to start creating your story!",
             )
         except Exception as e:
             QMessageBox.information(
@@ -202,16 +213,16 @@ def create_first_user(model: BaseModel) -> bool:
                 "Almost Complete!",
                 f"Your setup is mostly complete:\n\n"
                 f"• User: {new_user.username}\n"
-                f"• Setting: {new_setting.name}\n" 
+                f"• Setting: {new_setting.name}\n"
                 f"• Storyline: {new_storyline.name}\n\n"
-                f"You can create plots from the Storyline menu."
+                f"You can create plots from the Storyline menu.",
             )
-            
+
     except Exception as e:
         QMessageBox.critical(
             None, "Error Creating Storyline", f"Failed to create storyline: {str(e)}"
         )
-        
+
     return True
 
 

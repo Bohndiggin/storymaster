@@ -110,8 +110,12 @@ class TestNodeTypeChanges:
 
         # Test that method returns new position
         ui_x_moved, ui_y_moved = mock_controller.get_node_ui_position(1)
-        assert abs(ui_x_moved - 300) < 1, "get_node_ui_position doesn't track moved position"
-        assert abs(ui_y_moved - 400) < 1, "get_node_ui_position doesn't track moved position"
+        assert (
+            abs(ui_x_moved - 300) < 1
+        ), "get_node_ui_position doesn't track moved position"
+        assert (
+            abs(ui_y_moved - 400) < 1
+        ), "get_node_ui_position doesn't track moved position"
 
     def test_get_node_ui_position_fallback(self, qapp, mock_controller):
         """Test that get_node_ui_position returns fallback for non-existent node"""
@@ -130,7 +134,9 @@ class TestNodeTypeChanges:
         mock_controller.get_node_ui_position = get_node_ui_position
 
         # Test with non-existent node
-        fallback_x, fallback_y = mock_controller.get_node_ui_position(999)  # Non-existent ID
+        fallback_x, fallback_y = mock_controller.get_node_ui_position(
+            999
+        )  # Non-existent ID
         assert fallback_x == 100.0, "Fallback position incorrect"
         assert fallback_y == 200.0, "Fallback position incorrect"
 
@@ -160,7 +166,7 @@ class TestNodeTypeChanges:
         # 3. Redraw node (simulated) - this is where the position would be lost
         # before the fix, but with the fix it should preserve position
         scene.clear()
-        
+
         # Create new node with same position (this is what the fix ensures)
         new_node_item = create_node_item(0, 0, 80, 80, node_data, mock_controller)
         scene.addItem(new_node_item)
@@ -176,18 +182,30 @@ class TestNodeTypeChanges:
         try:
             final_input = new_node_item.get_input_connection_pos()
             final_output = new_node_item.get_output_connection_pos()
-            
+
             # Verify connection points exist as proper QPointF objects
-            assert hasattr(final_input, 'x') and hasattr(final_input, 'y'), "Input connection point should be QPointF"
-            assert hasattr(final_output, 'x') and hasattr(final_output, 'y'), "Output connection point should be QPointF"
-            
+            assert hasattr(final_input, "x") and hasattr(
+                final_input, "y"
+            ), "Input connection point should be QPointF"
+            assert hasattr(final_output, "x") and hasattr(
+                final_output, "y"
+            ), "Output connection point should be QPointF"
+
             # The key test: verify that connection points are relative to the preserved position
             # They should be reasonably close to the node position (within the node bounds)
-            assert abs(final_input.x() - final_pos.x()) <= 100, "Input connection should be near node"
-            assert abs(final_input.y() - final_pos.y()) <= 100, "Input connection should be near node"
-            assert abs(final_output.x() - final_pos.x()) <= 100, "Output connection should be near node"
-            assert abs(final_output.y() - final_pos.y()) <= 100, "Output connection should be near node"
-            
+            assert (
+                abs(final_input.x() - final_pos.x()) <= 100
+            ), "Input connection should be near node"
+            assert (
+                abs(final_input.y() - final_pos.y()) <= 100
+            ), "Input connection should be near node"
+            assert (
+                abs(final_output.x() - final_pos.x()) <= 100
+            ), "Output connection should be near node"
+            assert (
+                abs(final_output.y() - final_pos.y()) <= 100
+            ), "Output connection should be near node"
+
         except Exception as e:
             # If connection point methods don't work as expected, that's okay for this test
             # The main point is testing position preservation during type changes

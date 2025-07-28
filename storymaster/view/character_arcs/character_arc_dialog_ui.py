@@ -26,49 +26,79 @@ class Ui_CharacterArcDialog(object):
         self.formLayout.setObjectName("formLayout")
         self.arcTitleLabel = QtWidgets.QLabel(parent=CharacterArcDialog)
         self.arcTitleLabel.setObjectName("arcTitleLabel")
-        self.formLayout.setWidget(0, QtWidgets.QFormLayout.ItemRole.LabelRole, self.arcTitleLabel)
+        self.formLayout.setWidget(
+            0, QtWidgets.QFormLayout.ItemRole.LabelRole, self.arcTitleLabel
+        )
         self.arcTitleEdit = QtWidgets.QLineEdit(parent=CharacterArcDialog)
         self.arcTitleEdit.setObjectName("arcTitleEdit")
-        self.formLayout.setWidget(0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.arcTitleEdit)
+        self.formLayout.setWidget(
+            0, QtWidgets.QFormLayout.ItemRole.FieldRole, self.arcTitleEdit
+        )
         self.arcTypeLabel = QtWidgets.QLabel(parent=CharacterArcDialog)
         self.arcTypeLabel.setObjectName("arcTypeLabel")
-        self.formLayout.setWidget(1, QtWidgets.QFormLayout.ItemRole.LabelRole, self.arcTypeLabel)
+        self.formLayout.setWidget(
+            1, QtWidgets.QFormLayout.ItemRole.LabelRole, self.arcTypeLabel
+        )
         self.arcTypeComboBox = QtWidgets.QComboBox(parent=CharacterArcDialog)
         self.arcTypeComboBox.setObjectName("arcTypeComboBox")
-        self.formLayout.setWidget(1, QtWidgets.QFormLayout.ItemRole.FieldRole, self.arcTypeComboBox)
+        self.formLayout.setWidget(
+            1, QtWidgets.QFormLayout.ItemRole.FieldRole, self.arcTypeComboBox
+        )
         self.charactersLabel = QtWidgets.QLabel(parent=CharacterArcDialog)
         self.charactersLabel.setObjectName("charactersLabel")
-        self.formLayout.setWidget(2, QtWidgets.QFormLayout.ItemRole.LabelRole, self.charactersLabel)
+        self.formLayout.setWidget(
+            2, QtWidgets.QFormLayout.ItemRole.LabelRole, self.charactersLabel
+        )
         self.charactersListWidget = QtWidgets.QListWidget(parent=CharacterArcDialog)
         self.charactersListWidget.setMaximumSize(QtCore.QSize(16777215, 120))
-        self.charactersListWidget.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.MultiSelection)
+        self.charactersListWidget.setSelectionMode(
+            QtWidgets.QAbstractItemView.SelectionMode.MultiSelection
+        )
         self.charactersListWidget.setObjectName("charactersListWidget")
-        self.formLayout.setWidget(3, QtWidgets.QFormLayout.ItemRole.SpanningRole, self.charactersListWidget)
+        self.formLayout.setWidget(
+            3, QtWidgets.QFormLayout.ItemRole.SpanningRole, self.charactersListWidget
+        )
         self.descriptionLabel = QtWidgets.QLabel(parent=CharacterArcDialog)
         self.descriptionLabel.setObjectName("descriptionLabel")
-        self.formLayout.setWidget(4, QtWidgets.QFormLayout.ItemRole.LabelRole, self.descriptionLabel)
+        self.formLayout.setWidget(
+            4, QtWidgets.QFormLayout.ItemRole.LabelRole, self.descriptionLabel
+        )
         self.descriptionEdit = QtWidgets.QTextEdit(parent=CharacterArcDialog)
         self.descriptionEdit.setMaximumSize(QtCore.QSize(16777215, 120))
         self.descriptionEdit.setObjectName("descriptionEdit")
-        self.formLayout.setWidget(5, QtWidgets.QFormLayout.ItemRole.SpanningRole, self.descriptionEdit)
+        self.formLayout.setWidget(
+            5, QtWidgets.QFormLayout.ItemRole.SpanningRole, self.descriptionEdit
+        )
         self.verticalLayout.addLayout(self.formLayout)
-        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
+        spacerItem = QtWidgets.QSpacerItem(
+            20,
+            40,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+        )
         self.verticalLayout.addItem(spacerItem)
         self.buttonBox = QtWidgets.QDialogButtonBox(parent=CharacterArcDialog)
         self.buttonBox.setOrientation(QtCore.Qt.Orientation.Horizontal)
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.StandardButton.Cancel|QtWidgets.QDialogButtonBox.StandardButton.Ok)
+        self.buttonBox.setStandardButtons(
+            QtWidgets.QDialogButtonBox.StandardButton.Cancel
+            | QtWidgets.QDialogButtonBox.StandardButton.Ok
+        )
         self.buttonBox.setObjectName("buttonBox")
         self.verticalLayout.addWidget(self.buttonBox)
 
         self.retranslateUi(CharacterArcDialog)
-        self.buttonBox.accepted.connect(CharacterArcDialog.accept) # type: ignore
-        self.buttonBox.rejected.connect(CharacterArcDialog.reject) # type: ignore
+        self.buttonBox.accepted.connect(CharacterArcDialog.accept)  # type: ignore
+        self.buttonBox.rejected.connect(CharacterArcDialog.reject)  # type: ignore
         QtCore.QMetaObject.connectSlotsByName(CharacterArcDialog)
 
     def retranslateUi(self, CharacterArcDialog):
         _translate = QtCore.QCoreApplication.translate
-        CharacterArcDialog.setWindowTitle(_translate("CharacterArcDialog", "Character Arc"))
-        self.titleLabel.setText(_translate("CharacterArcDialog", "Add/Edit Character Arc"))
+        CharacterArcDialog.setWindowTitle(
+            _translate("CharacterArcDialog", "Character Arc")
+        )
+        self.titleLabel.setText(
+            _translate("CharacterArcDialog", "Add/Edit Character Arc")
+        )
         self.arcTitleLabel.setText(_translate("CharacterArcDialog", "Title:"))
         self.arcTypeLabel.setText(_translate("CharacterArcDialog", "Arc Type:"))
         self.charactersLabel.setText(_translate("CharacterArcDialog", "Characters:"))

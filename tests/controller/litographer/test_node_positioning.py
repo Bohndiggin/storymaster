@@ -85,8 +85,12 @@ class TestNodePositioning:
         assert node2.pos().y() == 100
 
         # Verify they're different objects
-        assert id(node1.input_point) != id(node2.input_point), "Input points are shared!"
-        assert id(node1.output_point) != id(node2.output_point), "Output points are shared!"
+        assert id(node1.input_point) != id(
+            node2.input_point
+        ), "Input points are shared!"
+        assert id(node1.output_point) != id(
+            node2.output_point
+        ), "Output points are shared!"
 
         # Get initial connection positions for node2
         node2_initial_input = node2.get_input_connection_pos()
@@ -99,12 +103,22 @@ class TestNodePositioning:
         node2_after_output = node2.get_output_connection_pos()
 
         # Node 2's positions should be unchanged
-        assert abs(node2_after_input.x() - node2_initial_input.x()) < 1.0, "Node 2 input moved!"
-        assert abs(node2_after_input.y() - node2_initial_input.y()) < 1.0, "Node 2 input moved!"
-        assert abs(node2_after_output.x() - node2_initial_output.x()) < 1.0, "Node 2 output moved!"
-        assert abs(node2_after_output.y() - node2_initial_output.y()) < 1.0, "Node 2 output moved!"
+        assert (
+            abs(node2_after_input.x() - node2_initial_input.x()) < 1.0
+        ), "Node 2 input moved!"
+        assert (
+            abs(node2_after_input.y() - node2_initial_input.y()) < 1.0
+        ), "Node 2 input moved!"
+        assert (
+            abs(node2_after_output.x() - node2_initial_output.x()) < 1.0
+        ), "Node 2 output moved!"
+        assert (
+            abs(node2_after_output.y() - node2_initial_output.y()) < 1.0
+        ), "Node 2 output moved!"
 
-    def test_node_recreation_preserves_position(self, qapp, graphics_scene, mock_controller):
+    def test_node_recreation_preserves_position(
+        self, qapp, graphics_scene, mock_controller
+    ):
         """Test that node recreation (simulating scene.clear() + redraw) preserves position"""
         # Create initial node
         node_data = MockNodeData(1)
@@ -129,10 +143,18 @@ class TestNodePositioning:
         recreated_output = node_recreated.get_output_connection_pos()
 
         # Positions should be the same
-        assert abs(recreated_input.x() - initial_input.x()) < 1.0, "Input position changed after recreation"
-        assert abs(recreated_input.y() - initial_input.y()) < 1.0, "Input position changed after recreation"
-        assert abs(recreated_output.x() - initial_output.x()) < 1.0, "Output position changed after recreation"
-        assert abs(recreated_output.y() - initial_output.y()) < 1.0, "Output position changed after recreation"
+        assert (
+            abs(recreated_input.x() - initial_input.x()) < 1.0
+        ), "Input position changed after recreation"
+        assert (
+            abs(recreated_input.y() - initial_input.y()) < 1.0
+        ), "Input position changed after recreation"
+        assert (
+            abs(recreated_output.x() - initial_output.x()) < 1.0
+        ), "Output position changed after recreation"
+        assert (
+            abs(recreated_output.y() - initial_output.y()) < 1.0
+        ), "Output position changed after recreation"
 
     def test_real_workflow_node_creation(self, qapp, mock_controller):
         """Test the real application workflow for node creation"""
@@ -141,14 +163,14 @@ class TestNodePositioning:
         # Create mock database nodes (simulating database records)
         nodes = [
             MockNodeData(1, 100, 100, "EXPOSITION"),  # Rectangle
-            MockNodeData(2, 300, 150, "REACTION"),    # Circle
+            MockNodeData(2, 300, 150, "REACTION"),  # Circle
         ]
 
         # Simulate load_and_draw_nodes workflow
         def simulate_load_and_draw_nodes(nodes_to_draw):
             scene.clear()
             node_items = []
-            
+
             for node in nodes_to_draw:
                 x_pos = getattr(node, "x_position", 100 + (node.id * 150))
                 y_pos = getattr(node, "y_position", 200)
@@ -198,15 +220,23 @@ class TestNodePositioning:
             output_expected_x = expected_x + 85  # Right of node
             expected_y_center = expected_y + 40  # Middle of node
 
-            assert abs(input_pos.x() - input_expected_x) < 10, f"Node {i+1} input position incorrect"
-            assert abs(input_pos.y() - expected_y_center) < 10, f"Node {i+1} input position incorrect"
-            assert abs(output_pos.x() - output_expected_x) < 10, f"Node {i+1} output position incorrect"
-            assert abs(output_pos.y() - expected_y_center) < 10, f"Node {i+1} output position incorrect"
+            assert (
+                abs(input_pos.x() - input_expected_x) < 10
+            ), f"Node {i+1} input position incorrect"
+            assert (
+                abs(input_pos.y() - expected_y_center) < 10
+            ), f"Node {i+1} input position incorrect"
+            assert (
+                abs(output_pos.x() - output_expected_x) < 10
+            ), f"Node {i+1} output position incorrect"
+            assert (
+                abs(output_pos.y() - expected_y_center) < 10
+            ), f"Node {i+1} output position incorrect"
 
     def test_get_node_ui_position_method(self, qapp, mock_controller):
         """Test the get_node_ui_position helper method"""
         scene = mock_controller.node_scene
-        
+
         # Add the method to our mock controller for testing
         def get_node_ui_position(node_id):
             """Get the current UI position of a node from the graphics scene"""

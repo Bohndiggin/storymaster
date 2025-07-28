@@ -14,7 +14,6 @@ LOREKEEPER_TOOLTIPS = {
     "actor_motivation": "What drives this character? Their primary goals, desires, and what they want to achieve.",
     "actor_occupation": "The character's job, profession, or role in society. This affects their skills and knowledge.",
     "actor_relationships": "Key relationships with other characters, family members, or important people in their life.",
-    
     # Location fields
     "location_name": "The name of this place. Be specific and memorable (e.g., 'The Rusted Crown Tavern' vs 'tavern').",
     "location_description": "Detailed description of the location's appearance, atmosphere, and important features.",
@@ -24,7 +23,6 @@ LOREKEEPER_TOOLTIPS = {
     "location_economy": "What drives the local economy? Trade, agriculture, industry, or natural resources?",
     "location_culture": "The customs, traditions, and way of life of the people who live here.",
     "location_population": "How many people live here? Is it a small village, bustling city, or something in between?",
-    
     # Faction fields
     "faction_name": "The name of this group, organization, or faction. Make it memorable and fitting for their purpose.",
     "faction_description": "What this faction is about, their public face, and how others perceive them.",
@@ -34,7 +32,6 @@ LOREKEEPER_TOOLTIPS = {
     "faction_allies": "Other factions, organizations, or individuals that support or work with this group.",
     "faction_enemies": "Who opposes this faction? Their rivals, enemies, or those with conflicting interests.",
     "faction_structure": "How is this faction organized? Is it hierarchical, democratic, or loosely affiliated?",
-    
     # Object fields
     "object_name": "The name of this item, artifact, or important object in your story world.",
     "object_description": "What does this object look like? Include size, materials, craftsmanship, and notable features.",
@@ -43,20 +40,18 @@ LOREKEEPER_TOOLTIPS = {
     "object_value": "How valuable is this object? Monetary worth, rarity, or significance to certain groups.",
     "object_location": "Where is this object currently located? Who has possession of it?",
     "object_significance": "Why is this object important to your story? How does it affect the plot or characters?",
-    
     # World Data fields
     "world_data_title": "A clear, descriptive title for this piece of world information.",
     "world_data_content": "Detailed information about this aspect of your world. Be comprehensive and specific.",
     "world_data_category": "What type of world-building information is this? (Religion, Magic System, Technology, etc.)",
     "world_data_relevance": "How does this information impact your story? Why is it important to track?",
-    
     # Common relationship fields
     "relationship_type": "The nature of the relationship between these entities. How are they connected?",
     "relationship_description": "Details about this relationship. How did it form? What characterizes it?",
     "relationship_status": "The current state of this relationship. Is it active, strained, secret, or changing?",
 }
 
-# Litographer (Story Structure) Tooltips  
+# Litographer (Story Structure) Tooltips
 LITOGRAPHER_TOOLTIPS = {
     # Node creation and editing
     "node_type": "Choose the type of story beat this node represents. Different shapes help visualize story flow.",
@@ -64,12 +59,10 @@ LITOGRAPHER_TOOLTIPS = {
     "node_description": "Detailed description of what happens in this part of the story. Include key events and character actions.",
     "node_tension": "How intense or important is this moment? Higher tension nodes appear taller in the visual layout.",
     "node_connections": "How this story beat connects to other parts of your plot. Consider cause and effect relationships.",
-    
     # Plot structure
     "plot_title": "The name of this plot line. You can have multiple plots for subplots and character arcs.",
     "plot_description": "What is this plot about? The main conflict, journey, or story thread it represents.",
     "plot_sections": "Organizational containers that help group related story beats together (Act 1, Rising Action, etc.).",
-    
     # Node types explanations
     "opening": "The beginning of your story. Sets the scene, introduces characters, and establishes the normal world.",
     "inciting_incident": "The event that kicks off the main conflict and propels your protagonist into the story.",
@@ -90,7 +83,6 @@ CHARACTER_ARC_TOOLTIPS = {
     "arc_description": "Overview of this character's emotional and personal journey throughout the story.",
     "arc_type": "The category or pattern of this character arc (Hero's Journey, Redemption, Fall from Grace, etc.).",
     "arc_characters": "Which characters are involved in this arc? Main character and supporting characters.",
-    
     # Arc points
     "arc_point_title": "A brief name for this point in the character's journey (e.g., 'Refuses the call', 'Faces fear').",
     "arc_point_description": "What happens to the character at this point? How do they grow or change?",
@@ -108,20 +100,17 @@ GENERAL_UI_TOOLTIPS = {
     "litographer_tab": "Visual story structure planning. Create and connect story beats to map out your plot.",
     "lorekeeper_tab": "World-building database. Manage characters, locations, factions, and story elements.",
     "character_arcs_tab": "Character development tracking. Plan emotional journeys and character growth arcs.",
-    
     # Common actions
     "save_button": "Save your changes to the database. All information will be preserved for future sessions.",
     "delete_button": "Permanently remove this item. This action cannot be undone, so use with caution.",
     "edit_button": "Modify the information for this item. Opens a form where you can update details.",
     "new_button": "Create a new item of this type. Opens a blank form for you to fill in.",
     "cancel_button": "Discard any changes and close this dialog without saving anything.",
-    
     # Database and project management
     "project_selector": "Choose which story project you're working on. Each project has its own database.",
     "backup_database": "Create a backup copy of your story data. Recommended before making major changes.",
     "import_data": "Load information from external files or other story projects.",
     "export_data": "Save your story information to files for backup or sharing with others.",
-    
     # Search and filtering
     "search_field": "Type to search through items. Use keywords from names, descriptions, or any text content.",
     "filter_dropdown": "Narrow down the list to show only specific types or categories of items.",
@@ -138,50 +127,57 @@ NOTES_TOOLTIPS = {
     "remove_association": "Disconnect this note from a story element. The note remains, but the link is removed.",
 }
 
+
 def apply_tooltip(widget, tooltip_key, tooltip_dict=None):
     """
     Apply a tooltip to a widget based on a key
-    
+
     Args:
         widget: The Qt widget to add tooltip to
-        tooltip_key: The key to look up in tooltip dictionaries  
+        tooltip_key: The key to look up in tooltip dictionaries
         tooltip_dict: Specific tooltip dictionary to use (optional)
     """
     # Try all tooltip dictionaries if none specified
     if tooltip_dict is None:
         all_tooltips = {
             **LOREKEEPER_TOOLTIPS,
-            **LITOGRAPHER_TOOLTIPS, 
+            **LITOGRAPHER_TOOLTIPS,
             **CHARACTER_ARC_TOOLTIPS,
             **GENERAL_UI_TOOLTIPS,
-            **NOTES_TOOLTIPS
+            **NOTES_TOOLTIPS,
         }
         tooltip_text = all_tooltips.get(tooltip_key)
     else:
         tooltip_text = tooltip_dict.get(tooltip_key)
-    
+
     if tooltip_text:
         widget.setToolTip(tooltip_text)
-        
+
+
 def apply_lorekeeper_tooltips(widget, field_name):
     """Apply lorekeeper-specific tooltips"""
     apply_tooltip(widget, field_name, LOREKEEPER_TOOLTIPS)
-    
+
+
 def apply_litographer_tooltips(widget, field_name):
-    """Apply litographer-specific tooltips"""  
+    """Apply litographer-specific tooltips"""
     apply_tooltip(widget, field_name, LITOGRAPHER_TOOLTIPS)
-    
+
+
 def apply_character_arc_tooltips(widget, field_name):
     """Apply character arc-specific tooltips"""
     apply_tooltip(widget, field_name, CHARACTER_ARC_TOOLTIPS)
-    
+
+
 def apply_general_tooltips(widget, field_name):
     """Apply general UI tooltips"""
     apply_tooltip(widget, field_name, GENERAL_UI_TOOLTIPS)
 
+
 def apply_notes_tooltips(widget, field_name):
     """Apply notes-specific tooltips"""
     apply_tooltip(widget, field_name, NOTES_TOOLTIPS)
+
 
 # Helper function to add tooltips to form fields by pattern matching
 def auto_apply_tooltips(form_widget):
@@ -191,7 +187,7 @@ def auto_apply_tooltips(form_widget):
     """
     # Get all child widgets
     children = form_widget.findChildren(type(form_widget.children()[0]))
-    
+
     for child in children:
         object_name = child.objectName()
         if object_name:

@@ -1,8 +1,15 @@
 """Holds the common classes for views"""
 
 from PyQt6.QtCore import QPoint, QPropertyAnimation
-from PyQt6.QtWidgets import (QApplication, QLineEdit, QListWidget, QMainWindow,
-                             QPushButton, QVBoxLayout, QWidget)
+from PyQt6.QtWidgets import (
+    QApplication,
+    QLineEdit,
+    QListWidget,
+    QMainWindow,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
 
 from storymaster.view.common.storymaster_main import Ui_StorymasterMainWindow
 

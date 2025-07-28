@@ -9,7 +9,10 @@ from PyQt6.QtCore import QPointF, Qt
 from PyQt6.QtGui import QPainter
 
 from storymaster.model.database.schema.base import (
-    LitographyNode, NodeType, LitographyPlot, LitographyPlotSection
+    LitographyNode,
+    NodeType,
+    LitographyPlot,
+    LitographyPlotSection,
 )
 
 
@@ -61,7 +64,7 @@ class TestNodeModelMethods:
             node_type=NodeType.ACTION,
             storyline_id=1,
             x_position=150.0,
-            y_position=250.0
+            y_position=250.0,
         )
 
         assert result.label == "New Scene"
@@ -97,7 +100,10 @@ class TestNodeModelMethods:
         mock_connection2.from_node_id = 2
         mock_connection2.to_node_id = 3
 
-        self.mock_model.get_node_connections.return_value = [mock_connection1, mock_connection2]
+        self.mock_model.get_node_connections.return_value = [
+            mock_connection1,
+            mock_connection2,
+        ]
 
         connections = self.mock_model.get_node_connections(storyline_id=1)
 
@@ -123,11 +129,7 @@ class TestNodeModelMethods:
         self.mock_model.update_node_order.return_value = None
 
         # Should not raise an exception
-        self.mock_model.update_node_order(
-            node_id=2, 
-            previous_node_id=1, 
-            next_node_id=3
-        )
+        self.mock_model.update_node_order(node_id=2, previous_node_id=1, next_node_id=3)
 
         self.mock_model.update_node_order.assert_called_once_with(
             node_id=2, previous_node_id=1, next_node_id=3
@@ -165,7 +167,7 @@ class TestNodeGraphicsSystem:
             "id": mock_node.id,
             "label": mock_node.label,
             "node_type": mock_node.node_type,
-            "position": QPointF(mock_node.x_position, mock_node.y_position)
+            "position": QPointF(mock_node.x_position, mock_node.y_position),
         }
 
         assert node_item_data["id"] == 1
@@ -179,11 +181,11 @@ class TestNodeGraphicsSystem:
         # Test that all node types are supported
         shapes = {
             NodeType.EXPOSITION: "rectangle",
-            NodeType.ACTION: "circle", 
+            NodeType.ACTION: "circle",
             NodeType.REACTION: "diamond",
             NodeType.TWIST: "star",
             NodeType.DEVELOPMENT: "hexagon",
-            NodeType.OTHER: "triangle"
+            NodeType.OTHER: "triangle",
         }
 
         for node_type, expected_shape in shapes.items():
@@ -201,12 +203,12 @@ class TestNodeGraphicsSystem:
 
         # Test position update
         new_position = QPointF(150.0, 250.0)
-        
+
         # Mock position update
         position_update = {
             "node_id": mock_node.id,
             "old_position": QPointF(mock_node.x_position, mock_node.y_position),
-            "new_position": new_position
+            "new_position": new_position,
         }
 
         assert position_update["node_id"] == 1
@@ -217,11 +219,11 @@ class TestNodeGraphicsSystem:
         """Test node selection handling"""
         # Mock selection state
         selected_nodes = [1, 3, 5]  # Node IDs
-        
+
         selection_data = {
             "selected_count": len(selected_nodes),
             "selected_ids": selected_nodes,
-            "multi_select": len(selected_nodes) > 1
+            "multi_select": len(selected_nodes) > 1,
         }
 
         assert selection_data["selected_count"] == 3
@@ -235,22 +237,23 @@ class TestNodeGraphicsSystem:
             "from_node_id": 1,
             "to_node_id": 2,
             "from_position": QPointF(100.0, 200.0),
-            "to_position": QPointF(300.0, 200.0)
+            "to_position": QPointF(300.0, 200.0),
         }
 
         # Test connection geometry calculation
         start_point = connection_data["from_position"]
         end_point = connection_data["to_position"]
-        
+
         # Calculate connection line
         dx = end_point.x() - start_point.x()
         dy = end_point.y() - start_point.y()
-        
+
         assert dx == 200.0  # Horizontal distance
-        assert dy == 0.0   # No vertical distance
-        
+        assert dy == 0.0  # No vertical distance
+
         # Test distance calculation
         import math
+
         distance = math.sqrt(dx * dx + dy * dy)
         assert distance == 200.0
 
@@ -270,7 +273,7 @@ class TestNodeEditingOperations:
             "node_type": NodeType.ACTION,
             "storyline_id": 1,
             "x_position": 200.0,
-            "y_position": 300.0
+            "y_position": 300.0,
         }
 
         mock_node = Mock()
@@ -298,7 +301,7 @@ class TestNodeEditingOperations:
         update_data = {
             "label": "Updated Label",
             "node_type": NodeType.ACTION,
-            "description": "Updated description"
+            "description": "Updated description",
         }
 
         self.mock_model.update_node.return_value = None
@@ -341,7 +344,7 @@ class TestNodeEditingOperations:
             "description": source_node.description,
             "x_position": 100.0,  # Offset position
             "y_position": 100.0,
-            "storyline_id": 1
+            "storyline_id": 1,
         }
 
         mock_copied_node = Mock()
@@ -391,12 +394,12 @@ class TestNodeSystemIntegration:
         """Test integration between nodes and storylines"""
         # Mock storyline
         storyline_id = 1
-        
+
         # Mock nodes for storyline
         nodes = [
             Mock(id=1, storyline_id=storyline_id, label="Scene 1"),
             Mock(id=2, storyline_id=storyline_id, label="Scene 2"),
-            Mock(id=3, storyline_id=storyline_id, label="Scene 3")
+            Mock(id=3, storyline_id=storyline_id, label="Scene 3"),
         ]
 
         # Test storyline filtering
@@ -416,14 +419,14 @@ class TestNodeSystemIntegration:
         valid_connection = {
             "from_node": node1,
             "to_node": node2,
-            "valid": node1.storyline_id == node2.storyline_id
+            "valid": node1.storyline_id == node2.storyline_id,
         }
 
         # Test invalid connection (different storylines)
         invalid_connection = {
             "from_node": node1,
             "to_node": node3,
-            "valid": node1.storyline_id == node3.storyline_id
+            "valid": node1.storyline_id == node3.storyline_id,
         }
 
         assert valid_connection["valid"] is True
@@ -447,7 +450,7 @@ class TestNodeSystemEdgeCases:
         """Test handling of invalid node connections"""
         # Test self-connection (node connecting to itself)
         self_connection = {"from_node_id": 1, "to_node_id": 1}
-        
+
         # Mock validation functions
         def is_self_connection(conn):
             return conn["from_node_id"] == conn["to_node_id"]
@@ -459,15 +462,17 @@ class TestNodeSystemEdgeCases:
         # Test extreme positions
         extreme_positions = [
             {"x": -1000000, "y": -1000000},  # Very negative
-            {"x": 1000000, "y": 1000000},   # Very positive
-            {"x": 0, "y": 0},               # Origin
+            {"x": 1000000, "y": 1000000},  # Very positive
+            {"x": 0, "y": 0},  # Origin
         ]
 
         # Test position validation
         valid_positions = []
         for pos in extreme_positions:
             # Mock position validation
-            if isinstance(pos["x"], (int, float)) and isinstance(pos["y"], (int, float)):
+            if isinstance(pos["x"], (int, float)) and isinstance(
+                pos["y"], (int, float)
+            ):
                 valid_positions.append(pos)
 
         assert len(valid_positions) == 3
@@ -478,14 +483,18 @@ class TestNodeSystemEdgeCases:
             "",  # Empty label
             "A" * 1000,  # Very long label
             "Label with emoji 🎭",  # Unicode characters
-            None  # None value
+            None,  # None value
         ]
 
         # Test label validation
         valid_labels = []
         for label in edge_case_labels:
             # Mock label validation
-            if label is not None and len(str(label).strip()) > 0 and len(str(label)) < 500:
+            if (
+                label is not None
+                and len(str(label).strip()) > 0
+                and len(str(label)) < 500
+            ):
                 valid_labels.append(label)
 
         # Should accept non-empty labels under 500 characters

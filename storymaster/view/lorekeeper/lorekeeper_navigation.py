@@ -26,18 +26,17 @@ from storymaster.model.lorekeeper.entity_mappings import (
     get_plural_name,
 )
 from storymaster.view.common.theme import (
-    COLORS, 
-    DIMENSIONS, 
+    COLORS,
+    DIMENSIONS,
     FONTS,
     get_list_style,
     get_button_style,
-    get_splitter_style
+    get_splitter_style,
 )
 from storymaster.view.common.tooltips import (
     apply_general_tooltips,
-    apply_lorekeeper_tooltips
+    apply_lorekeeper_tooltips,
 )
-
 
 
 class EntityListWidget(QListWidget):
@@ -100,7 +99,7 @@ class EntityListWidget(QListWidget):
         """Truncate text if it's too long"""
         if len(text) <= max_length:
             return text
-        return text[:max_length-3] + "..."
+        return text[: max_length - 3] + "..."
 
     def on_item_double_clicked(self, item: QListWidgetItem):
         """Handle item double-click"""
@@ -174,7 +173,9 @@ class LorekeeperNavigation(QWidget):
         font.setBold(True)
         header.setFont(font)
         header.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        header.setStyleSheet(f"color: {COLORS['text_accent']}; margin: {DIMENSIONS['margin_medium']} 0;")
+        header.setStyleSheet(
+            f"color: {COLORS['text_accent']}; margin: {DIMENSIONS['margin_medium']} 0;"
+        )
         layout.addWidget(header)
 
         # Create vertical splitter for the two category sections
@@ -191,12 +192,16 @@ class LorekeeperNavigation(QWidget):
         supporting_section = self.create_category_section(
             "Supporting", SUPPORTING_CATEGORIES
         )
-        supporting_section.setMinimumHeight(80)  # Minimum height for supporting categories
+        supporting_section.setMinimumHeight(
+            80
+        )  # Minimum height for supporting categories
         categories_splitter.addWidget(supporting_section)
 
         # Set initial sizes for the category sections
-        categories_splitter.setSizes([120, 100])  # Main gets slightly more space initially
-        
+        categories_splitter.setSizes(
+            [120, 100]
+        )  # Main gets slightly more space initially
+
         layout.addWidget(categories_splitter)
         self.setLayout(layout)
 
@@ -208,7 +213,8 @@ class LorekeeperNavigation(QWidget):
         """Create a section of category list"""
         section = QFrame()
         section.setFrameStyle(QFrame.Shape.StyledPanel)
-        section.setStyleSheet(f"""
+        section.setStyleSheet(
+            f"""
             QFrame {{
                 border: 1px solid {COLORS['border_main']};
                 border-radius: {DIMENSIONS['border_radius']};
@@ -216,7 +222,8 @@ class LorekeeperNavigation(QWidget):
                 margin: {DIMENSIONS['margin_small']};
                 padding: {DIMENSIONS['padding_small']};
             }}
-        """)
+        """
+        )
 
         layout = QVBoxLayout()
         layout.setSpacing(1)
@@ -228,14 +235,17 @@ class LorekeeperNavigation(QWidget):
         font.setPointSize(10)
         font.setBold(True)
         title_label.setFont(font)
-        title_label.setStyleSheet(f"color: {COLORS['text_secondary']}; margin-bottom: {DIMENSIONS['margin_small']};")
+        title_label.setStyleSheet(
+            f"color: {COLORS['text_secondary']}; margin-bottom: {DIMENSIONS['margin_small']};"
+        )
         layout.addWidget(title_label)
 
         # Category list
         category_list = QListWidget()
         # Remove fixed height constraints to allow dynamic resizing
         category_list.setMinimumHeight(60)  # Minimum to show at least 2-3 items
-        category_list.setStyleSheet(f"""
+        category_list.setStyleSheet(
+            f"""
             QListWidget {{
                 border: none;
                 background-color: {COLORS['bg_secondary']};
@@ -254,28 +264,29 @@ class LorekeeperNavigation(QWidget):
             QListWidget::item:hover {{
                 background-color: {COLORS['bg_tertiary']};
             }}
-        """)
-        
+        """
+        )
+
         for table_name in categories:
             mapping = get_entity_mapping(table_name)
             if mapping:
                 item_text = f"{mapping.icon} {mapping.plural_name}"
             else:
                 item_text = table_name.replace("_", " ").title()
-            
+
             item = QListWidgetItem(item_text)
             item.setData(Qt.ItemDataRole.UserRole, table_name)
             category_list.addItem(item)
-        
+
         category_list.itemClicked.connect(self.on_category_item_clicked)
         layout.addWidget(category_list)
-        
+
         # Set stretch factors: title doesn't stretch (0), list stretches (1)
         layout.setStretchFactor(title_label, 0)
         layout.setStretchFactor(category_list, 1)
-        
+
         # Store reference for selection updates
-        setattr(section, 'category_list', category_list)
+        setattr(section, "category_list", category_list)
         self.category_buttons[title] = category_list
 
         section.setLayout(layout)
@@ -299,7 +310,7 @@ class LorekeeperNavigation(QWidget):
             if isinstance(list_widget, QListWidget):
                 # Clear previous selection
                 list_widget.clearSelection()
-                
+
                 # Find and select the matching item
                 for i in range(list_widget.count()):
                     item = list_widget.item(i)
@@ -342,7 +353,7 @@ class LorekeeperBrowser(QWidget):
 
         self.new_button = QPushButton("New")
         self.new_button.clicked.connect(self.new_entity_requested.emit)
-        self.new_button.setStyleSheet(get_button_style('primary'))
+        self.new_button.setStyleSheet(get_button_style("primary"))
         apply_general_tooltips(self.new_button, "new_button")
         header_layout.addWidget(self.new_button)
 
