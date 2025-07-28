@@ -168,11 +168,11 @@ Open terminal in this directory and run:
 
 ## Features
 
-✅ **Fully Standalone**: No dependencies required
-✅ **Python Runtime**: Bundled Python {platform.python_version()}
-✅ **PyQt6 GUI**: Complete UI framework included
-✅ **SQLAlchemy**: Database layer bundled
-✅ **Cross-Platform**: Same features on Windows and Linux
+[+] **Fully Standalone**: No dependencies required
+[+] **Python Runtime**: Bundled Python {platform.python_version()}
+[+] **PyQt6 GUI**: Complete UI framework included
+[+] **SQLAlchemy**: Database layer bundled
+[+] **Cross-Platform**: Same features on Windows and Linux
 
 ## Database
 
@@ -216,17 +216,17 @@ You can seed it with sample data using the application's built-in functionality.
 
 ## Benefits of Standalone Build
 
-- ✅ No Python installation required
-- ✅ No dependency conflicts
-- ✅ Consistent behavior across systems
-- ✅ Easy to distribute and deploy
-- ✅ Self-contained and portable
-- ✅ Works on clean systems
+- [+] No Python installation required
+- [+] No dependency conflicts
+- [+] Consistent behavior across systems
+- [+] Easy to distribute and deploy
+- [+] Self-contained and portable
+- [+] Works on clean systems
 
 For more help, visit: https://github.com/your-repo/storymaster
 """
 
-        with open(dist_dir / "README.txt", "w") as f:
+        with open(dist_dir / "README.txt", "w", encoding="utf-8") as f:
             f.write(readme_content)
 
         print("[OK] Portable package created in dist/storymaster_portable/")
