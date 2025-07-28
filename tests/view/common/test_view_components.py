@@ -3,23 +3,14 @@ Test suite for view components and UI elements
 """
 
 import pytest
-from tests.test_qt_utils import QT_AVAILABLE, (, Qt
+from unittest.mock import Mock, patch
+from tests.test_qt_utils import (
+    QT_AVAILABLE, Qt, QApplication, QDialog, QWidget, QVBoxLayout, QHBoxLayout,
+    QLabel, QLineEdit, QTextEdit, QPushButton, QComboBox
+)
 
 # Skip all tests in this module if Qt is not available
 pytestmark = pytest.mark.skipif(not QT_AVAILABLE, reason="PyQt6 not available in headless environment")
-
-    QApplication,
-    QDialog,
-    QWidget,
-    QVBoxLayout,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QPushButton,
-    QComboBox,
-    QTextEdit,
-)
-from unittest.mock import Mock, patch
 
 
 class TestDialogBasics:

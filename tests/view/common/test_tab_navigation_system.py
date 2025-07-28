@@ -4,18 +4,13 @@ Comprehensive tests for the tab navigation system
 
 import pytest
 from unittest.mock import Mock, patch, MagicMock, call
-from tests.test_qt_utils import QT_AVAILABLE, (, QKeyEvent, Qt
+from tests.test_qt_utils import (
+    QT_AVAILABLE, QKeyEvent, Qt, QTextEdit, QLineEdit, QComboBox, QWidget,
+    QVBoxLayout, QApplication
+)
 
 # Skip all tests in this module if Qt is not available
 pytestmark = pytest.mark.skipif(not QT_AVAILABLE, reason="PyQt6 not available in headless environment")
-
-    QTextEdit,
-    QLineEdit,
-    QComboBox,
-    QWidget,
-    QVBoxLayout,
-    QApplication,
-)
 
 from storymaster.view.common.custom_widgets import (
     TabNavigationTextEdit,

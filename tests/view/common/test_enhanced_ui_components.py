@@ -4,21 +4,14 @@ Comprehensive tests for UI components and interactions
 
 import pytest
 from unittest.mock import Mock, patch, MagicMock
-from tests.test_qt_utils import QT_AVAILABLE, (, QContextMenuEvent, QKeyEvent, QMouseEvent, QPoint, Qt
+from tests.test_qt_utils import (
+    QT_AVAILABLE, QContextMenuEvent, QKeyEvent, QMouseEvent, QPoint, Qt,
+    QApplication, QDialog, QWidget, QVBoxLayout, QLineEdit, QTextEdit, 
+    QComboBox, QPushButton, QLabel
+)
 
 # Skip all tests in this module if Qt is not available
 pytestmark = pytest.mark.skipif(not QT_AVAILABLE, reason="PyQt6 not available in headless environment")
-
-    QApplication,
-    QDialog,
-    QWidget,
-    QVBoxLayout,
-    QLineEdit,
-    QTextEdit,
-    QComboBox,
-    QPushButton,
-    QLabel,
-)
 
 # Import UI components to test
 from storymaster.view.common.custom_widgets import (
