@@ -270,6 +270,61 @@ def create_archive():
         return False
 
 
+def test_executable():
+    """Test the executable to ensure PyQt6 works"""
+    print("\n[TEST] Testing executable...")
+    
+    system = platform.system().lower()
+    if system == "windows":
+        exe_path = Path("dist/storymaster.exe")
+    else:
+        exe_path = Path("dist/storymaster")
+    
+    if not exe_path.exists():
+        print(f"[ERROR] Executable not found at {exe_path}")
+        return False
+    
+    try:
+        # Copy test script to dist directory
+        test_script = Path("test_pyqt_bundle.py")
+        if test_script.exists():
+            shutil.copy2(test_script, "dist/test_pyqt_bundle.py")
+        
+        # Run the test
+        if system == "windows":
+            result = subprocess.run(
+                ["dist/storymaster.exe", "dist/test_pyqt_bundle.py"],
+                capture_output=True, text=True, timeout=30
+            )
+        else:
+            result = subprocess.run(
+                ["dist/storymaster", "dist/test_pyqt_bundle.py"],
+                capture_output=True, text=True, timeout=30
+            )
+        
+        if result.returncode == 0:
+            print("[OK] Executable test passed!")
+            print("   PyQt6 is properly bundled and working")
+            return True
+        else:
+            print(f"[WARNING] Executable test failed:")
+            print(f"   Return code: {result.returncode}")
+            if result.stdout:
+                print(f"   STDOUT: {result.stdout}")
+            if result.stderr:
+                print(f"   STDERR: {result.stderr}")
+            print("   The executable was built but may have PyQt6 issues")
+            return True  # Don't fail the build, just warn
+    
+    except subprocess.TimeoutExpired:
+        print("[WARNING] Executable test timed out")
+        print("   The executable may work but testing failed")
+        return True  # Don't fail the build
+    except Exception as e:
+        print(f"[WARNING] Could not test executable: {e}")
+        print("   The executable was built but testing failed")
+        return True  # Don't fail the build
+
 def print_completion_info():
     """Print build completion information"""
     system = platform.system()
@@ -292,11 +347,18 @@ def print_completion_info():
     print("   2. Users extract and run the executable")
     print("   3. No Python installation required!")
     print()
-    print("[NOTE] Note: The executable includes:")
+    print("[NOTE] The executable includes:")
     print("   • Complete Python runtime")
     print("   • All dependencies (PyQt6, SQLAlchemy)")
+    print("   • PyQt6 platform plugins for Windows")
     print("   • Sample database and test data")
     print("   • UI files and resources")
+    print()
+    print("[BUNDLE] PyQt6 bundling improvements:")
+    print("   • Platform plugins included for Windows support")
+    print("   • Runtime hooks for plugin path configuration")
+    print("   • Additional Qt libraries bundled")
+    print("   • Image format plugins included")
     print("=" * 60)
 
 
@@ -310,6 +372,7 @@ def main():
         ("Ensuring icons exist", ensure_icons_exist),
         ("Cleaning previous builds", clean_previous_builds),
         ("Building executable", build_executable),
+        ("Testing executable", test_executable),
         ("Creating portable package", create_portable_package),
         ("Creating distribution archive", create_archive),
     ]

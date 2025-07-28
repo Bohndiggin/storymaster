@@ -11,6 +11,27 @@ import glob
 
 datas = []
 
+# Include PyQt6 platform plugins (essential for Windows)
+import PyQt6
+pyqt6_path = Path(PyQt6.__file__).parent
+plugins_path = pyqt6_path / 'Qt6' / 'plugins'
+if plugins_path.exists():
+    # Include platform plugins
+    platforms_path = plugins_path / 'platforms'
+    if platforms_path.exists():
+        for platform_file in platforms_path.glob('*.dll'):
+            datas.append((str(platform_file), 'PyQt6/Qt6/plugins/platforms'))
+        for platform_file in platforms_path.glob('*.so'):
+            datas.append((str(platform_file), 'PyQt6/Qt6/plugins/platforms'))
+    
+    # Include image format plugins
+    imageformats_path = plugins_path / 'imageformats'
+    if imageformats_path.exists():
+        for img_file in imageformats_path.glob('*.dll'):
+            datas.append((str(img_file), 'PyQt6/Qt6/plugins/imageformats'))
+        for img_file in imageformats_path.glob('*.so'):
+            datas.append((str(img_file), 'PyQt6/Qt6/plugins/imageformats'))
+
 # Include test data CSVs for seeding
 test_data_path = project_dir / 'tests' / 'model' / 'database' / 'test_data'
 if test_data_path.exists():
@@ -39,29 +60,59 @@ for icon_file in icon_files:
 
 # Hidden imports needed for PyQt6 and SQLAlchemy
 hiddenimports = [
+    # Core PyQt6 modules
     'PyQt6.QtCore',
     'PyQt6.QtGui', 
     'PyQt6.QtWidgets',
     'PyQt6.QtSvg',
     'PyQt6.sip',
+    
+    # Additional PyQt6 modules that may be needed
+    'PyQt6.QtPrintSupport',
+    'PyQt6.QtNetwork',
+    'PyQt6.QtOpenGL',
+    
+    # PyQt6 platform plugins (critical for Windows)
+    'PyQt6.QtCore.QCoreApplication',
+    'PyQt6.QtWidgets.QApplication',
+    
+    # SQLAlchemy modules
     'sqlalchemy.dialects.sqlite',
     'sqlalchemy.sql.default_comparator',
     'sqlalchemy.engine.default',
     'sqlalchemy.pool',
+    'sqlalchemy.engine.reflection',
+    'sqlalchemy.sql.sqltypes',
+    
+    # Other dependencies
     'pkg_resources.extern',
     'email.mime.text',
     'email.mime.multipart',
+    
+    # Spell checking dependencies
+    'enchant',
+    'enchant.checker',
+    'enchant.errors',
 ]
+
+# Include PyQt6 binaries for Windows
+binaries = []
+if plugins_path.exists():
+    # Include Qt libraries that might be needed
+    qt_bin_path = pyqt6_path / 'Qt6' / 'bin'
+    if qt_bin_path.exists():
+        for qt_lib in qt_bin_path.glob('*.dll'):
+            binaries.append((str(qt_lib), '.'))
 
 a = Analysis(
     ['storymaster/main.py'],
     pathex=[str(project_dir)],
-    binaries=[],
+    binaries=binaries,
     datas=datas,
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
-    runtime_hooks=[],
+    runtime_hooks=['runtime_hook_pyqt6.py'],
     excludes=[
         # Exclude unnecessary modules to reduce size
         'matplotlib',

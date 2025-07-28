@@ -1,7 +1,32 @@
 """Storio's main file"""
 
+import os
 import sys
 from pathlib import Path
+
+# Initialize Qt plugin paths for bundled executable
+if getattr(sys, 'frozen', False):
+    # Running in bundled mode
+    bundle_dir = Path(sys._MEIPASS)
+    
+    # Set Qt plugin paths
+    qt_plugin_paths = [
+        bundle_dir / 'PyQt6' / 'Qt6' / 'plugins',
+        bundle_dir / 'plugins'
+    ]
+    
+    for plugin_path in qt_plugin_paths:
+        if plugin_path.exists():
+            current_path = os.environ.get('QT_PLUGIN_PATH', '')
+            if current_path:
+                os.environ['QT_PLUGIN_PATH'] = f"{current_path}{os.pathsep}{plugin_path}"
+            else:
+                os.environ['QT_PLUGIN_PATH'] = str(plugin_path)
+    
+    # Set platform plugin path specifically
+    platform_path = bundle_dir / 'PyQt6' / 'Qt6' / 'plugins' / 'platforms'
+    if platform_path.exists():
+        os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = str(platform_path)
 
 from PyQt6.QtWidgets import QApplication
 
