@@ -29,6 +29,8 @@ from storymaster.view.common.theme import (
     get_splitter_style,
     get_list_style,
     get_dialog_style,
+    get_checkbox_style,
+    get_tab_style,
 )
 from storymaster.view.common.tooltips import (
     apply_notes_tooltips,
@@ -52,7 +54,18 @@ class NodeNotesDialog(QDialog):
             f"Notes for Node (Type: {node_data.node_type.name.title()})"
         )
         self.setMinimumSize(600, 400)
-        self.setStyleSheet(get_dialog_style())
+        
+        # Apply comprehensive theme styling
+        self.setStyleSheet(
+            get_dialog_style()
+            + get_button_style()
+            + get_input_style()
+            + get_list_style()
+            + get_group_box_style()
+            + get_splitter_style()
+            + get_checkbox_style()
+            + get_tab_style()
+        )
 
         self.setup_ui()
         self.load_notes()
@@ -63,25 +76,21 @@ class NodeNotesDialog(QDialog):
 
         # Node info section
         node_info_group = QGroupBox("Node Information")
-        node_info_group.setStyleSheet(get_group_box_style())
         node_info_layout = QFormLayout()
-        node_info_layout.addRow(
-            "Node Type:", QLabel(self.node_data.node_type.name.title())
-        )
+        node_type_label = QLabel(self.node_data.node_type.name.title())
+        node_type_label.setStyleSheet("background-color: transparent; color: #ffffff;")
+        node_info_layout.addRow("Node Type:", node_type_label)
         node_info_group.setLayout(node_info_layout)
         main_layout.addWidget(node_info_group)
 
         # Main content splitter
         splitter = QSplitter(Qt.Orientation.Horizontal)
-        splitter.setStyleSheet(get_splitter_style())
 
         # Left side - Notes list
         left_widget = QGroupBox("Notes")
-        left_widget.setStyleSheet(get_group_box_style())
         left_layout = QVBoxLayout()
 
         self.notes_list = QListWidget()
-        self.notes_list.setStyleSheet(get_list_style())
         self.notes_list.itemSelectionChanged.connect(self.on_note_selected)
         left_layout.addWidget(self.notes_list)
 
@@ -105,7 +114,6 @@ class NodeNotesDialog(QDialog):
 
         # Right side - Note editor
         right_widget = QGroupBox("Note Editor")
-        right_widget.setStyleSheet(get_group_box_style())
         right_layout = QFormLayout()
 
         self.note_type_combo = QComboBox()
@@ -128,19 +136,18 @@ class NodeNotesDialog(QDialog):
 
         # Lore associations section
         associations_group = QGroupBox("Lore Associations")
-        associations_group.setStyleSheet(get_group_box_style())
         associations_layout = QVBoxLayout()
 
         self.associations_list = QListWidget()
-        self.associations_list.setStyleSheet(get_list_style())
         self.associations_list.setMaximumHeight(100)
-        associations_layout.addWidget(QLabel("Associated Lore Entities:"))
+        entities_label = QLabel("Associated Lore Entities:")
+        entities_label.setStyleSheet("background-color: transparent; color: #ffffff;")
+        associations_layout.addWidget(entities_label)
         associations_layout.addWidget(self.associations_list)
 
         # Association control buttons
         assoc_buttons_layout = QHBoxLayout()
         self.add_association_btn = QPushButton("Add Association")
-        self.add_association_btn.setStyleSheet(get_button_style())
         apply_notes_tooltips(self.add_association_btn, "add_association")
 
         self.remove_association_btn = QPushButton("Remove Association")
@@ -166,7 +173,6 @@ class NodeNotesDialog(QDialog):
         self.save_note_btn = QPushButton("Save Note")
         self.save_note_btn.setStyleSheet(get_button_style("primary"))
         self.cancel_edit_btn = QPushButton("Cancel")
-        self.cancel_edit_btn.setStyleSheet(get_button_style())
 
         self.save_note_btn.clicked.connect(self.save_note)
         self.cancel_edit_btn.clicked.connect(self.cancel_edit)
@@ -569,7 +575,9 @@ class LoreSelectionDialog(QDialog):
 
         # Entity type selector
         type_layout = QHBoxLayout()
-        type_layout.addWidget(QLabel("Entity Type:"))
+        entity_type_label = QLabel("Entity Type:")
+        entity_type_label.setStyleSheet("background-color: transparent; color: #ffffff;")
+        type_layout.addWidget(entity_type_label)
 
         self.entity_type_combo = QComboBox()
         self.entity_type_combo.addItems(
@@ -592,7 +600,9 @@ class LoreSelectionDialog(QDialog):
         layout.addLayout(type_layout)
 
         # Entity list
-        layout.addWidget(QLabel("Select Entity:"))
+        select_entity_label = QLabel("Select Entity:")
+        select_entity_label.setStyleSheet("background-color: transparent; color: #ffffff;")
+        layout.addWidget(select_entity_label)
         self.entity_list = QListWidget()
         self.entity_list.itemDoubleClicked.connect(self.accept)
         layout.addWidget(self.entity_list)

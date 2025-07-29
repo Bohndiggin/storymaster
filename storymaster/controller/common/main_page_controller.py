@@ -95,6 +95,7 @@ from storymaster.view.common.theme import (
     get_button_style,
     get_input_style,
     get_group_box_style,
+    get_label_style,
     COLORS,
     FONTS,
 )
@@ -783,11 +784,8 @@ class MainWindowController:
         self.visible_tables = None  # None means show all available tables
         self.load_table_visibility_preferences()
 
-        # --- Set up Lorekeeper models ---
-        self.db_tree_model = QStandardItemModel()
-        self.view.ui.databaseTreeView.setModel(self.db_tree_model)
-        self.db_table_model = QStandardItemModel()
-        self.view.ui.databaseTableView.setModel(self.db_table_model)
+        # --- Set up Lorekeeper models (deprecated components removed) ---
+        # Database tree and table views removed - using new Lorekeeper interface
 
         # --- Set up Litographer scene ---
         self.node_scene = QGraphicsScene()
@@ -947,7 +945,7 @@ class MainWindowController:
 
             # Input connections list
             input_label = QLabel("Input Connections:")
-            input_label.setStyleSheet(f"font-weight: bold; color: {COLORS['success']};")
+            input_label.setStyleSheet(get_label_style("bold") + f"QLabel {{ color: {COLORS['success']}; }}")
             connections_layout.addWidget(input_label)
 
             self.input_connections_list = QListWidget()
@@ -2168,10 +2166,6 @@ class MainWindowController:
             self.view.ui.characterArcsNavButton, "character_arcs_tab"
         )
 
-        # --- Lorekeeper Configure Tables Button ---
-        self.view.ui.configureTablesButton.clicked.connect(
-            self.on_configure_tables_clicked
-        )
 
         # --- File Menu ---
         self.view.ui.actionOpen.triggered.connect(self.on_open_storyline_clicked)
@@ -2213,13 +2207,10 @@ class MainWindowController:
         self.view.ui.actionAddNode.triggered.connect(self.on_add_node_clicked)
 
         # --- Lorekeeper View Signals ---
-        self.view.ui.databaseTreeView.clicked.connect(self.on_db_tree_item_clicked)
-        self.view.ui.databaseTableView.clicked.connect(self.on_table_row_clicked)
+        # Database tree and table view signals removed - using new Lorekeeper interface
 
-        # --- Lorekeeper Form Buttons ---
-        self.view.ui.saveChangesButton.clicked.connect(self.on_save_changes_clicked)
-        self.view.ui.addNewRowButton.clicked.connect(self.on_add_new_row_clicked)
-        self.view.ui.formTabWidget.currentChanged.connect(self.on_tab_changed)
+        # --- Lorekeeper Form Buttons (deprecated interface removed) ---
+        # Form buttons and tab widget removed - using new Lorekeeper interface
 
     # --- Project Handling ---
     def on_open_storyline_clicked(self):
@@ -3051,12 +3042,14 @@ class MainWindowController:
         # In the new system, nodes don't need specific ordering since they're positioned manually
         return nodes
 
-    # --- Lorekeeper Methods ---
+    # --- Lorekeeper Methods (DEPRECATED - old database interface) ---
+    # NOTE: These methods are deprecated and left for compatibility
+    # The new Lorekeeper interface uses NewLorekeeperPage instead
 
     def on_tab_changed(self, index: int):
         """Handle tab switching to populate the 'Add New Row' form when selected."""
-        if index == 1:
-            self.populate_add_form()
+        # DEPRECATED: Old lorekeeper interface removed
+        return
 
     def on_table_row_clicked(self, index):
         """Populates the edit form with the data from the selected row."""
@@ -3068,7 +3061,7 @@ class MainWindowController:
 
         if self.current_row_data:
             self._populate_form(
-                self.view.ui.editFormLayout,
+                # self.view.ui.editFormLayout,  # Deprecated - removed
                 self.edit_form_widgets,
                 self.current_row_data,
             )
@@ -3305,21 +3298,25 @@ class MainWindowController:
             new_lorekeeper_layout.setContentsMargins(0, 0, 0, 0)
             new_lorekeeper_layout.addWidget(self.new_lorekeeper_widget)
 
-        # Switch to the new Lorekeeper page (index 3 - after litographer, old lorekeeper, character arcs)
+        # Switch to the new Lorekeeper page (index 1 - after litographer)
         if self.new_lorekeeper_widget is not None:
             self.view.ui.pageStack.setCurrentWidget(self.view.ui.newLorekeeperPage)
         else:
-            # Fallback to old interface if no setting is available
+            # Fallback: if no widget is initialized, still switch to the lorekeeper page
             self.view.ui.pageStack.setCurrentIndex(1)
-            if self.db_tree_model.rowCount() == 0:
-                self.load_database_structure()
 
     def on_character_arcs_selected(self):
         """Handle switching to the Character Arcs page."""
         self.view.ui.pageStack.setCurrentIndex(
-            3
-        )  # Updated index for character arcs page
-        self.character_arc_page.refresh_arcs(self.current_storyline_id)
+            2
+        )  # Updated index for character arcs page (after removing old lorekeeper)
+        
+        # Only refresh if we have a storyline selected
+        if self.current_storyline_id is not None:
+            self.character_arc_page.refresh_arcs(self.current_storyline_id)
+        else:
+            # No storyline selected - show empty state
+            print("No storyline selected for character arcs")
 
     def load_database_structure(self):
         """Fetches table names from the model and populates the tree view."""
@@ -3424,22 +3421,6 @@ class MainWindowController:
                 if widget is not None:
                     widget.deleteLater()
 
-    def on_configure_tables_clicked(self):
-        """Opens a dialog to configure which tables are visible in Lorekeeper."""
-        try:
-            from storymaster.view.common.table_visibility_dialog import (
-                TableVisibilityDialog,
-            )
-
-            dialog = TableVisibilityDialog(self.model, self, self.view)
-            dialog.exec()
-
-        except Exception as e:
-            QMessageBox.critical(
-                self.view,
-                "Error",
-                f"Failed to open table configuration dialog: {str(e)}",
-            )
 
     def get_visible_tables(self) -> set[str] | None:
         """Get the current set of visible tables. None means show all available tables."""

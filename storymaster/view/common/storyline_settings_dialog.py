@@ -15,6 +15,13 @@ from PyQt6.QtWidgets import (
     QGroupBox,
 )
 
+from storymaster.view.common.theme import (
+    get_dialog_style,
+    get_label_style,
+    get_button_style,
+    get_list_style,
+)
+
 
 class StorylineSettingsDialog(QDialog):
     """Dialog for managing which settings are linked to a storyline"""
@@ -28,6 +35,13 @@ class StorylineSettingsDialog(QDialog):
         self.setWindowTitle(f"Manage Settings for {storyline_name}")
         self.setModal(True)
         self.resize(600, 400)
+        
+        # Apply theme styling
+        self.setStyleSheet(
+            get_dialog_style()
+            + get_button_style()
+            + get_list_style()
+        )
 
         self.setup_ui()
         self.load_data()
@@ -38,7 +52,7 @@ class StorylineSettingsDialog(QDialog):
 
         # Title
         title_label = QLabel(f"Settings for storyline: {self.storyline_name}")
-        title_label.setStyleSheet("font-weight: bold; font-size: 14px;")
+        title_label.setStyleSheet(get_label_style("header"))
         layout.addWidget(title_label)
 
         # Main content area

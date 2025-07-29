@@ -15,6 +15,13 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QFont
 
 from storymaster.model.lorekeeper.entity_mappings import get_entity_mapping
+from storymaster.view.common.theme import (
+    get_dialog_style,
+    get_label_style,
+    get_button_style,
+    get_list_style,
+    get_input_style,
+)
 
 
 class EntitySelectionDialog(QDialog):
@@ -37,6 +44,14 @@ class EntitySelectionDialog(QDialog):
         self.setWindowTitle(f"Add {self.relationship_type.replace('_', ' ').title()}")
         self.setModal(True)
         self.resize(400, 500)
+        
+        # Apply comprehensive theme styling
+        self.setStyleSheet(
+            get_dialog_style()
+            + get_button_style()
+            + get_list_style()
+            + get_input_style()
+        )
 
         layout = QVBoxLayout()
 
@@ -44,10 +59,7 @@ class EntitySelectionDialog(QDialog):
         header = QLabel(
             f"Select an entity to add to {self.relationship_type.replace('_', ' ')}"
         )
-        font = QFont()
-        font.setPointSize(12)
-        font.setBold(True)
-        header.setFont(font)
+        header.setStyleSheet(get_label_style("header"))
         layout.addWidget(header)
 
         # Search field

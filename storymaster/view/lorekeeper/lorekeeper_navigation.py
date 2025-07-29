@@ -32,6 +32,7 @@ from storymaster.view.common.theme import (
     get_list_style,
     get_button_style,
     get_splitter_style,
+    get_label_style,
 )
 from storymaster.view.common.tooltips import (
     apply_general_tooltips,
@@ -173,9 +174,7 @@ class LorekeeperNavigation(QWidget):
         font.setBold(True)
         header.setFont(font)
         header.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        header.setStyleSheet(
-            f"color: {COLORS['text_accent']}; margin: {DIMENSIONS['margin_medium']} 0;"
-        )
+        header.setStyleSheet(get_label_style("header"))
         layout.addWidget(header)
 
         # Create vertical splitter for the two category sections

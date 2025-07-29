@@ -27,6 +27,14 @@ from PyQt6.QtWidgets import (
 )
 
 from storymaster.model.common.backup_manager import BackupManager
+from storymaster.view.common.theme import (
+    get_dialog_style,
+    get_button_style,
+    get_list_style,
+    get_tab_style,
+    get_checkbox_style,
+    get_input_style,
+)
 
 
 class DatabaseManagerDialog(QDialog):
@@ -48,6 +56,16 @@ class DatabaseManagerDialog(QDialog):
         self.setWindowTitle("Database & Backup Manager")
         self.setModal(True)
         self.resize(600, 500)
+        
+        # Apply theme styling
+        self.setStyleSheet(
+            get_dialog_style()
+            + get_button_style()
+            + get_list_style()
+            + get_tab_style()
+            + get_checkbox_style()
+            + get_input_style()
+        )
 
         self.setup_ui()
         self.connect_signals()

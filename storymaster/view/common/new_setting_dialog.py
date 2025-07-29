@@ -13,6 +13,11 @@ from PyQt6.QtWidgets import (
 )
 
 from storymaster.model.common.common_model import BaseModel
+from storymaster.view.common.theme import (
+    get_dialog_style,
+    get_button_style,
+    get_input_style,
+)
 
 
 class NewSettingDialog(QDialog):
@@ -25,6 +30,13 @@ class NewSettingDialog(QDialog):
         self.model = model
         self.setWindowTitle("Create New Setting")
         self.setMinimumWidth(400)
+        
+        # Apply theme styling
+        self.setStyleSheet(
+            get_dialog_style()
+            + get_button_style()
+            + get_input_style()
+        )
 
         # --- Create Widgets ---
         self.name_line_edit = QLineEdit()

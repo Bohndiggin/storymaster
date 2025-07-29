@@ -12,6 +12,7 @@ from PyQt6.QtWidgets import (
 )
 
 from storymaster.view.common.storymaster_main import Ui_StorymasterMainWindow
+from storymaster.view.common.theme import get_main_window_style
 
 
 class BaseView(QMainWindow):
@@ -29,3 +30,6 @@ class MainView(BaseView):
         super().__init__()
         self.ui = Ui_StorymasterMainWindow()
         self.ui.setupUi(self)
+        
+        # Override the generated stylesheet with our theme system
+        self.setStyleSheet(get_main_window_style())

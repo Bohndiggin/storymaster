@@ -17,6 +17,15 @@ from PyQt6.QtWidgets import (
     QComboBox,
 )
 
+from storymaster.view.common.theme import (
+    get_dialog_style,
+    get_label_style,
+    get_button_style,
+    get_list_style,
+    get_input_style,
+    COLORS,
+)
+
 
 class SettingStorylinesDialog(QDialog):
     """Dialog for selecting a setting and managing its storyline connections"""
@@ -30,6 +39,14 @@ class SettingStorylinesDialog(QDialog):
         self.setWindowTitle("Manage Setting Storylines")
         self.setModal(True)
         self.resize(700, 500)
+        
+        # Apply theme styling
+        self.setStyleSheet(
+            get_dialog_style()
+            + get_button_style()
+            + get_list_style()
+            + get_input_style()
+        )
 
         self.setup_ui()
         self.load_settings()
@@ -41,7 +58,7 @@ class SettingStorylinesDialog(QDialog):
         # Setting selection
         setting_layout = QHBoxLayout()
         setting_label = QLabel("Select Setting:")
-        setting_label.setStyleSheet("font-weight: bold;")
+        setting_label.setStyleSheet(get_label_style("bold"))
         self.setting_combo = QComboBox()
         self.setting_combo.currentIndexChanged.connect(self.on_setting_changed)
 
@@ -52,9 +69,7 @@ class SettingStorylinesDialog(QDialog):
 
         # Current setting label
         self.current_setting_label = QLabel("Select a setting to manage its storylines")
-        self.current_setting_label.setStyleSheet(
-            "font-weight: bold; font-size: 14px; color: #af80f8;"
-        )
+        self.current_setting_label.setStyleSheet(get_label_style("header"))
         layout.addWidget(self.current_setting_label)
 
         # Main content area

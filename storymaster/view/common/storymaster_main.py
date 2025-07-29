@@ -13,224 +13,222 @@ class Ui_StorymasterMainWindow(object):
     def setupUi(self, StorymasterMainWindow):
         StorymasterMainWindow.setObjectName("StorymasterMainWindow")
         StorymasterMainWindow.resize(1280, 720)
-        StorymasterMainWindow.setStyleSheet(
-            "/* --- Dark Theme inspired by DaVinci Resolve ---\n"
-            "*/\n"
-            "\n"
-            "QWidget {\n"
-            "    background-color: #2e2e2e; /* Dark gray base */\n"
-            "    color: #dcdcdc; /* Light gray text */\n"
-            '    font-family: "Segoe UI", Arial, sans-serif;\n'
-            "    font-size: 10pt;\n"
-            "}\n"
-            "\n"
-            "QMainWindow {\n"
-            "    background-color: #1e1e1e; /* Even darker for the main window background */\n"
-            "}\n"
-            "\n"
-            "/* --- Stacked Widget & Pages --- */\n"
-            "QStackedWidget > QWidget {\n"
-            "    background-color: #252525; /* Slightly lighter background for the main content area */\n"
-            "}\n"
-            "\n"
-            "/* --- Bottom Navigation Bar --- */\n"
-            "#bottomNavBar {\n"
-            "    background-color: #1e1e1e;\n"
-            "    border-top: 1px solid #424242;\n"
-            "}\n"
-            "\n"
-            "#bottomNavBar QPushButton {\n"
-            "    background-color: transparent;\n"
-            "    color: #a0a0a0;\n"
-            "    border: none;\n"
-            "    padding: 8px 20px;\n"
-            "    font-weight: bold;\n"
-            "    font-size: 11pt;\n"
-            "}\n"
-            "\n"
-            "#bottomNavBar QPushButton:hover {\n"
-            "    background-color: #3a3a3a;\n"
-            "    color: #ffffff;\n"
-            "}\n"
-            "\n"
-            "#bottomNavBar QPushButton:checked {\n"
-            "    background-color: #505050;\n"
-            "    color: #ffffff;\n"
-            "    border-bottom: 2px solid #af80f8; /* A nice accent color */\n"
-            "}\n"
-            "\n"
-            "/* --- Menu, Tool, and Status Bars --- */\n"
-            "QMenuBar {\n"
-            "    background-color: #2e2e2e;\n"
-            "    color: #dcdcdc;\n"
-            "}\n"
-            "\n"
-            "QMenuBar::item {\n"
-            "    background-color: transparent;\n"
-            "    padding: 4px 10px;\n"
-            "}\n"
-            "\n"
-            "QMenuBar::item:selected {\n"
-            "    background-color: #505050;\n"
-            "}\n"
-            "\n"
-            "QMenu {\n"
-            "    background-color: #2e2e2e;\n"
-            "    border: 1px solid #424242;\n"
-            "}\n"
-            "\n"
-            "QMenu::item:selected {\n"
-            "    background-color: #505050;\n"
-            "}\n"
-            "\n"
-            "QToolBar {\n"
-            "    background-color: #2e2e2e;\n"
-            "    border: none;\n"
-            "    padding: 2px;\n"
-            "}\n"
-            "\n"
-            "QStatusBar {\n"
-            "    background-color: #2e2e2e;\n"
-            "    border-top: 1px solid #424242;\n"
-            "}\n"
-            "\n"
-            "/* --- Widgets inside pages --- */\n"
-            "QSplitter::handle {\n"
-            "    background-color: #424242;\n"
-            "}\n"
-            "\n"
-            "QSplitter::handle:hover {\n"
-            "    background-color: #555555;\n"
-            "}\n"
-            "\n"
-            "/* --- Table and Tree View Enhancements --- */\n"
-            "QTableView {\n"
-            "    background-color: #2e2e2e;\n"
-            "    border: 1px solid #424242;\n"
-            "    selection-background-color: #5c4a8e; /* A darker purple for selection */\n"
-            "    selection-color: #ffffff; /* White text on selection */\n"
-            "    gridline-color: #383838; /* Subtle grid lines */\n"
-            "    alternate-background-color: #333333; /* For alternating rows */\n"
-            "}\n"
-            "\n"
-            "QTableView::item {\n"
-            "    padding: 5px;\n"
-            "    border-style: none; /* Remove individual item borders */\n"
-            "}\n"
-            "\n"
-            "QTableView::item:hover {\n"
-            "    background-color: #4a4a4a;\n"
-            "}\n"
-            "\n"
-            "QHeaderView::section {\n"
-            "    background-color: #222222; /* Darker header */\n"
-            "    color: #dcdcdc;\n"
-            "    padding: 4px; /* Reduced padding for a smaller header */\n"
-            "    border: none; /* Remove default borders */\n"
-            "    border-bottom: 1px solid #424242;\n"
-            "    font-weight: bold;\n"
-            "}\n"
-            "\n"
-            "/* Style the top-left corner button of the table */\n"
-            "QTableView QTableCornerButton::section {\n"
-            "    background-color: #222222;\n"
-            "    border-bottom: 1px solid #424242;\n"
-            "}\n"
-            "\n"
-            "/* Tree view specific styles to keep it clean */\n"
-            "QTreeView {\n"
-            "    background-color: #2e2e2e;\n"
-            "    border: 1px solid #424242;\n"
-            "    selection-background-color: #5c4a8e;\n"
-            "    selection-color: #ffffff;\n"
-            "}\n"
-            "\n"
-            "QTreeView::item {\n"
-            "    padding: 4px;\n"
-            "}\n"
-            "\n"
-            "QTreeView::item:hover {\n"
-            "    background-color: #4a4a4a;\n"
-            "}\n"
-            "\n"
-            "/* --- Tab Widget Styling --- */\n"
-            "QTabWidget::pane {\n"
-            "    border: 1px solid #424242;\n"
-            "    border-top: none;\n"
-            "}\n"
-            "QTabBar::tab {\n"
-            "    background-color: #2e2e2e;\n"
-            "    color: #a0a0a0;\n"
-            "    padding: 8px 20px;\n"
-            "    border: 1px solid #424242;\n"
-            "    border-bottom: none;\n"
-            "    border-top-left-radius: 4px;\n"
-            "    border-top-right-radius: 4px;\n"
-            "}\n"
-            "QTabBar::tab:selected {\n"
-            "    background-color: #222222;\n"
-            "    color: #ffffff;\n"
-            "}\n"
-            "QTabBar::tab:!selected:hover {\n"
-            "    background-color: #3a3a3a;\n"
-            "}\n"
-            "\n"
-            "/* --- Edit Form Styling --- */\n"
-            "QScrollArea {\n"
-            "    border: none;\n"
-            "}\n"
-            "\n"
-            "#editFormWidget, #addFormWidget {\n"
-            "    background-color: #222222;\n"
-            "}\n"
-            "\n"
-            "#editFormWidget QLabel, #addFormWidget QLabel {\n"
-            "    font-weight: bold;\n"
-            "    color: #a0a0a0;\n"
-            "}\n"
-            "\n"
-            "#editFormWidget QLineEdit, #editFormWidget QTextEdit,\n"
-            "#addFormWidget QLineEdit, #addFormWidget QTextEdit,\n"
-            "#addFormWidget QComboBox {\n"
-            "    background-color: #2e2e2e;\n"
-            "    border: 1px solid #424242;\n"
-            "    border-radius: 3px;\n"
-            "    padding: 4px;\n"
-            "}\n"
-            "\n"
-            "#editFormWidget QLineEdit:focus, #editFormWidget QTextEdit:focus,\n"
-            "#addFormWidget QLineEdit:focus, #addFormWidget QTextEdit:focus,\n"
-            "#addFormWidget QComboBox:focus {\n"
-            "    border: 1px solid #af80f8;\n"
-            "}\n"
-            "\n"
-            "#editFormWidget QPushButton, #addFormWidget QPushButton {\n"
-            "    background-color: #5c4a8e;\n"
-            "    color: #ffffff;\n"
-            "    border: none;\n"
-            "    padding: 8px 16px;\n"
-            "    border-radius: 4px;\n"
-            "    font-weight: bold;\n"
-            "}\n"
-            "\n"
-            "#editFormWidget QPushButton:hover, #addFormWidget QPushButton:hover {\n"
-            "    background-color: #6c5ab8;\n"
-            "}\n"
-            "\n"
-            "\n"
-            "QGraphicsView {\n"
-            "    border-radius: 4px;\n"
-            "    border: 1px solid #424242;\n"
-            "}\n"
-            "\n"
-            "QLabel#pageTitleLabel {\n"
-            "    font-size: 14pt;\n"
-            "    font-weight: bold;\n"
-            "    padding: 5px;\n"
-            "    color: #ffffff;\n"
-            "}\n"
-            ""
-        )
+        StorymasterMainWindow.setStyleSheet("/* --- Dark Theme inspired by DaVinci Resolve ---\n"
+"*/\n"
+"\n"
+"QWidget {\n"
+"    background-color: #2e2e2e; /* Dark gray base */\n"
+"    color: #dcdcdc; /* Light gray text */\n"
+"    font-family: \"Segoe UI\", Arial, sans-serif;\n"
+"    font-size: 10pt;\n"
+"}\n"
+"\n"
+"QMainWindow {\n"
+"    background-color: #1e1e1e; /* Even darker for the main window background */\n"
+"}\n"
+"\n"
+"/* --- Stacked Widget & Pages --- */\n"
+"QStackedWidget > QWidget {\n"
+"    background-color: #252525; /* Slightly lighter background for the main content area */\n"
+"}\n"
+"\n"
+"/* --- Bottom Navigation Bar --- */\n"
+"#bottomNavBar {\n"
+"    background-color: #1e1e1e;\n"
+"    border-top: 1px solid #424242;\n"
+"}\n"
+"\n"
+"#bottomNavBar QPushButton {\n"
+"    background-color: transparent;\n"
+"    color: #a0a0a0;\n"
+"    border: none;\n"
+"    padding: 8px 20px;\n"
+"    font-weight: bold;\n"
+"    font-size: 11pt;\n"
+"}\n"
+"\n"
+"#bottomNavBar QPushButton:hover {\n"
+"    background-color: #3a3a3a;\n"
+"    color: #ffffff;\n"
+"}\n"
+"\n"
+"#bottomNavBar QPushButton:checked {\n"
+"    background-color: #505050;\n"
+"    color: #ffffff;\n"
+"    border-bottom: 2px solid #af80f8; /* A nice accent color */\n"
+"}\n"
+"\n"
+"/* --- Menu, Tool, and Status Bars --- */\n"
+"QMenuBar {\n"
+"    background-color: #2e2e2e;\n"
+"    color: #dcdcdc;\n"
+"}\n"
+"\n"
+"QMenuBar::item {\n"
+"    background-color: transparent;\n"
+"    padding: 4px 10px;\n"
+"}\n"
+"\n"
+"QMenuBar::item:selected {\n"
+"    background-color: #505050;\n"
+"}\n"
+"\n"
+"QMenu {\n"
+"    background-color: #2e2e2e;\n"
+"    border: 1px solid #424242;\n"
+"}\n"
+"\n"
+"QMenu::item:selected {\n"
+"    background-color: #505050;\n"
+"}\n"
+"\n"
+"QToolBar {\n"
+"    background-color: #2e2e2e;\n"
+"    border: none;\n"
+"    padding: 2px;\n"
+"}\n"
+"\n"
+"QStatusBar {\n"
+"    background-color: #2e2e2e;\n"
+"    border-top: 1px solid #424242;\n"
+"}\n"
+"\n"
+"/* --- Widgets inside pages --- */\n"
+"QSplitter::handle {\n"
+"    background-color: #424242;\n"
+"}\n"
+"\n"
+"QSplitter::handle:hover {\n"
+"    background-color: #555555;\n"
+"}\n"
+"\n"
+"/* --- Table and Tree View Enhancements --- */\n"
+"QTableView {\n"
+"    background-color: #2e2e2e;\n"
+"    border: 1px solid #424242;\n"
+"    selection-background-color: #5c4a8e; /* A darker purple for selection */\n"
+"    selection-color: #ffffff; /* White text on selection */\n"
+"    gridline-color: #383838; /* Subtle grid lines */\n"
+"    alternate-background-color: #333333; /* For alternating rows */\n"
+"}\n"
+"\n"
+"QTableView::item {\n"
+"    padding: 5px;\n"
+"    border-style: none; /* Remove individual item borders */\n"
+"}\n"
+"\n"
+"QTableView::item:hover {\n"
+"    background-color: #4a4a4a;\n"
+"}\n"
+"\n"
+"QHeaderView::section {\n"
+"    background-color: #222222; /* Darker header */\n"
+"    color: #dcdcdc;\n"
+"    padding: 4px; /* Reduced padding for a smaller header */\n"
+"    border: none; /* Remove default borders */\n"
+"    border-bottom: 1px solid #424242;\n"
+"    font-weight: bold;\n"
+"}\n"
+"\n"
+"/* Style the top-left corner button of the table */\n"
+"QTableView QTableCornerButton::section {\n"
+"    background-color: #222222;\n"
+"    border-bottom: 1px solid #424242;\n"
+"}\n"
+"\n"
+"/* Tree view specific styles to keep it clean */\n"
+"QTreeView {\n"
+"    background-color: #2e2e2e;\n"
+"    border: 1px solid #424242;\n"
+"    selection-background-color: #5c4a8e;\n"
+"    selection-color: #ffffff;\n"
+"}\n"
+"\n"
+"QTreeView::item {\n"
+"    padding: 4px;\n"
+"}\n"
+"\n"
+"QTreeView::item:hover {\n"
+"    background-color: #4a4a4a;\n"
+"}\n"
+"\n"
+"/* --- Tab Widget Styling --- */\n"
+"QTabWidget::pane {\n"
+"    border: 1px solid #424242;\n"
+"    border-top: none;\n"
+"}\n"
+"QTabBar::tab {\n"
+"    background-color: #2e2e2e;\n"
+"    color: #a0a0a0;\n"
+"    padding: 8px 20px;\n"
+"    border: 1px solid #424242;\n"
+"    border-bottom: none;\n"
+"    border-top-left-radius: 4px;\n"
+"    border-top-right-radius: 4px;\n"
+"}\n"
+"QTabBar::tab:selected {\n"
+"    background-color: #222222;\n"
+"    color: #ffffff;\n"
+"}\n"
+"QTabBar::tab:!selected:hover {\n"
+"    background-color: #3a3a3a;\n"
+"}\n"
+"\n"
+"/* --- Edit Form Styling --- */\n"
+"QScrollArea {\n"
+"    border: none;\n"
+"}\n"
+"\n"
+"#editFormWidget, #addFormWidget {\n"
+"    background-color: #222222;\n"
+"}\n"
+"\n"
+"#editFormWidget QLabel, #addFormWidget QLabel {\n"
+"    font-weight: bold;\n"
+"    color: #a0a0a0;\n"
+"}\n"
+"\n"
+"#editFormWidget QLineEdit, #editFormWidget QTextEdit,\n"
+"#addFormWidget QLineEdit, #addFormWidget QTextEdit,\n"
+"#addFormWidget QComboBox {\n"
+"    background-color: #2e2e2e;\n"
+"    border: 1px solid #424242;\n"
+"    border-radius: 3px;\n"
+"    padding: 4px;\n"
+"}\n"
+"\n"
+"#editFormWidget QLineEdit:focus, #editFormWidget QTextEdit:focus,\n"
+"#addFormWidget QLineEdit:focus, #addFormWidget QTextEdit:focus,\n"
+"#addFormWidget QComboBox:focus {\n"
+"    border: 1px solid #af80f8;\n"
+"}\n"
+"\n"
+"#editFormWidget QPushButton, #addFormWidget QPushButton {\n"
+"    background-color: #5c4a8e;\n"
+"    color: #ffffff;\n"
+"    border: none;\n"
+"    padding: 8px 16px;\n"
+"    border-radius: 4px;\n"
+"    font-weight: bold;\n"
+"}\n"
+"\n"
+"#editFormWidget QPushButton:hover, #addFormWidget QPushButton:hover {\n"
+"    background-color: #6c5ab8;\n"
+"}\n"
+"\n"
+"\n"
+"QGraphicsView {\n"
+"    border-radius: 4px;\n"
+"    border: 1px solid #424242;\n"
+"}\n"
+"\n"
+"QLabel#pageTitleLabel {\n"
+"    font-size: 14pt;\n"
+"    font-weight: bold;\n"
+"    padding: 5px;\n"
+"    color: #ffffff;\n"
+"}\n"
+"")
         self.centralWidget = QtWidgets.QWidget(parent=StorymasterMainWindow)
         self.centralWidget.setObjectName("centralWidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.centralWidget)
@@ -252,119 +250,6 @@ class Ui_StorymasterMainWindow(object):
         self.nodeGraphView.setObjectName("nodeGraphView")
         self.verticalLayout_2.addWidget(self.nodeGraphView)
         self.pageStack.addWidget(self.litographerPage)
-        self.lorekeeperPage = QtWidgets.QWidget()
-        self.lorekeeperPage.setObjectName("lorekeeperPage")
-        self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.lorekeeperPage)
-        self.verticalLayout_4.setObjectName("verticalLayout_4")
-        self.lorekeeperHeaderLayout = QtWidgets.QHBoxLayout()
-        self.lorekeeperHeaderLayout.setObjectName("lorekeeperHeaderLayout")
-        self.pageTitleLabel_2 = QtWidgets.QLabel(parent=self.lorekeeperPage)
-        self.pageTitleLabel_2.setObjectName("pageTitleLabel_2")
-        self.lorekeeperHeaderLayout.addWidget(self.pageTitleLabel_2)
-        spacerItem = QtWidgets.QSpacerItem(
-            40,
-            20,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
-        self.lorekeeperHeaderLayout.addItem(spacerItem)
-        self.configureTablesButton = QtWidgets.QPushButton(parent=self.lorekeeperPage)
-        self.configureTablesButton.setObjectName("configureTablesButton")
-        self.lorekeeperHeaderLayout.addWidget(self.configureTablesButton)
-        self.verticalLayout_4.addLayout(self.lorekeeperHeaderLayout)
-        self.lorekeeperSplitter = QtWidgets.QSplitter(parent=self.lorekeeperPage)
-        self.lorekeeperSplitter.setOrientation(QtCore.Qt.Orientation.Vertical)
-        self.lorekeeperSplitter.setObjectName("lorekeeperSplitter")
-        self.horizontalSplitter = QtWidgets.QSplitter(parent=self.lorekeeperSplitter)
-        self.horizontalSplitter.setOrientation(QtCore.Qt.Orientation.Horizontal)
-        self.horizontalSplitter.setObjectName("horizontalSplitter")
-        self.databaseTreeView = QtWidgets.QTreeView(parent=self.horizontalSplitter)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-        )
-        sizePolicy.setHorizontalStretch(1)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            self.databaseTreeView.sizePolicy().hasHeightForWidth()
-        )
-        self.databaseTreeView.setSizePolicy(sizePolicy)
-        self.databaseTreeView.setMinimumSize(QtCore.QSize(200, 0))
-        self.databaseTreeView.setAlternatingRowColors(False)
-        self.databaseTreeView.setObjectName("databaseTreeView")
-        self.databaseTableView = QtWidgets.QTableView(parent=self.horizontalSplitter)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-        )
-        sizePolicy.setHorizontalStretch(3)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            self.databaseTableView.sizePolicy().hasHeightForWidth()
-        )
-        self.databaseTableView.setSizePolicy(sizePolicy)
-        self.databaseTableView.setAlternatingRowColors(True)
-        self.databaseTableView.setObjectName("databaseTableView")
-        self.formTabWidget = QtWidgets.QTabWidget(parent=self.lorekeeperSplitter)
-        self.formTabWidget.setObjectName("formTabWidget")
-        self.editTab = QtWidgets.QWidget()
-        self.editTab.setObjectName("editTab")
-        self.verticalLayout_6 = QtWidgets.QVBoxLayout(self.editTab)
-        self.verticalLayout_6.setObjectName("verticalLayout_6")
-        self.editFormScrollArea = QtWidgets.QScrollArea(parent=self.editTab)
-        self.editFormScrollArea.setWidgetResizable(True)
-        self.editFormScrollArea.setObjectName("editFormScrollArea")
-        self.editFormWidget = QtWidgets.QWidget()
-        self.editFormWidget.setGeometry(QtCore.QRect(0, 0, 1270, 123))
-        self.editFormWidget.setObjectName("editFormWidget")
-        self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.editFormWidget)
-        self.verticalLayout_5.setObjectName("verticalLayout_5")
-        self.editFormLayout = QtWidgets.QFormLayout()
-        self.editFormLayout.setObjectName("editFormLayout")
-        self.verticalLayout_5.addLayout(self.editFormLayout)
-        spacerItem1 = QtWidgets.QSpacerItem(
-            20,
-            40,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-        )
-        self.verticalLayout_5.addItem(spacerItem1)
-        self.saveChangesButton = QtWidgets.QPushButton(parent=self.editFormWidget)
-        self.saveChangesButton.setObjectName("saveChangesButton")
-        self.verticalLayout_5.addWidget(self.saveChangesButton)
-        self.editFormScrollArea.setWidget(self.editFormWidget)
-        self.verticalLayout_6.addWidget(self.editFormScrollArea)
-        self.formTabWidget.addTab(self.editTab, "")
-        self.addTab = QtWidgets.QWidget()
-        self.addTab.setObjectName("addTab")
-        self.verticalLayout_8 = QtWidgets.QVBoxLayout(self.addTab)
-        self.verticalLayout_8.setObjectName("verticalLayout_8")
-        self.addFormScrollArea = QtWidgets.QScrollArea(parent=self.addTab)
-        self.addFormScrollArea.setWidgetResizable(True)
-        self.addFormScrollArea.setObjectName("addFormScrollArea")
-        self.addFormWidget = QtWidgets.QWidget()
-        self.addFormWidget.setGeometry(QtCore.QRect(0, 0, 1270, 123))
-        self.addFormWidget.setObjectName("addFormWidget")
-        self.verticalLayout_7 = QtWidgets.QVBoxLayout(self.addFormWidget)
-        self.verticalLayout_7.setObjectName("verticalLayout_7")
-        self.addFormLayout = QtWidgets.QFormLayout()
-        self.addFormLayout.setObjectName("addFormLayout")
-        self.verticalLayout_7.addLayout(self.addFormLayout)
-        spacerItem2 = QtWidgets.QSpacerItem(
-            20,
-            40,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-        )
-        self.verticalLayout_7.addItem(spacerItem2)
-        self.addNewRowButton = QtWidgets.QPushButton(parent=self.addFormWidget)
-        self.addNewRowButton.setObjectName("addNewRowButton")
-        self.verticalLayout_7.addWidget(self.addNewRowButton)
-        self.addFormScrollArea.setWidget(self.addFormWidget)
-        self.verticalLayout_8.addWidget(self.addFormScrollArea)
-        self.formTabWidget.addTab(self.addTab, "")
-        self.verticalLayout_4.addWidget(self.lorekeeperSplitter)
-        self.pageStack.addWidget(self.lorekeeperPage)
         self.newLorekeeperPage = QtWidgets.QWidget()
         self.newLorekeeperPage.setObjectName("newLorekeeperPage")
         self.pageStack.addWidget(self.newLorekeeperPage)
@@ -385,13 +270,8 @@ class Ui_StorymasterMainWindow(object):
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout.setSpacing(0)
         self.horizontalLayout.setObjectName("horizontalLayout")
-        spacerItem3 = QtWidgets.QSpacerItem(
-            40,
-            20,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
-        self.horizontalLayout.addItem(spacerItem3)
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.horizontalLayout.addItem(spacerItem)
         self.litographerNavButton = QtWidgets.QPushButton(parent=self.bottomNavBar)
         self.litographerNavButton.setCheckable(True)
         self.litographerNavButton.setChecked(True)
@@ -413,13 +293,8 @@ class Ui_StorymasterMainWindow(object):
         self.characterArcsNavButton.setObjectName("characterArcsNavButton")
         self.navButtonGroup.addButton(self.characterArcsNavButton)
         self.horizontalLayout.addWidget(self.characterArcsNavButton)
-        spacerItem4 = QtWidgets.QSpacerItem(
-            40,
-            20,
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
-        self.horizontalLayout.addItem(spacerItem4)
+        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.horizontalLayout.addItem(spacerItem1)
         self.verticalLayout.addWidget(self.bottomNavBar)
         StorymasterMainWindow.setCentralWidget(self.centralWidget)
         self.menubar = QtWidgets.QMenuBar(parent=StorymasterMainWindow)
@@ -504,134 +379,50 @@ class Ui_StorymasterMainWindow(object):
 
         self.retranslateUi(StorymasterMainWindow)
         self.pageStack.setCurrentIndex(0)
-        self.formTabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(StorymasterMainWindow)
 
     def retranslateUi(self, StorymasterMainWindow):
         _translate = QtCore.QCoreApplication.translate
-        StorymasterMainWindow.setWindowTitle(
-            _translate("StorymasterMainWindow", "Storymaster")
-        )
-        self.litographerToolbar.setWindowTitle(
-            _translate("StorymasterMainWindow", "toolBar")
-        )
-        self.pageTitleLabel_2.setText(
-            _translate("StorymasterMainWindow", "Lorekeeper - Database")
-        )
-        self.configureTablesButton.setText(
-            _translate("StorymasterMainWindow", "Configure Tables")
-        )
-        self.saveChangesButton.setText(
-            _translate("StorymasterMainWindow", "Save Changes")
-        )
-        self.formTabWidget.setTabText(
-            self.formTabWidget.indexOf(self.editTab),
-            _translate("StorymasterMainWindow", "Edit Selected Row"),
-        )
-        self.addNewRowButton.setText(_translate("StorymasterMainWindow", "Add New Row"))
-        self.formTabWidget.setTabText(
-            self.formTabWidget.indexOf(self.addTab),
-            _translate("StorymasterMainWindow", "Add New Row"),
-        )
-        self.litographerNavButton.setText(
-            _translate("StorymasterMainWindow", "Litographer")
-        )
-        self.lorekeeperNavButton.setText(
-            _translate("StorymasterMainWindow", "Lorekeeper")
-        )
-        self.characterArcsNavButton.setText(
-            _translate("StorymasterMainWindow", "Character Arcs")
-        )
+        StorymasterMainWindow.setWindowTitle(_translate("StorymasterMainWindow", "Storymaster"))
+        self.litographerToolbar.setWindowTitle(_translate("StorymasterMainWindow", "toolBar"))
+        self.litographerNavButton.setText(_translate("StorymasterMainWindow", "Litographer"))
+        self.lorekeeperNavButton.setText(_translate("StorymasterMainWindow", "Lorekeeper"))
+        self.characterArcsNavButton.setText(_translate("StorymasterMainWindow", "Character Arcs"))
         self.menuFile.setTitle(_translate("StorymasterMainWindow", "File"))
         self.menuStoryline.setTitle(_translate("StorymasterMainWindow", "Storyline"))
         self.menuSetting.setTitle(_translate("StorymasterMainWindow", "Setting"))
         self.menuUser.setTitle(_translate("StorymasterMainWindow", "User"))
         self.menuEdit.setTitle(_translate("StorymasterMainWindow", "Edit"))
         self.menuHelp.setTitle(_translate("StorymasterMainWindow", "Help"))
-        self.actionNewStoryline.setText(
-            _translate("StorymasterMainWindow", "New Storyline")
-        )
-        self.actionNewStoryline.setToolTip(
-            _translate("StorymasterMainWindow", "Create a new storyline")
-        )
-        self.actionNewSetting.setText(
-            _translate("StorymasterMainWindow", "New Setting")
-        )
-        self.actionNewSetting.setToolTip(
-            _translate("StorymasterMainWindow", "Create a new setting")
-        )
-        self.actionSwitchStoryline.setText(
-            _translate("StorymasterMainWindow", "Switch Storyline")
-        )
-        self.actionSwitchStoryline.setToolTip(
-            _translate("StorymasterMainWindow", "Switch to a different storyline")
-        )
-        self.actionSwitchSetting.setText(
-            _translate("StorymasterMainWindow", "Switch Setting")
-        )
-        self.actionSwitchSetting.setToolTip(
-            _translate("StorymasterMainWindow", "Switch to a different setting")
-        )
+        self.actionNewStoryline.setText(_translate("StorymasterMainWindow", "New Storyline"))
+        self.actionNewStoryline.setToolTip(_translate("StorymasterMainWindow", "Create a new storyline"))
+        self.actionNewSetting.setText(_translate("StorymasterMainWindow", "New Setting"))
+        self.actionNewSetting.setToolTip(_translate("StorymasterMainWindow", "Create a new setting"))
+        self.actionSwitchStoryline.setText(_translate("StorymasterMainWindow", "Switch Storyline"))
+        self.actionSwitchStoryline.setToolTip(_translate("StorymasterMainWindow", "Switch to a different storyline"))
+        self.actionSwitchSetting.setText(_translate("StorymasterMainWindow", "Switch Setting"))
+        self.actionSwitchSetting.setToolTip(_translate("StorymasterMainWindow", "Switch to a different setting"))
         self.actionNewPlot.setText(_translate("StorymasterMainWindow", "New Plot"))
-        self.actionNewPlot.setToolTip(
-            _translate(
-                "StorymasterMainWindow", "Create a new plot in the current storyline"
-            )
-        )
+        self.actionNewPlot.setToolTip(_translate("StorymasterMainWindow", "Create a new plot in the current storyline"))
         self.actionOpen.setText(_translate("StorymasterMainWindow", "Open Storyline"))
-        self.actionOpen.setToolTip(
-            _translate("StorymasterMainWindow", "Open a different storyline")
-        )
-        self.actionSwitchPlot.setText(
-            _translate("StorymasterMainWindow", "Switch Plot")
-        )
-        self.actionSwitchPlot.setToolTip(
-            _translate(
-                "StorymasterMainWindow",
-                "Switch to a different plot in the current storyline",
-            )
-        )
-        self.actionDeletePlot.setText(
-            _translate("StorymasterMainWindow", "Delete Plot")
-        )
-        self.actionDeletePlot.setToolTip(
-            _translate("StorymasterMainWindow", "Delete the current plot")
-        )
+        self.actionOpen.setToolTip(_translate("StorymasterMainWindow", "Open a different storyline"))
+        self.actionSwitchPlot.setText(_translate("StorymasterMainWindow", "Switch Plot"))
+        self.actionSwitchPlot.setToolTip(_translate("StorymasterMainWindow", "Switch to a different plot in the current storyline"))
+        self.actionDeletePlot.setText(_translate("StorymasterMainWindow", "Delete Plot"))
+        self.actionDeletePlot.setToolTip(_translate("StorymasterMainWindow", "Delete the current plot"))
         self.actionExit.setText(_translate("StorymasterMainWindow", "Exit"))
         self.actionUndo.setText(_translate("StorymasterMainWindow", "Undo"))
         self.actionRedo.setText(_translate("StorymasterMainWindow", "Redo"))
         self.actionAbout.setText(_translate("StorymasterMainWindow", "About"))
         self.actionAddNode.setText(_translate("StorymasterMainWindow", "Add Node"))
-        self.actionAddNode.setToolTip(
-            _translate("StorymasterMainWindow", "Add a new node to the canvas")
-        )
+        self.actionAddNode.setToolTip(_translate("StorymasterMainWindow", "Add a new node to the canvas"))
         self.actionNewUser.setText(_translate("StorymasterMainWindow", "New User"))
-        self.actionNewUser.setToolTip(
-            _translate("StorymasterMainWindow", "Create a new user")
-        )
-        self.actionSwitchUser.setText(
-            _translate("StorymasterMainWindow", "Switch User")
-        )
-        self.actionSwitchUser.setToolTip(
-            _translate("StorymasterMainWindow", "Switch to a different user")
-        )
-        self.actionManageUsers.setText(
-            _translate("StorymasterMainWindow", "Manage Users")
-        )
-        self.actionManageUsers.setToolTip(
-            _translate("StorymasterMainWindow", "Manage users (add, switch, delete)")
-        )
-        self.actionCreateBackup.setText(
-            _translate("StorymasterMainWindow", "Create Backup")
-        )
-        self.actionCreateBackup.setToolTip(
-            _translate(
-                "StorymasterMainWindow", "Create a manual backup of the database"
-            )
-        )
-        self.actionDatabaseManager.setText(
-            _translate("StorymasterMainWindow", "Database Manager")
-        )
-        self.actionDatabaseManager.setToolTip(
-            _translate("StorymasterMainWindow", "Manage databases and backups")
-        )
+        self.actionNewUser.setToolTip(_translate("StorymasterMainWindow", "Create a new user"))
+        self.actionSwitchUser.setText(_translate("StorymasterMainWindow", "Switch User"))
+        self.actionSwitchUser.setToolTip(_translate("StorymasterMainWindow", "Switch to a different user"))
+        self.actionManageUsers.setText(_translate("StorymasterMainWindow", "Manage Users"))
+        self.actionManageUsers.setToolTip(_translate("StorymasterMainWindow", "Manage users (add, switch, delete)"))
+        self.actionCreateBackup.setText(_translate("StorymasterMainWindow", "Create Backup"))
+        self.actionCreateBackup.setToolTip(_translate("StorymasterMainWindow", "Create a manual backup of the database"))
+        self.actionDatabaseManager.setText(_translate("StorymasterMainWindow", "Database Manager"))
+        self.actionDatabaseManager.setToolTip(_translate("StorymasterMainWindow", "Manage databases and backups"))

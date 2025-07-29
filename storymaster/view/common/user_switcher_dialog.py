@@ -14,6 +14,12 @@ from PyQt6.QtWidgets import (
 )
 
 from storymaster.model.common.common_model import BaseModel
+from storymaster.view.common.theme import (
+    get_dialog_style,
+    get_label_style,
+    get_button_style,
+    get_list_style,
+)
 
 
 class UserSwitcherDialog(QDialog):
@@ -29,6 +35,13 @@ class UserSwitcherDialog(QDialog):
         self.setWindowTitle("Switch User")
         self.setMinimumWidth(400)
         self.setMinimumHeight(300)
+        
+        # Apply theme styling
+        self.setStyleSheet(
+            get_dialog_style()
+            + get_button_style()
+            + get_list_style()
+        )
 
         # --- Create Widgets ---
         self.user_list = QListWidget()

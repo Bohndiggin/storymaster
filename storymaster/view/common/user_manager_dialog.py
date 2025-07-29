@@ -12,6 +12,12 @@ from PyQt6.QtWidgets import (
 )
 
 from storymaster.model.common.common_model import BaseModel
+from storymaster.view.common.theme import (
+    get_dialog_style,
+    get_button_style,
+    get_list_style,
+    get_input_style,
+)
 
 
 class UserManagerDialog(QDialog):

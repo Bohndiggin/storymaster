@@ -31,6 +31,7 @@ from storymaster.view.common.theme import (
     get_input_style,
     get_group_box_style,
     get_splitter_style,
+    get_label_style,
     COLORS,
     FONTS,
 )
@@ -63,15 +64,13 @@ class SectionWidget(QGroupBox):
 
     def setup_ui(self):
         layout = QFormLayout()
-        layout.setSpacing(4)
-        layout.setContentsMargins(8, 8, 8, 8)
+        layout.setSpacing(6)
+        layout.setContentsMargins(10, 10, 10, 10)
 
         # Add description if available
         if self.section.description:
             desc_label = QLabel(self.section.description)
-            desc_label.setStyleSheet(
-                f"color: {COLORS['text_muted']}; font-style: italic; margin-bottom: 8px;"
-            )
+            desc_label.setStyleSheet(get_label_style("muted"))
             desc_label.setWordWrap(True)
             layout.addRow(desc_label)
 
@@ -80,9 +79,11 @@ class SectionWidget(QGroupBox):
             widget = self.create_field_widget(field_name)
             self.field_widgets[field_name] = widget
 
-            # Create user-friendly label
+            # Create user-friendly label with proper styling
             label_text = self.get_field_display_name(field_name)
-            layout.addRow(label_text, widget)
+            label = QLabel(label_text)
+            label.setStyleSheet(get_label_style())
+            layout.addRow(label, widget)
 
         self.setLayout(layout)
 
@@ -145,7 +146,7 @@ class SectionWidget(QGroupBox):
                 )
         elif field_name in multiline_fields:
             widget = TabNavigationTextEdit()
-            widget.setMaximumHeight(100)
+            widget.setMaximumHeight(120)
             widget.setAcceptRichText(False)
             widget.setStyleSheet(get_input_style())
         elif field_name in foreign_key_fields:
@@ -465,8 +466,8 @@ class EntityDetailPage(QWidget):
 
         sections_widget = QWidget()
         sections_layout = QVBoxLayout()
-        sections_layout.setContentsMargins(4, 4, 4, 4)
-        sections_layout.setSpacing(6)
+        sections_layout.setContentsMargins(8, 8, 8, 8)
+        sections_layout.setSpacing(10)
 
         # Create section widgets
         if self.entity_mapping:
@@ -514,8 +515,8 @@ class EntityDetailPage(QWidget):
 
         relationships_widget = QWidget()
         relationships_layout = QVBoxLayout()
-        relationships_layout.setContentsMargins(4, 4, 4, 4)
-        relationships_layout.setSpacing(4)
+        relationships_layout.setContentsMargins(8, 8, 8, 8)
+        relationships_layout.setSpacing(8)
 
         # Create relationship widgets
         if self.entity_mapping:

@@ -16,6 +16,15 @@ from PyQt6.QtWidgets import (
     QCheckBox,
 )
 
+from storymaster.view.common.theme import (
+    get_dialog_style,
+    get_label_style,
+    get_button_style,
+    get_list_style,
+    get_checkbox_style,
+    COLORS,
+)
+
 
 class TableVisibilityDialog(QDialog):
     """Dialog for selecting which tables are visible in Lorekeeper"""
@@ -29,6 +38,14 @@ class TableVisibilityDialog(QDialog):
         self.setWindowTitle("Configure Table Visibility")
         self.setModal(True)
         self.resize(500, 600)
+        
+        # Apply theme styling
+        self.setStyleSheet(
+            get_dialog_style()
+            + get_button_style()
+            + get_list_style()
+            + get_checkbox_style()
+        )
 
         self.setup_ui()
         self.load_tables()
@@ -39,13 +56,13 @@ class TableVisibilityDialog(QDialog):
 
         # Title and description
         title_label = QLabel("Configure Lorekeeper Table Visibility")
-        title_label.setStyleSheet("font-weight: bold; font-size: 14px;")
+        title_label.setStyleSheet(get_label_style("header"))
         layout.addWidget(title_label)
 
         desc_label = QLabel(
             "Select which tables should be visible in the Lorekeeper database view:"
         )
-        desc_label.setStyleSheet("color: #a0a0a0; margin-bottom: 10px;")
+        desc_label.setStyleSheet(get_label_style("muted"))
         layout.addWidget(desc_label)
 
         # Table list group

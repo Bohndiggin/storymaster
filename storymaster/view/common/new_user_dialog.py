@@ -13,6 +13,12 @@ from PyQt6.QtWidgets import (
 )
 
 from storymaster.model.common.common_model import BaseModel
+from storymaster.view.common.theme import (
+    get_dialog_style,
+    get_label_style,
+    get_button_style,
+    get_input_style,
+)
 
 
 class NewUserDialog(QDialog):
@@ -25,6 +31,13 @@ class NewUserDialog(QDialog):
         self.model = model
         self.setWindowTitle("Create New User")
         self.setMinimumWidth(350)
+        
+        # Apply theme styling
+        self.setStyleSheet(
+            get_dialog_style()
+            + get_button_style()
+            + get_input_style()
+        )
 
         # --- Create Widgets ---
         self.username_line_edit = QLineEdit()
@@ -38,7 +51,7 @@ class NewUserDialog(QDialog):
             "Enter a username for the new user. This will be used to organize storylines and settings."
         )
         info_label.setWordWrap(True)
-        info_label.setStyleSheet("color: #888; font-size: 9pt; margin-bottom: 10px;")
+        info_label.setStyleSheet(get_label_style("muted"))
 
         # --- Dialog Buttons (OK/Cancel) ---
         self.button_box = QDialogButtonBox(

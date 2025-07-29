@@ -22,6 +22,18 @@ from PyQt6.QtGui import QFont
 from datetime import datetime
 
 from storymaster.model.lorekeeper.entity_mappings import get_entity_mapping
+from storymaster.view.common.theme import (
+    get_dialog_style,
+    get_label_style,
+    get_button_style,
+    get_input_style,
+    get_tab_style,
+    get_spinbox_style,
+    get_slider_style,
+    get_checkbox_style,
+    get_dateedit_style,
+    COLORS,
+)
 
 
 class RelationshipDetailsDialog(QDialog):
@@ -49,6 +61,18 @@ class RelationshipDetailsDialog(QDialog):
         self.setWindowTitle(f"Relationship Details: {self.get_relationship_title()}")
         self.setModal(True)
         self.resize(600, 700)
+        
+        # Apply theme styling
+        self.setStyleSheet(
+            get_dialog_style()
+            + get_button_style()
+            + get_input_style()
+            + get_tab_style()
+            + get_spinbox_style()
+            + get_slider_style()
+            + get_checkbox_style()
+            + get_dateedit_style()
+        )
 
         layout = QVBoxLayout()
 
@@ -117,7 +141,7 @@ class RelationshipDetailsDialog(QDialog):
         target_name = self.get_entity_display_name(self.target_entity)
 
         details = QLabel(f"{source_name} ↔ {target_name}")
-        details.setStyleSheet("color: #666; font-size: 12px;")
+        details.setStyleSheet(get_label_style("small"))
         layout.addWidget(details)
 
         # Relationship type explanation
