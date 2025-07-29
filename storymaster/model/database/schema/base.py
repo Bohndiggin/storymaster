@@ -224,6 +224,12 @@ class LitographyNode(BaseTable):
     id: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True, name="id"
     )
+    name: Mapped[str] = mapped_column(
+        String(250), nullable=False, name="name", default="Untitled Node"
+    )
+    description: Mapped[str | None] = mapped_column(
+        Text, nullable=True, name="description"
+    )
     node_type: Mapped[NodeType] = mapped_column(
         Enum(NodeType, values_callable=lambda obj: [e.value for e in obj]),
         nullable=False,

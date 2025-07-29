@@ -176,11 +176,6 @@ class StorylineSettingsDialog(QDialog):
             )
             if success:
                 self.load_data()  # Refresh both lists
-                QMessageBox.information(
-                    self,
-                    "Success",
-                    f"Successfully linked '{setting_name}' to storyline '{self.storyline_name}'",
-                )
             else:
                 QMessageBox.warning(
                     self,
@@ -217,11 +212,6 @@ class StorylineSettingsDialog(QDialog):
                 )
                 if success:
                     self.load_data()  # Refresh both lists
-                    QMessageBox.information(
-                        self,
-                        "Success",
-                        f"Successfully unlinked '{setting_name}' from storyline '{self.storyline_name}'",
-                    )
                 else:
                     QMessageBox.warning(
                         self,

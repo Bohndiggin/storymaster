@@ -344,9 +344,7 @@ class SpellCheckConfigDialog(QDialog):
             self.spell_checker.add_word(word)
             self.add_word_input.clear()
             self.load_custom_words()
-            QMessageBox.information(
-                self, "Word Added", f"'{word}' added to your dictionary."
-            )
+            # Word appears in the list, no need for popup
         elif word:
             QMessageBox.warning(
                 self, "Invalid Word", "Please enter a single word with only letters."
@@ -378,9 +376,7 @@ class SpellCheckConfigDialog(QDialog):
         """Apply settings without closing dialog"""
         self.save_settings()
         self.settings_changed.emit()
-        QMessageBox.information(
-            self, "Settings Applied", "Spell check settings have been updated."
-        )
+        # Settings applied - user can see changes in UI
 
     def save_settings(self):
         """Save current settings"""

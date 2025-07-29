@@ -29,14 +29,14 @@ class TestNodeModelMethods:
         """Test getting nodes for a storyline"""
         mock_node1 = Mock(spec=LitographyNode)
         mock_node1.id = 1
-        mock_node1.label = "Opening Scene"
+        mock_node1.name = "Opening Scene"
         mock_node1.node_type = NodeType.EXPOSITION
         mock_node1.x_position = 100.0
         mock_node1.y_position = 200.0
 
         mock_node2 = Mock(spec=LitographyNode)
         mock_node2.id = 2
-        mock_node2.label = "Inciting Incident"
+        mock_node2.name = "Inciting Incident"
         mock_node2.node_type = NodeType.ACTION
         mock_node2.x_position = 300.0
         mock_node2.y_position = 200.0
@@ -46,8 +46,8 @@ class TestNodeModelMethods:
         nodes = self.mock_model.get_nodes_for_storyline(storyline_id=1)
 
         assert len(nodes) == 2
-        assert nodes[0].label == "Opening Scene"
-        assert nodes[1].label == "Inciting Incident"
+        assert nodes[0].name == "Opening Scene"
+        assert nodes[1].name == "Inciting Incident"
         assert nodes[0].node_type == NodeType.EXPOSITION
         assert nodes[1].node_type == NodeType.ACTION
 
@@ -55,7 +55,7 @@ class TestNodeModelMethods:
         """Test creating a new node"""
         mock_node = Mock(spec=LitographyNode)
         mock_node.id = 1
-        mock_node.label = "New Scene"
+        mock_node.name = "New Scene"
         mock_node.node_type = NodeType.ACTION
 
         self.mock_model.create_node.return_value = mock_node
@@ -68,7 +68,7 @@ class TestNodeModelMethods:
             y_position=250.0,
         )
 
-        assert result.label == "New Scene"
+        assert result.name == "New Scene"
         assert result.node_type == NodeType.ACTION
 
     def test_update_node_position(self):
@@ -158,7 +158,7 @@ class TestNodeGraphicsSystem:
         # Mock the node item creation pattern from the application
         mock_node = Mock()
         mock_node.id = 1
-        mock_node.label = "Test Node"
+        mock_node.name = "Test Node"
         mock_node.node_type = NodeType.EXPOSITION
         mock_node.x_position = 100.0
         mock_node.y_position = 200.0
@@ -166,7 +166,7 @@ class TestNodeGraphicsSystem:
         # Test that we can create a graphics item concept
         node_item_data = {
             "id": mock_node.id,
-            "label": mock_node.label,
+            "label": mock_node.name,
             "node_type": mock_node.node_type,
             "position": QPointF(mock_node.x_position, mock_node.y_position),
         }
@@ -279,7 +279,7 @@ class TestNodeEditingOperations:
 
         mock_node = Mock()
         mock_node.id = 5
-        mock_node.label = node_data["label"]
+        mock_node.name = node_data["name"]
         mock_node.node_type = node_data["node_type"]
 
         self.mock_model.create_node.return_value = mock_node
@@ -287,7 +287,7 @@ class TestNodeEditingOperations:
         # Simulate node creation
         result = self.mock_model.create_node(**node_data)
 
-        assert result.label == "New Scene"
+        assert result.name == "New Scene"
         assert result.node_type == NodeType.ACTION
         self.mock_model.create_node.assert_called_once_with(**node_data)
 
@@ -295,7 +295,7 @@ class TestNodeEditingOperations:
         """Test node editing workflow"""
         original_node = Mock()
         original_node.id = 1
-        original_node.label = "Original Label"
+        original_node.name = "Original Label"
         original_node.node_type = NodeType.EXPOSITION
 
         # Mock node update
@@ -334,13 +334,13 @@ class TestNodeEditingOperations:
     def test_node_copy_paste_workflow(self, qapp):
         """Test node copy and paste operations"""
         source_node = Mock()
-        source_node.label = "Source Node"
+        source_node.name = "Source Node"
         source_node.node_type = NodeType.REACTION
         source_node.description = "Original description"
 
         # Mock copy operation
         copy_data = {
-            "label": f"{source_node.label} (Copy)",
+            "label": f"{source_node.name} (Copy)",
             "node_type": source_node.node_type,
             "description": source_node.description,
             "x_position": 100.0,  # Offset position
@@ -350,14 +350,14 @@ class TestNodeEditingOperations:
 
         mock_copied_node = Mock()
         mock_copied_node.id = 10
-        mock_copied_node.label = copy_data["label"]
+        mock_copied_node.name = copy_data["name"]
 
         self.mock_model.create_node.return_value = mock_copied_node
 
         # Simulate copy-paste
         result = self.mock_model.create_node(**copy_data)
 
-        assert result.label == "Source Node (Copy)"
+        assert result.name == "Source Node (Copy)"
         self.mock_model.create_node.assert_called_once_with(**copy_data)
 
 
@@ -376,12 +376,12 @@ class TestNodeSystemIntegration:
         mock_node1 = Mock()
         mock_node1.id = 1
         mock_node1.plot_section_id = 1
-        mock_node1.label = "Opening"
+        mock_node1.name = "Opening"
 
         mock_node2 = Mock()
         mock_node2.id = 2
         mock_node2.plot_section_id = 1
-        mock_node2.label = "Inciting Incident"
+        mock_node2.name = "Inciting Incident"
 
         section_nodes = [mock_node1, mock_node2]
 

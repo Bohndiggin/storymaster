@@ -124,12 +124,12 @@ class TestPlotModelMethods:
         """Test getting nodes associated with a plot"""
         mock_node1 = Mock(spec=LitographyNode)
         mock_node1.id = 1
-        mock_node1.label = "Opening Scene"
+        mock_node1.name = "Opening Scene"
         mock_node1.plot_id = 1
 
         mock_node2 = Mock(spec=LitographyNode)
         mock_node2.id = 2
-        mock_node2.label = "Climax"
+        mock_node2.name = "Climax"
         mock_node2.plot_id = 1
 
         self.mock_model.get_plot_nodes.return_value = [mock_node1, mock_node2]
@@ -137,8 +137,8 @@ class TestPlotModelMethods:
         nodes = self.mock_model.get_plot_nodes(plot_id=1)
 
         assert len(nodes) == 2
-        assert nodes[0].label == "Opening Scene"
-        assert nodes[1].label == "Climax"
+        assert nodes[0].name == "Opening Scene"
+        assert nodes[1].name == "Climax"
         assert all(node.plot_id == 1 for node in nodes)
 
     def test_copy_plot(self):
@@ -504,12 +504,12 @@ class TestPlotManagementIntegration:
         # Mock default nodes
         mock_node1 = Mock()
         mock_node1.id = 10
-        mock_node1.label = "Opening"
+        mock_node1.name = "Opening"
         mock_node1.plot_id = 3
 
         mock_node2 = Mock()
         mock_node2.id = 11
-        mock_node2.label = "Climax"
+        mock_node2.name = "Climax"
         mock_node2.plot_id = 3
 
         mock_model.create_plot.return_value = mock_plot

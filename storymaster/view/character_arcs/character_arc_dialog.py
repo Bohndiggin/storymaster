@@ -76,9 +76,9 @@ class CharacterArcDialog(QDialog):
         if cancel_button:
             cancel_button.setStyleSheet(get_button_style())
 
-        # Connect signals
-        self.ui.buttonBox.accepted.connect(self.accept)
-        self.ui.buttonBox.rejected.connect(self.reject)
+        # Note: Button signals are already connected in the UI file
+        # self.ui.buttonBox.accepted.connect(self.accept) - already connected
+        # self.ui.buttonBox.rejected.connect(self.reject) - already connected
 
         # Set up enhanced tab navigation
         enable_smart_tab_navigation(self)

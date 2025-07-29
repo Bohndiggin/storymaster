@@ -237,12 +237,8 @@ class TableVisibilityDialog(QDialog):
             self.controller.set_visible_tables(self.visible_tables)
 
             # Show success message
-            table_count = len(self.visible_tables)
-            QMessageBox.information(
-                self,
-                "Settings Applied",
-                f"Table visibility updated. {table_count} tables will be shown in Lorekeeper.",
-            )
+            # User can see the changes in the UI, no need for popup
+            pass
 
             self.accept()
 

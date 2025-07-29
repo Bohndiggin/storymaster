@@ -405,9 +405,6 @@ class DatabaseManagerDialog(QDialog):
 
         if reply == QMessageBox.StandardButton.Yes:
             if self.backup_manager.restore_from_backup(backup_path):
-                QMessageBox.information(
-                    self, "Success", "Database restored successfully."
-                )
                 # Emit signal to reload the application
                 self.database_changed.emit(self.current_db_path)
 

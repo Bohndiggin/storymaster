@@ -51,7 +51,7 @@ class NodeNotesDialog(QDialog):
         self.current_note = None
 
         self.setWindowTitle(
-            f"Notes for Node (Type: {node_data.node_type.name.title()})"
+            f"Notes for {node_data.name} ({node_data.node_type.name.title()})"
         )
         self.setMinimumSize(600, 400)
         

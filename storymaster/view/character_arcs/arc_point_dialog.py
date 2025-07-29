@@ -113,9 +113,9 @@ class ArcPointDialog(QDialog):
         if cancel_button:
             cancel_button.setStyleSheet(get_button_style())
 
-        # Connect signals
-        self.ui.buttonBox.accepted.connect(self.accept)
-        self.ui.buttonBox.rejected.connect(self.reject)
+        # Note: Button signals are already connected in the UI file
+        # self.ui.buttonBox.accepted.connect(self.accept) - already connected
+        # self.ui.buttonBox.rejected.connect(self.reject) - already connected
 
         # Set up enhanced tab navigation
         enable_smart_tab_navigation(self)
@@ -131,7 +131,8 @@ class ArcPointDialog(QDialog):
             nodes = self.model.get_nodes_for_storyline(self.storyline_id)
 
             for node in nodes:
-                display_text = f"Node {node.id}: {node.label or 'Untitled'}"
+                # Use the new format: "name (node_type)"
+                display_text = f"{node.name} ({node.node_type.value})"
                 self.ui.nodeComboBox.addItem(display_text, node.id)
 
         except Exception as e:

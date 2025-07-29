@@ -45,6 +45,7 @@ class CharacterArcBrowser(QWidget):
 
     arc_selected = pyqtSignal(object)  # arc entity
     new_arc_requested = pyqtSignal()
+    add_arc_type_requested = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -60,6 +61,11 @@ class CharacterArcBrowser(QWidget):
         header_layout = QHBoxLayout()
 
         header_layout.addStretch()
+
+        self.add_arc_type_button = QPushButton("Add Arc Type")
+        self.add_arc_type_button.setStyleSheet(get_button_style())
+        self.add_arc_type_button.clicked.connect(self.on_add_arc_type_button_clicked)
+        header_layout.addWidget(self.add_arc_type_button)
 
         self.new_arc_button = QPushButton("New Arc")
         self.new_arc_button.setStyleSheet(get_button_style("primary"))
@@ -129,6 +135,10 @@ class CharacterArcBrowser(QWidget):
         if current_item:
             arc = current_item.data(Qt.ItemDataRole.UserRole)
             self.arc_selected.emit(arc)
+
+    def on_add_arc_type_button_clicked(self):
+        """Handle add arc type button click"""
+        self.add_arc_type_requested.emit()
 
 
 class CharacterArcDetailPage(QWidget):
@@ -209,8 +219,10 @@ class CharacterArcDetailPage(QWidget):
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll_area.setStyleSheet(f"QScrollArea {{ background-color: {COLORS['bg_main']}; border: none; }}")
 
         details_widget = QWidget()
+        details_widget.setStyleSheet(f"QWidget {{ background-color: {COLORS['bg_main']}; }}")
         details_layout = QVBoxLayout()
 
         # Arc information section
@@ -374,7 +386,10 @@ class CharacterArcDetailPage(QWidget):
                 item = QTreeWidgetItem()
                 item.setText(0, str(point.order_index))
                 item.setText(1, point.title)
-                item.setText(2, f"Node {point.node_id}" if point.node_id else "No Node")
+                if point.node:
+                    item.setText(2, f"{point.node.name} ({point.node.node_type.value})")
+                else:
+                    item.setText(2, "No Node")
                 item.setText(3, point.emotional_state or "")
                 item.setData(0, Qt.ItemDataRole.UserRole, point.id)
 
@@ -615,6 +630,7 @@ class NewCharacterArcsPage(QWidget):
         self.browser = CharacterArcBrowser()
         self.browser.arc_selected.connect(self.on_arc_selected)
         self.browser.new_arc_requested.connect(self.on_new_arc_requested)
+        self.browser.add_arc_type_requested.connect(self.on_add_arc_type_requested)
         layout.addWidget(self.browser)
 
         panel.setLayout(layout)
@@ -697,3 +713,26 @@ class NewCharacterArcsPage(QWidget):
         # Refresh the browser and show welcome page
         self.refresh_arcs(self.current_storyline_id)
         self.detail_stack.setCurrentWidget(self.welcome_page)
+
+    def on_add_arc_type_requested(self):
+        """Handle add arc type request"""
+        try:
+            # Get current setting ID
+            settings = self.model.get_all_settings()
+            if not settings:
+                QMessageBox.warning(
+                    self,
+                    "No Settings",
+                    "No settings found. Please create a setting first.",
+                )
+                return
+
+            setting_id = settings[0].id
+
+            dialog = ArcTypeManagerDialog(self.model, setting_id, self)
+            dialog.exec()
+            # Always refresh arcs after closing the dialog in case arc types were modified
+            self.refresh_arcs(self.current_storyline_id)
+
+        except Exception as e:
+            QMessageBox.warning(self, "Error", f"Failed to open arc type manager: {e}")

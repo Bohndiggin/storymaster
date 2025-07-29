@@ -919,55 +919,22 @@ class MainWindowController:
             node_info_group = QGroupBox("Node Information")
             node_info_layout = QFormLayout(node_info_group)
 
-            self.node_id_label = QLabel("None")
+            self.node_name_edit = QLineEdit()
+            self.node_name_edit.setStyleSheet(get_input_style())
+            self.node_description_edit = QTextEdit()
+            self.node_description_edit.setStyleSheet(get_input_style())
+            self.node_description_edit.setMaximumHeight(80)  # Keep it compact
             self.node_type_combo = QComboBox()
 
-            node_info_layout.addRow("Node ID:", self.node_id_label)
+            node_info_layout.addRow("Name:", self.node_name_edit)
+            node_info_layout.addRow("Description:", self.node_description_edit)
             node_info_layout.addRow("Node Type:", self.node_type_combo)
 
-            # Connections section
-            connections_group = QGroupBox("Connections")
-            connections_layout = QVBoxLayout(connections_group)
-
-            # Instructions
-            instructions_label = QLabel(
-                "Drag from red output points to green input points to connect nodes."
-            )
-            instructions_label.setWordWrap(True)
-            instructions_label.setStyleSheet(
-                f"""
-                color: {COLORS['text_muted']}; 
-                font-size: {FONTS['size_small']}; 
-                padding: 5px;
-            """
-            )
-            connections_layout.addWidget(instructions_label)
-
-            # Input connections list
-            input_label = QLabel("Input Connections:")
-            input_label.setStyleSheet(get_label_style("bold") + f"QLabel {{ color: {COLORS['success']}; }}")
-            connections_layout.addWidget(input_label)
-
-            self.input_connections_list = QListWidget()
-            self.input_connections_list.setMaximumHeight(80)
-            connections_layout.addWidget(self.input_connections_list)
-
-            # Output connections list
-            output_label = QLabel("Output Connections:")
-            output_label.setStyleSheet(
-                f"font-weight: bold; color: {COLORS['warning']};"
-            )
-            connections_layout.addWidget(output_label)
-
-            self.output_connections_list = QListWidget()
-            self.output_connections_list.setMaximumHeight(80)
-            connections_layout.addWidget(self.output_connections_list)
-
-            # Section selector (keep this)
-            section_form_layout = QFormLayout()
+            # Plot section selector
+            section_group = QGroupBox("Plot Section")
+            section_layout = QFormLayout(section_group)
             self.section_combo = QComboBox()
-            section_form_layout.addRow("Plot Section:", self.section_combo)
-            connections_layout.addLayout(section_form_layout)
+            section_layout.addRow("Section:", self.section_combo)
 
             # Keep the old combos for backward compatibility with existing save logic
             self.previous_node_combo = QComboBox()
@@ -1014,7 +981,7 @@ class MainWindowController:
 
             # Add to panel
             panel_layout.addWidget(node_info_group)
-            panel_layout.addWidget(connections_group)
+            panel_layout.addWidget(section_group)
             panel_layout.addWidget(notes_group)
             panel_layout.addLayout(button_layout)
             panel_layout.addStretch()
@@ -1212,10 +1179,11 @@ class MainWindowController:
             self.node_type_combo.addItem(node_type.value, node_type)
 
         # Set current values
-        self.node_id_label.setText(str(node_data.id))
+        self.node_name_edit.setText(node_data.name or "Untitled Node")
+        self.node_description_edit.setPlainText(node_data.description or "")
         self.node_type_combo.setCurrentText(node_data.node_type.value)
 
-        # Populate connection combos
+        # Populate connection combos (hidden, for save logic compatibility)
         self.populate_connection_combos(node_data)
 
         # Populate section combo
@@ -1225,11 +1193,7 @@ class MainWindowController:
         self.load_notes_for_node(node_data.id)
 
     def populate_connection_combos(self, current_node):
-        """Populate connection lists with current connections"""
-        # Clear the connection lists
-        self.input_connections_list.clear()
-        self.output_connections_list.clear()
-
+        """Update hidden connection combos for backward compatibility with save logic"""
         # Get all nodes for reference
         all_nodes = self.model.get_litography_nodes(
             storyline_id=self.current_storyline_id
@@ -1251,24 +1215,6 @@ class MainWindowController:
                 .filter_by(output_node_id=current_node.id)
                 .all()
             )
-
-            # Populate input connections list
-            for conn in input_connections:
-                if conn.output_node_id in nodes_dict:
-                    source_node = nodes_dict[conn.output_node_id]
-                    display_text = (
-                        f"← Node {source_node.id} ({source_node.node_type.value})"
-                    )
-                    self.input_connections_list.addItem(display_text)
-
-            # Populate output connections list
-            for conn in output_connections:
-                if conn.input_node_id in nodes_dict:
-                    target_node = nodes_dict[conn.input_node_id]
-                    display_text = (
-                        f"→ Node {target_node.id} ({target_node.node_type.value})"
-                    )
-                    self.output_connections_list.addItem(display_text)
 
             # Update hidden combos for backward compatibility with save logic
             self.previous_node_combo.clear()
@@ -1357,6 +1303,8 @@ class MainWindowController:
 
         try:
             # Get values from the form
+            new_name = self.node_name_edit.text().strip() or "Untitled Node"
+            new_description = self.node_description_edit.toPlainText().strip() or None
             new_type = self.node_type_combo.currentData()
             new_previous = self.previous_node_combo.currentData()
             new_next = self.next_node_combo.currentData()
@@ -1376,6 +1324,8 @@ class MainWindowController:
             # Update the node with new schema (no previous_node/next_node)
             update_data = {
                 "id": self.selected_node.id,
+                "name": new_name,
+                "description": new_description,
                 "node_type": new_type.value if new_type else None,
                 "x_position": current_x,
                 "y_position": current_y,
@@ -2878,6 +2828,8 @@ class MainWindowController:
     def add_node_at_position(self, x, y, node_type):
         """Add a node at specific coordinates (for testing and programmatic use)"""
         new_node_data = {
+            "name": f"New {node_type.value} Node",
+            "description": None,
             "node_type": node_type,
             "x_position": x,
             "y_position": y,
@@ -2899,6 +2851,11 @@ class MainWindowController:
 
         if new_node_data:
             new_node_data["storyline_id"] = self.current_storyline_id
+            # Add default position if not present
+            if "x_position" not in new_node_data:
+                new_node_data["x_position"] = 100.0
+            if "y_position" not in new_node_data:
+                new_node_data["y_position"] = 100.0
 
             try:
                 self.model.add_row("litography_node", new_node_data)

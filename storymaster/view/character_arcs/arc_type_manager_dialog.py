@@ -134,9 +134,8 @@ class ArcTypeManagerDialog(QDialog):
         """Handle add arc type button"""
         dialog = ArcTypeDialog(self.model, self.setting_id, parent=self)
 
-        if dialog.exec() == QDialog.DialogCode.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted and dialog.operation_successful:
             self.refresh_arc_types()
-            QMessageBox.information(self, "Success", "Arc type added successfully.")
 
     def on_edit_arc_type(self):
         """Handle edit arc type button"""
@@ -147,9 +146,8 @@ class ArcTypeManagerDialog(QDialog):
             self.model, self.setting_id, self.current_arc_type, parent=self
         )
 
-        if dialog.exec() == QDialog.DialogCode.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted and dialog.operation_successful:
             self.refresh_arc_types()
-            QMessageBox.information(self, "Success", "Arc type updated successfully.")
 
     def on_delete_arc_type(self):
         """Handle delete arc type button"""
@@ -168,8 +166,5 @@ class ArcTypeManagerDialog(QDialog):
             try:
                 self.model.delete_arc_type(self.current_arc_type.id)
                 self.refresh_arc_types()
-                QMessageBox.information(
-                    self, "Success", "Arc type deleted successfully."
-                )
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"Failed to delete arc type: {e}")

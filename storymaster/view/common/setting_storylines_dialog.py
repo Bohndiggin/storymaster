@@ -251,11 +251,6 @@ class SettingStorylinesDialog(QDialog):
             )
             if success:
                 self.load_storylines()  # Refresh both lists
-                QMessageBox.information(
-                    self,
-                    "Success",
-                    f"Successfully connected storyline '{storyline_name}' to setting '{self.current_setting_name}'",
-                )
             else:
                 QMessageBox.warning(
                     self,
@@ -295,11 +290,6 @@ class SettingStorylinesDialog(QDialog):
                 )
                 if success:
                     self.load_storylines()  # Refresh both lists
-                    QMessageBox.information(
-                        self,
-                        "Success",
-                        f"Successfully disconnected storyline '{storyline_name}' from setting '{self.current_setting_name}'",
-                    )
                 else:
                     QMessageBox.warning(
                         self,

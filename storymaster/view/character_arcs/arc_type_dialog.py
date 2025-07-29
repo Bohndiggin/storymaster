@@ -20,6 +20,7 @@ class ArcTypeDialog(QDialog):
         self.model = model
         self.setting_id = setting_id
         self.arc_type = arc_type  # None for add, ArcType object for edit
+        self.operation_successful = False  # Track if the operation was successful
 
         # Setup UI
         self.ui = Ui_ArcTypeDialog()
@@ -56,9 +57,9 @@ class ArcTypeDialog(QDialog):
         if cancel_button:
             cancel_button.setStyleSheet(get_button_style())
 
-        # Connect signals
-        self.ui.buttonBox.accepted.connect(self.accept)
-        self.ui.buttonBox.rejected.connect(self.reject)
+        # Note: Button signals are already connected in the UI file
+        # self.ui.buttonBox.accepted.connect(self.accept) - already connected
+        # self.ui.buttonBox.rejected.connect(self.reject) - already connected
 
         # Set up enhanced tab navigation
         enable_smart_tab_navigation(self)
@@ -88,10 +89,16 @@ class ArcTypeDialog(QDialog):
                     setting_id=self.setting_id,
                 )
 
+            self.operation_successful = True
             super().accept()
 
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Failed to save arc type: {e}")
+            # Handle unique constraint violations more specifically
+            error_message = str(e)
+            if "UNIQUE constraint failed" in error_message or "already exists" in error_message.lower():
+                QMessageBox.warning(self, "Duplicate Arc Type", f"An arc type named '{name}' already exists. Please choose a different name.")
+            else:
+                QMessageBox.critical(self, "Error", f"Failed to save arc type: {e}")
 
     def get_result(self):
         """Get the dialog result data"""
