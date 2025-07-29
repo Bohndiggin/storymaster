@@ -152,6 +152,15 @@ class BaseModel:
         "actor_to_race": schema.ActorToRace,
         "actor_to_class": schema.ActorToClass,
         "actor_to_stat": schema.ActorToStat,
+        "location_a_on_b_relations": schema.LocationAOnBRelations,
+        "location_geographic_relations": schema.LocationGeographicRelations,
+        "location_political_relations": schema.LocationPoliticalRelations,
+        "location_economic_relations": schema.LocationEconomicRelations,
+        "location_hierarchy": schema.LocationHierarchy,
+        "actor_a_on_b_relations": schema.ActorAOnBRelations,
+        "faction_a_on_b_relations": schema.FactionAOnBRelations,
+        "arc_type": schema.ArcType,
+        "arc_point": schema.ArcPoint,
     }
 
     def __init__(self, user_id: int):
@@ -216,8 +225,6 @@ class BaseModel:
             "litography_note_to_race",
             "litography_note_to_sub_race",
             "litography_note_to_world_data",
-            "actor_a_on_b_relations",
-            "faction_a_on_b_relations",
             "history_actor",
             "history_location",
             "history_faction",
