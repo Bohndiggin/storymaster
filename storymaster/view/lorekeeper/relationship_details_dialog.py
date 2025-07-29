@@ -96,6 +96,14 @@ class RelationshipDetailsDialog(QDialog):
             self.tab_widget.addTab(self.create_membership_tab(), "Membership Details")
         elif self.relationship_type == "location_to_faction":
             self.tab_widget.addTab(self.create_territory_tab(), "Territory Control")
+        elif self.relationship_type == "residents":
+            self.tab_widget.addTab(self.create_residency_tab(), "Living Details")
+        elif self.relationship_type == "object_to_owner":
+            self.tab_widget.addTab(self.create_ownership_tab(), "Ownership Details")
+        elif self.relationship_type == "actor_to_skills":
+            self.tab_widget.addTab(self.create_skill_details_tab(), "Skill Details")
+        elif self.relationship_type == "actor_to_class":
+            self.tab_widget.addTab(self.create_class_details_tab(), "Profession Details")
         elif self.relationship_type.startswith("history_"):
             self.tab_widget.addTab(
                 self.create_historical_involvement_tab(), "Historical Context"
@@ -162,18 +170,18 @@ class RelationshipDetailsDialog(QDialog):
         tab = QGroupBox()
         layout = QFormLayout()
 
-        # Relationship status
+        # Relationship status - customized by type
         self.status_combo = QComboBox()
-        self.status_combo.addItems(
-            ["Active", "Inactive", "Historical", "Potential", "Complicated"]
-        )
+        status_options = self.get_status_options_for_type()
+        self.status_combo.addItems(status_options)
         layout.addRow("Status:", self.status_combo)
 
-        # Relationship strength/intensity
+        # Relationship strength/intensity - customized by type
+        strength_info = self.get_strength_info_for_type()
         self.strength_slider = QSlider(Qt.Orientation.Horizontal)
-        self.strength_slider.setRange(1, 10)
-        self.strength_slider.setValue(5)
-        self.strength_label = QLabel("5")
+        self.strength_slider.setRange(strength_info["min"], strength_info["max"])
+        self.strength_slider.setValue(strength_info["default"])
+        self.strength_label = QLabel(str(strength_info["default"]))
         self.strength_slider.valueChanged.connect(
             lambda v: self.strength_label.setText(str(v))
         )
@@ -181,7 +189,17 @@ class RelationshipDetailsDialog(QDialog):
         strength_layout = QHBoxLayout()
         strength_layout.addWidget(self.strength_slider)
         strength_layout.addWidget(self.strength_label)
-        layout.addRow("Strength (1-10):", strength_layout)
+        
+        # Add description for what the slider means
+        strength_desc = QLabel(strength_info["description"])
+        strength_desc.setStyleSheet("color: #888; font-size: 10px; font-style: italic;")
+        strength_desc.setWordWrap(True)
+        
+        strength_container = QVBoxLayout()
+        strength_container.addLayout(strength_layout)
+        strength_container.addWidget(strength_desc)
+        
+        layout.addRow(f"{strength_info['label']}:", strength_container)
 
         # Description
         self.description_edit = QTextEdit()
@@ -439,6 +457,157 @@ class RelationshipDetailsDialog(QDialog):
         tab.setLayout(layout)
         return tab
 
+    def create_residency_tab(self) -> QGroupBox:
+        """Create tab for character residence details"""
+        tab = QGroupBox()
+        layout = QFormLayout()
+
+        # Residence type
+        self.residence_type = QComboBox()
+        self.residence_type.addItems([
+            "Primary Home", "Secondary Home", "Temporary Stay", "Hideout",
+            "Workplace", "Ancestral Home", "Refuge", "Prison"
+        ])
+        layout.addRow("Residence Type:", self.residence_type)
+
+        # Duration of stay
+        self.duration_edit = QLineEdit()
+        self.duration_edit.setPlaceholderText("How long have they lived here?")
+        layout.addRow("Duration:", self.duration_edit)
+
+        # Living conditions
+        self.conditions_edit = QTextEdit()
+        self.conditions_edit.setMaximumHeight(80)
+        self.conditions_edit.setPlaceholderText("What are their living conditions like?")
+        layout.addRow("Conditions:", self.conditions_edit)
+
+        # Reason for living here
+        self.reason_edit = QTextEdit()
+        self.reason_edit.setMaximumHeight(80)
+        self.reason_edit.setPlaceholderText("Why do they live here?")
+        layout.addRow("Reason:", self.reason_edit)
+
+        tab.setLayout(layout)
+        return tab
+
+    def create_ownership_tab(self) -> QGroupBox:
+        """Create tab for item ownership details"""
+        tab = QGroupBox()
+        layout = QFormLayout()
+
+        # How acquired
+        self.acquisition_method = QComboBox()
+        self.acquisition_method.addItems([
+            "Purchased", "Inherited", "Found", "Gifted", "Stolen", 
+            "Crafted", "Earned", "Borrowed", "Traded"
+        ])
+        layout.addRow("How Acquired:", self.acquisition_method)
+
+        # When acquired
+        self.acquisition_date = QLineEdit()
+        self.acquisition_date.setPlaceholderText("When did they get this item?")
+        layout.addRow("When Acquired:", self.acquisition_date)
+
+        # Current condition
+        self.item_condition = QComboBox()
+        self.item_condition.addItems([
+            "Excellent", "Good", "Fair", "Poor", "Damaged", "Broken", "Lost"
+        ])
+        layout.addRow("Condition:", self.item_condition)
+
+        # Usage frequency
+        self.usage_frequency = QComboBox()
+        self.usage_frequency.addItems([
+            "Daily", "Weekly", "Monthly", "Rarely", "Never", "Special Occasions"
+        ])
+        layout.addRow("Usage:", self.usage_frequency)
+
+        # Acquisition story
+        self.acquisition_story = QTextEdit()
+        self.acquisition_story.setMaximumHeight(80)
+        self.acquisition_story.setPlaceholderText("Tell the story of how they got this item...")
+        layout.addRow("Acquisition Story:", self.acquisition_story)
+
+        tab.setLayout(layout)
+        return tab
+
+    def create_skill_details_tab(self) -> QGroupBox:
+        """Create tab for skill proficiency details"""
+        tab = QGroupBox()
+        layout = QFormLayout()
+
+        # How learned
+        self.learning_method = QComboBox()
+        self.learning_method.addItems([
+            "Self-taught", "Formal Training", "Mentor", "Apprenticeship",
+            "Natural Talent", "Trial by Fire", "Books/Study", "Experimentation"
+        ])
+        layout.addRow("How Learned:", self.learning_method)
+
+        # Years of experience
+        self.experience_years = QSpinBox()
+        self.experience_years.setRange(0, 100)
+        self.experience_years.setValue(1)
+        layout.addRow("Years Experience:", self.experience_years)
+
+        # Specializations
+        self.specializations_edit = QLineEdit()
+        self.specializations_edit.setPlaceholderText("Any special areas of expertise?")
+        layout.addRow("Specializations:", self.specializations_edit)
+
+        # Learning story
+        self.learning_story = QTextEdit()
+        self.learning_story.setMaximumHeight(80)
+        self.learning_story.setPlaceholderText("How did they learn this skill?")
+        layout.addRow("Learning Story:", self.learning_story)
+
+        # Current practice
+        self.practice_frequency = QComboBox()
+        self.practice_frequency.addItems([
+            "Daily", "Weekly", "Monthly", "Rarely", "No longer practices"
+        ])
+        layout.addRow("Practice Frequency:", self.practice_frequency)
+
+        tab.setLayout(layout)
+        return tab
+
+    def create_class_details_tab(self) -> QGroupBox:
+        """Create tab for class/profession details"""
+        tab = QGroupBox()
+        layout = QFormLayout()
+
+        # Current level/rank
+        self.class_level = QSpinBox()
+        self.class_level.setRange(1, 20)
+        self.class_level.setValue(1)
+        layout.addRow("Level/Rank:", self.class_level)
+
+        # Experience points (if applicable)
+        self.experience_points = QSpinBox()
+        self.experience_points.setRange(0, 999999)
+        self.experience_points.setValue(0)
+        layout.addRow("Experience Points:", self.experience_points)
+
+        # Specialization/Path
+        self.specialization_edit = QLineEdit()
+        self.specialization_edit.setPlaceholderText("Any specialization or path?")
+        layout.addRow("Specialization:", self.specialization_edit)
+
+        # Training/Education
+        self.training_edit = QTextEdit()
+        self.training_edit.setMaximumHeight(80)
+        self.training_edit.setPlaceholderText("Where and how were they trained?")
+        layout.addRow("Training:", self.training_edit)
+
+        # Notable achievements
+        self.achievements_edit = QTextEdit()
+        self.achievements_edit.setMaximumHeight(80)
+        self.achievements_edit.setPlaceholderText("Any notable achievements in this profession?")
+        layout.addRow("Achievements:", self.achievements_edit)
+
+        tab.setLayout(layout)
+        return tab
+
     def create_timeline_tab(self) -> QGroupBox:
         """Create tab for relationship timeline"""
         tab = QGroupBox()
@@ -496,6 +665,104 @@ class RelationshipDetailsDialog(QDialog):
         }
 
         return explanations.get(self.relationship_type, "")
+
+    def get_status_options_for_type(self) -> list[str]:
+        """Get status options appropriate for this relationship type"""
+        status_options = {
+            "actor_a_on_b_relations": [
+                "Close Friends", "Friends", "Acquaintances", "Neutral", 
+                "Tension", "Enemies", "Former Friends", "It's Complicated"
+            ],
+            "faction_members": [
+                "Active Member", "Inactive", "On Leave", "Probationary", 
+                "Leadership", "Founding Member", "Honorary", "Former Member"
+            ],
+            "residents": [
+                "Permanent Resident", "Temporary", "Frequent Visitor", 
+                "Occasional Visitor", "Former Resident", "Exiled"
+            ],
+            "location_to_faction": [
+                "Full Control", "Strong Presence", "Moderate Influence", 
+                "Minor Presence", "Contested", "Former Territory", "Claims Only"
+            ],
+            "history_actor": [
+                "Central Figure", "Major Participant", "Minor Role", 
+                "Witness", "Affected Party", "Catalyst"
+            ],
+            "history_faction": [
+                "Primary Actor", "Allied", "Opposition", "Neutral", 
+                "Victim", "Beneficiary"
+            ],
+            "object_to_owner": [
+                "Owns", "Borrowed", "Stolen", "Inherited", 
+                "Found", "Gifted", "Lost", "Sold"
+            ]
+        }
+        
+        return status_options.get(self.relationship_type, [
+            "Active", "Inactive", "Historical", "Potential", "Complicated"
+        ])
+
+    def get_strength_info_for_type(self) -> dict:
+        """Get strength field configuration for this relationship type"""
+        strength_configs = {
+            "actor_a_on_b_relations": {
+                "label": "Bond Intensity",
+                "description": "How strong is their emotional connection? (1=Barely know each other, 10=Inseparable)",
+                "min": 1, "max": 10, "default": 5
+            },
+            "faction_members": {
+                "label": "Loyalty Level", 
+                "description": "How devoted are they to the organization? (1=Disloyal, 10=Absolutely devoted)",
+                "min": 1, "max": 10, "default": 7
+            },
+            "residents": {
+                "label": "Attachment Level",
+                "description": "How connected are they to this place? (1=Temporary stay, 10=Deep roots)",
+                "min": 1, "max": 10, "default": 5
+            },
+            "location_to_faction": {
+                "label": "Control Level",
+                "description": "How much control does the faction have? (1=Minimal influence, 10=Complete control)",
+                "min": 1, "max": 10, "default": 5
+            },
+            "history_actor": {
+                "label": "Impact Significance",
+                "description": "How significant was this event for them? (1=Minor impact, 10=Life-changing)",
+                "min": 1, "max": 10, "default": 5
+            },
+            "history_faction": {
+                "label": "Organizational Impact",
+                "description": "How much did this event affect the organization? (1=Minor, 10=Transformative)",
+                "min": 1, "max": 10, "default": 5
+            },
+            "object_to_owner": {
+                "label": "Attachment Level",
+                "description": "How important is this item to them? (1=Hardly cares, 10=Extremely precious)",
+                "min": 1, "max": 10, "default": 5
+            },
+            "actor_to_skills": {
+                "label": "Skill Level",
+                "description": "How proficient are they? (1=Novice, 10=Master)",
+                "min": 1, "max": 10, "default": 3
+            },
+            "actor_to_race": {
+                "label": "Heritage Strength",
+                "description": "How strongly do they identify with this heritage? (1=Barely, 10=Completely)",
+                "min": 1, "max": 10, "default": 8
+            },
+            "actor_to_class": {
+                "label": "Class Level",
+                "description": "What level are they in this profession? (1=Apprentice, 10=Grandmaster)",
+                "min": 1, "max": 20, "default": 5
+            }
+        }
+        
+        return strength_configs.get(self.relationship_type, {
+            "label": "Strength",
+            "description": "General relationship strength (1=Weak, 10=Strong)",
+            "min": 1, "max": 10, "default": 5
+        })
 
     def get_entity_display_name(self, entity) -> str:
         """Get display name for an entity"""

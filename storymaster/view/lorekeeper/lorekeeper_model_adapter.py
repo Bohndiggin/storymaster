@@ -66,6 +66,7 @@ class LorekeeperModelAdapter:
                         Storyline,
                         StorylineToSetting,
                     )
+                    from sqlalchemy.orm import joinedload
 
                     storylines = (
                         session.query(Storyline)
@@ -78,17 +79,46 @@ class LorekeeperModelAdapter:
                     for storyline in storylines:
                         notes = (
                             session.query(table_class)
+                            .options(joinedload(table_class.linked_node))
                             .filter_by(storyline_id=storyline.id)
                             .all()
                         )
                         all_notes.extend(notes)
                     return all_notes
                 else:
-                    return (
-                        session.query(table_class)
-                        .filter_by(setting_id=self.setting_id)
-                        .all()
-                    )
+                    from sqlalchemy.orm import joinedload
+                    
+                    query = session.query(table_class).filter_by(setting_id=self.setting_id)
+                    
+                    # Add eager loading for commonly accessed relationships
+                    if table_name == "actor":
+                        query = query.options(
+                            joinedload(table_class.background),
+                            joinedload(table_class.alignment),
+                            joinedload(table_class.setting)
+                        )
+                    elif table_name == "faction":
+                        query = query.options(
+                            joinedload(table_class.setting)
+                        )
+                    elif table_name == "location_":
+                        query = query.options(
+                            joinedload(table_class.setting)
+                        )
+                    elif table_name == "object_":
+                        query = query.options(
+                            joinedload(table_class.setting)
+                        )
+                    elif table_name == "history":
+                        query = query.options(
+                            joinedload(table_class.setting)
+                        )
+                    elif table_name == "world_data":
+                        query = query.options(
+                            joinedload(table_class.setting)
+                        )
+                    
+                    return query.all()
         except Exception as e:
             print(f"Error loading entities for {table_name}: {e}")
             return []
@@ -103,13 +133,47 @@ class LorekeeperModelAdapter:
             with Session(self.model.engine) as session:
                 if table_name == "litography_notes":
                     # Notes don't have setting_id, just get by ID
-                    return session.query(table_class).filter_by(id=entity_id).first()
-                else:
+                    from sqlalchemy.orm import joinedload
                     return (
                         session.query(table_class)
-                        .filter_by(id=entity_id, setting_id=self.setting_id)
+                        .options(joinedload(table_class.linked_node))
+                        .filter_by(id=entity_id)
                         .first()
                     )
+                else:
+                    from sqlalchemy.orm import joinedload
+                    
+                    query = session.query(table_class).filter_by(id=entity_id, setting_id=self.setting_id)
+                    
+                    # Add eager loading for commonly accessed relationships
+                    if table_name == "actor":
+                        query = query.options(
+                            joinedload(table_class.background),
+                            joinedload(table_class.alignment),
+                            joinedload(table_class.setting)
+                        )
+                    elif table_name == "faction":
+                        query = query.options(
+                            joinedload(table_class.setting)
+                        )
+                    elif table_name == "location_":
+                        query = query.options(
+                            joinedload(table_class.setting)
+                        )
+                    elif table_name == "object_":
+                        query = query.options(
+                            joinedload(table_class.setting)
+                        )
+                    elif table_name == "history":
+                        query = query.options(
+                            joinedload(table_class.setting)
+                        )
+                    elif table_name == "world_data":
+                        query = query.options(
+                            joinedload(table_class.setting)
+                        )
+                    
+                    return query.first()
         except Exception as e:
             print(f"Error loading entity {entity_id} from {table_name}: {e}")
             return None

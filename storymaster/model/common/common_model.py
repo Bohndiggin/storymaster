@@ -178,6 +178,7 @@ class BaseModel:
         with Session(self.engine) as session:
             nodes = (
                 session.query(schema.LitographyNode)
+                .options(joinedload(schema.LitographyNode.storyline))
                 .filter_by(storyline_id=storyline_id)
                 .all()
             )
@@ -806,6 +807,7 @@ class BaseModel:
         with Session(self.engine) as session:
             return (
                 session.query(schema.ArcPoint)
+                .options(joinedload(schema.ArcPoint.node))
                 .filter(schema.ArcPoint.arc_id == arc_id)
                 .order_by(schema.ArcPoint.order_index)
                 .all()
@@ -1052,6 +1054,7 @@ class BaseModel:
         with Session(self.engine) as session:
             return (
                 session.query(schema.LitographyNode)
+                .options(joinedload(schema.LitographyNode.storyline))
                 .filter(schema.LitographyNode.storyline_id == storyline_id)
                 .order_by(schema.LitographyNode.id)
                 .all()
@@ -1062,6 +1065,11 @@ class BaseModel:
         with Session(self.engine) as session:
             return (
                 session.query(schema.Actor)
+                .options(
+                    joinedload(schema.Actor.setting),
+                    joinedload(schema.Actor.background),
+                    joinedload(schema.Actor.alignment)
+                )
                 .filter(schema.Actor.setting_id == setting_id)
                 .order_by(schema.Actor.first_name, schema.Actor.last_name)
                 .all()
