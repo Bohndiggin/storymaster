@@ -1,5 +1,7 @@
 """Holds the controller for the main page"""
 
+import json
+
 from PyQt6.QtCore import QPointF, Qt, pyqtSignal
 from PyQt6.QtGui import (
     QBrush,
@@ -14,6 +16,7 @@ from PyQt6.QtGui import (
 from PyQt6.QtWidgets import (
     QComboBox,
     QDialog,
+    QFileDialog,
     QFormLayout,
     QGraphicsEllipseItem,
     QGraphicsLineItem,
@@ -2109,6 +2112,9 @@ class MainWindowController:
 
         # --- File Menu ---
         self.view.ui.actionOpen.triggered.connect(self.on_open_storyline_clicked)
+        self.view.ui.actionImportFromJSON.triggered.connect(
+            self.on_import_from_json_clicked
+        )
         # Database and backup actions
         self.view.ui.actionDatabaseManager.triggered.connect(
             self.on_database_manager_clicked
@@ -2210,6 +2216,219 @@ class MainWindowController:
         """Handle backup failed signal."""
         self.view.ui.statusbar.showMessage(f"Backup failed: {message}", 5000)
 
+    def on_import_from_json_clicked(self):
+        """Import storyline data from a JSON file."""
+        try:
+            # Open file dialog to select JSON file
+            file_path, _ = QFileDialog.getOpenFileName(
+                self.view,
+                "Import from JSON",
+                "",
+                "JSON files (*.json);;All files (*.*)",
+            )
+
+            if not file_path:
+                return  # User cancelled
+
+            # Load and validate JSON file
+            try:
+                with open(file_path, "r", encoding="utf-8") as file:
+                    json_data = json.load(file)
+            except (json.JSONDecodeError, IOError) as e:
+                QMessageBox.critical(
+                    self.view, "Import Error", f"Failed to load JSON file: {str(e)}"
+                )
+                return
+
+            # Basic validation - check if it has the expected structure
+            if not self._validate_json_structure(json_data):
+                QMessageBox.critical(
+                    self.view,
+                    "Import Error",
+                    "The JSON file doesn't match the expected schema format. "
+                    "Please ensure it follows the structure of story_schema_template.json",
+                )
+                return
+
+            # Ask user whether to import to current or new storyline/setting
+            choice = self._get_import_choice()
+            if choice is None:
+                return  # User cancelled
+
+            # Perform the import
+            success = self._import_json_data(json_data, choice)
+
+            if success:
+                self.view.ui.statusbar.showMessage(
+                    "JSON import completed successfully", 5000
+                )
+                # Refresh current view
+                if self.view.ui.pageStack.currentIndex() == 0:
+                    self.load_and_draw_nodes()
+                else:
+                    self._refresh_current_table_view()
+            else:
+                QMessageBox.warning(
+                    self.view,
+                    "Import Warning",
+                    "Import completed with some errors. Check the status bar for details.",
+                )
+
+        except Exception as e:
+            QMessageBox.critical(
+                self.view,
+                "Import Error",
+                f"An unexpected error occurred during import: {str(e)}",
+            )
+
+    def _validate_json_structure(self, json_data):
+        """Validate that the JSON has the expected structure."""
+        required_keys = ["user", "setting", "storyline", "storyline_to_setting"]
+
+        if not isinstance(json_data, dict):
+            return False
+
+        # Check if it has basic required keys
+        for key in required_keys:
+            if key not in json_data:
+                return False
+            if not isinstance(json_data[key], list):
+                return False
+
+        return True
+
+    def _get_import_choice(self):
+        """Get user choice for import destination."""
+        from PyQt6.QtWidgets import (
+            QDialog,
+            QVBoxLayout,
+            QHBoxLayout,
+            QRadioButton,
+            QPushButton,
+            QLabel,
+        )
+
+        dialog = QDialog(self.view)
+        dialog.setWindowTitle("Import Destination")
+        dialog.setModal(True)
+
+        layout = QVBoxLayout(dialog)
+
+        # Add description
+        label = QLabel("Choose where to import the JSON data:")
+        layout.addWidget(label)
+
+        # Radio buttons for choices
+        current_radio = QRadioButton("Import into current storyline/setting")
+        new_radio = QRadioButton("Create new storyline/setting")
+        current_radio.setChecked(True)  # Default selection
+
+        layout.addWidget(current_radio)
+        layout.addWidget(new_radio)
+
+        # Buttons
+        button_layout = QHBoxLayout()
+        ok_button = QPushButton("OK")
+        cancel_button = QPushButton("Cancel")
+
+        ok_button.clicked.connect(dialog.accept)
+        cancel_button.clicked.connect(dialog.reject)
+
+        button_layout.addWidget(ok_button)
+        button_layout.addWidget(cancel_button)
+        layout.addLayout(button_layout)
+
+        result = dialog.exec()
+        if result == QDialog.DialogCode.Accepted:
+            return "current" if current_radio.isChecked() else "new"
+        return None
+
+    def _import_json_data(self, json_data, choice):
+        """Import the JSON data into the database."""
+        try:
+            if choice == "new":
+                # Create new storyline and setting
+                storyline_name = json_data.get("storyline", [{}])[0].get(
+                    "name", "Imported Storyline"
+                )
+                setting_name = json_data.get("setting", [{}])[0].get(
+                    "name", "Imported Setting"
+                )
+
+                if not storyline_name:
+                    storyline_name = "Imported Storyline"
+                if not setting_name:
+                    setting_name = "Imported Setting"
+
+                # Create new setting and storyline
+                new_setting = self.model.create_setting(
+                    setting_name,
+                    json_data.get("setting", [{}])[0].get("description", ""),
+                )
+                new_storyline = self.model.create_storyline(
+                    storyline_name,
+                    json_data.get("storyline", [{}])[0].get("description", ""),
+                )
+
+                # Link storyline to setting
+                self.model.add_storyline_to_setting(new_storyline.id, new_setting.id)
+
+                # Switch to new storyline and setting
+                self.current_storyline_id = new_storyline.id
+                self.current_setting_id = new_setting.id
+            else:
+                # Use current storyline and setting
+                new_setting = self.model.get_setting_by_id(self.current_setting_id)
+                new_storyline = self.model.get_storyline_by_id(
+                    self.current_storyline_id
+                )
+
+            # Import all data types
+            self._import_data_by_type(json_data, new_setting.id, new_storyline.id)
+
+            return True
+
+        except Exception as e:
+            print(f"Import error: {e}")
+            return False
+
+    def _import_data_by_type(self, json_data, setting_id, storyline_id):
+        """Import different data types from JSON."""
+        # Skip user, setting, storyline, and linking tables as they're handled separately
+        skip_tables = {"user", "setting", "storyline", "storyline_to_setting"}
+
+        for table_name, records in json_data.items():
+            if table_name in skip_tables or not isinstance(records, list):
+                continue
+
+            # Get the corresponding model class
+            model_class = self.model.get_table_class(table_name)
+            if not model_class:
+                print(f"Unknown table: {table_name}")
+                continue
+
+            # Import each record
+            for record_data in records:
+                if not isinstance(record_data, dict):
+                    continue
+
+                # Update foreign keys to point to current setting/storyline
+                updated_record = record_data.copy()
+                if "setting_id" in updated_record:
+                    updated_record["setting_id"] = setting_id
+                if "storyline_id" in updated_record:
+                    updated_record["storyline_id"] = storyline_id
+
+                # Remove the ID field to let the database auto-assign
+                if "id" in updated_record:
+                    del updated_record["id"]
+
+                try:
+                    self.model.create_entity(table_name, updated_record)
+                except Exception as e:
+                    print(f"Failed to import {table_name} record: {e}")
+                    # Continue with other records
+
     def on_new_storyline_clicked(self):
         """Opens a dialog to create a new storyline."""
         dialog = NewStorylineDialog(self.model, self.view)
@@ -2233,23 +2452,30 @@ class MainWindowController:
         setting_data = dialog.get_setting_data()
         if setting_data is not None:
             # Extract world building packages before saving
-            selected_packages = setting_data.pop('_selected_packages', [])
-            
+            selected_packages = setting_data.pop("_selected_packages", [])
+
             try:
                 # Create the setting first
                 self.model.add_row("setting", setting_data)
-                
+
                 # Get the newly created setting ID
                 settings = self.model.get_all_rows_as_dicts("setting")
                 new_setting = next(
-                    (s for s in settings if s["name"] == setting_data["name"] and s["user_id"] == setting_data["user_id"]), 
-                    None
+                    (
+                        s
+                        for s in settings
+                        if s["name"] == setting_data["name"]
+                        and s["user_id"] == setting_data["user_id"]
+                    ),
+                    None,
                 )
-                
+
                 if new_setting and selected_packages:
                     # Import world building packages for the new setting
-                    dialog.import_packages_for_setting(selected_packages, new_setting["id"])
-                
+                    dialog.import_packages_for_setting(
+                        selected_packages, new_setting["id"]
+                    )
+
                 self.view.ui.statusbar.showMessage(
                     f"Created new setting: {setting_data['name']}", 5000
                 )
@@ -2348,33 +2574,30 @@ class MainWindowController:
         """Opens the import lore packages dialog for the current setting."""
         try:
             # Check if we have a current setting
-            if not hasattr(self, 'current_setting_id') or not self.current_setting_id:
+            if not hasattr(self, "current_setting_id") or not self.current_setting_id:
                 QMessageBox.warning(
                     self.view,
                     "No Setting Selected",
-                    "Please select or create a setting first to import lore packages."
+                    "Please select or create a setting first to import lore packages.",
                 )
                 return
-            
+
             # Get setting name
             try:
                 settings = self.model.get_all_settings()
                 setting_name = next(
-                    (s.name for s in settings if s.id == self.current_setting_id), 
-                    "Unknown Setting"
+                    (s.name for s in settings if s.id == self.current_setting_id),
+                    "Unknown Setting",
                 )
             except Exception:
                 setting_name = "Current Setting"
-            
+
             # Open import lore packages dialog
             dialog = ImportLorePackagesDialog(
-                self.model, 
-                self.current_setting_id, 
-                setting_name, 
-                self.view
+                self.model, self.current_setting_id, setting_name, self.view
             )
             dialog.exec()
-            
+
         except Exception as e:
             QMessageBox.critical(
                 self.view,

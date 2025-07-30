@@ -10,7 +10,7 @@ from pathlib import Path
 
 # Add the storymaster directory to the Python path
 current_dir = Path(__file__).parent
-storymaster_dir = current_dir / "storymaster"
+storymaster_dir = current_dir.parent / "storymaster"
 sys.path.insert(0, str(storymaster_dir))
 
 try:
@@ -256,5 +256,5 @@ try:
 except ImportError as e:
     print(f"❌ Missing required dependencies: {e}")
     print("Please install the required packages:")
-    print("pip install sqlalchemy python-dotenv")
+    print("pip install sqlalchemy")
     sys.exit(1)

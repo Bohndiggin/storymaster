@@ -7,6 +7,12 @@ Run this instead of pytest to avoid database setup issues
 import sys
 import traceback
 import os
+from pathlib import Path
+
+# Add the project root to Python path so we can import storymaster
+current_dir = Path(__file__).parent
+project_root = current_dir.parent
+sys.path.insert(0, str(project_root))
 
 # Handle headless environments (CI/CD)
 def setup_headless_qt():

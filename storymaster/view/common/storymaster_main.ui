@@ -204,6 +204,7 @@
      <string>File</string>
     </property>
     <addaction name="actionOpen"/>
+    <addaction name="actionImportFromJSON"/>
     <addaction name="separator"/>
     <addaction name="actionCreateBackup"/>
     <addaction name="actionDatabaseManager"/>
@@ -394,6 +395,14 @@
    </property>
    <property name="toolTip">
     <string>Import world building packages into current setting</string>
+   </property>
+  </action>
+  <action name="actionImportFromJSON">
+   <property name="text">
+    <string>Import from JSON</string>
+   </property>
+   <property name="toolTip">
+    <string>Import storyline data from JSON file</string>
    </property>
   </action>
  </widget>

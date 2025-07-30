@@ -42,12 +42,8 @@ def check_and_run_migrations():
     """Check if database migrations are needed and run them"""
     try:
         from sqlalchemy import create_engine, inspect
-        import dotenv
         
-        # Load environment variables
-        dotenv.load_dotenv()
-        
-        # Get database URL - use same logic as seed.py
+        # Get database URL from environment or use default
         db_url = os.getenv("DATABASE_CONNECTION")
         if not db_url:
             # Use the same path as seed.py

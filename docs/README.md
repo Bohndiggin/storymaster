@@ -60,10 +60,10 @@ source .venv/bin/activate    # Linux/Mac
 pip install -r requirements.txt
 
 # Initialize database
-python init_database.py
+python scripts/init_database.py
 
 # Load sample data (optional)
-python seed.py
+python scripts/seed.py
 ```
 
 ### Launch Application
@@ -167,10 +167,10 @@ source .venv/bin/activate  # Linux/Mac
 pip install -r requirements.txt
 
 # Initialize database
-python init_database.py
+python scripts/init_database.py
 
 # Load sample data
-python seed.py
+python scripts/seed.py
 
 # Run application
 python storymaster/main.py
@@ -179,7 +179,7 @@ python storymaster/main.py
 ### Testing
 ```bash
 # Run all tests
-python run_tests.py
+python scripts/run_tests.py
 
 # Run pytest tests
 pytest tests/ -v
@@ -189,7 +189,7 @@ pytest tests/model/litographer/ -v
 pytest tests/controller/litographer/ -v
 
 # Run comprehensive tests with coverage
-python run_comprehensive_tests.py
+python scripts/run_comprehensive_tests.py
 ```
 
 ### Code Quality
@@ -207,10 +207,10 @@ mypy storymaster/
 ### Database Management
 ```bash
 # Initialize database
-python init_database.py
+python scripts/init_database.py
 
 # Load sample data
-python seed.py
+python scripts/seed.py
 
 # Handle schema updates
 python migrate_database.py
@@ -273,12 +273,12 @@ cp storymaster.db backup/storymaster_backup_$(date +%Y%m%d).db
 
 **Environment Problems:**
 - `ModuleNotFoundError` → Ensure virtual environment is activated
-- `Database connection failed` → Run `python init_database.py`
+- `Database connection failed` → Run `python scripts/init_database.py`
 - `PyQt6 import error` → Reinstall with `pip install PyQt6`
 
 **Database Issues:**
 - Corrupt database → Delete `storymaster.db` and run `init_database.py`
-- Missing tables → Run `python init_database.py` to recreate schema
+- Missing tables → Run `python scripts/init_database.py` to recreate schema
 - Performance issues → Consider archiving old projects
 
 **UI Problems:**
