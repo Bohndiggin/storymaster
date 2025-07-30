@@ -29,7 +29,7 @@ jobs:
     - name: Run tests
       run: |
         echo "Running logic tests (no GUI dependencies)..."
-        python run_tests.py
+        python scripts/run_tests.py
         echo "Running all tests in headless mode..."
         python -m pytest tests/ --tb=short -q || echo "Some tests failed but continuing build..."
       env:
@@ -38,7 +38,7 @@ jobs:
         QT_QPA_PLATFORM: offscreen 
     
     - name: Build Windows executable (GitHub Actions optimized)
-      run: python build_executable_github.py
+      run: python scripts/build_executable_github.py
       timeout-minutes: 10  # Faster build, shorter timeout
       env:
         PYTHONIOENCODING: utf-8
@@ -69,7 +69,7 @@ jobs:
     - name: Run tests
       run: |
         echo "Running logic tests (no GUI dependencies)..."
-        python run_tests.py
+        python scripts/run_tests.py
         echo "Running all tests in headless mode..."
         python -m pytest tests/ --tb=short -q || echo "Some tests failed but continuing build..."
       env:
@@ -78,7 +78,7 @@ jobs:
         QT_QPA_PLATFORM: offscreen
     
     - name: Build macOS app bundle
-      run: python build_macos.py --non-interactive
+      run: python scripts/build_macos.py --non-interactive
     
     - name: Create DMG (if hdiutil available)
       run: |
@@ -133,7 +133,7 @@ jobs:
     - name: Run tests
       run: |
         echo "Running logic tests (no GUI dependencies)..."
-        python run_tests.py
+        python scripts/run_tests.py
         echo "Running all tests in headless mode..."
         xvfb-run -a python -m pytest tests/ --tb=short -q || echo "Some tests failed but continuing build..."
       env:
@@ -143,13 +143,13 @@ jobs:
         QT_QPA_PLATFORM: offscreen
     
     - name: Build Linux executable (GitHub Actions optimized)
-      run: xvfb-run -a python build_executable_github.py
+      run: xvfb-run -a python scripts/build_executable_github.py
       timeout-minutes: 8  # Linux builds faster
       env:
         DISPLAY: :99
     
     - name: Build AppImage
-      run: xvfb-run -a python build_appimage.py
+      run: xvfb-run -a python scripts/build_appimage.py
       env:
         DISPLAY: :99
     
@@ -157,7 +157,7 @@ jobs:
       run: |
         if command -v rpmbuild &> /dev/null; then
           echo "Building RPM package for cross-platform distribution..."
-          xvfb-run -a python build_rpm.py
+          xvfb-run -a python scripts/build_rpm.py
         else
           echo "rpmbuild not available, skipping RPM build"
         fi

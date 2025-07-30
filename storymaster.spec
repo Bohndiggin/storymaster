@@ -127,7 +127,7 @@ a = Analysis(
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
-    runtime_hooks=['runtime_hook_pyqt6.py'],
+    runtime_hooks=['scripts/runtime_hook_pyqt6.py'],
     excludes=[
         # Exclude unnecessary modules to reduce size and build time
         'matplotlib',
