@@ -16,14 +16,12 @@ sys.path.insert(0, str(storymaster_dir))
 try:
     from sqlalchemy import create_engine, text, inspect
     from sqlalchemy.exc import OperationalError
-    import dotenv
     
     # Load environment variables
-    dotenv.load_dotenv()
     
     def get_database_url():
         """Get the database URL from environment or default"""
-        db_url = os.getenv("DATABASE_CONNECTION")
+        db_url = None
         if not db_url:
             # Use the same path as seed.py
             db_path = os.path.expanduser('~/.local/share/storymaster/storymaster.db')
