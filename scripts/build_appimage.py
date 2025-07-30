@@ -77,109 +77,63 @@ def create_appdir_structure():
 
 
 def install_python_app(appdir):
-    """Install Python application and dependencies into AppDir"""
-    print("\n[PACKAGE] Installing application into AppDir...")
+    """Install PyInstaller executable and assets into AppDir"""
+    print("\n[PACKAGE] Installing PyInstaller executable into AppDir...")
 
     try:
-        # Copy application files
-        app_files = ["storymaster/", "tests/", "init_database.py"]
+        # Check if PyInstaller executable exists
+        pyinstaller_exe = Path("dist/storymaster")
+        if not pyinstaller_exe.exists():
+            print("[ERROR] PyInstaller executable not found at dist/storymaster")
+            print("Please run 'python scripts/build_executable.py' first")
+            return False
 
-        for file_path in app_files:
+        # Copy the PyInstaller executable to AppDir
+        exe_dst = appdir / "usr/bin/storymaster"
+        shutil.copy2(pyinstaller_exe, exe_dst)
+        os.chmod(exe_dst, 0o755)
+        print(f"   Copied PyInstaller executable: {pyinstaller_exe} -> {exe_dst}")
+
+        # Copy any additional data files that might be needed
+        data_files = ["world_building_packages/", "tests/model/database/test_data/"]
+        
+        for file_path in data_files:
             src = Path(file_path)
             if src.exists():
                 dst = appdir / "usr/share/storymaster" / src.name
                 if src.is_dir():
                     shutil.copytree(src, dst)
-                else:
-                    shutil.copy2(src, dst)
-                print(f"   Copied {file_path}")
+                    print(f"   Copied data directory: {file_path}")
 
-        # Create virtual environment for bundled dependencies
-        print("   Creating virtual environment for dependencies...")
-        venv_path = appdir / "usr/share/storymaster/venv"
-        subprocess.run(["python3", "-m", "venv", str(venv_path)], check=True)
-
-        # Install dependencies in virtual environment
-        pip_path = venv_path / "bin/pip"
-        subprocess.run([str(pip_path), "install", "SQLAlchemy==2.0.41"], check=True)
-        print("   Installed SQLAlchemy in virtual environment")
-
-        # Create launcher script
-        launcher_script = appdir / "usr/bin/storymaster"
+        # Create simple launcher script that just calls the executable
+        launcher_script = appdir / "usr/bin/storymaster-launcher"
         launcher_content = """#!/bin/bash
-# Storymaster AppImage launcher
+# Storymaster AppImage launcher for PyInstaller executable
 
 # Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-APP_DIR="$SCRIPT_DIR/../share/storymaster"
 
-# Set up environment
+# Set up AppImage environment
 export APPDIR="${APPDIR:-$(dirname "$SCRIPT_DIR")}"
-export PYTHONPATH="$APP_DIR:$PYTHONPATH"
+export APPIMAGE_ORIGINAL_LD_LIBRARY_PATH="${LD_LIBRARY_PATH}"
+export APPIMAGE_ORIGINAL_PYTHONPATH="${PYTHONPATH}"
 
-# Smart Python selection: use system Python for PyQt6, bundled for SQLAlchemy
-VENV_PYTHON="$APP_DIR/venv/bin/python"
+# Create user data directory if needed
+USER_DATA_DIR="$HOME/.local/share/storymaster"
+mkdir -p "$USER_DATA_DIR"
 
-# Check if system python3 is available
-if ! command -v python3 &> /dev/null; then
-    echo "Error: Python 3 is required but not installed."
-    echo "Please install Python 3.8 or newer and try again."
-    exit 1
-fi
+# Set working directory to user data directory
+cd "$USER_DATA_DIR"
 
-# Test if system Python has PyQt6 (preferred for GUI applications)
-if python3 -c "import PyQt6" 2>/dev/null; then
-    echo "Using system Python with PyQt6"
-    PYTHON_CMD="python3"
-    
-    # Set PYTHONPATH to include bundled SQLAlchemy if available
-    if [ -f "$VENV_PYTHON" ]; then
-        VENV_SITE_PACKAGES=$(echo "$APP_DIR"/venv/lib/python*/site-packages)
-        export PYTHONPATH="$VENV_SITE_PACKAGES:$PYTHONPATH"
-        echo "Added bundled SQLAlchemy to Python path"
-    else
-        # Check if SQLAlchemy is available system-wide
-        python3 -c "import sqlalchemy" 2>/dev/null || {
-            echo "Error: SQLAlchemy is missing."
-            echo "Please install: sudo apt install python3-sqlalchemy"
-            echo "Or via pip: pip install SQLAlchemy"
-            exit 1
-        }
-    fi
-else
-    echo "Error: PyQt6 is required but not found."
-    echo "Please install PyQt6:"
-    echo "  Ubuntu/Debian: sudo apt install python3-pyqt6"
-    echo "  Fedora/RHEL:   sudo dnf install python3-PyQt6"
-    echo "  Or via pip:    pip install PyQt6"
-    exit 1
-fi
-
-# Change to app directory
-cd "$APP_DIR"
-
-# Initialize database if needed
-if [ ! -f "$HOME/.local/share/storymaster/storymaster.db" ]; then
-    mkdir -p "$HOME/.local/share/storymaster"
-    
-    echo "Initializing Storymaster database..."
-    $PYTHON_CMD init_database.py
-    
-    echo "Would you like to load sample data? (y/n)"
-    read -r response
-    if [[ "$response" =~ ^[Yy]$ ]]; then
-        $PYTHON_CMD seed.py
-    fi
-fi
-
-# Launch the application
-exec $PYTHON_CMD storymaster/main.py "$@"
+# Launch the PyInstaller executable directly
+exec "$SCRIPT_DIR/storymaster" "$@"
 """
 
         with open(launcher_script, "w") as f:
             f.write(launcher_content)
 
         os.chmod(launcher_script, 0o755)
+        print("   Created AppImage launcher script")
 
         # Create desktop entry
         desktop_entry = appdir / "usr/share/applications/storymaster.desktop"
@@ -189,7 +143,7 @@ Type=Application
 Name=Storymaster
 Comment=Visual Story Plotting & World-Building Tool  
 GenericName=Story Writing Tool
-Exec=storymaster %F
+Exec=storymaster
 Icon=storymaster
 Terminal=false
 Categories=Office;Publishing;Education;
@@ -230,8 +184,19 @@ StartupWMClass=storymaster
         # Create AppRun script
         apprun_script = appdir / "AppRun"
         apprun_content = """#!/bin/bash
-# AppRun script for Storymaster
+# AppRun script for Storymaster AppImage
 
+# Set up AppImage environment variables
+export APPDIR="${APPDIR:-$(dirname "$(readlink -f "${0}")")}"
+
+# Create user data directory if needed
+USER_DATA_DIR="$HOME/.local/share/storymaster"
+mkdir -p "$USER_DATA_DIR"
+
+# Set working directory to user data directory
+cd "$USER_DATA_DIR"
+
+# Launch the PyInstaller executable directly
 exec "$APPDIR/usr/bin/storymaster" "$@"
 """
 
@@ -283,7 +248,7 @@ def create_installation_instructions():
 An AppImage is a portable application format for Linux that:
 - Runs on any Linux distribution
 - Requires no installation or root privileges
-- Includes all dependencies
+- Includes all dependencies (Python, PyQt6, SQLAlchemy)
 - Can be run directly after download
 
 ## How to Use
@@ -300,18 +265,19 @@ An AppImage is a portable application format for Linux that:
 
 ## Requirements
 
-- Linux x86_64 system  
-- Python 3.8 or newer (usually pre-installed)
-- PyQt6 system libraries (auto-installed on most modern distributions)
+- Linux x86_64 system with basic graphics libraries
+- **NO Python installation required**
+- **NO PyQt6 installation required**
+- **NO SQLAlchemy installation required**
 
-**Note**: SQLAlchemy is bundled in the AppImage, no additional installation required!
+**This AppImage is completely self-contained!**
 
 ## First Run
 
 On first run, Storymaster will:
-1. Create a database in `~/.local/share/storymaster/`
-2. Ask if you want to load sample data
-3. Launch the application
+1. Extract bundled files (may take 10-15 seconds)
+2. Create a database in `~/.local/share/storymaster/`
+3. Launch the application with all dependencies bundled
 
 ## Integration (Optional)
 
@@ -337,23 +303,32 @@ Delete the AppImage file. User data remains in `~/.local/share/storymaster/`.
 
 If the AppImage doesn't run:
 1. Ensure it's executable: `chmod +x Storymaster-x86_64.AppImage`
-2. Check Python 3 is installed: `python3 --version`
-3. Install PyQt6 if needed:
-   - Ubuntu/Debian: `sudo apt install python3-pyqt6`
-   - Fedora/RHEL: `sudo dnf install python3-PyQt6`
-   - Or via pip: `pip install PyQt6`
-4. Try running from terminal to see error messages
+2. Check basic system libraries:
+   - Ubuntu/Debian: `sudo apt install libxcb-xinerama0 libxcb-cursor0`
+   - Fedora/RHEL: `sudo dnf install xcb-util-cursor`
+3. Try running from terminal to see error messages
+4. Ensure you have basic graphics drivers installed
 
-**Note**: SQLAlchemy is bundled, so you only need PyQt6!
+**Note**: No Python, PyQt6, or SQLAlchemy installation needed - everything is bundled!
 
-## Benefits of AppImage
+## Benefits of This AppImage
 
-- [OK] No installation required
-- [OK] Works on any Linux distribution
-- [OK] No root privileges needed
-- [OK] No dependency conflicts
-- [OK] Easy to distribute and update
-- [OK] Sandboxed execution
+- [✓] Completely self-contained - no dependencies needed
+- [✓] Includes Python runtime, PyQt6, and SQLAlchemy
+- [✓] Works on any Linux distribution
+- [✓] No root privileges needed
+- [✓] No dependency conflicts with system packages
+- [✓] Easy to distribute and update
+- [✓] Consistent behavior across all systems
+
+## File Size
+
+The AppImage is approximately 120-150MB because it includes:
+- Complete Python 3.11 runtime
+- Full PyQt6 GUI framework
+- SQLAlchemy database layer
+- All platform plugins and libraries
+- UI files and assets
 """
 
     with open("APPIMAGE_USAGE.md", "w") as f:

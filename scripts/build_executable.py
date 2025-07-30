@@ -319,6 +319,33 @@ For more help, visit: https://github.com/your-repo/storymaster
         return False
 
 
+def install_desktop_integration():
+    """Install desktop integration on Linux"""
+    system = platform.system().lower()
+    if system != "linux":
+        print("[SKIP] Desktop integration (not Linux)")
+        return True
+    
+    print("\n[DESKTOP] Installing desktop integration...")
+    
+    try:
+        result = subprocess.run(
+            [sys.executable, "scripts/install_desktop_integration.py"],
+            check=True,
+            capture_output=True,
+            text=True
+        )
+        print("[OK] Desktop integration installed")
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"[WARNING] Desktop integration failed: {e}")
+        print("   You can run manually: python scripts/install_desktop_integration.py")
+        return True  # Don't fail the build
+    except Exception as e:
+        print(f"[WARNING] Could not install desktop integration: {e}")
+        return True  # Don't fail the build
+
+
 def create_archive():
     """Create a compressed archive of the executable"""
     print("\n[FILES] Creating distribution archive...")
@@ -457,6 +484,7 @@ def main():
         ("Building executable", build_executable),
         ("Testing executable", test_executable),
         ("Creating portable package", create_portable_package),
+        ("Installing desktop integration", install_desktop_integration),
         ("Creating distribution archive", create_archive),
     ]
 
