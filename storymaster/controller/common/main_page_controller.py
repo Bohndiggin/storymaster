@@ -3225,8 +3225,11 @@ class MainWindowController:
             )
 
             # Add the widget to the new Lorekeeper page
-            new_lorekeeper_layout = QVBoxLayout(self.view.ui.newLorekeeperPage)
-            new_lorekeeper_layout.setContentsMargins(0, 0, 0, 0)
+            if self.view.ui.newLorekeeperPage.layout() is None:
+                new_lorekeeper_layout = QVBoxLayout(self.view.ui.newLorekeeperPage)
+                new_lorekeeper_layout.setContentsMargins(0, 0, 0, 0)
+            else:
+                new_lorekeeper_layout = self.view.ui.newLorekeeperPage.layout()
             new_lorekeeper_layout.addWidget(self.new_lorekeeper_widget)
 
         # Switch to the new Lorekeeper page (index 1 - after litographer)
