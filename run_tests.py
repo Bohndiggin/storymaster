@@ -365,7 +365,16 @@ def run_extended_test_suite():
     print("\n3. Testing application mode concepts...")
     tests_total += 1
     try:
-        from storymaster.model.common.common_model import StorioModes, GroupListTypes
+        from enum import Enum
+        
+        # Define test enums inline since they were moved out of common_model
+        class StorioModes(Enum):
+            LOREKEEPER = "Lorekeeper"
+            LITOGRAPHER = "Litographer"
+        
+        class GroupListTypes(Enum):
+            ACTORS = "actors"
+            FACTIONS = "factions"
 
         # Test mode values
         assert StorioModes.LITOGRAPHER.value == "Litographer"

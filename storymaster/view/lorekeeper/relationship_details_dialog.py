@@ -1,39 +1,21 @@
 """Relationship details dialog for viewing and editing relationship specifics"""
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import (
-    QDialog,
-    QVBoxLayout,
-    QHBoxLayout,
-    QFormLayout,
-    QTabWidget,
-    QLabel,
-    QLineEdit,
-    QTextEdit,
-    QComboBox,
-    QPushButton,
-    QSpinBox,
-    QSlider,
-    QGroupBox,
-    QCheckBox,
-    QDateEdit,
-)
-from PyQt6.QtGui import QFont
 from datetime import datetime
 
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QFont
+from PyQt6.QtWidgets import (QCheckBox, QComboBox, QDateEdit, QDialog,
+                             QFormLayout, QGroupBox, QHBoxLayout, QLabel,
+                             QLineEdit, QPushButton, QSlider, QSpinBox,
+                             QTabWidget, QTextEdit, QVBoxLayout)
+
 from storymaster.model.lorekeeper.entity_mappings import get_entity_mapping
-from storymaster.view.common.theme import (
-    get_dialog_style,
-    get_label_style,
-    get_button_style,
-    get_input_style,
-    get_tab_style,
-    get_spinbox_style,
-    get_slider_style,
-    get_checkbox_style,
-    get_dateedit_style,
-    COLORS,
-)
+from storymaster.view.common.theme import (COLORS, get_button_style,
+                                           get_checkbox_style,
+                                           get_dateedit_style,
+                                           get_dialog_style, get_input_style,
+                                           get_label_style, get_slider_style,
+                                           get_spinbox_style, get_tab_style)
 
 
 class RelationshipDetailsDialog(QDialog):
@@ -61,7 +43,7 @@ class RelationshipDetailsDialog(QDialog):
         self.setWindowTitle(f"Relationship Details: {self.get_relationship_title()}")
         self.setModal(True)
         self.resize(600, 700)
-        
+
         # Apply theme styling
         self.setStyleSheet(
             get_dialog_style()
@@ -103,7 +85,9 @@ class RelationshipDetailsDialog(QDialog):
         elif self.relationship_type == "actor_to_skills":
             self.tab_widget.addTab(self.create_skill_details_tab(), "Skill Details")
         elif self.relationship_type == "actor_to_class":
-            self.tab_widget.addTab(self.create_class_details_tab(), "Profession Details")
+            self.tab_widget.addTab(
+                self.create_class_details_tab(), "Profession Details"
+            )
         elif self.relationship_type.startswith("history_"):
             self.tab_widget.addTab(
                 self.create_historical_involvement_tab(), "Historical Context"
@@ -189,16 +173,16 @@ class RelationshipDetailsDialog(QDialog):
         strength_layout = QHBoxLayout()
         strength_layout.addWidget(self.strength_slider)
         strength_layout.addWidget(self.strength_label)
-        
+
         # Add description for what the slider means
         strength_desc = QLabel(strength_info["description"])
         strength_desc.setStyleSheet("color: #888; font-size: 10px; font-style: italic;")
         strength_desc.setWordWrap(True)
-        
+
         strength_container = QVBoxLayout()
         strength_container.addLayout(strength_layout)
         strength_container.addWidget(strength_desc)
-        
+
         layout.addRow(f"{strength_info['label']}:", strength_container)
 
         # Description
@@ -464,10 +448,18 @@ class RelationshipDetailsDialog(QDialog):
 
         # Residence type
         self.residence_type = QComboBox()
-        self.residence_type.addItems([
-            "Primary Home", "Secondary Home", "Temporary Stay", "Hideout",
-            "Workplace", "Ancestral Home", "Refuge", "Prison"
-        ])
+        self.residence_type.addItems(
+            [
+                "Primary Home",
+                "Secondary Home",
+                "Temporary Stay",
+                "Hideout",
+                "Workplace",
+                "Ancestral Home",
+                "Refuge",
+                "Prison",
+            ]
+        )
         layout.addRow("Residence Type:", self.residence_type)
 
         # Duration of stay
@@ -478,7 +470,9 @@ class RelationshipDetailsDialog(QDialog):
         # Living conditions
         self.conditions_edit = QTextEdit()
         self.conditions_edit.setMaximumHeight(80)
-        self.conditions_edit.setPlaceholderText("What are their living conditions like?")
+        self.conditions_edit.setPlaceholderText(
+            "What are their living conditions like?"
+        )
         layout.addRow("Conditions:", self.conditions_edit)
 
         # Reason for living here
@@ -497,10 +491,19 @@ class RelationshipDetailsDialog(QDialog):
 
         # How acquired
         self.acquisition_method = QComboBox()
-        self.acquisition_method.addItems([
-            "Purchased", "Inherited", "Found", "Gifted", "Stolen", 
-            "Crafted", "Earned", "Borrowed", "Traded"
-        ])
+        self.acquisition_method.addItems(
+            [
+                "Purchased",
+                "Inherited",
+                "Found",
+                "Gifted",
+                "Stolen",
+                "Crafted",
+                "Earned",
+                "Borrowed",
+                "Traded",
+            ]
+        )
         layout.addRow("How Acquired:", self.acquisition_method)
 
         # When acquired
@@ -510,22 +513,24 @@ class RelationshipDetailsDialog(QDialog):
 
         # Current condition
         self.item_condition = QComboBox()
-        self.item_condition.addItems([
-            "Excellent", "Good", "Fair", "Poor", "Damaged", "Broken", "Lost"
-        ])
+        self.item_condition.addItems(
+            ["Excellent", "Good", "Fair", "Poor", "Damaged", "Broken", "Lost"]
+        )
         layout.addRow("Condition:", self.item_condition)
 
         # Usage frequency
         self.usage_frequency = QComboBox()
-        self.usage_frequency.addItems([
-            "Daily", "Weekly", "Monthly", "Rarely", "Never", "Special Occasions"
-        ])
+        self.usage_frequency.addItems(
+            ["Daily", "Weekly", "Monthly", "Rarely", "Never", "Special Occasions"]
+        )
         layout.addRow("Usage:", self.usage_frequency)
 
         # Acquisition story
         self.acquisition_story = QTextEdit()
         self.acquisition_story.setMaximumHeight(80)
-        self.acquisition_story.setPlaceholderText("Tell the story of how they got this item...")
+        self.acquisition_story.setPlaceholderText(
+            "Tell the story of how they got this item..."
+        )
         layout.addRow("Acquisition Story:", self.acquisition_story)
 
         tab.setLayout(layout)
@@ -538,10 +543,18 @@ class RelationshipDetailsDialog(QDialog):
 
         # How learned
         self.learning_method = QComboBox()
-        self.learning_method.addItems([
-            "Self-taught", "Formal Training", "Mentor", "Apprenticeship",
-            "Natural Talent", "Trial by Fire", "Books/Study", "Experimentation"
-        ])
+        self.learning_method.addItems(
+            [
+                "Self-taught",
+                "Formal Training",
+                "Mentor",
+                "Apprenticeship",
+                "Natural Talent",
+                "Trial by Fire",
+                "Books/Study",
+                "Experimentation",
+            ]
+        )
         layout.addRow("How Learned:", self.learning_method)
 
         # Years of experience
@@ -563,9 +576,9 @@ class RelationshipDetailsDialog(QDialog):
 
         # Current practice
         self.practice_frequency = QComboBox()
-        self.practice_frequency.addItems([
-            "Daily", "Weekly", "Monthly", "Rarely", "No longer practices"
-        ])
+        self.practice_frequency.addItems(
+            ["Daily", "Weekly", "Monthly", "Rarely", "No longer practices"]
+        )
         layout.addRow("Practice Frequency:", self.practice_frequency)
 
         tab.setLayout(layout)
@@ -602,7 +615,9 @@ class RelationshipDetailsDialog(QDialog):
         # Notable achievements
         self.achievements_edit = QTextEdit()
         self.achievements_edit.setMaximumHeight(80)
-        self.achievements_edit.setPlaceholderText("Any notable achievements in this profession?")
+        self.achievements_edit.setPlaceholderText(
+            "Any notable achievements in this profession?"
+        )
         layout.addRow("Achievements:", self.achievements_edit)
 
         tab.setLayout(layout)
@@ -670,38 +685,74 @@ class RelationshipDetailsDialog(QDialog):
         """Get status options appropriate for this relationship type"""
         status_options = {
             "actor_a_on_b_relations": [
-                "Close Friends", "Friends", "Acquaintances", "Neutral", 
-                "Tension", "Enemies", "Former Friends", "It's Complicated"
+                "Close Friends",
+                "Friends",
+                "Acquaintances",
+                "Neutral",
+                "Tension",
+                "Enemies",
+                "Former Friends",
+                "It's Complicated",
             ],
             "faction_members": [
-                "Active Member", "Inactive", "On Leave", "Probationary", 
-                "Leadership", "Founding Member", "Honorary", "Former Member"
+                "Active Member",
+                "Inactive",
+                "On Leave",
+                "Probationary",
+                "Leadership",
+                "Founding Member",
+                "Honorary",
+                "Former Member",
             ],
             "residents": [
-                "Permanent Resident", "Temporary", "Frequent Visitor", 
-                "Occasional Visitor", "Former Resident", "Exiled"
+                "Permanent Resident",
+                "Temporary",
+                "Frequent Visitor",
+                "Occasional Visitor",
+                "Former Resident",
+                "Exiled",
             ],
             "location_to_faction": [
-                "Full Control", "Strong Presence", "Moderate Influence", 
-                "Minor Presence", "Contested", "Former Territory", "Claims Only"
+                "Full Control",
+                "Strong Presence",
+                "Moderate Influence",
+                "Minor Presence",
+                "Contested",
+                "Former Territory",
+                "Claims Only",
             ],
             "history_actor": [
-                "Central Figure", "Major Participant", "Minor Role", 
-                "Witness", "Affected Party", "Catalyst"
+                "Central Figure",
+                "Major Participant",
+                "Minor Role",
+                "Witness",
+                "Affected Party",
+                "Catalyst",
             ],
             "history_faction": [
-                "Primary Actor", "Allied", "Opposition", "Neutral", 
-                "Victim", "Beneficiary"
+                "Primary Actor",
+                "Allied",
+                "Opposition",
+                "Neutral",
+                "Victim",
+                "Beneficiary",
             ],
             "object_to_owner": [
-                "Owns", "Borrowed", "Stolen", "Inherited", 
-                "Found", "Gifted", "Lost", "Sold"
-            ]
+                "Owns",
+                "Borrowed",
+                "Stolen",
+                "Inherited",
+                "Found",
+                "Gifted",
+                "Lost",
+                "Sold",
+            ],
         }
-        
-        return status_options.get(self.relationship_type, [
-            "Active", "Inactive", "Historical", "Potential", "Complicated"
-        ])
+
+        return status_options.get(
+            self.relationship_type,
+            ["Active", "Inactive", "Historical", "Potential", "Complicated"],
+        )
 
     def get_strength_info_for_type(self) -> dict:
         """Get strength field configuration for this relationship type"""
@@ -709,60 +760,85 @@ class RelationshipDetailsDialog(QDialog):
             "actor_a_on_b_relations": {
                 "label": "Bond Intensity",
                 "description": "How strong is their emotional connection? (1=Barely know each other, 10=Inseparable)",
-                "min": 1, "max": 10, "default": 5
+                "min": 1,
+                "max": 10,
+                "default": 5,
             },
             "faction_members": {
-                "label": "Loyalty Level", 
+                "label": "Loyalty Level",
                 "description": "How devoted are they to the organization? (1=Disloyal, 10=Absolutely devoted)",
-                "min": 1, "max": 10, "default": 7
+                "min": 1,
+                "max": 10,
+                "default": 7,
             },
             "residents": {
                 "label": "Attachment Level",
                 "description": "How connected are they to this place? (1=Temporary stay, 10=Deep roots)",
-                "min": 1, "max": 10, "default": 5
+                "min": 1,
+                "max": 10,
+                "default": 5,
             },
             "location_to_faction": {
                 "label": "Control Level",
                 "description": "How much control does the faction have? (1=Minimal influence, 10=Complete control)",
-                "min": 1, "max": 10, "default": 5
+                "min": 1,
+                "max": 10,
+                "default": 5,
             },
             "history_actor": {
                 "label": "Impact Significance",
                 "description": "How significant was this event for them? (1=Minor impact, 10=Life-changing)",
-                "min": 1, "max": 10, "default": 5
+                "min": 1,
+                "max": 10,
+                "default": 5,
             },
             "history_faction": {
                 "label": "Organizational Impact",
                 "description": "How much did this event affect the organization? (1=Minor, 10=Transformative)",
-                "min": 1, "max": 10, "default": 5
+                "min": 1,
+                "max": 10,
+                "default": 5,
             },
             "object_to_owner": {
                 "label": "Attachment Level",
                 "description": "How important is this item to them? (1=Hardly cares, 10=Extremely precious)",
-                "min": 1, "max": 10, "default": 5
+                "min": 1,
+                "max": 10,
+                "default": 5,
             },
             "actor_to_skills": {
                 "label": "Skill Level",
                 "description": "How proficient are they? (1=Novice, 10=Master)",
-                "min": 1, "max": 10, "default": 3
+                "min": 1,
+                "max": 10,
+                "default": 3,
             },
             "actor_to_race": {
                 "label": "Heritage Strength",
                 "description": "How strongly do they identify with this heritage? (1=Barely, 10=Completely)",
-                "min": 1, "max": 10, "default": 8
+                "min": 1,
+                "max": 10,
+                "default": 8,
             },
             "actor_to_class": {
                 "label": "Class Level",
                 "description": "What level are they in this profession? (1=Apprentice, 10=Grandmaster)",
-                "min": 1, "max": 20, "default": 5
-            }
+                "min": 1,
+                "max": 20,
+                "default": 5,
+            },
         }
-        
-        return strength_configs.get(self.relationship_type, {
-            "label": "Strength",
-            "description": "General relationship strength (1=Weak, 10=Strong)",
-            "min": 1, "max": 10, "default": 5
-        })
+
+        return strength_configs.get(
+            self.relationship_type,
+            {
+                "label": "Strength",
+                "description": "General relationship strength (1=Weak, 10=Strong)",
+                "min": 1,
+                "max": 10,
+                "default": 5,
+            },
+        )
 
     def get_entity_display_name(self, entity) -> str:
         """Get display name for an entity"""

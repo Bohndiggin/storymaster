@@ -24,7 +24,39 @@ from storymaster.model.database.schema.base import (
     Class_,
     Background,
 )
-from storymaster.model.common.common_model import GroupListTypes, GroupData
+# Test enums moved inline since they're only used in tests
+from enum import Enum
+
+class GroupListTypes(Enum):
+    ACTORS = "actors"
+    BACKGROUNDS = "backgrounds"
+    CLASSES = "classes"
+    FACTIONS = "factions"
+    HISTORY = "history"
+    LOCATIONS = "locations"
+    OBJECTS = "objects"
+    RACES = "races"
+    SUB_RACES = "sub_races"
+    WORLD_DATAS = "world_datas"
+
+class GroupData:
+    def __init__(self, actors, backgrounds, classes, factions, history, locations, objects, races, sub_races, world_datas):
+        self.actors = actors
+        self.backgrounds = backgrounds
+        self.classes = classes
+        self.factions = factions
+        self.history = history
+        self.locations = locations
+        self.objects = objects
+        self.races = races
+        self.sub_races = sub_races
+        self.world_datas = world_datas
+
+    def get_list(self, list_name: GroupListTypes):
+        return_list = getattr(self, list_name.value)
+        if not return_list:
+            return []
+        return [item.as_dict() for item in return_list]
 
 
 class TestLorekeeperModelConcepts:

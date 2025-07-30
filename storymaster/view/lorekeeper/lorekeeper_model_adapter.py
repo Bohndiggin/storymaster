@@ -1,29 +1,20 @@
 """Adapter to connect new Lorekeeper interface to existing model"""
 
-from typing import List, Optional, Any, Dict
+from typing import Any, Dict, List, Optional
+
 from sqlalchemy.orm import Session
 
 from storymaster.model.common.common_model import BaseModel
-from storymaster.model.database.schema.base import (
-    Actor,
-    Faction,
-    Location,
-    Object_,
-    History,
-    WorldData,
-    Background,
-    Race,
-    Class_,
-    Skills,
-    SubRace,
-    Alignment,
-    Stat,
-    LocationDungeon,
-    LocationCity,
-    LocationCityDistricts,
-    LocationFloraFauna,
-    LitographyNotes,
-)
+from storymaster.model.database.schema.base import (Actor, Alignment,
+                                                    Background, Class_,
+                                                    Faction, History,
+                                                    LitographyNotes, Location,
+                                                    LocationCity,
+                                                    LocationCityDistricts,
+                                                    LocationDungeon,
+                                                    LocationFloraFauna,
+                                                    Object_, Race, Skills,
+                                                    Stat, SubRace, WorldData)
 
 
 class LorekeeperModelAdapter:
@@ -62,11 +53,10 @@ class LorekeeperModelAdapter:
                 # Notes use storyline_id instead of setting_id
                 if table_name == "litography_notes":
                     # For now, get all storylines for this setting and get notes for all of them
-                    from storymaster.model.database.schema.base import (
-                        Storyline,
-                        StorylineToSetting,
-                    )
                     from sqlalchemy.orm import joinedload
+
+                    from storymaster.model.database.schema.base import (
+                        Storyline, StorylineToSetting)
 
                     storylines = (
                         session.query(Storyline)
@@ -87,37 +77,29 @@ class LorekeeperModelAdapter:
                     return all_notes
                 else:
                     from sqlalchemy.orm import joinedload
-                    
-                    query = session.query(table_class).filter_by(setting_id=self.setting_id)
-                    
+
+                    query = session.query(table_class).filter_by(
+                        setting_id=self.setting_id
+                    )
+
                     # Add eager loading for commonly accessed relationships
                     if table_name == "actor":
                         query = query.options(
                             joinedload(table_class.background),
                             joinedload(table_class.alignment),
-                            joinedload(table_class.setting)
+                            joinedload(table_class.setting),
                         )
                     elif table_name == "faction":
-                        query = query.options(
-                            joinedload(table_class.setting)
-                        )
+                        query = query.options(joinedload(table_class.setting))
                     elif table_name == "location_":
-                        query = query.options(
-                            joinedload(table_class.setting)
-                        )
+                        query = query.options(joinedload(table_class.setting))
                     elif table_name == "object_":
-                        query = query.options(
-                            joinedload(table_class.setting)
-                        )
+                        query = query.options(joinedload(table_class.setting))
                     elif table_name == "history":
-                        query = query.options(
-                            joinedload(table_class.setting)
-                        )
+                        query = query.options(joinedload(table_class.setting))
                     elif table_name == "world_data":
-                        query = query.options(
-                            joinedload(table_class.setting)
-                        )
-                    
+                        query = query.options(joinedload(table_class.setting))
+
                     return query.all()
         except Exception as e:
             print(f"Error loading entities for {table_name}: {e}")
@@ -134,6 +116,7 @@ class LorekeeperModelAdapter:
                 if table_name == "litography_notes":
                     # Notes don't have setting_id, just get by ID
                     from sqlalchemy.orm import joinedload
+
                     return (
                         session.query(table_class)
                         .options(joinedload(table_class.linked_node))
@@ -142,37 +125,29 @@ class LorekeeperModelAdapter:
                     )
                 else:
                     from sqlalchemy.orm import joinedload
-                    
-                    query = session.query(table_class).filter_by(id=entity_id, setting_id=self.setting_id)
-                    
+
+                    query = session.query(table_class).filter_by(
+                        id=entity_id, setting_id=self.setting_id
+                    )
+
                     # Add eager loading for commonly accessed relationships
                     if table_name == "actor":
                         query = query.options(
                             joinedload(table_class.background),
                             joinedload(table_class.alignment),
-                            joinedload(table_class.setting)
+                            joinedload(table_class.setting),
                         )
                     elif table_name == "faction":
-                        query = query.options(
-                            joinedload(table_class.setting)
-                        )
+                        query = query.options(joinedload(table_class.setting))
                     elif table_name == "location_":
-                        query = query.options(
-                            joinedload(table_class.setting)
-                        )
+                        query = query.options(joinedload(table_class.setting))
                     elif table_name == "object_":
-                        query = query.options(
-                            joinedload(table_class.setting)
-                        )
+                        query = query.options(joinedload(table_class.setting))
                     elif table_name == "history":
-                        query = query.options(
-                            joinedload(table_class.setting)
-                        )
+                        query = query.options(joinedload(table_class.setting))
                     elif table_name == "world_data":
-                        query = query.options(
-                            joinedload(table_class.setting)
-                        )
-                    
+                        query = query.options(joinedload(table_class.setting))
+
                     return query.first()
         except Exception as e:
             print(f"Error loading entity {entity_id} from {table_name}: {e}")
@@ -278,9 +253,8 @@ class LorekeeperModelAdapter:
 
                 # Get relationships based on type
                 if relationship_name == "actor_a_on_b_relations":
-                    from storymaster.model.database.schema.base import (
-                        ActorAOnBRelations,
-                    )
+                    from storymaster.model.database.schema.base import \
+                        ActorAOnBRelations
 
                     relations = (
                         session.query(ActorAOnBRelations)
@@ -301,10 +275,7 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "faction_members":
                     from storymaster.model.database.schema.base import (
-                        FactionMembers,
-                        Actor,
-                        Faction,
-                    )
+                        Actor, Faction, FactionMembers)
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "Faction":
@@ -334,10 +305,7 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "residents":
                     from storymaster.model.database.schema.base import (
-                        Resident,
-                        Actor,
-                        Location,
-                    )
+                        Actor, Location, Resident)
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "Location":
@@ -366,10 +334,7 @@ class LorekeeperModelAdapter:
                         ]
                 elif relationship_name == "object_to_owner":
                     from storymaster.model.database.schema.base import (
-                        ObjectToOwner,
-                        Actor,
-                        Object_,
-                    )
+                        Actor, Object_, ObjectToOwner)
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "Object_":
@@ -399,10 +364,7 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "location_to_faction":
                     from storymaster.model.database.schema.base import (
-                        LocationToFaction,
-                        Location,
-                        Faction,
-                    )
+                        Faction, Location, LocationToFaction)
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "Location":
@@ -432,10 +394,7 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "actor_to_skills":
                     from storymaster.model.database.schema.base import (
-                        ActorToSkills,
-                        Actor,
-                        Skills,
-                    )
+                        Actor, ActorToSkills, Skills)
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "Actor":
@@ -465,10 +424,7 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "actor_to_race":
                     from storymaster.model.database.schema.base import (
-                        ActorToRace,
-                        Actor,
-                        Race,
-                    )
+                        Actor, ActorToRace, Race)
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "Actor":
@@ -498,10 +454,7 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "actor_to_class":
                     from storymaster.model.database.schema.base import (
-                        ActorToClass,
-                        Actor,
-                        Class_,
-                    )
+                        Actor, ActorToClass, Class_)
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "Actor":
@@ -531,10 +484,7 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "actor_to_stat":
                     from storymaster.model.database.schema.base import (
-                        ActorToStat,
-                        Actor,
-                        Stat,
-                    )
+                        Actor, ActorToStat, Stat)
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "Actor":
@@ -564,10 +514,7 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "history_actor":
                     from storymaster.model.database.schema.base import (
-                        HistoryActor,
-                        Actor,
-                        History,
-                    )
+                        Actor, History, HistoryActor)
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "Actor":
@@ -597,9 +544,7 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "faction_a_on_b_relations":
                     from storymaster.model.database.schema.base import (
-                        FactionAOnBRelations,
-                        Faction,
-                    )
+                        Faction, FactionAOnBRelations)
 
                     # Query database directly for fresh data
                     relations = (
@@ -625,10 +570,7 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "history_faction":
                     from storymaster.model.database.schema.base import (
-                        HistoryFaction,
-                        Faction,
-                        History,
-                    )
+                        Faction, History, HistoryFaction)
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "Faction":
@@ -658,9 +600,7 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "location_a_on_b_relations":
                     from storymaster.model.database.schema.base import (
-                        LocationAOnBRelations,
-                        Location,
-                    )
+                        Location, LocationAOnBRelations)
 
                     # Query database directly for fresh data
                     relations = (
@@ -686,9 +626,7 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "location_geographic_relations":
                     from storymaster.model.database.schema.base import (
-                        LocationGeographicRelations,
-                        Location,
-                    )
+                        Location, LocationGeographicRelations)
 
                     # Query database directly for fresh data
                     relations = (
@@ -714,9 +652,7 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "location_political_relations":
                     from storymaster.model.database.schema.base import (
-                        LocationPoliticalRelations,
-                        Location,
-                    )
+                        Location, LocationPoliticalRelations)
 
                     # Query database directly for fresh data
                     relations = (
@@ -742,9 +678,7 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "location_economic_relations":
                     from storymaster.model.database.schema.base import (
-                        LocationEconomicRelations,
-                        Location,
-                    )
+                        Location, LocationEconomicRelations)
 
                     # Query database directly for fresh data
                     relations = (
@@ -770,9 +704,7 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "location_hierarchy":
                     from storymaster.model.database.schema.base import (
-                        LocationHierarchy,
-                        Location,
-                    )
+                        Location, LocationHierarchy)
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "Location":
@@ -806,9 +738,7 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "location_city_districts":
                     from storymaster.model.database.schema.base import (
-                        LocationCityDistricts,
-                        Location,
-                    )
+                        Location, LocationCityDistricts)
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "Location":
@@ -843,9 +773,8 @@ class LorekeeperModelAdapter:
                         ]
 
                 elif relationship_name == "location_flora_fauna":
-                    from storymaster.model.database.schema.base import (
-                        LocationFloraFauna,
-                    )
+                    from storymaster.model.database.schema.base import \
+                        LocationFloraFauna
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "Location":
@@ -860,10 +789,7 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "litography_note_to_world_data":
                     from storymaster.model.database.schema.base import (
-                        LitographyNoteToWorldData,
-                        WorldData,
-                        LitographyNotes,
-                    )
+                        LitographyNotes, LitographyNoteToWorldData, WorldData)
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "LitographyNotes":
@@ -895,10 +821,7 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "litography_note_to_actor":
                     from storymaster.model.database.schema.base import (
-                        LitographyNoteToActor,
-                        Actor,
-                        LitographyNotes,
-                    )
+                        Actor, LitographyNotes, LitographyNoteToActor)
 
                     if entity.__class__.__name__ == "LitographyNotes":
                         note_relations = (
@@ -925,10 +848,7 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "litography_note_to_location":
                     from storymaster.model.database.schema.base import (
-                        LitographyNoteToLocation,
-                        Location,
-                        LitographyNotes,
-                    )
+                        LitographyNotes, LitographyNoteToLocation, Location)
 
                     if entity.__class__.__name__ == "LitographyNotes":
                         note_relations = (
@@ -955,10 +875,7 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "litography_note_to_object":
                     from storymaster.model.database.schema.base import (
-                        LitographyNoteToObject,
-                        Object_,
-                        LitographyNotes,
-                    )
+                        LitographyNotes, LitographyNoteToObject, Object_)
 
                     if entity.__class__.__name__ == "LitographyNotes":
                         note_relations = (
@@ -985,10 +902,7 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "litography_note_to_faction":
                     from storymaster.model.database.schema.base import (
-                        LitographyNoteToFaction,
-                        Faction,
-                        LitographyNotes,
-                    )
+                        Faction, LitographyNotes, LitographyNoteToFaction)
 
                     if entity.__class__.__name__ == "LitographyNotes":
                         note_relations = (
@@ -1036,9 +950,8 @@ class LorekeeperModelAdapter:
 
                 # Create relationship based on type
                 if relationship_name == "actor_a_on_b_relations":
-                    from storymaster.model.database.schema.base import (
-                        ActorAOnBRelations,
-                    )
+                    from storymaster.model.database.schema.base import \
+                        ActorAOnBRelations
 
                     # Check if relationship already exists
                     existing = (
@@ -1078,7 +991,8 @@ class LorekeeperModelAdapter:
                     session.add(new_relation)
 
                 elif relationship_name == "faction_members":
-                    from storymaster.model.database.schema.base import FactionMembers
+                    from storymaster.model.database.schema.base import \
+                        FactionMembers
 
                     # Check if membership already exists
                     existing = (
@@ -1134,7 +1048,8 @@ class LorekeeperModelAdapter:
                     session.add(new_residency)
 
                 elif relationship_name == "object_to_owner":
-                    from storymaster.model.database.schema.base import ObjectToOwner
+                    from storymaster.model.database.schema.base import \
+                        ObjectToOwner
 
                     # Check if ownership already exists
                     existing = (
@@ -1158,7 +1073,8 @@ class LorekeeperModelAdapter:
                     session.add(new_ownership)
 
                 elif relationship_name == "location_to_faction":
-                    from storymaster.model.database.schema.base import LocationToFaction
+                    from storymaster.model.database.schema.base import \
+                        LocationToFaction
 
                     # Check if control already exists
                     existing = (
@@ -1182,7 +1098,8 @@ class LorekeeperModelAdapter:
                     session.add(new_control)
 
                 elif relationship_name == "actor_to_skills":
-                    from storymaster.model.database.schema.base import ActorToSkills
+                    from storymaster.model.database.schema.base import \
+                        ActorToSkills
 
                     # Check if skill relation already exists
                     existing = (
@@ -1207,7 +1124,8 @@ class LorekeeperModelAdapter:
                     session.add(new_skill_relation)
 
                 elif relationship_name == "actor_to_race":
-                    from storymaster.model.database.schema.base import ActorToRace
+                    from storymaster.model.database.schema.base import \
+                        ActorToRace
 
                     # Check if race relation already exists
                     existing = (
@@ -1231,7 +1149,8 @@ class LorekeeperModelAdapter:
                     session.add(new_race_relation)
 
                 elif relationship_name == "actor_to_class":
-                    from storymaster.model.database.schema.base import ActorToClass
+                    from storymaster.model.database.schema.base import \
+                        ActorToClass
 
                     # Check if class relation already exists
                     existing = (
@@ -1256,7 +1175,8 @@ class LorekeeperModelAdapter:
                     session.add(new_class_relation)
 
                 elif relationship_name == "actor_to_stat":
-                    from storymaster.model.database.schema.base import ActorToStat
+                    from storymaster.model.database.schema.base import \
+                        ActorToStat
 
                     # Check if stat relation already exists
                     existing = (
@@ -1281,7 +1201,8 @@ class LorekeeperModelAdapter:
                     session.add(new_stat_relation)
 
                 elif relationship_name == "history_actor":
-                    from storymaster.model.database.schema.base import HistoryActor
+                    from storymaster.model.database.schema.base import \
+                        HistoryActor
 
                     # Check if history relation already exists
                     existing = (
@@ -1305,9 +1226,8 @@ class LorekeeperModelAdapter:
                     session.add(new_history_relation)
 
                 elif relationship_name == "faction_a_on_b_relations":
-                    from storymaster.model.database.schema.base import (
-                        FactionAOnBRelations,
-                    )
+                    from storymaster.model.database.schema.base import \
+                        FactionAOnBRelations
 
                     # Check if relationship already exists
                     existing = (
@@ -1395,7 +1315,8 @@ class LorekeeperModelAdapter:
                     session.add(new_relation)
 
                 elif relationship_name == "history_faction":
-                    from storymaster.model.database.schema.base import HistoryFaction
+                    from storymaster.model.database.schema.base import \
+                        HistoryFaction
 
                     # Check if history relation already exists
                     existing = (
@@ -1444,9 +1365,8 @@ class LorekeeperModelAdapter:
                     session.add(new_history_relation)
 
                 elif relationship_name == "location_a_on_b_relations":
-                    from storymaster.model.database.schema.base import (
-                        LocationAOnBRelations,
-                    )
+                    from storymaster.model.database.schema.base import \
+                        LocationAOnBRelations
 
                     # Check if relationship already exists
                     existing = (
@@ -1512,9 +1432,8 @@ class LorekeeperModelAdapter:
                     session.add(new_relation)
 
                 elif relationship_name == "location_geographic_relations":
-                    from storymaster.model.database.schema.base import (
-                        LocationGeographicRelations,
-                    )
+                    from storymaster.model.database.schema.base import \
+                        LocationGeographicRelations
 
                     # Check if relationship already exists
                     existing = (
@@ -1583,9 +1502,8 @@ class LorekeeperModelAdapter:
                     session.add(new_relation)
 
                 elif relationship_name == "location_political_relations":
-                    from storymaster.model.database.schema.base import (
-                        LocationPoliticalRelations,
-                    )
+                    from storymaster.model.database.schema.base import \
+                        LocationPoliticalRelations
 
                     # Check if relationship already exists
                     existing = (
@@ -1649,9 +1567,8 @@ class LorekeeperModelAdapter:
                     session.add(new_relation)
 
                 elif relationship_name == "location_economic_relations":
-                    from storymaster.model.database.schema.base import (
-                        LocationEconomicRelations,
-                    )
+                    from storymaster.model.database.schema.base import \
+                        LocationEconomicRelations
 
                     # Check if relationship already exists
                     existing = (
@@ -1717,7 +1634,8 @@ class LorekeeperModelAdapter:
                     session.add(new_relation)
 
                 elif relationship_name == "location_hierarchy":
-                    from storymaster.model.database.schema.base import LocationHierarchy
+                    from storymaster.model.database.schema.base import \
+                        LocationHierarchy
 
                     # Check if relationship already exists
                     existing = (
@@ -1771,9 +1689,8 @@ class LorekeeperModelAdapter:
                     session.add(new_relation)
 
                 elif relationship_name == "location_city_districts":
-                    from storymaster.model.database.schema.base import (
-                        LocationCityDistricts,
-                    )
+                    from storymaster.model.database.schema.base import \
+                        LocationCityDistricts
 
                     # Check if relationship already exists
                     existing = (
@@ -1797,9 +1714,8 @@ class LorekeeperModelAdapter:
                     session.add(new_relation)
 
                 elif relationship_name == "location_flora_fauna":
-                    from storymaster.model.database.schema.base import (
-                        LocationFloraFauna,
-                    )
+                    from storymaster.model.database.schema.base import \
+                        LocationFloraFauna
 
                     # For flora/fauna, we're adding a new entry, not linking to another entity
                     # The related_entity in this case would be the data for the flora/fauna
@@ -1825,9 +1741,8 @@ class LorekeeperModelAdapter:
                     session.add(new_flora_fauna)
 
                 elif relationship_name == "litography_note_to_world_data":
-                    from storymaster.model.database.schema.base import (
-                        LitographyNoteToWorldData,
-                    )
+                    from storymaster.model.database.schema.base import \
+                        LitographyNoteToWorldData
 
                     # Check if relationship already exists
                     existing = (
@@ -1852,9 +1767,8 @@ class LorekeeperModelAdapter:
                     session.add(new_relation)
 
                 elif relationship_name == "litography_note_to_actor":
-                    from storymaster.model.database.schema.base import (
-                        LitographyNoteToActor,
-                    )
+                    from storymaster.model.database.schema.base import \
+                        LitographyNoteToActor
 
                     existing = (
                         session.query(LitographyNoteToActor)
@@ -1874,9 +1788,8 @@ class LorekeeperModelAdapter:
                     session.add(new_relation)
 
                 elif relationship_name == "litography_note_to_location":
-                    from storymaster.model.database.schema.base import (
-                        LitographyNoteToLocation,
-                    )
+                    from storymaster.model.database.schema.base import \
+                        LitographyNoteToLocation
 
                     existing = (
                         session.query(LitographyNoteToLocation)
@@ -1899,9 +1812,8 @@ class LorekeeperModelAdapter:
                     session.add(new_relation)
 
                 elif relationship_name == "litography_note_to_object":
-                    from storymaster.model.database.schema.base import (
-                        LitographyNoteToObject,
-                    )
+                    from storymaster.model.database.schema.base import \
+                        LitographyNoteToObject
 
                     existing = (
                         session.query(LitographyNoteToObject)
@@ -1921,9 +1833,8 @@ class LorekeeperModelAdapter:
                     session.add(new_relation)
 
                 elif relationship_name == "litography_note_to_faction":
-                    from storymaster.model.database.schema.base import (
-                        LitographyNoteToFaction,
-                    )
+                    from storymaster.model.database.schema.base import \
+                        LitographyNoteToFaction
 
                     existing = (
                         session.query(LitographyNoteToFaction)
@@ -1959,9 +1870,8 @@ class LorekeeperModelAdapter:
             with Session(self.model.engine) as session:
                 # Remove relationship based on type
                 if relationship_name == "actor_a_on_b_relations":
-                    from storymaster.model.database.schema.base import (
-                        ActorAOnBRelations,
-                    )
+                    from storymaster.model.database.schema.base import \
+                        ActorAOnBRelations
 
                     relation = (
                         session.query(ActorAOnBRelations)
@@ -1982,7 +1892,8 @@ class LorekeeperModelAdapter:
                         session.delete(relation)
 
                 elif relationship_name == "faction_members":
-                    from storymaster.model.database.schema.base import FactionMembers
+                    from storymaster.model.database.schema.base import \
+                        FactionMembers
 
                     membership = (
                         session.query(FactionMembers)
@@ -2032,9 +1943,8 @@ class LorekeeperModelAdapter:
             with Session(self.model.engine) as session:
                 # Update relationship based on type
                 if relationship_name == "actor_a_on_b_relations":
-                    from storymaster.model.database.schema.base import (
-                        ActorAOnBRelations,
-                    )
+                    from storymaster.model.database.schema.base import \
+                        ActorAOnBRelations
 
                     relation = (
                         session.query(ActorAOnBRelations)
@@ -2073,7 +1983,8 @@ class LorekeeperModelAdapter:
                         )
 
                 elif relationship_name == "faction_members":
-                    from storymaster.model.database.schema.base import FactionMembers
+                    from storymaster.model.database.schema.base import \
+                        FactionMembers
 
                     membership = (
                         session.query(FactionMembers)
@@ -2113,9 +2024,8 @@ class LorekeeperModelAdapter:
         try:
             with Session(self.model.engine) as session:
                 if relationship_name == "actor_a_on_b_relations":
-                    from storymaster.model.database.schema.base import (
-                        ActorAOnBRelations,
-                    )
+                    from storymaster.model.database.schema.base import \
+                        ActorAOnBRelations
 
                     relation = (
                         session.query(ActorAOnBRelations)
@@ -2162,7 +2072,8 @@ class LorekeeperModelAdapter:
                         }
 
                 elif relationship_name == "faction_members":
-                    from storymaster.model.database.schema.base import FactionMembers
+                    from storymaster.model.database.schema.base import \
+                        FactionMembers
 
                     membership = (
                         session.query(FactionMembers)

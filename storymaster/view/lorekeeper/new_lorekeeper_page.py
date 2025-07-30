@@ -1,26 +1,18 @@
 """New user-friendly Lorekeeper main page"""
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import (
-    QWidget,
-    QHBoxLayout,
-    QVBoxLayout,
-    QSplitter,
-    QStackedWidget,
-    QLabel,
-    QMessageBox,
-)
 from PyQt6.QtGui import QFont
+from PyQt6.QtWidgets import (QHBoxLayout, QLabel, QMessageBox, QSplitter,
+                             QStackedWidget, QVBoxLayout, QWidget)
 
-from storymaster.view.lorekeeper.lorekeeper_navigation import (
-    LorekeeperNavigation,
-    LorekeeperBrowser,
-)
-from storymaster.view.lorekeeper.entity_page import EntityDetailPage
-from storymaster.view.lorekeeper.lorekeeper_model_adapter import LorekeeperModelAdapter
 from storymaster.model.lorekeeper.entity_mappings import get_entity_mapping
-from storymaster.view.common.theme import get_splitter_style, COLORS, FONTS
 from storymaster.view.common.custom_widgets import enable_smart_tab_navigation
+from storymaster.view.common.theme import COLORS, FONTS, get_splitter_style
+from storymaster.view.lorekeeper.entity_page import EntityDetailPage
+from storymaster.view.lorekeeper.lorekeeper_model_adapter import \
+    LorekeeperModelAdapter
+from storymaster.view.lorekeeper.lorekeeper_navigation import (
+    LorekeeperBrowser, LorekeeperNavigation)
 
 
 class NewLorekeeperPage(QWidget):
@@ -159,6 +151,24 @@ class NewLorekeeperPage(QWidget):
 
     def on_category_changed(self, table_name: str):
         """Handle category change"""
+        # Auto-save the currently displayed entity before switching categories
+        if (
+            self.current_entity
+            and self.current_table_name
+            and self.current_table_name in self.detail_pages
+            and self.current_table_name != table_name
+        ):
+            try:
+                self.auto_save_current_entity()
+            except Exception as e:
+                from PyQt6.QtWidgets import QMessageBox
+
+                QMessageBox.warning(
+                    self,
+                    "Auto-save Warning",
+                    f"Could not auto-save previous entity: {str(e)}\n\nPlease save manually if needed.",
+                )
+
         self.current_table_name = table_name
         self.browser.set_category(table_name)
 
@@ -171,6 +181,23 @@ class NewLorekeeperPage(QWidget):
 
     def on_entity_selected(self, entity):
         """Handle entity selection"""
+        # Auto-save the currently displayed entity before switching
+        if (
+            self.current_entity
+            and self.current_table_name in self.detail_pages
+            and self.current_entity != entity
+        ):
+            try:
+                self.auto_save_current_entity()
+            except Exception as e:
+                from PyQt6.QtWidgets import QMessageBox
+
+                QMessageBox.warning(
+                    self,
+                    "Auto-save Warning",
+                    f"Could not auto-save previous entity: {str(e)}\n\nPlease save manually if needed.",
+                )
+
         self.current_entity = entity
         self.show_entity_details(entity)
 
@@ -273,6 +300,30 @@ class NewLorekeeperPage(QWidget):
     def delete_entity_from_model(self, entity):
         """Delete entity from model"""
         return self.model_adapter.delete_entity(entity)
+
+    def auto_save_current_entity(self):
+        """Auto-save the currently displayed entity"""
+        if not self.current_entity or self.current_table_name not in self.detail_pages:
+            return
+
+        detail_page = self.detail_pages[self.current_table_name]
+
+        # Get the current data from the form
+        all_data = {}
+        for section_widget in detail_page.section_widgets.values():
+            all_data.update(section_widget.get_field_data())
+
+        # Update entity attributes with form data
+        for field_name, value in all_data.items():
+            if hasattr(self.current_entity, field_name):
+                setattr(self.current_entity, field_name, value)
+
+        # For locations, also save additional details
+        if self.current_table_name == "location_" and self.model_adapter:
+            self.model_adapter.save_location_details(self.current_entity, all_data)
+
+        # Save the entity
+        self.save_entity_to_model(self.current_entity)
 
     def on_entity_changed(self, entity):
         """Handle entity change from model"""

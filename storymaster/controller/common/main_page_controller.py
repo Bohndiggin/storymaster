@@ -227,16 +227,10 @@ class ConnectionPoint(QGraphicsEllipseItem):
                         session.add(new_connection)
                         session.commit()
 
-                        print(
-                            f"✅ Connected node {self.node_item.node_data.id} -> {target_point.node_item.node_data.id}"
-                        )
-
                         # Refresh the display
                         controller.load_and_draw_nodes()
                     else:
-                        print(
-                            f"⚠️ Connection already exists between nodes {self.node_item.node_data.id} and {target_point.node_item.node_data.id}"
-                        )
+                        pass  # Connection already exists
 
         except Exception as e:
             print(f"❌ Error creating connection: {e}")
@@ -337,10 +331,6 @@ class NodeMixin:
                         "storyline_id": self.controller.current_storyline_id,
                     }
                     self.controller.model.update_row("litography_node", update_data)
-
-                    print(
-                        f"Saved node {self.node_data.id} position: ({new_pos.x()}, {new_pos.y()})"
-                    )
 
                     # Update all connections after move
                     self.controller.update_all_connections()
@@ -2116,7 +2106,6 @@ class MainWindowController:
             self.view.ui.characterArcsNavButton, "character_arcs_tab"
         )
 
-
         # --- File Menu ---
         self.view.ui.actionOpen.triggered.connect(self.on_open_storyline_clicked)
         # Database and backup actions
@@ -2169,7 +2158,6 @@ class MainWindowController:
         storyline_id = dialog.get_selected_storyline_id()
         if storyline_id is not None:
             self.current_storyline_id = storyline_id
-            print(f"Switched to Storyline ID: {self.current_storyline_id}")
             self.view.ui.statusbar.showMessage(
                 f"Opened Storyline ID: {self.current_storyline_id}", 5000
             )
@@ -2228,7 +2216,6 @@ class MainWindowController:
                 self.view.ui.statusbar.showMessage(
                     f"Created new storyline: {storyline_data['name']}", 5000
                 )
-                print(f"Created new storyline: {storyline_data['name']}")
             except Exception as e:
                 QMessageBox.critical(
                     self.view,
@@ -2246,7 +2233,6 @@ class MainWindowController:
                 self.view.ui.statusbar.showMessage(
                     f"Created new setting: {setting_data['name']}", 5000
                 )
-                print(f"Created new setting: {setting_data['name']}")
             except Exception as e:
                 QMessageBox.critical(
                     self.view,
@@ -2277,7 +2263,6 @@ class MainWindowController:
                     # TODO: Refresh views to show new storyline data
                     self.load_and_draw_nodes()
                     self.update_status_indicators()
-                    print(f"Switched to storyline: {storyline_name}")
                 except Exception as e:
                     QMessageBox.critical(
                         self.view,
@@ -2320,8 +2305,7 @@ class MainWindowController:
                         f"Switched to setting: {setting_name}", 5000
                     )
                     # Refresh lorekeeper views to show new setting data
-                    if self.db_tree_model.rowCount() > 0:
-                        self.load_database_structure()
+                    # Note: db_tree_model is deprecated, using new Lorekeeper interface
 
                     # Reinitialize new Lorekeeper widget with new setting
                     if self.new_lorekeeper_widget is not None:
@@ -2333,7 +2317,6 @@ class MainWindowController:
                         self.new_lorekeeper_widget = None
 
                     self.update_status_indicators()
-                    print(f"Switched to setting: {setting_name}")
                 except Exception as e:
                     QMessageBox.critical(
                         self.view,
@@ -2353,7 +2336,6 @@ class MainWindowController:
                 self.view.ui.statusbar.showMessage(
                     f"Created new user: {new_user.username}", 5000
                 )
-                print(f"Created new user: {new_user.username}")
             except Exception as e:
                 QMessageBox.critical(
                     self.view,
@@ -2379,7 +2361,6 @@ class MainWindowController:
                         self.view.ui.statusbar.showMessage(
                             f"Switched to user: {user_name}", 5000
                         )
-                        print(f"Successfully switched to user: {user_name}")
                     else:
                         QMessageBox.warning(
                             self.view,
@@ -2418,7 +2399,6 @@ class MainWindowController:
                         self.view.ui.statusbar.showMessage(
                             f"Switched to user: {user_name}", 5000
                         )
-                        print(f"Successfully switched to user: {user_name}")
                     else:
                         QMessageBox.warning(
                             self.view,
@@ -2475,8 +2455,7 @@ class MainWindowController:
                 self.load_and_draw_nodes()
 
             # Refresh Lorekeeper database view
-            if self.db_tree_model.rowCount() > 0:
-                self.load_database_structure()
+            # Note: db_tree_model is deprecated, using new Lorekeeper interface
 
             # Clear any selected table/row data
             self.current_table_name = None
@@ -2489,8 +2468,6 @@ class MainWindowController:
 
             # Update status indicators
             self.update_status_indicators()
-
-            print(f"Refreshed UI for user {self.model.user_id}")
 
         except Exception as e:
             print(f"Error refreshing UI after user switch: {str(e)}")
@@ -2791,9 +2768,7 @@ class MainWindowController:
                 if verification:
                     pass  # Verification successful
                 else:
-                    print(
-                        f"Failed to verify link between node {node_id} and section {section_id}"
-                    )
+                    pass  # Verification failed
         except Exception as e:
             print(f"Error adding node to section: {e}")
             import traceback
@@ -3105,7 +3080,7 @@ class MainWindowController:
 
             field.setCurrentIndex(current_combo_index)
         except Exception as e:
-            print(f"Could not populate dropdown for {key}: {e}")
+            pass  # Could not populate dropdown
         return field
 
     def _create_field_by_type(self, key: str, value):
@@ -3188,7 +3163,6 @@ class MainWindowController:
     def _save_form_data(self, widget_dict: dict, is_update: bool):
         """Generic helper to gather data from a form and call the model."""
         if not self.current_table_name or not widget_dict:
-            print("No data to save.")
             return
 
         form_data = {}
@@ -3267,107 +3241,31 @@ class MainWindowController:
         self.view.ui.pageStack.setCurrentIndex(
             2
         )  # Updated index for character arcs page (after removing old lorekeeper)
-        
+
         # Only refresh if we have a storyline selected
         if self.current_storyline_id is not None:
             self.character_arc_page.refresh_arcs(self.current_storyline_id)
         else:
             # No storyline selected - show empty state
-            print("No storyline selected for character arcs")
+            pass
 
     def load_database_structure(self):
         """Fetches table names from the model and populates the tree view."""
-        self.db_tree_model.clear()
-        self.db_tree_model.setHorizontalHeaderLabels(["Database Tables"])
-        try:
-            all_table_names = self.model.get_all_table_names()
-
-            # Filter tables based on visibility settings
-            if self.visible_tables is not None:
-                # Only show tables that are in the visible set
-                table_names = [
-                    name for name in all_table_names if name in self.visible_tables
-                ]
-            else:
-                # Show all available tables (default behavior)
-                table_names = all_table_names
-
-            for table_name in table_names:
-                item = QStandardItem(table_name)
-                item.setEditable(False)
-                self.db_tree_model.appendRow(item)
-        except Exception as e:
-            print(f"Error loading database structure: {e}")
+        # DEPRECATED: This method is no longer used with the new Lorekeeper interface
+        # Keeping as no-op to avoid breaking existing code that calls it
+        pass
 
     def on_db_tree_item_clicked(self, index):
         """Fetches and displays the content of the selected table when clicked."""
-        self.current_table_name = self.db_tree_model.itemFromIndex(index).text()
-
-        try:
-            self.current_foreign_keys = self.model.get_foreign_key_info(
-                self.current_table_name
-            )
-            self.current_column_types = self.model.get_column_types(
-                self.current_table_name
-            )
-        except Exception as e:
-            print(f"Could not get table info for {self.current_table_name}: {e}")
-            self.current_foreign_keys = {}
-            self.current_column_types = {}
-
-        self._clear_layout(self.view.ui.editFormLayout)
-        self._clear_layout(self.view.ui.addFormLayout)
-
-        if self.view.ui.formTabWidget.currentIndex() == 1:
-            self.populate_add_form()
-
-        self._refresh_current_table_view()
+        # DEPRECATED: This method is no longer used with the new Lorekeeper interface
+        # Keeping as no-op to avoid breaking existing code that calls it
+        pass
 
     def _refresh_current_table_view(self):
         """Helper method to reload the data in the main table view."""
-        if not self.current_table_name:
-            return
-
-        self.db_table_model.clear()
-
-        try:
-            # Pass the current setting ID to filter the lorekeeper data
-            headers, data_rows = self.model.get_table_data(
-                self.current_table_name, setting_id=self.current_setting_id
-            )
-
-            # Hide ID column from display
-            id_column_index = None
-            filtered_headers = []
-
-            for i, header in enumerate(headers):
-                if header.lower() == "id":
-                    id_column_index = i
-                else:
-                    filtered_headers.append(header)
-
-            self.db_table_model.setHorizontalHeaderLabels(filtered_headers)
-
-            for row_tuple in data_rows:
-                # Create full row dict for data storage (including ID)
-                row_dict = dict(zip(headers, row_tuple))
-
-                # Create filtered row items (excluding ID column)
-                filtered_row_items = []
-                for i, field in enumerate(row_tuple):
-                    if i != id_column_index:  # Skip ID column
-                        filtered_row_items.append(QStandardItem(str(field)))
-
-                # Store full row data (including ID) in the first visible item
-                if filtered_row_items:
-                    filtered_row_items[0].setData(row_dict, Qt.ItemDataRole.UserRole)
-
-                    for item in filtered_row_items:
-                        item.setEditable(False)
-
-                    self.db_table_model.appendRow(filtered_row_items)
-        except Exception as e:
-            print(f"Error loading table data for '{self.current_table_name}': {e}")
+        # DEPRECATED: This method is no longer used with the new Lorekeeper interface
+        # Keeping as no-op to avoid breaking existing code that calls it
+        pass
 
     def _clear_layout(self, layout):
         """Removes all widgets from a layout."""
@@ -3378,34 +3276,22 @@ class MainWindowController:
                 if widget is not None:
                     widget.deleteLater()
 
-
     def get_visible_tables(self) -> set[str] | None:
         """Get the current set of visible tables. None means show all available tables."""
         return self.visible_tables
 
     def set_visible_tables(self, visible_tables: set[str]):
         """Set which tables should be visible in the Lorekeeper tree view."""
+        # DEPRECATED: This method is no longer used with the new Lorekeeper interface
+        # Still save preferences for backward compatibility
         self.visible_tables = visible_tables
-        # Save preferences
         self.save_table_visibility_preferences()
-        # Refresh the database structure view
-        self.load_database_structure()
-
-        # Clear current selection since the table might have been hidden
-        self.current_table_name = None
-        self.current_row_data = None
-        self.db_table_model.clear()
-        self._clear_form_widgets()
 
     def _clear_form_widgets(self):
         """Clear the form widgets in both edit and add tabs."""
-        # Clear edit form
-        self._clear_layout(self.view.ui.editFormLayout)
-        self.edit_form_widgets.clear()
-
-        # Clear add form
-        self._clear_layout(self.view.ui.addFormLayout)
-        self.add_form_widgets.clear()
+        # DEPRECATED: This method is no longer used with the new Lorekeeper interface
+        # Keeping as no-op to avoid breaking existing code that calls it
+        pass
 
     def save_table_visibility_preferences(self):
         """Save table visibility preferences to a file."""
@@ -3429,7 +3315,7 @@ class MainWindowController:
                 json.dump(data, f, indent=2)
 
         except Exception as e:
-            print(f"Warning: Could not save table visibility preferences: {e}")
+            pass  # Could not save table visibility preferences
 
     def load_table_visibility_preferences(self):
         """Load table visibility preferences from file."""
@@ -3454,5 +3340,5 @@ class MainWindowController:
                     self.visible_tables = set(visible_tables)
 
         except Exception as e:
-            print(f"Warning: Could not load table visibility preferences: {e}")
             # Continue with default behavior (show all tables)
+            pass

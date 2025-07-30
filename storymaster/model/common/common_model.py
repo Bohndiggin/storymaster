@@ -1,17 +1,9 @@
 """Holds common model classes"""
 
-import dataclasses
-from enum import Enum
-
 from sqlalchemy import (
-    Column,
     Engine,
     Float,
-    ForeignKey,
-    Identity,
     Integer,
-    String,
-    Text,
     inspect,
 )
 from sqlalchemy.orm import Session, joinedload
@@ -19,81 +11,11 @@ from sqlalchemy.orm import Session, joinedload
 from storymaster.model.database import base_connection, common_queries, schema
 
 
-class StorioModes(Enum):
-    """The modes in storio"""
-
-    LOREKEEPER = "Lorekeeper"
-    LITOGRAPHER = "Litographer"
-
-
-class GroupListTypes(Enum):
-    ACTORS = "actors"
-    BACKGROUNDS = "backgrounds"
-    CLASSES = "classes"
-    FACTIONS = "factions"
-    HISTORY = "history"
-    LOCATIONS = "locations"
-    OBJECTS = "objects"
-    RACES = "races"
-    SUB_RACES = "sub_races"
-    WORLD_DATAS = "world_datas"
-
-
-class GroupData:
-    """Structure of data grouped"""
-
-    actors: list[schema.Actor] | list[None]
-    backgrounds: list[schema.Background] | list[None]
-    classes: list[schema.Class_] | list[None]
-    factions: list[schema.Faction] | list[None]
-    history: list[schema.History] | list[None]
-    locations: list[schema.Location] | list[None]
-    objects: list[schema.Object_] | list[None]
-    races: list[schema.Race] | list[None]
-    sub_races: list[schema.SubRace] | list[None]
-    world_datas: list[schema.WorldData] | list[None]
-
-    def __init__(
-        self,
-        actors: list[schema.Actor],
-        backgrounds: list[schema.Background],
-        classes: list[schema.Class_],
-        factions: list[schema.Faction],
-        history: list[schema.History],
-        locations: list[schema.Location],
-        objects: list[schema.Object_],
-        races: list[schema.Race],
-        sub_races: list[schema.SubRace],
-        world_datas: list[schema.WorldData],
-    ) -> None:
-        self.actors = actors
-        self.backgrounds = backgrounds
-        self.classes = classes
-        self.factions = factions
-        self.history = history
-        self.locations = locations
-        self.objects = objects
-        self.races = races
-        self.sub_races = sub_races
-        self.world_datas = world_datas
-
-    def get_list(self, list_name: GroupListTypes) -> list[dict[str, str]]:
-        """Get a list of an attribute"""
-
-        return_list: list[schema.BaseTable] = getattr(self, list_name.value)
-
-        if not return_list:
-            return []
-
-        return [item.as_dict() for item in return_list]
-
-
 class BaseModel:
     """The base model class for Models"""
 
     engine: Engine
     user_id: int
-    group_data: list[GroupData]
 
     # Mapping of table names to their corresponding ORM classes from the schema
     _table_to_class_map = {
@@ -499,7 +421,6 @@ class BaseModel:
                 setattr(item_to_update, key, value)
 
             session.commit()
-            print(f"Successfully updated row {pk_value} in {table_name}")
 
     def add_row(
         self,
@@ -548,104 +469,7 @@ class BaseModel:
             new_item = orm_class(**data_dict)
             session.add(new_item)
             session.commit()
-            print(f"Successfully added new row to {table_name}")
 
-    def load_user_data(self) -> list[GroupData]:
-        """Loads all data attributed to a single user"""
-        setting_return: list[GroupData] = []
-        with Session(self.engine) as session:
-            setting_list = (
-                session.execute(common_queries.get_setting_ids_for_storyline(1))
-                .scalars()
-                .all()
-            )
-            for setting in setting_list:
-                actors = list(
-                    session.execute(
-                        common_queries.get_lorekeeper_actors_from_setting(setting)
-                    )
-                    .scalars()
-                    .all()
-                )
-                backgrounds = list(
-                    session.execute(
-                        common_queries.get_lorekeeper_backgrounds_from_setting(setting)
-                    )
-                    .scalars()
-                    .all()
-                )
-                classes = list(
-                    session.execute(
-                        common_queries.get_lorekeeper_classes_from_setting(setting)
-                    )
-                    .scalars()
-                    .all()
-                )
-                factions = list(
-                    session.execute(
-                        common_queries.get_lorekeeper_factions_from_setting(setting)
-                    )
-                    .scalars()
-                    .all()
-                )
-                history = list(
-                    session.execute(
-                        common_queries.get_lorekeeper_history_from_setting(setting)
-                    )
-                    .scalars()
-                    .all()
-                )
-                locations = list(
-                    session.execute(
-                        common_queries.get_lorekeeper_locations_from_setting(setting)
-                    )
-                    .scalars()
-                    .all()
-                )
-                objects = list(
-                    session.execute(
-                        common_queries.get_lorekeeper_objects_from_setting(setting)
-                    )
-                    .scalars()
-                    .all()
-                )
-                races = list(
-                    session.execute(
-                        common_queries.get_lorekeeper_races_from_setting(setting)
-                    )
-                    .scalars()
-                    .all()
-                )
-                sub_races = list(
-                    session.execute(
-                        common_queries.get_lorekeeper_sub_races_from_setting(setting)
-                    )
-                    .scalars()
-                    .all()
-                )
-                world_datas = list(
-                    session.execute(
-                        common_queries.get_lorekeeper_world_data_from_setting(setting)
-                    )
-                    .scalars()
-                    .all()
-                )
-                setting_return.append(
-                    GroupData(
-                        actors=actors,
-                        backgrounds=backgrounds,
-                        classes=classes,
-                        factions=factions,
-                        history=history,
-                        locations=locations,
-                        objects=objects,
-                        races=races,
-                        sub_races=sub_races,
-                        world_datas=world_datas,
-                    )
-                )
-            self.group_data = setting_return
-            return setting_return
 
     # Character Arc Management Methods
     def get_character_arcs(

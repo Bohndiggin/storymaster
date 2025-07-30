@@ -3,12 +3,60 @@ Test suite for common model classes and utilities
 """
 
 import pytest
-from storymaster.model.common.common_model import (
-    StorioModes,
-    GroupListTypes,
-    GroupData,
-    BaseModel,
-)
+from enum import Enum
+from storymaster.model.common.common_model import BaseModel
+
+# Test enums - moved here since they're only used in tests
+class StorioModes(Enum):
+    """The modes in storio"""
+    LOREKEEPER = "Lorekeeper"
+    LITOGRAPHER = "Litographer"
+
+class GroupListTypes(Enum):
+    ACTORS = "actors"
+    BACKGROUNDS = "backgrounds"
+    CLASSES = "classes"
+    FACTIONS = "factions"
+    HISTORY = "history"
+    LOCATIONS = "locations"
+    OBJECTS = "objects"
+    RACES = "races"
+    SUB_RACES = "sub_races"
+    WORLD_DATAS = "world_datas"
+
+class GroupData:
+    """Structure of data grouped"""
+    
+    def __init__(
+        self,
+        actors, 
+        backgrounds,
+        classes,
+        factions,
+        history,
+        locations,
+        objects,
+        races,
+        sub_races,
+        world_datas,
+    ) -> None:
+        self.actors = actors
+        self.backgrounds = backgrounds
+        self.classes = classes
+        self.factions = factions
+        self.history = history
+        self.locations = locations
+        self.objects = objects
+        self.races = races
+        self.sub_races = sub_races
+        self.world_datas = world_datas
+
+    def get_list(self, list_name: GroupListTypes) -> list[dict[str, str]]:
+        """Get a list of an attribute"""
+        return_list = getattr(self, list_name.value)
+        if not return_list:
+            return []
+        return [item.as_dict() for item in return_list]
 from storymaster.model.database.schema.base import (
     Actor,
     Background,

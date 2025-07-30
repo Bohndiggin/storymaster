@@ -6,7 +6,7 @@ from sqlalchemy import sql
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
-from storymaster.model.common.common_model import BaseModel, StorioModes
+from storymaster.model.common.common_model import BaseModel
 from storymaster.model.database import schema
 
 
@@ -14,8 +14,7 @@ class BaseLitographerPageModel(BaseModel):
     """Base model for litographer"""
 
     def __init__(self, user: int, setting: int, storyline_id: int):
-        super().__init__()
-        self.mode = StorioModes.LITOGRAPHER
+        super().__init__(user)
         self.user = user
         self.setting = setting
         self.storyline_id = storyline_id

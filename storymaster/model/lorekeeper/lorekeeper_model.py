@@ -7,7 +7,7 @@ from typing import Optional, TypeAlias, Union
 from sqlalchemy import Engine, sql
 from sqlalchemy.orm import Session
 
-from storymaster.model.common.common_model import BaseModel, StorioModes
+from storymaster.model.common.common_model import BaseModel
 from storymaster.model.database import base_connection, common_queries, schema
 
 LorekeeperMainTable: TypeAlias = Union[
@@ -35,8 +35,7 @@ class BaseLorekeeperPageModel(BaseModel):
     """Base model for Lorekeeper"""
 
     def __init__(self, user: int, setting: int, storyline_id: int) -> None:
-        super().__init__()
-        self.mode = StorioModes.LOREKEEPER
+        super().__init__(user)
         self.user = user
         self.setting = setting
         self.storyline_id = storyline_id
