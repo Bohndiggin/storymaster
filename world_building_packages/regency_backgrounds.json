@@ -1,0 +1,323 @@
+{
+  "_package_info": {
+    "display_name": "Regency Social Backgrounds",
+    "description": "Social standing backgrounds for the British Regency period (1811-1820) and broader Georgian era, covering all social classes across England, Scotland, Wales, and Ireland",
+    "category": "Historical",
+    "version": "1.0",
+    "author": "Storymaster"
+  },
+  "user": [],
+  "setting": [],
+  "storyline": [],
+  "storyline_to_setting": [],
+  "alignment": [],
+  "background": [
+    {
+      "name": "Duke/Duchess",
+      "description": "Highest rank of nobility below royalty, holding vast estates and wielding enormous political influence. Commands respect from all levels of society and often sits in the House of Lords.",
+      "setting_id": 1
+    },
+    {
+      "name": "Marquess/Marchioness",
+      "description": "High-ranking nobility, typically governing border territories or important regions. Possesses substantial wealth and political power, with multiple estates and titles.",
+      "setting_id": 1
+    },
+    {
+      "name": "Earl/Countess",
+      "description": "Ancient title of nobility with significant landholdings and social influence. Often hereditary lords of historic counties with seats in Parliament and extensive patronage networks.",
+      "setting_id": 1
+    },
+    {
+      "name": "Viscount/Viscountess",
+      "description": "Noble rank below Earl, often holding important administrative or military positions. Maintains country estates and London residences, moving in the highest social circles.",
+      "setting_id": 1
+    },
+    {
+      "name": "Baron/Baroness",
+      "description": "Lowest rank of hereditary peerage, but still commanding considerable respect and resources. Often regional landowners with influence over local politics and society.",
+      "setting_id": 1
+    },
+    {
+      "name": "Baronet",
+      "description": "Hereditary knighthood ranking above knights but below barons. Typically landed gentry with country estates, entitled to be addressed as 'Sir' or 'Lady' with social precedence.",
+      "setting_id": 1
+    },
+    {
+      "name": "Knight",
+      "description": "Granted knighthood for service to Crown or country, entitled to 'Sir' or 'Dame'. May be military heroes, distinguished professionals, or those who purchased the honor.",
+      "setting_id": 1
+    },
+    {
+      "name": "Country Squire",
+      "description": "Rural landowner and magistrate, the backbone of country society. Owns substantial estates, employs many locals, and serves as justice of the peace with considerable local authority.",
+      "setting_id": 1
+    },
+    {
+      "name": "Landed Gentleman",
+      "description": "Property owner living off rental income without need for trade or profession. Educated, refined, and socially connected, often serving in local government or as church patron.",
+      "setting_id": 1
+    },
+    {
+      "name": "Landed Lady",
+      "description": "Woman of property and independent means, whether inherited or through marriage settlements. Commands respect in society and may manage estates or charitable enterprises independently.",
+      "setting_id": 1
+    },
+    {
+      "name": "Military Officer (Army)",
+      "description": "Commissioned officer in His Majesty's Army, holding rank through purchase or merit. Social standing varies by regiment and rank, but generally accepted in polite society.",
+      "setting_id": 1
+    },
+    {
+      "name": "Naval Officer",
+      "description": "Officer in the Royal Navy, elevated in social standing due to naval victories against Napoleon. Prize money from captures can provide substantial wealth and advancement.",
+      "setting_id": 1
+    },
+    {
+      "name": "Clergyman (Church of England)",
+      "description": "Anglican priest or rector, often younger sons of gentry. May hold comfortable livings with good income, especially if appointed by wealthy patrons or family connections.",
+      "setting_id": 1
+    },
+    {
+      "name": "Barrister",
+      "description": "Legal advocate with right to argue in higher courts. Often well-educated gentleman who may combine law with politics, requiring significant education and social connections.",
+      "setting_id": 1
+    },
+    {
+      "name": "Physician",
+      "description": "Medical doctor with university education, ranking above surgeons and apothecaries. Serves wealthy clientele and may achieve significant social standing through successful practice.",
+      "setting_id": 1
+    },
+    {
+      "name": "Wealthy Merchant",
+      "description": "Successful trader or business owner who has accumulated substantial wealth. May purchase estates and seek to establish family in genteel society, though viewed with some suspicion by old families.",
+      "setting_id": 1
+    },
+    {
+      "name": "London Banker",
+      "description": "Financier or partner in banking house, often extremely wealthy from government loans and international trade. Growing influence in politics and society despite commercial origins.",
+      "setting_id": 1
+    },
+    {
+      "name": "Mill Owner",
+      "description": "Industrial entrepreneur profiting from textile manufacturing and new machinery. Represents new money and changing economy, often seeking social acceptance through wealth.",
+      "setting_id": 1
+    },
+    {
+      "name": "Ship Owner",
+      "description": "Maritime entrepreneur owning merchant vessels engaged in trade. Wealth depends on successful voyages and may fluctuate dramatically with market conditions and naval warfare.",
+      "setting_id": 1
+    },
+    {
+      "name": "West Indies Plantation Owner",
+      "description": "Owner of sugar, tobacco, or coffee plantations in Caribbean colonies. Often absentee landlords living in Britain on plantation profits, wielding considerable economic and political influence.",
+      "setting_id": 1
+    },
+    {
+      "name": "Governess",
+      "description": "Educated woman employed to teach children of wealthy families. Occupies ambiguous social position - too genteel for servants' quarters but not family equal, often from reduced circumstances.",
+      "setting_id": 1
+    },
+    {
+      "name": "Companion",
+      "description": "Respectable woman employed to provide company and assistance to wealthy lady. Usually of genteel birth but reduced means, maintaining social graces while in dependent position.",
+      "setting_id": 1
+    },
+    {
+      "name": "Estate Manager",
+      "description": "Professional responsible for overseeing large country estates. Requires education and trustworthiness, often earning good income and respect from employers and local community.",
+      "setting_id": 1
+    },
+    {
+      "name": "Secretary/Clerk",
+      "description": "Educated assistant to gentleman, nobleman, or professional. Handles correspondence, accounts, and administrative duties. May advance through merit and patron's favor.",
+      "setting_id": 1
+    },
+    {
+      "name": "Solicitor",
+      "description": "Legal professional handling property transactions, wills, and local legal matters. Respectable position serving middle and upper classes, often becoming pillar of local community.",
+      "setting_id": 1
+    },
+    {
+      "name": "Shopkeeper",
+      "description": "Owner of retail establishment serving local community. Social standing varies greatly by location and success, from barely respectable to wealthy and influential in market towns.",
+      "setting_id": 1
+    },
+    {
+      "name": "Master Craftsman",
+      "description": "Skilled artisan owning workshop and employing apprentices. Represents respectable working class with potential for modest prosperity through skill and industry.",
+      "setting_id": 1
+    },
+    {
+      "name": "Tenant Farmer",
+      "description": "Rents land from estate owner, ranging from prosperous yeoman to struggling subsistence farmer. Success depends on land quality, crop prices, and relationship with landlord.",
+      "setting_id": 1
+    },
+    {
+      "name": "Village Schoolmaster",
+      "description": "Educated person teaching local children, often appointed by church or local benefactor. Modest but respectable position requiring literacy and moral character.",
+      "setting_id": 1
+    },
+    {
+      "name": "Innkeeper",
+      "description": "Owner or manager of coaching inn or tavern. Important figure in local community, hosting travelers and serving as center for news and gossip. Income varies by location.",
+      "setting_id": 1
+    },
+    {
+      "name": "Butler",
+      "description": "Head male servant in great household, responsible for wine cellar, plate, and supervising footmen. Position of considerable responsibility and respect within service hierarchy.",
+      "setting_id": 1
+    },
+    {
+      "name": "Housekeeper",
+      "description": "Senior female servant managing household operations, supervising maids and maintaining domestic order. Trusted position with significant authority over daily household functioning.",
+      "setting_id": 1
+    },
+    {
+      "name": "Lady's Maid",
+      "description": "Personal servant to lady of rank, responsible for dress, appearance, and private needs. Privileged position requiring discretion, skill, and often traveling with employer.",
+      "setting_id": 1
+    },
+    {
+      "name": "Valet",
+      "description": "Personal manservant to gentleman, handling clothes, grooming, and private affairs. Position of trust and intimacy, often accompanying master on travels and social occasions.",
+      "setting_id": 1
+    },
+    {
+      "name": "Cook",
+      "description": "Professional responsible for kitchen operations in wealthy household. Skilled position commanding respect and decent wages, especially in households known for fine dining.",
+      "setting_id": 1
+    },
+    {
+      "name": "Footman",
+      "description": "Liveried male servant performing various duties from serving at table to accompanying carriages. Often young and presentable, with opportunities for advancement in household hierarchy.",
+      "setting_id": 1
+    },
+    {
+      "name": "Housemaid",
+      "description": "Female domestic servant responsible for cleaning and maintaining household. Entry-level position with long hours but steady employment and potential for advancement to senior roles.",
+      "setting_id": 1
+    },
+    {
+      "name": "Groom",
+      "description": "Servant responsible for horses and stable operations. Important position in era dependent on horse transport, requiring skill with animals and equipment maintenance.",
+      "setting_id": 1
+    },
+    {
+      "name": "Coachman",
+      "description": "Professional driver of horse-drawn vehicles, from simple gigs to elaborate coaches. Skilled position requiring knowledge of routes, horse handling, and vehicle maintenance.",
+      "setting_id": 1
+    },
+    {
+      "name": "Scottish Laird",
+      "description": "Scottish landowner with hereditary estate, may hold clan leadership or traditional authority. Social position varies greatly by wealth and political connections to London.",
+      "setting_id": 1
+    },
+    {
+      "name": "Highland Chieftain",
+      "description": "Traditional leader of Scottish Highland clan, may retain ceremonial authority despite political changes. Position complicated by government restrictions following Jacobite uprisings.",
+      "setting_id": 1
+    },
+    {
+      "name": "Welsh Squire",
+      "description": "Welsh country gentleman with local estates, often involved in mining, agriculture, or traditional crafts. May speak Welsh and maintain connections to local cultural traditions.",
+      "setting_id": 1
+    },
+    {
+      "name": "Irish Landlord",
+      "description": "Estate owner in Ireland, may be Anglo-Irish Protestant or Catholic depending on family history. Often absentee landlord managing property from England through agents.",
+      "setting_id": 1
+    },
+    {
+      "name": "Irish Tenant",
+      "description": "Renter of Irish agricultural land, typically Catholic and potentially engaged in secret societies or political movements. Economic situation often precarious and politically complex.",
+      "setting_id": 1
+    },
+    {
+      "name": "London Tradesman",
+      "description": "Urban craftsman or small business owner serving city population. May achieve comfortable middle-class lifestyle through skill and business acumen in growing metropolitan economy.",
+      "setting_id": 1
+    },
+    {
+      "name": "Factory Worker",
+      "description": "Industrial laborer in new manufacturing centers, representing changing economy and social conditions. Working and living conditions often harsh but wages may exceed agricultural labor.",
+      "setting_id": 1
+    },
+    {
+      "name": "Dock Worker",
+      "description": "Laborer in major ports loading and unloading ships in Britain's maritime trade. Dangerous work but essential to empire's commerce, with strong community bonds and mutual aid societies.",
+      "setting_id": 1
+    },
+    {
+      "name": "Coal Miner",
+      "description": "Underground worker extracting coal that powers Britain's industrial revolution. Extremely dangerous occupation with strong community solidarity and emerging political consciousness.",
+      "setting_id": 1
+    },
+    {
+      "name": "Agricultural Laborer",
+      "description": "Rural worker employed seasonally or permanently on farms and estates. Lives at subsistence level but may have traditional rights and community support systems.",
+      "setting_id": 1
+    },
+    {
+      "name": "Pauper",
+      "description": "Destitute person dependent on parish relief or workhouse accommodation. Represents growing social problem of urban poverty and displacement from traditional rural society.",
+      "setting_id": 1
+    }
+  ],
+  "class": [],
+  "race": [],
+  "sub_race": [],
+  "stat": [],
+  "skills": [],
+  "actor": [],
+  "actor_a_on_b_relations": [],
+  "actor_to_skills": [],
+  "actor_to_race": [],
+  "actor_to_class": [],
+  "actor_to_stat": [],
+  "faction": [],
+  "faction_a_on_b_relations": [],
+  "faction_members": [],
+  "location_": [],
+  "location_to_faction": [],
+  "location_dungeon": [],
+  "location_city": [],
+  "location_city_districts": [],
+  "residents": [],
+  "location_flora_fauna": [],
+  "location_a_on_b_relations": [],
+  "location_geographic_relations": [],
+  "location_political_relations": [],
+  "location_economic_relations": [],
+  "location_hierarchy": [],
+  "history": [],
+  "history_actor": [],
+  "history_location": [],
+  "history_faction": [],
+  "object_": [],
+  "history_object": [],
+  "object_to_owner": [],
+  "world_data": [],
+  "history_world_data": [],
+  "arc_type": [],
+  "litography_node": [],
+  "node_connection": [],
+  "litography_notes": [],
+  "litography_plot": [],
+  "litography_plot_section": [],
+  "litography_node_to_plot_section": [],
+  "litography_arc": [],
+  "arc_point": [],
+  "arc_to_node": [],
+  "arc_to_actor": [],
+  "litography_note_to_actor": [],
+  "litography_note_to_background": [],
+  "litography_note_to_faction": [],
+  "litography_note_to_location": [],
+  "litography_note_to_history": [],
+  "litography_note_to_object": [],
+  "litography_note_to_world_data": [],
+  "litography_note_to_class": [],
+  "litography_note_to_race": [],
+  "litography_note_to_sub_race": [],
+  "litography_note_to_skills": []
+}

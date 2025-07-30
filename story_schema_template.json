@@ -1,0 +1,704 @@
+{
+  "user": [
+    {
+      "id": 1,
+      "username": ""
+    }
+  ],
+  "setting": [
+    {
+      "id": 1,
+      "name": "",
+      "description": "",
+      "user_id": 1
+    }
+  ],
+  "storyline": [
+    {
+      "id": 1,
+      "name": "",
+      "description": "",
+      "user_id": 1
+    }
+  ],
+  "storyline_to_setting": [
+    {
+      "id": 1,
+      "storyline_id": 1,
+      "setting_id": 1
+    }
+  ],
+  "alignment": [
+    {
+      "id": 1,
+      "name": "",
+      "description": "",
+      "setting_id": 1
+    }
+  ],
+  "background": [
+    {
+      "id": 1,
+      "name": "",
+      "description": "",
+      "setting_id": 1
+    }
+  ],
+  "class": [
+    {
+      "id": 1,
+      "name": "",
+      "description": "",
+      "setting_id": 1
+    }
+  ],
+  "race": [
+    {
+      "id": 1,
+      "name": "",
+      "description": "",
+      "setting_id": 1
+    }
+  ],
+  "sub_race": [
+    {
+      "id": 1,
+      "parent_race_id": 1,
+      "name": "",
+      "description": "",
+      "setting_id": 1
+    }
+  ],
+  "stat": [
+    {
+      "id": 1,
+      "name": "",
+      "description": "",
+      "setting_id": 1
+    }
+  ],
+  "skills": [
+    {
+      "id": 1,
+      "name": "",
+      "description": "",
+      "skill_trait": "",
+      "setting_id": 1
+    }
+  ],
+  "actor": [
+    {
+      "id": 1,
+      "first_name": "",
+      "middle_name": "",
+      "last_name": "",
+      "title": "",
+      "actor_age": 1,
+      "background_id": 1,
+      "job": "",
+      "actor_role": "",
+      "alignment_id": 1,
+      "ideal": "",
+      "bond": "",
+      "flaw": "",
+      "appearance": "",
+      "strengths": "",
+      "weaknesses": "",
+      "notes": "",
+      "setting_id": 1
+    }
+  ],
+  "actor_a_on_b_relations": [
+    {
+      "id": 1,
+      "actor_a_id": 1,
+      "actor_b_id": 1,
+      "overall": "",
+      "economically": "",
+      "power_dynamic": "",
+      "description": "",
+      "notes": "",
+      "timeline": "",
+      "relationship_type": "",
+      "status": "",
+      "strength": 1,
+      "trust_level": 1,
+      "is_mutual": true,
+      "is_public": true,
+      "how_met": "",
+      "shared_history": "",
+      "current_status": "",
+      "setting_id": 1
+    }
+  ],
+  "actor_to_skills": [
+    {
+      "id": 1,
+      "actor_id": 1,
+      "skill_id": 1,
+      "skill_level": 1,
+      "proficiency_level": 1,
+      "how_learned": "",
+      "experience_years": 1,
+      "specialty": "",
+      "notes": "",
+      "description": "",
+      "status": "",
+      "strength": 1,
+      "is_public": true,
+      "practice_frequency": "",
+      "skill_applications": "",
+      "learning_goals": "",
+      "setting_id": 1
+    }
+  ],
+  "actor_to_race": [
+    {
+      "id": 1,
+      "actor_id": 1,
+      "race_id": 1,
+      "sub_race_id": 1,
+      "heritage_strength": 1,
+      "cultural_upbringing": "",
+      "community_standing": "",
+      "heritage_secrets": "",
+      "notes": "",
+      "setting_id": 1
+    }
+  ],
+  "actor_to_class": [
+    {
+      "id": 1,
+      "actor_id": 1,
+      "class_id": 1,
+      "level": 1,
+      "current_level": 1,
+      "experience_points": 1,
+      "specialization": "",
+      "training_location": "",
+      "mentor": "",
+      "status": "",
+      "notes": "",
+      "setting_id": 1
+    }
+  ],
+  "actor_to_stat": [
+    {
+      "id": 1,
+      "actor_id": 1,
+      "stat_id": 1,
+      "stat_value": 1,
+      "base_value": 1,
+      "modifier": 1,
+      "temporary_modifier": 1,
+      "notes": "",
+      "setting_id": 1
+    }
+  ],
+  "faction": [
+    {
+      "id": 1,
+      "name": "",
+      "description": "",
+      "goals": "",
+      "faction_values": "",
+      "faction_income_sources": "",
+      "faction_expenses": "",
+      "setting_id": 1
+    }
+  ],
+  "faction_a_on_b_relations": [
+    {
+      "id": 1,
+      "faction_a_id": 1,
+      "faction_b_id": 1,
+      "overall": "",
+      "economically": "",
+      "politically": "",
+      "opinion": "",
+      "description": "",
+      "notes": "",
+      "timeline": "",
+      "relationship_type": "",
+      "status": "",
+      "strength": 1,
+      "trust_level": 1,
+      "is_mutual": true,
+      "is_public": true,
+      "how_met": "",
+      "shared_history": "",
+      "current_status": "",
+      "setting_id": 1
+    }
+  ],
+  "faction_members": [
+    {
+      "id": 1,
+      "actor_id": 1,
+      "faction_id": 1,
+      "actor_role": "",
+      "relative_power": 1,
+      "role": "",
+      "rank": 1,
+      "membership_status": "",
+      "responsibilities": "",
+      "loyalty": 1,
+      "join_date": "",
+      "description": "",
+      "notes": "",
+      "status": "",
+      "strength": 1,
+      "is_public": true,
+      "how_joined": "",
+      "reputation_within": 1,
+      "personal_goals": "",
+      "conflicts": "",
+      "setting_id": 1
+    }
+  ],
+  "location_": [
+    {
+      "id": 1,
+      "name": "",
+      "location_type": "",
+      "description": "",
+      "sights": "",
+      "smells": "",
+      "sounds": "",
+      "feels": "",
+      "tastes": "",
+      "coordinates": "",
+      "is_dungeon": false,
+      "is_city": false,
+      "setting_id": 1
+    }
+  ],
+  "location_to_faction": [
+    {
+      "id": 1,
+      "location_id": 1,
+      "faction_id": 1,
+      "faction_presence": 1.0,
+      "faction_power": 1.0,
+      "notes": "",
+      "control_type": "",
+      "control_strength": 1,
+      "control_method": "",
+      "resources_benefits": "",
+      "challenges": "",
+      "established_date": "",
+      "status": "",
+      "description": "",
+      "strength": 1,
+      "is_public": true,
+      "local_opposition": "",
+      "key_supporters": "",
+      "control_mechanisms": "",
+      "setting_id": 1
+    }
+  ],
+  "location_dungeon": [
+    {
+      "id": 1,
+      "location_id": 1,
+      "dangers": "",
+      "traps": "",
+      "secrets": "",
+      "setting_id": 1
+    }
+  ],
+  "location_city": [
+    {
+      "id": 1,
+      "location_id": 1,
+      "government": "",
+      "setting_id": 1
+    }
+  ],
+  "location_city_districts": [
+    {
+      "id": 1,
+      "location_id": 1,
+      "district_id": 1,
+      "setting_id": 1
+    }
+  ],
+  "residents": [
+    {
+      "id": 1,
+      "actor_id": 1,
+      "location_id": 1,
+      "residency_type": "",
+      "residency_status": "",
+      "move_in_date": "",
+      "housing_type": "",
+      "notes": "",
+      "is_public_knowledge": true,
+      "description": "",
+      "status": "",
+      "strength": 1,
+      "reason_for_living": "",
+      "living_conditions": "",
+      "relationships_neighbors": "",
+      "future_plans": "",
+      "setting_id": 1
+    }
+  ],
+  "location_flora_fauna": [
+    {
+      "id": 1,
+      "location_id": 1,
+      "name": "",
+      "description": "",
+      "living_type": "",
+      "setting_id": 1
+    }
+  ],
+  "location_a_on_b_relations": [
+    {
+      "id": 1,
+      "location_a_id": 1,
+      "location_b_id": 1,
+      "description": "",
+      "notes": "",
+      "relationship_type": "",
+      "status": "",
+      "strength": 1,
+      "is_mutual": true,
+      "is_public": true,
+      "established_date": "",
+      "current_status": "",
+      "setting_id": 1
+    }
+  ],
+  "location_geographic_relations": [
+    {
+      "id": 1,
+      "location_a_id": 1,
+      "location_b_id": 1,
+      "geographic_type": "",
+      "distance": "",
+      "travel_time": "",
+      "travel_difficulty": "",
+      "travel_method": "",
+      "description": "",
+      "notes": "",
+      "setting_id": 1
+    }
+  ],
+  "location_political_relations": [
+    {
+      "id": 1,
+      "location_a_id": 1,
+      "location_b_id": 1,
+      "political_type": "",
+      "treaty_name": "",
+      "treaty_date": "",
+      "status": "",
+      "description": "",
+      "notes": "",
+      "setting_id": 1
+    }
+  ],
+  "location_economic_relations": [
+    {
+      "id": 1,
+      "location_a_id": 1,
+      "location_b_id": 1,
+      "economic_type": "",
+      "trade_goods": "",
+      "trade_volume": "",
+      "trade_frequency": "",
+      "trade_value": "",
+      "description": "",
+      "notes": "",
+      "setting_id": 1
+    }
+  ],
+  "location_hierarchy": [
+    {
+      "id": 1,
+      "parent_location_id": 1,
+      "child_location_id": 1,
+      "hierarchy_type": "",
+      "parent_type": "",
+      "child_type": "",
+      "administrative_level": 1,
+      "governance_type": "",
+      "description": "",
+      "notes": "",
+      "setting_id": 1
+    }
+  ],
+  "history": [
+    {
+      "id": 1,
+      "name": "",
+      "event_year": 1,
+      "description": "",
+      "setting_id": 1
+    }
+  ],
+  "history_actor": [
+    {
+      "id": 1,
+      "history_id": 1,
+      "actor_id": 1,
+      "role_in_event": "",
+      "involvement_level": "",
+      "impact_on_character": "",
+      "character_perspective": "",
+      "consequences": "",
+      "notes": "",
+      "setting_id": 1
+    }
+  ],
+  "history_location": [
+    {
+      "id": 1,
+      "history_id": 1,
+      "location_id": 1,
+      "setting_id": 1
+    }
+  ],
+  "history_faction": [
+    {
+      "id": 1,
+      "history_id": 1,
+      "faction_id": 1,
+      "role_in_event": "",
+      "involvement_level": "",
+      "impact_on_faction": "",
+      "faction_perspective": "",
+      "consequences": "",
+      "setting_id": 1
+    }
+  ],
+  "object_": [
+    {
+      "id": 1,
+      "name": "",
+      "description": "",
+      "object_value": 1,
+      "rarity": "",
+      "setting_id": 1
+    }
+  ],
+  "history_object": [
+    {
+      "id": 1,
+      "history_id": 1,
+      "object_id": 1,
+      "setting_id": 1
+    }
+  ],
+  "object_to_owner": [
+    {
+      "id": 1,
+      "object_id": 1,
+      "actor_id": 1,
+      "ownership_type": "",
+      "acquisition_method": "",
+      "acquisition_date": "",
+      "ownership_status": "",
+      "notes": "",
+      "is_public_knowledge": true,
+      "description": "",
+      "status": "",
+      "strength": 1,
+      "item_condition": "",
+      "usage_frequency": "",
+      "storage_location": "",
+      "acquisition_story": "",
+      "setting_id": 1
+    }
+  ],
+  "world_data": [
+    {
+      "id": 1,
+      "name": "",
+      "description": "",
+      "setting_id": 1
+    }
+  ],
+  "history_world_data": [
+    {
+      "id": 1,
+      "history_id": 1,
+      "world_data_id": 1,
+      "setting_id": 1
+    }
+  ],
+  "arc_type": [
+    {
+      "id": 1,
+      "name": "",
+      "description": "",
+      "setting_id": 1
+    }
+  ],
+  "litography_node": [
+    {
+      "id": 1,
+      "name": "",
+      "description": "",
+      "node_type": "exposition",
+      "x_position": 0.0,
+      "y_position": 0.0,
+      "storyline_id": 1
+    }
+  ],
+  "node_connection": [
+    {
+      "id": 1,
+      "output_node_id": 1,
+      "input_node_id": 1
+    }
+  ],
+  "litography_notes": [
+    {
+      "id": 1,
+      "title": "",
+      "description": "",
+      "note_type": "what",
+      "linked_node": 1,
+      "storyline_id": 1
+    }
+  ],
+  "litography_plot": [
+    {
+      "id": 1,
+      "title": "",
+      "description": "",
+      "storyline_id": 1
+    }
+  ],
+  "litography_plot_section": [
+    {
+      "id": 1,
+      "plot_section_type": "FLAT",
+      "plot_id": 1
+    }
+  ],
+  "litography_node_to_plot_section": [
+    {
+      "id": 1,
+      "node_id": 1,
+      "litography_plot_section_id": 1
+    }
+  ],
+  "litography_arc": [
+    {
+      "id": 1,
+      "title": "",
+      "description": "",
+      "arc_type_id": 1,
+      "storyline_id": 1
+    }
+  ],
+  "arc_point": [
+    {
+      "id": 1,
+      "arc_id": 1,
+      "node_id": 1,
+      "order_index": 0,
+      "title": "",
+      "description": "",
+      "emotional_state": "",
+      "character_relationships": "",
+      "goals": "",
+      "internal_conflict": ""
+    }
+  ],
+  "arc_to_node": [
+    {
+      "id": 1,
+      "node_id": 1,
+      "arc_id": 1
+    }
+  ],
+  "arc_to_actor": [
+    {
+      "id": 1,
+      "actor_id": 1,
+      "arc_id": 1
+    }
+  ],
+  "litography_note_to_actor": [
+    {
+      "id": 1,
+      "note_id": 1,
+      "actor_id": 1
+    }
+  ],
+  "litography_note_to_background": [
+    {
+      "id": 1,
+      "note_id": 1,
+      "background_id": 1
+    }
+  ],
+  "litography_note_to_faction": [
+    {
+      "id": 1,
+      "note_id": 1,
+      "faction_id": 1
+    }
+  ],
+  "litography_note_to_location": [
+    {
+      "id": 1,
+      "note_id": 1,
+      "location_id": 1
+    }
+  ],
+  "litography_note_to_history": [
+    {
+      "id": 1,
+      "note_id": 1,
+      "history_id": 1
+    }
+  ],
+  "litography_note_to_object": [
+    {
+      "id": 1,
+      "note_id": 1,
+      "object_id": 1
+    }
+  ],
+  "litography_note_to_world_data": [
+    {
+      "id": 1,
+      "note_id": 1,
+      "world_data_id": 1
+    }
+  ],
+  "litography_note_to_class": [
+    {
+      "id": 1,
+      "note_id": 1,
+      "class_id": 1
+    }
+  ],
+  "litography_note_to_race": [
+    {
+      "id": 1,
+      "note_id": 1,
+      "race_id": 1
+    }
+  ],
+  "litography_note_to_sub_race": [
+    {
+      "id": 1,
+      "note_id": 1,
+      "sub_race_id": 1
+    }
+  ],
+  "litography_note_to_skills": [
+    {
+      "id": 1,
+      "note_id": 1,
+      "skill_id": 1
+    }
+  ]
+}

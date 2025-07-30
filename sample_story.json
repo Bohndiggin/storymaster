@@ -1,0 +1,387 @@
+{
+  "user": [
+    {
+      "id": 1,
+      "username": "storyteller"
+    }
+  ],
+  "setting": [
+    {
+      "id": 1,
+      "name": "Mystical Realm of Aetheria",
+      "description": "A fantasy world where magic and technology coexist in an uneasy balance.",
+      "user_id": 1
+    }
+  ],
+  "storyline": [
+    {
+      "id": 1,
+      "name": "The Crystal Prophecy",
+      "description": "An epic tale of heroes seeking to prevent the return of ancient darkness.",
+      "user_id": 1
+    }
+  ],
+  "storyline_to_setting": [
+    {
+      "id": 1,
+      "storyline_id": 1,
+      "setting_id": 1
+    }
+  ],
+  "alignment": [
+    {
+      "id": 1,
+      "name": "Lawful Good",
+      "description": "Believes in order and doing the right thing.",
+      "setting_id": 1
+    },
+    {
+      "id": 2,
+      "name": "Chaotic Evil",
+      "description": "Values freedom above all and cares little for others.",
+      "setting_id": 1
+    }
+  ],
+  "background": [
+    {
+      "id": 1,
+      "name": "Noble",
+      "description": "Born into wealth and privilege.",
+      "setting_id": 1
+    },
+    {
+      "id": 2,
+      "name": "Street Thief",
+      "description": "Grew up on the streets, surviving by wit and stealth.",
+      "setting_id": 1
+    }
+  ],
+  "class": [
+    {
+      "id": 1,
+      "name": "Wizard",
+      "description": "Masters of arcane magic and ancient knowledge.",
+      "setting_id": 1
+    },
+    {
+      "id": 2,
+      "name": "Rogue",
+      "description": "Experts in stealth, locks, and finding opportunity.",
+      "setting_id": 1
+    }
+  ],
+  "race": [
+    {
+      "id": 1,
+      "name": "Human",
+      "description": "Versatile and ambitious, the most common race.",
+      "setting_id": 1
+    },
+    {
+      "id": 2,
+      "name": "Elf",
+      "description": "Long-lived and graceful, masters of nature magic.",
+      "setting_id": 1
+    }
+  ],
+  "sub_race": [
+    {
+      "id": 1,
+      "parent_race_id": 2,
+      "name": "High Elf",
+      "description": "Elite elves with strong magical abilities.",
+      "setting_id": 1
+    }
+  ],
+  "stat": [
+    {
+      "id": 1,
+      "name": "Strength",
+      "description": "Physical power and muscle.",
+      "setting_id": 1
+    },
+    {
+      "id": 2,
+      "name": "Intelligence",
+      "description": "Mental acuity and reasoning ability.",
+      "setting_id": 1
+    }
+  ],
+  "skills": [
+    {
+      "id": 1,
+      "name": "Arcane Magic",
+      "description": "The ability to cast spells using arcane energy.",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "id": 2,
+      "name": "Stealth",
+      "description": "The ability to move unseen and unheard.",
+      "skill_trait": "Dexterity-based",
+      "setting_id": 1
+    }
+  ],
+  "actor": [
+    {
+      "id": 1,
+      "first_name": "Elara",
+      "middle_name": "",
+      "last_name": "Moonwhisper",
+      "title": "Archmage",
+      "actor_age": 150,
+      "background_id": 1,
+      "job": "Court Wizard",
+      "actor_role": "Protagonist",
+      "alignment_id": 1,
+      "ideal": "Knowledge should be used to protect the innocent",
+      "bond": "My mentor's sacrifice must not be in vain",
+      "flaw": "I trust too easily in the power of magic to solve problems",
+      "appearance": "Tall and elegant with silver hair and piercing blue eyes",
+      "strengths": "Incredibly powerful magic, vast knowledge",
+      "weaknesses": "Physically frail, socially awkward",
+      "notes": "The most powerful wizard in the kingdom",
+      "setting_id": 1
+    },
+    {
+      "id": 2,
+      "first_name": "Kael",
+      "middle_name": "",
+      "last_name": "Shadowstep",
+      "title": "",
+      "actor_age": 25,
+      "background_id": 2,
+      "job": "Professional Thief",
+      "actor_role": "Protagonist",
+      "alignment_id": 2,
+      "ideal": "Freedom is worth any price",
+      "bond": "I owe my life to the thieves' guild that raised me",
+      "flaw": "I have trouble trusting authority figures",
+      "appearance": "Lean and quick with dark hair and green eyes",
+      "strengths": "Incredible agility, street smarts",
+      "weaknesses": "Lacks formal education, distrusts magic",
+      "notes": "Reformed thief turned reluctant hero",
+      "setting_id": 1
+    }
+  ],
+  "actor_to_race": [
+    {
+      "id": 1,
+      "actor_id": 1,
+      "race_id": 2,
+      "sub_race_id": 1,
+      "heritage_strength": 9,
+      "cultural_upbringing": "Raised in the elven courts with full magical training",
+      "community_standing": "Highly respected",
+      "heritage_secrets": "Descendant of the ancient Moonwhisper line of archmages",
+      "notes": "Pure-blooded High Elf with exceptional magical heritage",
+      "setting_id": 1
+    },
+    {
+      "id": 2,
+      "actor_id": 2,
+      "race_id": 1,
+      "sub_race_id": null,
+      "heritage_strength": 5,
+      "cultural_upbringing": "Street orphan, no knowledge of family heritage",
+      "community_standing": "Unknown",
+      "heritage_secrets": "Unknown noble bloodline",
+      "notes": "Appears to be common human but may have hidden heritage",
+      "setting_id": 1
+    }
+  ],
+  "actor_to_class": [
+    {
+      "id": 1,
+      "actor_id": 1,
+      "class_id": 1,
+      "level": 18,
+      "current_level": 18,
+      "experience_points": 250000,
+      "specialization": "Evocation and Divination",
+      "training_location": "Tower of Stars Academy",
+      "mentor": "Archmage Valdris the Eternal",
+      "status": "Active",
+      "notes": "Graduated top of her class and became youngest archmage in history",
+      "setting_id": 1
+    },
+    {
+      "id": 2,
+      "actor_id": 2,
+      "class_id": 2,
+      "level": 8,
+      "current_level": 8,
+      "experience_points": 34000,
+      "specialization": "Infiltration and Trap Detection",
+      "training_location": "Streets of Lower City",
+      "mentor": "Master Thief Whisper",
+      "status": "Active",
+      "notes": "Self-taught with guild training, exceptional natural talent",
+      "setting_id": 1
+    }
+  ],
+  "faction": [
+    {
+      "id": 1,
+      "name": "The Royal Court",
+      "description": "The governing body of the kingdom, led by the monarch.",
+      "goals": "Maintain order and protect the realm",
+      "faction_values": "Honor, duty, justice",
+      "faction_income_sources": "Taxes, trade agreements, royal treasury",
+      "faction_expenses": "Military, infrastructure, court expenses",
+      "setting_id": 1
+    },
+    {
+      "id": 2,
+      "name": "Shadow Thieves Guild",
+      "description": "A secretive organization of thieves and rogues.",
+      "goals": "Profit through information and theft",
+      "faction_values": "Loyalty to the guild, cunning, survival",
+      "faction_income_sources": "Theft, smuggling, information brokering",
+      "faction_expenses": "Bribes, safe houses, equipment",
+      "setting_id": 1
+    }
+  ],
+  "faction_members": [
+    {
+      "id": 1,
+      "actor_id": 1,
+      "faction_id": 1,
+      "actor_role": "Court Wizard",
+      "relative_power": 8,
+      "role": "Chief Magical Advisor",
+      "rank": 3,
+      "membership_status": "Active",
+      "responsibilities": "Advise on magical matters, protect the kingdom",
+      "loyalty": 9,
+      "join_date": "Five years ago",
+      "description": "The most trusted magical advisor to the crown",
+      "notes": "Has the king's ear on all magical matters",
+      "status": "Active",
+      "strength": 9,
+      "is_public": true,
+      "how_joined": "Appointed after saving the kingdom from a magical crisis",
+      "reputation_within": 10,
+      "personal_goals": "Advance magical knowledge and protect the realm",
+      "conflicts": "Sometimes clashes with military advisors over strategy",
+      "setting_id": 1
+    }
+  ],
+  "location_": [
+    {
+      "id": 1,
+      "name": "Silvermoon Capital",
+      "location_type": "Capital City",
+      "description": "The grand capital city built around the royal palace.",
+      "sights": "Towering spires, magical lights dancing in the air",
+      "smells": "Fresh bread from bakeries, incense from temples",
+      "sounds": "Bustling marketplace, distant music from taverns",
+      "feels": "Cool stone under foot, warm magical energy in the air",
+      "tastes": "Sweet pastries, exotic spices from merchant stalls",
+      "coordinates": "Central Kingdom",
+      "is_dungeon": false,
+      "is_city": true,
+      "setting_id": 1
+    }
+  ],
+  "location_city": [
+    {
+      "id": 1,
+      "location_id": 1,
+      "government": "Monarchy with elected council representation",
+      "setting_id": 1
+    }
+  ],
+  "history": [
+    {
+      "id": 1,
+      "name": "The Great Magical Awakening",
+      "event_year": 1450,
+      "description": "The moment when magic returned to the world after centuries of dormancy.",
+      "setting_id": 1
+    }
+  ],
+  "world_data": [
+    {
+      "id": 1,
+      "name": "The Crystal Prophecy",
+      "description": "An ancient prophecy that speaks of heroes who will either save or doom the world.",
+      "setting_id": 1
+    }
+  ],
+  "arc_type": [
+    {
+      "id": 1,
+      "name": "Hero's Journey",
+      "description": "The classic transformation from ordinary person to hero.",
+      "setting_id": 1
+    }
+  ],
+  "litography_node": [
+    {
+      "id": 1,
+      "name": "The Call to Adventure",
+      "description": "Elara receives an urgent message about a growing darkness.",
+      "node_type": "exposition",
+      "x_position": 100.0,
+      "y_position": 100.0,
+      "storyline_id": 1
+    }
+  ],
+  "litography_arc": [
+    {
+      "id": 1,
+      "title": "Elara's Path to Mastery",
+      "description": "The archmage's journey to unlock her true potential.",
+      "arc_type_id": 1,
+      "storyline_id": 1
+    }
+  ],
+  "arc_to_actor": [
+    {
+      "id": 1,
+      "actor_id": 1,
+      "arc_id": 1
+    }
+  ],
+  "actor_a_on_b_relations": [],
+  "actor_to_skills": [],
+  "actor_to_stat": [],
+  "faction_a_on_b_relations": [],
+  "location_to_faction": [],
+  "location_dungeon": [],
+  "location_city_districts": [],
+  "residents": [],
+  "location_flora_fauna": [],
+  "location_a_on_b_relations": [],
+  "location_geographic_relations": [],
+  "location_political_relations": [],
+  "location_economic_relations": [],
+  "location_hierarchy": [],
+  "history_actor": [],
+  "history_location": [],
+  "history_faction": [],
+  "object_": [],
+  "history_object": [],
+  "object_to_owner": [],
+  "history_world_data": [],
+  "node_connection": [],
+  "litography_notes": [],
+  "litography_plot": [],
+  "litography_plot_section": [],
+  "litography_node_to_plot_section": [],
+  "arc_point": [],
+  "arc_to_node": [],
+  "litography_note_to_actor": [],
+  "litography_note_to_background": [],
+  "litography_note_to_faction": [],
+  "litography_note_to_location": [],
+  "litography_note_to_history": [],
+  "litography_note_to_object": [],
+  "litography_note_to_world_data": [],
+  "litography_note_to_class": [],
+  "litography_note_to_race": [],
+  "litography_note_to_sub_race": [],
+  "litography_note_to_skills": []
+}

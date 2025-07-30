@@ -82,6 +82,7 @@ from storymaster.view.common.new_user_dialog import NewUserDialog
 from storymaster.view.common.open_storyline_dialog import OpenStorylineDialog
 from storymaster.view.common.plot_manager_dialog import PlotManagerDialog
 from storymaster.view.common.setting_switcher_dialog import SettingSwitcherDialog
+from storymaster.view.common.import_lore_packages_dialog import ImportLorePackagesDialog
 from storymaster.view.common.storyline_switcher_dialog import StorylineSwitcherDialog
 from storymaster.view.common.user_manager_dialog import UserManagerDialog
 from storymaster.view.common.user_switcher_dialog import UserSwitcherDialog
@@ -2125,6 +2126,9 @@ class MainWindowController:
         self.view.ui.actionSwitchSetting.triggered.connect(
             self.on_switch_setting_clicked
         )
+        self.view.ui.actionManageSetting.triggered.connect(
+            self.on_manage_setting_clicked
+        )
 
         # Add storyline settings management (if action exists)
         if hasattr(self.view.ui, "actionManageStorylineSettings"):
@@ -2228,8 +2232,24 @@ class MainWindowController:
         dialog = NewSettingDialog(self.model, self.view)
         setting_data = dialog.get_setting_data()
         if setting_data is not None:
+            # Extract world building packages before saving
+            selected_packages = setting_data.pop('_selected_packages', [])
+            
             try:
+                # Create the setting first
                 self.model.add_row("setting", setting_data)
+                
+                # Get the newly created setting ID
+                settings = self.model.get_all_rows_as_dicts("setting")
+                new_setting = next(
+                    (s for s in settings if s["name"] == setting_data["name"] and s["user_id"] == setting_data["user_id"]), 
+                    None
+                )
+                
+                if new_setting and selected_packages:
+                    # Import world building packages for the new setting
+                    dialog.import_packages_for_setting(selected_packages, new_setting["id"])
+                
                 self.view.ui.statusbar.showMessage(
                     f"Created new setting: {setting_data['name']}", 5000
                 )
@@ -2323,6 +2343,44 @@ class MainWindowController:
                         "Error Switching Setting",
                         f"Failed to switch setting: {str(e)}",
                     )
+
+    def on_manage_setting_clicked(self):
+        """Opens the import lore packages dialog for the current setting."""
+        try:
+            # Check if we have a current setting
+            if not hasattr(self, 'current_setting_id') or not self.current_setting_id:
+                QMessageBox.warning(
+                    self.view,
+                    "No Setting Selected",
+                    "Please select or create a setting first to import lore packages."
+                )
+                return
+            
+            # Get setting name
+            try:
+                settings = self.model.get_all_settings()
+                setting_name = next(
+                    (s.name for s in settings if s.id == self.current_setting_id), 
+                    "Unknown Setting"
+                )
+            except Exception:
+                setting_name = "Current Setting"
+            
+            # Open import lore packages dialog
+            dialog = ImportLorePackagesDialog(
+                self.model, 
+                self.current_setting_id, 
+                setting_name, 
+                self.view
+            )
+            dialog.exec()
+            
+        except Exception as e:
+            QMessageBox.critical(
+                self.view,
+                "Error",
+                f"Failed to open import lore packages dialog: {str(e)}",
+            )
 
     # --- User Management Methods ---
 

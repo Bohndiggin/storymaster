@@ -13,224 +13,6 @@
   <property name="windowTitle">
    <string>Storymaster</string>
   </property>
-  <property name="styleSheet">
-   <string notr="true">/* --- Dark Theme inspired by DaVinci Resolve ---
-*/
-
-QWidget {
-    background-color: #2e2e2e; /* Dark gray base */
-    color: #dcdcdc; /* Light gray text */
-    font-family: "Segoe UI", Arial, sans-serif;
-    font-size: 10pt;
-}
-
-QMainWindow {
-    background-color: #1e1e1e; /* Even darker for the main window background */
-}
-
-/* --- Stacked Widget &amp; Pages --- */
-QStackedWidget &gt; QWidget {
-    background-color: #252525; /* Slightly lighter background for the main content area */
-}
-
-/* --- Bottom Navigation Bar --- */
-#bottomNavBar {
-    background-color: #1e1e1e;
-    border-top: 1px solid #424242;
-}
-
-#bottomNavBar QPushButton {
-    background-color: transparent;
-    color: #a0a0a0;
-    border: none;
-    padding: 8px 20px;
-    font-weight: bold;
-    font-size: 11pt;
-}
-
-#bottomNavBar QPushButton:hover {
-    background-color: #3a3a3a;
-    color: #ffffff;
-}
-
-#bottomNavBar QPushButton:checked {
-    background-color: #505050;
-    color: #ffffff;
-    border-bottom: 2px solid #af80f8; /* A nice accent color */
-}
-
-/* --- Menu, Tool, and Status Bars --- */
-QMenuBar {
-    background-color: #2e2e2e;
-    color: #dcdcdc;
-}
-
-QMenuBar::item {
-    background-color: transparent;
-    padding: 4px 10px;
-}
-
-QMenuBar::item:selected {
-    background-color: #505050;
-}
-
-QMenu {
-    background-color: #2e2e2e;
-    border: 1px solid #424242;
-}
-
-QMenu::item:selected {
-    background-color: #505050;
-}
-
-QToolBar {
-    background-color: #2e2e2e;
-    border: none;
-    padding: 2px;
-}
-
-QStatusBar {
-    background-color: #2e2e2e;
-    border-top: 1px solid #424242;
-}
-
-/* --- Widgets inside pages --- */
-QSplitter::handle {
-    background-color: #424242;
-}
-
-QSplitter::handle:hover {
-    background-color: #555555;
-}
-
-/* --- Table and Tree View Enhancements --- */
-QTableView {
-    background-color: #2e2e2e;
-    border: 1px solid #424242;
-    selection-background-color: #5c4a8e; /* A darker purple for selection */
-    selection-color: #ffffff; /* White text on selection */
-    gridline-color: #383838; /* Subtle grid lines */
-    alternate-background-color: #333333; /* For alternating rows */
-}
-
-QTableView::item {
-    padding: 5px;
-    border-style: none; /* Remove individual item borders */
-}
-
-QTableView::item:hover {
-    background-color: #4a4a4a;
-}
-
-QHeaderView::section {
-    background-color: #222222; /* Darker header */
-    color: #dcdcdc;
-    padding: 4px; /* Reduced padding for a smaller header */
-    border: none; /* Remove default borders */
-    border-bottom: 1px solid #424242;
-    font-weight: bold;
-}
-
-/* Style the top-left corner button of the table */
-QTableView QTableCornerButton::section {
-    background-color: #222222;
-    border-bottom: 1px solid #424242;
-}
-
-/* Tree view specific styles to keep it clean */
-QTreeView {
-    background-color: #2e2e2e;
-    border: 1px solid #424242;
-    selection-background-color: #5c4a8e;
-    selection-color: #ffffff;
-}
-
-QTreeView::item {
-    padding: 4px;
-}
-
-QTreeView::item:hover {
-    background-color: #4a4a4a;
-}
-
-/* --- Tab Widget Styling --- */
-QTabWidget::pane {
-    border: 1px solid #424242;
-    border-top: none;
-}
-QTabBar::tab {
-    background-color: #2e2e2e;
-    color: #a0a0a0;
-    padding: 8px 20px;
-    border: 1px solid #424242;
-    border-bottom: none;
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
-}
-QTabBar::tab:selected {
-    background-color: #222222;
-    color: #ffffff;
-}
-QTabBar::tab:!selected:hover {
-    background-color: #3a3a3a;
-}
-
-/* --- Edit Form Styling --- */
-QScrollArea {
-    border: none;
-}
-
-#editFormWidget, #addFormWidget {
-    background-color: #222222;
-}
-
-#editFormWidget QLabel, #addFormWidget QLabel {
-    font-weight: bold;
-    color: #a0a0a0;
-}
-
-#editFormWidget QLineEdit, #editFormWidget QTextEdit,
-#addFormWidget QLineEdit, #addFormWidget QTextEdit,
-#addFormWidget QComboBox {
-    background-color: #2e2e2e;
-    border: 1px solid #424242;
-    border-radius: 3px;
-    padding: 4px;
-}
-
-#editFormWidget QLineEdit:focus, #editFormWidget QTextEdit:focus,
-#addFormWidget QLineEdit:focus, #addFormWidget QTextEdit:focus,
-#addFormWidget QComboBox:focus {
-    border: 1px solid #af80f8;
-}
-
-#editFormWidget QPushButton, #addFormWidget QPushButton {
-    background-color: #5c4a8e;
-    color: #ffffff;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    font-weight: bold;
-}
-
-#editFormWidget QPushButton:hover, #addFormWidget QPushButton:hover {
-    background-color: #6c5ab8;
-}
-
-
-QGraphicsView {
-    border-radius: 4px;
-    border: 1px solid #424242;
-}
-
-QLabel#pageTitleLabel {
-    font-size: 14pt;
-    font-weight: bold;
-    padding: 5px;
-    color: #ffffff;
-}
-</string>
-  </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <property name="spacing">
@@ -441,6 +223,8 @@ QLabel#pageTitleLabel {
     </property>
     <addaction name="actionNewSetting"/>
     <addaction name="actionSwitchSetting"/>
+    <addaction name="separator"/>
+    <addaction name="actionManageSetting"/>
    </widget>
    <widget class="QMenu" name="menuUser">
     <property name="title">
@@ -602,6 +386,14 @@ QLabel#pageTitleLabel {
    </property>
    <property name="toolTip">
     <string>Manage databases and backups</string>
+   </property>
+  </action>
+  <action name="actionManageSetting">
+   <property name="text">
+    <string>Import Lore Packages</string>
+   </property>
+   <property name="toolTip">
+    <string>Import world building packages into current setting</string>
    </property>
   </action>
  </widget>

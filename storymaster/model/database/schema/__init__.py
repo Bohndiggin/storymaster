@@ -67,6 +67,7 @@ from storymaster.model.database.schema.base import (
     SubRace,
     User,
     WorldData,
+    NodeConnection,
 )
 
 __all__ = [
@@ -136,4 +137,5 @@ __all__ = [
     "ArcType",
     "ArcPoint",
     "LitographyArc",
+    "NodeConnection",
 ]

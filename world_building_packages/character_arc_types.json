@@ -1,0 +1,223 @@
+{
+  "_package_info": {
+    "display_name": "Character Arc Types",
+    "description": "Standard character development arc types for storytelling, covering positive, negative, and flat arcs commonly used in narrative structure",
+    "category": "Narrative",
+    "version": "1.0",
+    "author": "Storymaster"
+  },
+  "user": [],
+  "setting": [],
+  "storyline": [],
+  "storyline_to_setting": [],
+  "alignment": [],
+  "background": [],
+  "class": [],
+  "race": [],
+  "sub_race": [],
+  "stat": [],
+  "skills": [],
+  "actor": [],
+  "actor_a_on_b_relations": [],
+  "actor_to_skills": [],
+  "actor_to_race": [],
+  "actor_to_class": [],
+  "actor_to_stat": [],
+  "faction": [],
+  "faction_a_on_b_relations": [],
+  "faction_members": [],
+  "location_": [],
+  "location_to_faction": [],
+  "location_dungeon": [],
+  "location_city": [],
+  "location_city_districts": [],
+  "residents": [],
+  "location_flora_fauna": [],
+  "location_a_on_b_relations": [],
+  "location_geographic_relations": [],
+  "location_political_relations": [],
+  "location_economic_relations": [],
+  "location_hierarchy": [],
+  "history": [],
+  "history_actor": [],
+  "history_location": [],
+  "history_faction": [],
+  "object_": [],
+  "history_object": [],
+  "object_to_owner": [],
+  "world_data": [],
+  "history_world_data": [],
+  "arc_type": [
+    {
+      "name": "Hero's Journey",
+      "description": "Classic monomyth arc where character leaves ordinary world, faces trials, transforms, and returns with wisdom. Character grows from naive to experienced, gaining power and understanding.",
+      "setting_id": 1
+    },
+    {
+      "name": "Coming of Age",
+      "description": "Character transitions from childhood innocence to adult maturity through experience and challenges. Focuses on loss of naivety and gaining of wisdom and responsibility.",
+      "setting_id": 1
+    },
+    {
+      "name": "Redemption Arc",
+      "description": "Character begins as flawed or villainous but transforms through consequences and choices to become better. Moving from moral weakness to strength and making amends.",
+      "setting_id": 1
+    },
+    {
+      "name": "Fall from Grace",
+      "description": "Character starts in position of respect or power but loses everything through poor choices, hubris, or circumstances. Descent from high status to low or defeat.",
+      "setting_id": 1
+    },
+    {
+      "name": "Corruption Arc",
+      "description": "Character begins good or innocent but gradually becomes corrupted by power, circumstances, or influence. Transformation from virtue to vice through compromise.",
+      "setting_id": 1
+    },
+    {
+      "name": "Flat Arc - Steadfast",
+      "description": "Character maintains strong moral center throughout story, changing the world around them rather than being changed. Represents unwavering principles against adversity.",
+      "setting_id": 1
+    },
+    {
+      "name": "Flat Arc - Catalyst",
+      "description": "Character serves primarily to facilitate change in others while remaining relatively unchanged themselves. Their presence or actions trigger transformation in other characters.",
+      "setting_id": 1
+    },
+    {
+      "name": "Disillusionment Arc",
+      "description": "Character discovers that their beliefs, ideals, or trusted figures are false or corrupt. Journey from faith and trust to cynicism and painful wisdom.",
+      "setting_id": 1
+    },
+    {
+      "name": "Testing Arc",
+      "description": "Character's existing beliefs and values are challenged but ultimately proven correct. They emerge stronger and more confident in their convictions.",
+      "setting_id": 1
+    },
+    {
+      "name": "Temptation Arc",
+      "description": "Character faces strong temptation to abandon their values for personal gain but ultimately resists. Strengthens character through moral victory over desire.",
+      "setting_id": 1
+    },
+    {
+      "name": "Transformation Arc",
+      "description": "Character undergoes fundamental change in personality, worldview, or nature. Complete metamorphosis from one type of person to another through experience.",
+      "setting_id": 1
+    },
+    {
+      "name": "Discovery Arc",
+      "description": "Character learns hidden truth about themselves, their world, or their past that fundamentally changes their understanding and direction in life.",
+      "setting_id": 1
+    },
+    {
+      "name": "Sacrifice Arc",
+      "description": "Character gives up something important (life, love, dreams, power) for greater good or to protect others. Growth through selflessness and noble sacrifice.",
+      "setting_id": 1
+    },
+    {
+      "name": "Revenge Arc",
+      "description": "Character seeks vengeance for wrong done to them or loved ones. May find satisfaction, learn futility of revenge, or discover cost exceeds benefit.",
+      "setting_id": 1
+    },
+    {
+      "name": "Mentor Arc",
+      "description": "Character serves as guide and teacher to younger or less experienced character. Growth through sharing wisdom and seeing student succeed or fail.",
+      "setting_id": 1
+    },
+    {
+      "name": "Lost Soul Arc",
+      "description": "Character has lost their way in life and must rediscover purpose, identity, or meaning. Journey from despair and confusion to renewed sense of self.",
+      "setting_id": 1
+    },
+    {
+      "name": "Power Struggle Arc",
+      "description": "Character seeks to gain, maintain, or responsibly use power. Explores relationship between authority and responsibility, ambition and ethics.",
+      "setting_id": 1
+    },
+    {
+      "name": "Love Arc",
+      "description": "Character's journey centered on romantic relationship - finding love, learning to love, or dealing with loss of love. Growth through emotional connection.",
+      "setting_id": 1
+    },
+    {
+      "name": "Survivor Arc",
+      "description": "Character endures and overcomes extreme hardship, trauma, or dangerous situation. Focus on resilience, adaptation, and will to live.",
+      "setting_id": 1
+    },
+    {
+      "name": "Legacy Arc",
+      "description": "Character works to build something lasting - family, institution, work of art, or positive change. Growth through creating meaning beyond themselves.",
+      "setting_id": 1
+    },
+    {
+      "name": "Identity Crisis Arc",
+      "description": "Character questions who they are, struggles with conflicting aspects of identity, or discovers they are not who they thought. Resolution through self-acceptance.",
+      "setting_id": 1
+    },
+    {
+      "name": "Healing Arc",
+      "description": "Character recovers from physical, emotional, or spiritual wound. Journey from brokenness to wholeness, often involving acceptance and forgiveness.",
+      "setting_id": 1
+    },
+    {
+      "name": "Quest Arc",
+      "description": "Character seeks specific goal or object, facing obstacles and gaining allies. Growth occurs through persistence, overcoming challenges, and achieving objective.",
+      "setting_id": 1
+    },
+    {
+      "name": "Rebellion Arc",
+      "description": "Character fights against oppressive system, authority, or unjust status quo. May succeed in creating change or fail but inspire others.",
+      "setting_id": 1
+    },
+    {
+      "name": "Escape Arc",
+      "description": "Character flees from dangerous, oppressive, or unwanted situation and builds new life. Growth through courage to leave and adaptability to change.",
+      "setting_id": 1
+    },
+    {
+      "name": "Return Arc",
+      "description": "Character comes back to place or people they left behind, often changed by experience. Reconciliation with past and integration of growth.",
+      "setting_id": 1
+    },
+    {
+      "name": "Rival Arc",
+      "description": "Character defined by competition or conflict with another character. Growth through understanding opponent, surpassing them, or finding mutual respect.",
+      "setting_id": 1
+    },
+    {
+      "name": "Guardian Arc",
+      "description": "Character protects someone or something important, often at personal cost. Growth through dedication to duty and learning what truly deserves protection.",
+      "setting_id": 1
+    },
+    {
+      "name": "Trickster Arc",
+      "description": "Character uses wit, humor, or deception to navigate challenges and create change. May learn when cleverness helps or hurts, growing in wisdom.",
+      "setting_id": 1
+    },
+    {
+      "name": "Everyman Arc",
+      "description": "Ordinary character thrust into extraordinary circumstances, representing audience perspective. Growth from common person to someone capable of heroic action.",
+      "setting_id": 1
+    }
+  ],
+  "litography_node": [],
+  "node_connection": [],
+  "litography_notes": [],
+  "litography_plot": [],
+  "litography_plot_section": [],
+  "litography_node_to_plot_section": [],
+  "litography_arc": [],
+  "arc_point": [],
+  "arc_to_node": [],
+  "arc_to_actor": [],
+  "litography_note_to_actor": [],
+  "litography_note_to_background": [],
+  "litography_note_to_faction": [],
+  "litography_note_to_location": [],
+  "litography_note_to_history": [],
+  "litography_note_to_object": [],
+  "litography_note_to_world_data": [],
+  "litography_note_to_class": [],
+  "litography_note_to_race": [],
+  "litography_note_to_sub_race": [],
+  "litography_note_to_skills": []
+}

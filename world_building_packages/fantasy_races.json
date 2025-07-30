@@ -1,0 +1,158 @@
+{
+  "_package_info": {
+    "display_name": "Fantasy Races",
+    "description": "Common fantasy races like elves, dwarves, orcs, and their subraces",
+    "category": "Fantasy",
+    "version": "1.0",
+    "author": "Storymaster"
+  },
+  "user": [],
+  "setting": [],
+  "storyline": [],
+  "storyline_to_setting": [],
+  "alignment": [],
+  "background": [],
+  "class": [],
+  "race": [
+    {
+      "name": "Human",
+      "description": "Versatile and ambitious, humans are the most adaptable race",
+      "setting_id": 1
+    },
+    {
+      "name": "Elf",
+      "description": "Long-lived and graceful, with natural affinity for magic",
+      "setting_id": 1
+    },
+    {
+      "name": "Dwarf",
+      "description": "Stout and hardy folk, masters of craftsmanship and mountain lore",
+      "setting_id": 1
+    },
+    {
+      "name": "Halfling",
+      "description": "Small in stature but large in courage, love comfort and good food",
+      "setting_id": 1
+    },
+    {
+      "name": "Orc",
+      "description": "Powerful and fierce warriors with strong tribal bonds",
+      "setting_id": 1
+    },
+    {
+      "name": "Gnome",
+      "description": "Small, clever folk with natural curiosity and magical aptitude",
+      "setting_id": 1
+    }
+  ],
+  "sub_race": [
+    {
+      "parent_race_id": 202,
+      "name": "High Elf",
+      "description": "Elite elves with strong magical abilities and noble bearing",
+      "setting_id": 1
+    },
+    {
+      "parent_race_id": 202,
+      "name": "Wood Elf",
+      "description": "Forest-dwelling elves with exceptional archery skills",
+      "setting_id": 1
+    },
+    {
+      "parent_race_id": 202,
+      "name": "Dark Elf",
+      "description": "Underground elves adapted to life in darkness",
+      "setting_id": 1
+    },
+    {
+      "parent_race_id": 203,
+      "name": "Mountain Dwarf",
+      "description": "Hardy dwarves from high peaks, skilled in combat",
+      "setting_id": 1
+    },
+    {
+      "parent_race_id": 203,
+      "name": "Hill Dwarf",
+      "description": "Dwarves from rolling hills, known for their wisdom",
+      "setting_id": 1
+    },
+    {
+      "parent_race_id": 204,
+      "name": "Lightfoot Halfling",
+      "description": "Nimble halflings who can blend into crowds easily",
+      "setting_id": 1
+    },
+    {
+      "parent_race_id": 204,
+      "name": "Stout Halfling",
+      "description": "Sturdy halflings with resistance to poison",
+      "setting_id": 1
+    },
+    {
+      "parent_race_id": 206,
+      "name": "Forest Gnome",
+      "description": "Gnomes who live in harmony with woodland creatures",
+      "setting_id": 1
+    },
+    {
+      "parent_race_id": 206,
+      "name": "Rock Gnome",
+      "description": "Inventive gnomes with natural tinkering abilities",
+      "setting_id": 1
+    }
+  ],
+  "stat": [],
+  "skills": [],
+  "actor": [],
+  "actor_a_on_b_relations": [],
+  "actor_to_skills": [],
+  "actor_to_race": [],
+  "actor_to_class": [],
+  "actor_to_stat": [],
+  "faction": [],
+  "faction_a_on_b_relations": [],
+  "faction_members": [],
+  "location_": [],
+  "location_to_faction": [],
+  "location_dungeon": [],
+  "location_city": [],
+  "location_city_districts": [],
+  "residents": [],
+  "location_flora_fauna": [],
+  "location_a_on_b_relations": [],
+  "location_geographic_relations": [],
+  "location_political_relations": [],
+  "location_economic_relations": [],
+  "location_hierarchy": [],
+  "history": [],
+  "history_actor": [],
+  "history_location": [],
+  "history_faction": [],
+  "object_": [],
+  "history_object": [],
+  "object_to_owner": [],
+  "world_data": [],
+  "history_world_data": [],
+  "arc_type": [],
+  "litography_node": [],
+  "node_connection": [],
+  "litography_notes": [],
+  "litography_plot": [],
+  "litography_plot_section": [],
+  "litography_node_to_plot_section": [],
+  "litography_arc": [],
+  "arc_point": [],
+  "arc_to_node": [],
+  "arc_to_actor": [],
+  "litography_note_to_actor": [],
+  "litography_note_to_background": [],
+  "litography_note_to_faction": [],
+  "litography_note_to_location": [],
+  "litography_note_to_history": [],
+  "litography_note_to_object": [],
+  "litography_note_to_world_data": [],
+  "litography_note_to_class": [],
+  "litography_note_to_race": [],
+  "litography_note_to_sub_race": [],
+  "litography_note_to_skills": []
+}

@@ -1,0 +1,163 @@
+{
+  "_package_info": {
+    "display_name": "Fantasy Skills",
+    "description": "Common fantasy RPG skills like magic, combat, and adventure abilities",
+    "category": "Fantasy",
+    "version": "1.0",
+    "author": "Storymaster"
+  },
+  "user": [],
+  "setting": [],
+  "storyline": [],
+  "storyline_to_setting": [],
+  "alignment": [],
+  "background": [],
+  "class": [],
+  "race": [],
+  "sub_race": [],
+  "stat": [],
+  "skills": [
+    {
+      "name": "Arcane Magic",
+      "description": "The ability to manipulate magical forces through study and practice",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Divine Magic",
+      "description": "Drawing power from deities or divine sources",
+      "skill_trait": "Wisdom-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Sword Fighting",
+      "description": "Mastery of blade combat techniques",
+      "skill_trait": "Strength-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Archery",
+      "description": "Precision shooting with bows and crossbows",
+      "skill_trait": "Dexterity-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Stealth",
+      "description": "Moving unseen and unheard",
+      "skill_trait": "Dexterity-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Lockpicking",
+      "description": "Opening locks without keys",
+      "skill_trait": "Dexterity-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Herbalism",
+      "description": "Knowledge of plants and their medicinal properties",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Beast Handling",
+      "description": "Training and commanding animals",
+      "skill_trait": "Wisdom-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Persuasion",
+      "description": "Convincing others through charm and rhetoric",
+      "skill_trait": "Charisma-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Intimidation",
+      "description": "Compelling others through fear or force of presence",
+      "skill_trait": "Charisma-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Ancient Lore",
+      "description": "Knowledge of history, myths, and forgotten secrets",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Survival",
+      "description": "Thriving in wilderness and harsh environments",
+      "skill_trait": "Wisdom-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Trap Detection",
+      "description": "Spotting and disarming dangerous devices",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Acrobatics",
+      "description": "Agile movement and athletic feats",
+      "skill_trait": "Dexterity-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Alchemy",
+      "description": "Creating potions, elixirs, and magical compounds",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    }
+  ],
+  "actor": [],
+  "actor_a_on_b_relations": [],
+  "actor_to_skills": [],
+  "actor_to_race": [],
+  "actor_to_class": [],
+  "actor_to_stat": [],
+  "faction": [],
+  "faction_a_on_b_relations": [],
+  "faction_members": [],
+  "location_": [],
+  "location_to_faction": [],
+  "location_dungeon": [],
+  "location_city": [],
+  "location_city_districts": [],
+  "residents": [],
+  "location_flora_fauna": [],
+  "location_a_on_b_relations": [],
+  "location_geographic_relations": [],
+  "location_political_relations": [],
+  "location_economic_relations": [],
+  "location_hierarchy": [],
+  "history": [],
+  "history_actor": [],
+  "history_location": [],
+  "history_faction": [],
+  "object_": [],
+  "history_object": [],
+  "object_to_owner": [],
+  "world_data": [],
+  "history_world_data": [],
+  "arc_type": [],
+  "litography_node": [],
+  "node_connection": [],
+  "litography_notes": [],
+  "litography_plot": [],
+  "litography_plot_section": [],
+  "litography_node_to_plot_section": [],
+  "litography_arc": [],
+  "arc_point": [],
+  "arc_to_node": [],
+  "arc_to_actor": [],
+  "litography_note_to_actor": [],
+  "litography_note_to_background": [],
+  "litography_note_to_faction": [],
+  "litography_note_to_location": [],
+  "litography_note_to_history": [],
+  "litography_note_to_object": [],
+  "litography_note_to_world_data": [],
+  "litography_note_to_class": [],
+  "litography_note_to_race": [],
+  "litography_note_to_sub_race": [],
+  "litography_note_to_skills": []
+}
