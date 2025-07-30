@@ -65,9 +65,10 @@ class RelationshipDetailsDialog(QDialog):
         # Tabbed interface for different aspects of the relationship
         self.tab_widget = QTabWidget()
 
-        # Basic relationship tab
-        basic_tab = self.create_basic_tab()
-        self.tab_widget.addTab(basic_tab, "Basic Info")
+        # Basic relationship tab (only for relationship types that have basic info fields)
+        if self.has_basic_info_fields():
+            basic_tab = self.create_basic_tab()
+            self.tab_widget.addTab(basic_tab, "Basic Info")
 
         # Relationship-specific tabs based on type
         if self.relationship_type == "actor_a_on_b_relations":
@@ -93,9 +94,10 @@ class RelationshipDetailsDialog(QDialog):
                 self.create_historical_involvement_tab(), "Historical Context"
             )
 
-        # Timeline/History tab
-        timeline_tab = self.create_timeline_tab()
-        self.tab_widget.addTab(timeline_tab, "Timeline")
+        # Timeline/History tab (only for actor relationships that have timeline fields)
+        if self.relationship_type == "actor_a_on_b_relations":
+            timeline_tab = self.create_timeline_tab()
+            self.tab_widget.addTab(timeline_tab, "Timeline")
 
         layout.addWidget(self.tab_widget)
 
@@ -148,6 +150,11 @@ class RelationshipDetailsDialog(QDialog):
 
         header.setLayout(layout)
         return header
+
+    def has_basic_info_fields(self) -> bool:
+        """Check if this relationship type has basic info fields in the database"""
+        # After migration, ALL relationship types now have basic info fields
+        return True
 
     def create_basic_tab(self) -> QGroupBox:
         """Create the basic relationship information tab"""
@@ -204,6 +211,7 @@ class RelationshipDetailsDialog(QDialog):
 
         tab.setLayout(layout)
         return tab
+
 
     def create_character_relationship_tab(self) -> QGroupBox:
         """Create tab for character-to-character relationships"""
@@ -866,8 +874,33 @@ class RelationshipDetailsDialog(QDialog):
                 # Parse and populate the form fields with existing data
                 if self.relationship_type == "actor_a_on_b_relations":
                     self.parse_actor_relationship_data(existing_data)
+                elif self.relationship_type == "faction_a_on_b_relations":
+                    self.parse_faction_relationship_data(existing_data)
                 elif self.relationship_type == "faction_members":
                     self.parse_membership_data(existing_data)
+                elif self.relationship_type == "location_to_faction":
+                    self.parse_location_to_faction_data(existing_data)
+                elif self.relationship_type == "residents":
+                    self.parse_residents_data(existing_data)
+                elif self.relationship_type == "object_to_owner":
+                    self.parse_object_to_owner_data(existing_data)
+                elif self.relationship_type == "actor_to_skills":
+                    self.parse_actor_to_skills_data(existing_data)
+                elif self.relationship_type == "actor_to_race":
+                    self.parse_actor_to_race_data(existing_data)
+                elif self.relationship_type == "actor_to_class":
+                    self.parse_actor_to_class_data(existing_data)
+                elif self.relationship_type == "actor_to_stat":
+                    self.parse_actor_to_stat_data(existing_data)
+                elif self.relationship_type == "history_actor":
+                    self.parse_history_actor_data(existing_data)
+                elif self.relationship_type == "history_location":
+                    self.parse_history_location_data(existing_data)
+                elif self.relationship_type == "history_faction":
+                    self.parse_history_faction_data(existing_data)
+                else:
+                    # No parser available for this relationship type
+                    pass
 
         except Exception as e:
             print(f"Error loading relationship data: {e}")
@@ -905,6 +938,32 @@ class RelationshipDetailsDialog(QDialog):
         self.is_mutual.setChecked(data.get("is_mutual", True))
         self.is_public.setChecked(data.get("is_public", True))
 
+    def parse_faction_relationship_data(self, data):
+        """Parse faction-to-faction relationship data from database format"""
+        # Basic Info fields (description, notes are in Basic Info tab)
+        if hasattr(self, 'description_edit'):
+            self.description_edit.setPlainText(data.get("description", ""))
+        
+        if hasattr(self, 'notes_edit'):
+            self.notes_edit.setPlainText(data.get("notes", ""))
+
+        # Set status combo
+        status = data.get("status", "")
+        if status and hasattr(self, 'status_combo'):
+            index = self.status_combo.findText(status)
+            if index >= 0:
+                self.status_combo.setCurrentIndex(index)
+
+        # Set strength slider
+        if hasattr(self, 'strength_slider'):
+            strength = data.get("strength", 5)
+            self.strength_slider.setValue(strength)
+
+        # Set is_public checkbox
+        if hasattr(self, 'is_public'):
+            is_public = data.get("is_public", True)
+            self.is_public.setChecked(is_public)
+
     def parse_membership_data(self, data):
         """Parse faction membership data from database format"""
         # Use new structured fields directly
@@ -927,22 +986,107 @@ class RelationshipDetailsDialog(QDialog):
             # For now, just store it as string format
             pass
 
+    def parse_location_to_faction_data(self, data):
+        """Parse location-to-faction relationship data from database format"""
+        self._parse_basic_relationship_data(data)
+        # Territory-specific fields would go here when UI supports them
+
+    def parse_residents_data(self, data):
+        """Parse resident relationship data from database format"""
+        self._parse_basic_relationship_data(data)
+        # Residency-specific fields would go here when UI supports them
+
+    def parse_object_to_owner_data(self, data):
+        """Parse object ownership relationship data from database format"""
+        self._parse_basic_relationship_data(data)
+        # Ownership-specific fields would go here when UI supports them
+
+    def parse_actor_to_skills_data(self, data):
+        """Parse actor-to-skills relationship data from database format"""
+        self._parse_basic_relationship_data(data)
+        # Skill-specific fields would go here when UI supports them
+
+    def parse_actor_to_race_data(self, data):
+        """Parse actor-to-race relationship data from database format"""
+        self._parse_basic_relationship_data(data)
+        # Heritage-specific fields would go here when UI supports them
+
+    def parse_actor_to_class_data(self, data):
+        """Parse actor-to-class relationship data from database format"""
+        self._parse_basic_relationship_data(data)
+        # Class-specific fields would go here when UI supports them
+
+    def parse_actor_to_stat_data(self, data):
+        """Parse actor-to-stat relationship data from database format"""
+        self._parse_basic_relationship_data(data)
+        # Stat-specific fields would go here when UI supports them
+
+    def parse_history_actor_data(self, data):
+        """Parse history-actor relationship data from database format"""
+        self._parse_basic_relationship_data(data)
+        # Historical involvement fields would go here when UI supports them
+
+    def parse_history_location_data(self, data):
+        """Parse history-location relationship data from database format"""
+        self._parse_basic_relationship_data(data)
+        # Historical location fields would go here when UI supports them
+
+    def parse_history_faction_data(self, data):
+        """Parse history-faction relationship data from database format"""
+        self._parse_basic_relationship_data(data)
+        # Historical faction fields would go here when UI supports them
+
+    def _parse_basic_relationship_data(self, data):
+        """Helper method to parse common basic relationship fields"""
+        # Basic Info fields (description, notes are in Basic Info tab)
+        if hasattr(self, 'description_edit'):
+            description = data.get("description", "")
+            self.description_edit.setPlainText(description)
+        
+        if hasattr(self, 'notes_edit'):
+            notes = data.get("notes", "")
+            self.notes_edit.setPlainText(notes)
+
+        # Set status combo
+        status = data.get("status", "")
+        if status and hasattr(self, 'status_combo'):
+            index = self.status_combo.findText(status)
+            if index >= 0:
+                self.status_combo.setCurrentIndex(index)
+
+        # Set strength slider
+        if hasattr(self, 'strength_slider'):
+            strength = data.get("strength", 5)
+            self.strength_slider.setValue(strength)
+
+        # Set is_public checkbox
+        if hasattr(self, 'is_public'):
+            is_public = data.get("is_public", True)
+            self.is_public.setChecked(is_public)
+
     def save_relationship(self):
         """Save the relationship data"""
-        # Collect all the form data
-        self.relationship_data = {
-            "status": self.status_combo.currentText(),
-            "strength": self.strength_slider.value(),
-            "description": self.description_edit.toPlainText(),
-            "notes": self.notes_edit.toPlainText(),
-            "is_public": self.is_public.isChecked(),
-            "timeline": self.timeline_edit.toPlainText(),
-        }
+        # Initialize relationship data
+        self.relationship_data = {}
+
+        # Collect basic info data for relationship types that support it
+        if self.has_basic_info_fields():
+            self.relationship_data.update({
+                "status": self.status_combo.currentText(),
+                "strength": self.strength_slider.value(),
+                "description": self.description_edit.toPlainText(),
+                "notes": self.notes_edit.toPlainText(),
+                "is_public": self.is_public.isChecked(),
+            })
+            # Add timeline field if it exists (only for some relationship types)
+            if hasattr(self, 'timeline_edit'):
+                self.relationship_data["timeline"] = self.timeline_edit.toPlainText()
 
         # Add relationship-specific data
         if self.relationship_type == "actor_a_on_b_relations":
             self.relationship_data.update(
                 {
+                    # Character relationship specific fields
                     "relationship_type": self.char_relationship_type.currentText(),
                     "is_mutual": self.is_mutual.isChecked(),
                     "trust_level": self.trust_slider.value(),
@@ -982,11 +1126,14 @@ class RelationshipDetailsDialog(QDialog):
                 QMessageBox.warning(
                     self,
                     "Save Failed",
-                    f"Failed to save relationship details to the database.",
+                    f"Failed to save relationship details to the database.\n\nRelationship Type: {self.relationship_type}\nCheck console for details.",
                 )
         except Exception as e:
+            print(f"💥 Save error: {str(e)}")
+            import traceback
+            traceback.print_exc()
             QMessageBox.critical(
-                self, "Database Error", f"Error saving relationship: {str(e)}"
+                self, "Database Error", f"Error saving relationship: {str(e)}\n\nRelationship Type: {self.relationship_type}\nCheck console for detailed error information."
             )
 
     def get_relationship_data(self) -> dict:

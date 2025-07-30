@@ -2022,21 +2022,69 @@ class LorekeeperModelAdapter:
                             "current_status"
                         )
 
+                elif relationship_name == "faction_a_on_b_relations":
+                    from storymaster.model.database.schema.base import \
+                        FactionAOnBRelations
+
+                    relation = (
+                        session.query(FactionAOnBRelations)
+                        .filter(
+                            (
+                                (FactionAOnBRelations.faction_a_id == entity.id)
+                                & (FactionAOnBRelations.faction_b_id == related_entity.id)
+                            )
+                            | (
+                                (FactionAOnBRelations.faction_a_id == related_entity.id)
+                                & (FactionAOnBRelations.faction_b_id == entity.id)
+                            )
+                        )
+                        .first()
+                    )
+
+                    if relation:
+                        # Map basic info fields to database columns
+                        relation.description = relationship_data.get("description")
+                        relation.notes = relationship_data.get("notes")
+                        relation.timeline = relationship_data.get("timeline")
+                        relation.relationship_type = relationship_data.get("relationship_type")
+                        relation.status = relationship_data.get("status")
+                        relation.strength = relationship_data.get("strength")
+                        relation.trust_level = relationship_data.get("trust_level")
+                        relation.is_mutual = relationship_data.get("is_mutual", True)
+                        relation.is_public = relationship_data.get("is_public", True)
+
                 elif relationship_name == "faction_members":
                     from storymaster.model.database.schema.base import \
                         FactionMembers
 
+                    # Determine which entity is the actor and which is the faction
+                    if entity.__class__.__name__ == "Actor":
+                        actor_id = entity.id
+                        faction_id = related_entity.id
+                    elif entity.__class__.__name__ == "Faction":
+                        actor_id = related_entity.id
+                        faction_id = entity.id
+                    else:
+                        return False  # Invalid entity types for faction members relationship
+
                     membership = (
                         session.query(FactionMembers)
                         .filter(
-                            (FactionMembers.actor_id == entity.id)
-                            & (FactionMembers.faction_id == related_entity.id)
+                            (FactionMembers.actor_id == actor_id)
+                            & (FactionMembers.faction_id == faction_id)
                         )
                         .first()
                     )
 
                     if membership:
-                        # Map membership data to dedicated database columns
+                        # Map basic info fields (now available after migration)
+                        membership.description = relationship_data.get("description")
+                        membership.notes = relationship_data.get("notes")
+                        membership.status = relationship_data.get("status")
+                        membership.strength = relationship_data.get("strength")
+                        membership.is_public = relationship_data.get("is_public", True)
+                        
+                        # Map membership-specific data to dedicated database columns
                         membership.role = relationship_data.get("role")
                         membership.rank = relationship_data.get("rank")
                         membership.membership_status = relationship_data.get(
@@ -2047,8 +2095,343 @@ class LorekeeperModelAdapter:
                         )
                         membership.loyalty = relationship_data.get("loyalty")
                         membership.join_date = relationship_data.get("join_date")
+                        
+                        # Map additional membership fields
+                        membership.how_joined = relationship_data.get("how_joined")
+                        membership.reputation_within = relationship_data.get("reputation_within")
+                        membership.personal_goals = relationship_data.get("personal_goals")
+                        membership.conflicts = relationship_data.get("conflicts")
+
+                elif relationship_name == "location_to_faction":
+                    from storymaster.model.database.schema.base import \
+                        LocationToFaction
+
+                    # Determine which entity is the location and which is the faction
+                    if entity.__class__.__name__ == "Location":
+                        location_id = entity.id
+                        faction_id = related_entity.id
+                    elif entity.__class__.__name__ == "Faction":
+                        location_id = related_entity.id
+                        faction_id = entity.id
+                    else:
+                        return False
+
+                    control = (
+                        session.query(LocationToFaction)
+                        .filter(
+                            (LocationToFaction.location_id == location_id)
+                            & (LocationToFaction.faction_id == faction_id)
+                        )
+                        .first()
+                    )
+
+                    if control:
+                        # Map basic info fields
+                        control.description = relationship_data.get("description")
+                        control.status = relationship_data.get("status") 
+                        control.strength = relationship_data.get("strength")
+                        control.is_public = relationship_data.get("is_public", True)
+                        
+                        # Map territory-specific fields
+                        control.local_opposition = relationship_data.get("local_opposition")
+                        control.key_supporters = relationship_data.get("key_supporters")
+                        control.control_mechanisms = relationship_data.get("control_mechanisms")
+                    else:
+                        return False
+
+                elif relationship_name == "residents":
+                    from storymaster.model.database.schema.base import Resident
+
+                    # Determine which entity is the actor and which is the location
+                    if entity.__class__.__name__ == "Actor":
+                        actor_id = entity.id
+                        location_id = related_entity.id
+                    elif entity.__class__.__name__ == "Location":
+                        actor_id = related_entity.id
+                        location_id = entity.id
+                    else:
+                        return False
+
+                    residency = (
+                        session.query(Resident)
+                        .filter(
+                            (Resident.actor_id == actor_id)
+                            & (Resident.location_id == location_id)
+                        )
+                        .first()
+                    )
+
+                    if residency:
+                        # Map basic info fields
+                        residency.description = relationship_data.get("description")
+                        residency.status = relationship_data.get("status")
+                        residency.strength = relationship_data.get("strength")
+                        
+                        # Map residency-specific fields
+                        residency.reason_for_living = relationship_data.get("reason_for_living")
+                        residency.living_conditions = relationship_data.get("living_conditions")
+                        residency.relationships_neighbors = relationship_data.get("relationships_neighbors")
+                        residency.future_plans = relationship_data.get("future_plans")
+                    else:
+                        return False
+
+                elif relationship_name == "object_to_owner":
+                    from storymaster.model.database.schema.base import ObjectToOwner
+
+                    # Determine which entity is the actor and which is the object
+                    if entity.__class__.__name__ == "Actor":
+                        actor_id = entity.id
+                        object_id = related_entity.id
+                    elif entity.__class__.__name__ == "Object_":
+                        actor_id = related_entity.id
+                        object_id = entity.id
+                    else:
+                        return False
+
+                    ownership = (
+                        session.query(ObjectToOwner)
+                        .filter(
+                            (ObjectToOwner.actor_id == actor_id)
+                            & (ObjectToOwner.object_id == object_id)
+                        )
+                        .first()
+                    )
+
+                    if ownership:
+                        # Map basic info fields
+                        ownership.description = relationship_data.get("description")
+                        ownership.status = relationship_data.get("status")
+                        ownership.strength = relationship_data.get("strength")
+                        
+                        # Map ownership-specific fields
+                        ownership.item_condition = relationship_data.get("item_condition")
+                        ownership.usage_frequency = relationship_data.get("usage_frequency")
+                        ownership.storage_location = relationship_data.get("storage_location")
+                        ownership.acquisition_story = relationship_data.get("acquisition_story")
+                    else:
+                        return False
+
+                elif relationship_name == "actor_to_skills":
+                    from storymaster.model.database.schema.base import ActorToSkills
+
+                    skill_relation = (
+                        session.query(ActorToSkills)
+                        .filter(
+                            (ActorToSkills.actor_id == entity.id)
+                            & (ActorToSkills.skill_id == related_entity.id)
+                        )
+                        .first()
+                    )
+
+                    if skill_relation:
+                        # Map basic info fields
+                        skill_relation.description = relationship_data.get("description")
+                        skill_relation.status = relationship_data.get("status")
+                        skill_relation.strength = relationship_data.get("strength")
+                        skill_relation.is_public = relationship_data.get("is_public", True)
+                        
+                        # Map skill-specific fields
+                        skill_relation.practice_frequency = relationship_data.get("practice_frequency")
+                        skill_relation.skill_applications = relationship_data.get("skill_applications")
+                        skill_relation.learning_goals = relationship_data.get("learning_goals")
+                    else:
+                        return False
+
+                elif relationship_name == "actor_to_race":
+                    from storymaster.model.database.schema.base import ActorToRace
+
+                    race_relation = (
+                        session.query(ActorToRace)
+                        .filter(
+                            (ActorToRace.actor_id == entity.id)
+                            & (ActorToRace.race_id == related_entity.id)
+                        )
+                        .first()
+                    )
+
+                    if race_relation:
+                        # Map basic info fields
+                        race_relation.description = relationship_data.get("description")
+                        race_relation.notes = relationship_data.get("notes")
+                        race_relation.status = relationship_data.get("status")
+                        race_relation.strength = relationship_data.get("strength")
+                        race_relation.is_public = relationship_data.get("is_public", True)
+                        
+                        # Map heritage-specific fields
+                        race_relation.heritage_pride = relationship_data.get("heritage_pride")
+                        race_relation.cultural_connection = relationship_data.get("cultural_connection")
+                        race_relation.racial_experiences = relationship_data.get("racial_experiences")
+                    else:
+                        return False
+
+                elif relationship_name == "actor_to_class":
+                    from storymaster.model.database.schema.base import ActorToClass
+
+                    class_relation = (
+                        session.query(ActorToClass)
+                        .filter(
+                            (ActorToClass.actor_id == entity.id)
+                            & (ActorToClass.class_id == related_entity.id)
+                        )
+                        .first()
+                    )
+
+                    if class_relation:
+                        # Map basic info fields
+                        class_relation.description = relationship_data.get("description")
+                        class_relation.notes = relationship_data.get("notes")
+                        class_relation.status = relationship_data.get("status")
+                        class_relation.strength = relationship_data.get("strength")
+                        class_relation.is_public = relationship_data.get("is_public", True)
+                        
+                        # Map class-specific fields
+                        class_relation.training_location = relationship_data.get("training_location")
+                        class_relation.mentors = relationship_data.get("mentors")
+                        class_relation.class_goals = relationship_data.get("class_goals")
+                        class_relation.advancement_plans = relationship_data.get("advancement_plans")
+                    else:
+                        return False
+
+                elif relationship_name == "actor_to_stat":
+                    from storymaster.model.database.schema.base import ActorToStat
+
+                    stat_relation = (
+                        session.query(ActorToStat)
+                        .filter(
+                            (ActorToStat.actor_id == entity.id)
+                            & (ActorToStat.stat_id == related_entity.id)
+                        )
+                        .first()
+                    )
+
+                    if stat_relation:
+                        # Map basic info fields
+                        stat_relation.description = relationship_data.get("description")
+                        stat_relation.notes = relationship_data.get("notes")
+                        stat_relation.status = relationship_data.get("status")
+                        stat_relation.strength = relationship_data.get("strength")
+                        stat_relation.is_public = relationship_data.get("is_public", True)
+                        
+                        # Map stat-specific fields
+                        stat_relation.how_developed = relationship_data.get("how_developed")
+                        stat_relation.training_methods = relationship_data.get("training_methods")
+                        stat_relation.stat_goals = relationship_data.get("stat_goals")
+                    else:
+                        return False
+
+                elif relationship_name == "history_actor":
+                    from storymaster.model.database.schema.base import HistoryActor
+
+                    # Determine which entity is the actor and which is the history event
+                    if entity.__class__.__name__ == "Actor":
+                        actor_id = entity.id
+                        history_id = related_entity.id
+                    elif entity.__class__.__name__ == "History":
+                        actor_id = related_entity.id
+                        history_id = entity.id
+                    else:
+                        return False
+
+                    history_relation = (
+                        session.query(HistoryActor)
+                        .filter(
+                            (HistoryActor.actor_id == actor_id)
+                            & (HistoryActor.history_id == history_id)
+                        )
+                        .first()
+                    )
+
+                    if history_relation:
+                        # Map basic info fields
+                        history_relation.description = relationship_data.get("description")
+                        history_relation.notes = relationship_data.get("notes")
+                        history_relation.status = relationship_data.get("status")
+                        history_relation.strength = relationship_data.get("strength")
+                        history_relation.is_public = relationship_data.get("is_public", True)
+                        
+                        # Map historical involvement fields
+                        history_relation.role_in_event = relationship_data.get("role_in_event")
+                        history_relation.involvement_level = relationship_data.get("involvement_level")
+                        history_relation.impact_on_actor = relationship_data.get("impact_on_actor")
+                        history_relation.actor_perspective = relationship_data.get("actor_perspective")
+                        history_relation.consequences = relationship_data.get("consequences")
+                    else:
+                        return False
+
+                elif relationship_name == "history_location":
+                    from storymaster.model.database.schema.base import HistoryLocation
+
+                    # Determine which entity is the location and which is the history event
+                    if entity.__class__.__name__ == "Location":
+                        location_id = entity.id
+                        history_id = related_entity.id
+                    elif entity.__class__.__name__ == "History":
+                        location_id = related_entity.id
+                        history_id = entity.id
+                    else:
+                        return False
+
+                    history_relation = (
+                        session.query(HistoryLocation)
+                        .filter(
+                            (HistoryLocation.location_id == location_id)
+                            & (HistoryLocation.history_id == history_id)
+                        )
+                        .first()
+                    )
+
+                    if history_relation:
+                        # Map basic info fields
+                        history_relation.description = relationship_data.get("description")
+                        history_relation.notes = relationship_data.get("notes")
+                        history_relation.status = relationship_data.get("status")
+                        history_relation.strength = relationship_data.get("strength")
+                        history_relation.is_public = relationship_data.get("is_public", True)
+                        
+                        # Map historical location fields
+                        history_relation.role_in_event = relationship_data.get("role_in_event")
+                        history_relation.location_impact = relationship_data.get("location_impact")
+                        history_relation.physical_changes = relationship_data.get("physical_changes")
+                        history_relation.ongoing_effects = relationship_data.get("ongoing_effects")
+                    else:
+                        return False
+
+                elif relationship_name == "history_faction":
+                    from storymaster.model.database.schema.base import HistoryFaction
+
+                    # Determine which entity is the faction and which is the history event
+                    if entity.__class__.__name__ == "Faction":
+                        faction_id = entity.id
+                        history_id = related_entity.id
+                    elif entity.__class__.__name__ == "History":
+                        faction_id = related_entity.id
+                        history_id = entity.id
+                    else:
+                        return False
+
+                    history_relation = (
+                        session.query(HistoryFaction)
+                        .filter(
+                            (HistoryFaction.faction_id == faction_id)
+                            & (HistoryFaction.history_id == history_id)
+                        )
+                        .first()
+                    )
+
+                    if history_relation:
+                        # Map basic info fields
+                        history_relation.description = relationship_data.get("description")
+                        history_relation.notes = relationship_data.get("notes")
+                        history_relation.status = relationship_data.get("status")
+                        history_relation.strength = relationship_data.get("strength")
+                        history_relation.is_public = relationship_data.get("is_public", True)
+                    else:
+                        return False
 
                 # Add more relationship types as needed
+                else:
+                    print(f"No handler for relationship type: {relationship_name}")
+                    return False
 
                 session.commit()
                 return True
@@ -2111,31 +2494,474 @@ class LorekeeperModelAdapter:
                             "economically": relation.economically or "",
                         }
 
+                elif relationship_name == "faction_a_on_b_relations":
+                    from storymaster.model.database.schema.base import \
+                        FactionAOnBRelations
+
+                    relation = (
+                        session.query(FactionAOnBRelations)
+                        .filter(
+                            (
+                                (FactionAOnBRelations.faction_a_id == entity.id)
+                                & (FactionAOnBRelations.faction_b_id == related_entity.id)
+                            )
+                            | (
+                                (FactionAOnBRelations.faction_a_id == related_entity.id)
+                                & (FactionAOnBRelations.faction_b_id == entity.id)
+                            )
+                        )
+                        .first()
+                    )
+
+                    if relation:
+                        return {
+                            # Basic info fields
+                            "description": relation.description or "",
+                            "notes": relation.notes or "",
+                            "timeline": relation.timeline or "",
+                            "relationship_type": relation.relationship_type or "",
+                            "status": relation.status or "",
+                            "strength": relation.strength or 5,
+                            "trust_level": relation.trust_level or 5,
+                            "is_mutual": (
+                                relation.is_mutual
+                                if relation.is_mutual is not None
+                                else True
+                            ),
+                            "is_public": (
+                                relation.is_public
+                                if relation.is_public is not None
+                                else True
+                            ),
+                            # Legacy fields (for backward compatibility)
+                            "overall": relation.overall or "",
+                            "economically": relation.economically or "",
+                            "politically": relation.politically or "",
+                            "opinion": relation.opinion or "",
+                        }
+
                 elif relationship_name == "faction_members":
                     from storymaster.model.database.schema.base import \
                         FactionMembers
 
+                    # Determine which entity is the actor and which is the faction
+                    if entity.__class__.__name__ == "Actor":
+                        actor_id = entity.id
+                        faction_id = related_entity.id
+                    elif entity.__class__.__name__ == "Faction":
+                        actor_id = related_entity.id
+                        faction_id = entity.id
+                    else:
+                        return {}  # Invalid entity types for faction members relationship
+
+                    print(f"🔍 Querying faction_members with actor_id={actor_id}, faction_id={faction_id}")
                     membership = (
                         session.query(FactionMembers)
                         .filter(
-                            (FactionMembers.actor_id == entity.id)
-                            & (FactionMembers.faction_id == related_entity.id)
+                            (FactionMembers.actor_id == actor_id)
+                            & (FactionMembers.faction_id == faction_id)
                         )
                         .first()
                     )
 
                     if membership:
-                        return {
-                            # New structured fields
+                        print(f"✅ Found membership record")
+                        print(f"   Description: '{getattr(membership, 'description', 'N/A')}'")
+                        print(f"   Status: '{getattr(membership, 'status', 'N/A')}'")
+                        print(f"   Strength: {getattr(membership, 'strength', 'N/A')}")
+                        data = {
+                            # Basic info fields (now available after migration)
+                            "description": getattr(membership, 'description', None) or "",
+                            "notes": getattr(membership, 'notes', None) or "",
+                            "status": getattr(membership, 'status', None) or "",
+                            "strength": getattr(membership, 'strength', None) or 5,
+                            "is_public": getattr(membership, 'is_public', None) if getattr(membership, 'is_public', None) is not None else True,
+                            
+                            # Faction membership specific fields
                             "role": membership.role or "",
                             "rank": membership.rank or 1,
                             "membership_status": membership.membership_status or "",
                             "responsibilities": membership.responsibilities or "",
                             "loyalty": membership.loyalty or 7,
                             "join_date": membership.join_date or "",
+                            
+                            # Additional membership fields
+                            "how_joined": getattr(membership, 'how_joined', None) or "",
+                            "reputation_within": getattr(membership, 'reputation_within', None) or 5,
+                            "personal_goals": getattr(membership, 'personal_goals', None) or "",
+                            "conflicts": getattr(membership, 'conflicts', None) or "",
+                            
                             # Legacy fields (for backward compatibility)
                             "actor_role": membership.actor_role or "",
                             "relative_power": membership.relative_power or 1,
+                        }
+                        print(f"📤 Returning data: {list(data.keys())}")
+                        return data
+                    else:
+                        print(f"❌ No membership record found")
+                        return {}
+
+                elif relationship_name == "location_to_faction":
+                    from storymaster.model.database.schema.base import LocationToFaction
+
+                    # Determine which entity is the location and which is the faction
+                    if entity.__class__.__name__ == "Location":
+                        location_id = entity.id
+                        faction_id = related_entity.id
+                    elif entity.__class__.__name__ == "Faction":
+                        location_id = related_entity.id
+                        faction_id = entity.id
+                    else:
+                        return {}
+
+                    control = (
+                        session.query(LocationToFaction)
+                        .filter(
+                            (LocationToFaction.location_id == location_id)
+                            & (LocationToFaction.faction_id == faction_id)
+                        )
+                        .first()
+                    )
+
+                    if control:
+                        return {
+                            # Basic info fields
+                            "description": getattr(control, 'description', None) or "",
+                            "status": getattr(control, 'status', None) or "",
+                            "strength": getattr(control, 'strength', None) or 5,
+                            "is_public": getattr(control, 'is_public', None) if getattr(control, 'is_public', None) is not None else True,
+                            
+                            # Territory-specific fields
+                            "local_opposition": getattr(control, 'local_opposition', None) or "",
+                            "key_supporters": getattr(control, 'key_supporters', None) or "",
+                            "control_mechanisms": getattr(control, 'control_mechanisms', None) or "",
+                            
+                            # Existing fields
+                            "control_type": control.control_type or "",
+                            "control_strength": control.control_strength or 5,
+                            "control_method": control.control_method or "",
+                            "resources_benefits": control.resources_benefits or "",
+                            "challenges": control.challenges or "",
+                            "established_date": control.established_date or "",
+                        }
+
+                elif relationship_name == "residents":
+                    from storymaster.model.database.schema.base import Resident
+
+                    # Determine which entity is the actor and which is the location
+                    if entity.__class__.__name__ == "Actor":
+                        actor_id = entity.id
+                        location_id = related_entity.id
+                    elif entity.__class__.__name__ == "Location":
+                        actor_id = related_entity.id
+                        location_id = entity.id
+                    else:
+                        return {}
+
+                    residency = (
+                        session.query(Resident)
+                        .filter(
+                            (Resident.actor_id == actor_id)
+                            & (Resident.location_id == location_id)
+                        )
+                        .first()
+                    )
+
+                    if residency:
+                        return {
+                            # Basic info fields
+                            "description": getattr(residency, 'description', None) or "",
+                            "status": getattr(residency, 'status', None) or "",
+                            "strength": getattr(residency, 'strength', None) or 5,
+                            
+                            # Residency-specific fields
+                            "reason_for_living": getattr(residency, 'reason_for_living', None) or "",
+                            "living_conditions": getattr(residency, 'living_conditions', None) or "",
+                            "relationships_neighbors": getattr(residency, 'relationships_neighbors', None) or "",
+                            "future_plans": getattr(residency, 'future_plans', None) or "",
+                            
+                            # Existing fields
+                            "residency_type": residency.residency_type or "",
+                            "residency_status": residency.residency_status or "",
+                            "move_in_date": residency.move_in_date or "",
+                            "housing_type": residency.housing_type or "",
+                            "notes": residency.notes or "",
+                            "is_public_knowledge": residency.is_public_knowledge if residency.is_public_knowledge is not None else True,
+                        }
+
+                elif relationship_name == "object_to_owner":
+                    from storymaster.model.database.schema.base import ObjectToOwner
+
+                    # Determine which entity is the actor and which is the object
+                    if entity.__class__.__name__ == "Actor":
+                        actor_id = entity.id
+                        object_id = related_entity.id
+                    elif entity.__class__.__name__ == "Object_":
+                        actor_id = related_entity.id
+                        object_id = entity.id
+                    else:
+                        return {}
+
+                    ownership = (
+                        session.query(ObjectToOwner)
+                        .filter(
+                            (ObjectToOwner.actor_id == actor_id)
+                            & (ObjectToOwner.object_id == object_id)
+                        )
+                        .first()
+                    )
+
+                    if ownership:
+                        return {
+                            # Basic info fields
+                            "description": getattr(ownership, 'description', None) or "",
+                            "status": getattr(ownership, 'status', None) or "",
+                            "strength": getattr(ownership, 'strength', None) or 5,
+                            
+                            # Ownership-specific fields
+                            "item_condition": getattr(ownership, 'item_condition', None) or "",
+                            "usage_frequency": getattr(ownership, 'usage_frequency', None) or "",
+                            "storage_location": getattr(ownership, 'storage_location', None) or "",
+                            "acquisition_story": getattr(ownership, 'acquisition_story', None) or "",
+                            
+                            # Existing fields
+                            "ownership_type": ownership.ownership_type or "",
+                            "acquisition_method": ownership.acquisition_method or "",
+                            "acquisition_date": ownership.acquisition_date or "",
+                            "ownership_status": ownership.ownership_status or "",
+                            "notes": ownership.notes or "",
+                            "is_public_knowledge": ownership.is_public_knowledge if ownership.is_public_knowledge is not None else True,
+                        }
+
+                elif relationship_name == "actor_to_skills":
+                    from storymaster.model.database.schema.base import ActorToSkills
+
+                    skill_relation = (
+                        session.query(ActorToSkills)
+                        .filter(
+                            (ActorToSkills.actor_id == entity.id)
+                            & (ActorToSkills.skill_id == related_entity.id)
+                        )
+                        .first()
+                    )
+
+                    if skill_relation:
+                        return {
+                            # Basic info fields
+                            "description": getattr(skill_relation, 'description', None) or "",
+                            "status": getattr(skill_relation, 'status', None) or "",
+                            "strength": getattr(skill_relation, 'strength', None) or 5,
+                            "is_public": getattr(skill_relation, 'is_public', None) if getattr(skill_relation, 'is_public', None) is not None else True,
+                            
+                            # Skill-specific fields
+                            "practice_frequency": getattr(skill_relation, 'practice_frequency', None) or "",
+                            "skill_applications": getattr(skill_relation, 'skill_applications', None) or "",
+                            "learning_goals": getattr(skill_relation, 'learning_goals', None) or "",
+                            
+                            # Existing fields
+                            "proficiency_level": skill_relation.proficiency_level or 1,
+                            "how_learned": skill_relation.how_learned or "",
+                            "experience_years": skill_relation.experience_years or 0,
+                            "specialty": skill_relation.specialty or "",
+                            "notes": skill_relation.notes or "",
+                            "skill_level": skill_relation.skill_level or 1,  # Legacy field
+                        }
+
+                elif relationship_name == "actor_to_race":
+                    from storymaster.model.database.schema.base import ActorToRace
+
+                    race_relation = (
+                        session.query(ActorToRace)
+                        .filter(
+                            (ActorToRace.actor_id == entity.id)
+                            & (ActorToRace.race_id == related_entity.id)
+                        )
+                        .first()
+                    )
+
+                    if race_relation:
+                        return {
+                            # Basic info fields
+                            "description": getattr(race_relation, 'description', None) or "",
+                            "notes": getattr(race_relation, 'notes', None) or "",
+                            "status": getattr(race_relation, 'status', None) or "",
+                            "strength": getattr(race_relation, 'strength', None) or 5,
+                            "is_public": getattr(race_relation, 'is_public', None) if getattr(race_relation, 'is_public', None) is not None else True,
+                            
+                            # Heritage-specific fields
+                            "heritage_pride": getattr(race_relation, 'heritage_pride', None) or 5,
+                            "cultural_connection": getattr(race_relation, 'cultural_connection', None) or "",
+                            "racial_experiences": getattr(race_relation, 'racial_experiences', None) or "",
+                        }
+
+                elif relationship_name == "actor_to_class":
+                    from storymaster.model.database.schema.base import ActorToClass
+
+                    class_relation = (
+                        session.query(ActorToClass)
+                        .filter(
+                            (ActorToClass.actor_id == entity.id)
+                            & (ActorToClass.class_id == related_entity.id)
+                        )
+                        .first()
+                    )
+
+                    if class_relation:
+                        return {
+                            # Basic info fields 
+                            "description": getattr(class_relation, 'description', None) or "",
+                            "notes": getattr(class_relation, 'notes', None) or "",
+                            "status": getattr(class_relation, 'status', None) or "",
+                            "strength": getattr(class_relation, 'strength', None) or 5,
+                            "is_public": getattr(class_relation, 'is_public', None) if getattr(class_relation, 'is_public', None) is not None else True,
+                            
+                            # Class-specific fields
+                            "training_location": getattr(class_relation, 'training_location', None) or "",
+                            "mentors": getattr(class_relation, 'mentors', None) or "",
+                            "class_goals": getattr(class_relation, 'class_goals', None) or "",
+                            "advancement_plans": getattr(class_relation, 'advancement_plans', None) or "",
+                            
+                            # Existing fields
+                            "level": getattr(class_relation, 'level', None) or 1,
+                        }
+
+                elif relationship_name == "actor_to_stat":
+                    from storymaster.model.database.schema.base import ActorToStat
+
+                    stat_relation = (
+                        session.query(ActorToStat)
+                        .filter(
+                            (ActorToStat.actor_id == entity.id)
+                            & (ActorToStat.stat_id == related_entity.id)
+                        )
+                        .first()
+                    )
+
+                    if stat_relation:
+                        return {
+                            # Basic info fields
+                            "description": getattr(stat_relation, 'description', None) or "",
+                            "notes": getattr(stat_relation, 'notes', None) or "",
+                            "status": getattr(stat_relation, 'status', None) or "",
+                            "strength": getattr(stat_relation, 'strength', None) or 5,
+                            "is_public": getattr(stat_relation, 'is_public', None) if getattr(stat_relation, 'is_public', None) is not None else True,
+                            
+                            # Stat-specific fields
+                            "how_developed": getattr(stat_relation, 'how_developed', None) or "",
+                            "training_methods": getattr(stat_relation, 'training_methods', None) or "",
+                            "stat_goals": getattr(stat_relation, 'stat_goals', None) or "",
+                            
+                            # Existing fields
+                            "value": getattr(stat_relation, 'value', None) or 10,
+                        }
+
+                elif relationship_name == "history_actor":
+                    from storymaster.model.database.schema.base import HistoryActor
+
+                    # Determine which entity is the actor and which is the history event
+                    if entity.__class__.__name__ == "Actor":
+                        actor_id = entity.id
+                        history_id = related_entity.id
+                    elif entity.__class__.__name__ == "History":
+                        actor_id = related_entity.id
+                        history_id = entity.id
+                    else:
+                        return {}
+
+                    history_relation = (
+                        session.query(HistoryActor)
+                        .filter(
+                            (HistoryActor.actor_id == actor_id)
+                            & (HistoryActor.history_id == history_id)
+                        )
+                        .first()
+                    )
+
+                    if history_relation:
+                        return {
+                            # Basic info fields
+                            "description": getattr(history_relation, 'description', None) or "",
+                            "notes": getattr(history_relation, 'notes', None) or "",
+                            "status": getattr(history_relation, 'status', None) or "",
+                            "strength": getattr(history_relation, 'strength', None) or 5,
+                            "is_public": getattr(history_relation, 'is_public', None) if getattr(history_relation, 'is_public', None) is not None else True,
+                            
+                            # Historical involvement fields
+                            "role_in_event": getattr(history_relation, 'role_in_event', None) or "",
+                            "involvement_level": getattr(history_relation, 'involvement_level', None) or "",
+                            "impact_on_actor": getattr(history_relation, 'impact_on_actor', None) or "",
+                            "actor_perspective": getattr(history_relation, 'actor_perspective', None) or "",
+                            "consequences": getattr(history_relation, 'consequences', None) or "",
+                        }
+
+                elif relationship_name == "history_location":
+                    from storymaster.model.database.schema.base import HistoryLocation
+
+                    # Determine which entity is the location and which is the history event
+                    if entity.__class__.__name__ == "Location":
+                        location_id = entity.id
+                        history_id = related_entity.id
+                    elif entity.__class__.__name__ == "History":
+                        location_id = related_entity.id
+                        history_id = entity.id
+                    else:
+                        return {}
+
+                    history_relation = (
+                        session.query(HistoryLocation)
+                        .filter(
+                            (HistoryLocation.location_id == location_id)
+                            & (HistoryLocation.history_id == history_id)
+                        )
+                        .first()
+                    )
+
+                    if history_relation:
+                        return {
+                            # Basic info fields
+                            "description": getattr(history_relation, 'description', None) or "",
+                            "notes": getattr(history_relation, 'notes', None) or "",
+                            "status": getattr(history_relation, 'status', None) or "",
+                            "strength": getattr(history_relation, 'strength', None) or 5,
+                            "is_public": getattr(history_relation, 'is_public', None) if getattr(history_relation, 'is_public', None) is not None else True,
+                            
+                            # Historical location fields
+                            "role_in_event": getattr(history_relation, 'role_in_event', None) or "",
+                            "location_impact": getattr(history_relation, 'location_impact', None) or "",
+                            "physical_changes": getattr(history_relation, 'physical_changes', None) or "",
+                            "ongoing_effects": getattr(history_relation, 'ongoing_effects', None) or "",
+                        }
+
+                elif relationship_name == "history_faction":
+                    from storymaster.model.database.schema.base import HistoryFaction
+
+                    # Determine which entity is the faction and which is the history event
+                    if entity.__class__.__name__ == "Faction":
+                        faction_id = entity.id
+                        history_id = related_entity.id
+                    elif entity.__class__.__name__ == "History":
+                        faction_id = related_entity.id
+                        history_id = entity.id
+                    else:
+                        return {}
+
+                    history_relation = (
+                        session.query(HistoryFaction)
+                        .filter(
+                            (HistoryFaction.faction_id == faction_id)
+                            & (HistoryFaction.history_id == history_id)
+                        )
+                        .first()
+                    )
+
+                    if history_relation:
+                        return {
+                            # Basic info fields
+                            "description": getattr(history_relation, 'description', None) or "",
+                            "notes": getattr(history_relation, 'notes', None) or "",
+                            "status": getattr(history_relation, 'status', None) or "",
+                            "strength": getattr(history_relation, 'strength', None) or 5,
+                            "is_public": getattr(history_relation, 'is_public', None) if getattr(history_relation, 'is_public', None) is not None else True,
                         }
 
                 # Add more relationship types as needed
