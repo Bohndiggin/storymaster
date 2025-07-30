@@ -1,0 +1,911 @@
+{
+  "_package_info": {
+    "display_name": "Post-Apocalyptic Nuclear Wasteland",
+    "description": "Comprehensive world building package for post-nuclear war settings featuring irradiated wastelands, mutant creatures, survivor factions, scavenged technology, and the remnants of civilization after the Great War",
+    "category": "Post-Apocalyptic",
+    "version": "1.0",
+    "author": "Storymaster"
+  },
+  "user": [],
+  "setting": [],
+  "storyline": [],
+  "storyline_to_setting": [],
+  "alignment": [],
+  "background": [
+    {
+      "name": "Vault Dweller",
+      "description": "Survivor from underground bunkers built before the Great War. Sheltered from radiation but naive about wasteland dangers. Possesses pre-war knowledge and advanced technology.",
+      "setting_id": 1
+    },
+    {
+      "name": "Wasteland Wanderer",
+      "description": "Nomadic survivor who travels the irradiated ruins scavenging for supplies. Hardy and resourceful, adapted to radiation and hostile environments.",
+      "setting_id": 1
+    },
+    {
+      "name": "Raider Warlord",
+      "description": "Brutal leader of savage gangs who prey on weaker survivors. Commands through fear and violence, hoarding resources and slaves in fortified camps.",
+      "setting_id": 1
+    },
+    {
+      "name": "Brotherhood Scribe",
+      "description": "Scholar-warrior dedicated to preserving pre-war technology and knowledge. Member of quasi-religious military order that hoards advanced weapons and equipment.",
+      "setting_id": 1
+    },
+    {
+      "name": "Ghoul Outcast",
+      "description": "Radiation-mutated human with rotting flesh but extended lifespan. Immune to radiation but feared and discriminated against by normal humans.",
+      "setting_id": 1
+    },
+    {
+      "name": "Caravan Trader",
+      "description": "Merchant who travels dangerous trade routes between settlements. Expert negotiator with knowledge of safe paths and valuable goods locations.",
+      "setting_id": 1
+    },
+    {
+      "name": "Super Mutant Outcast",
+      "description": "Artificially created giant mutant rejected by both humans and mutant society. Possesses incredible strength but struggles with intelligence and acceptance.",
+      "setting_id": 1
+    },
+    {
+      "name": "Enclave Remnant",
+      "description": "Former member of pre-war shadow government that survived in secret bunkers. Believes in human genetic purity and American restoration.",
+      "setting_id": 1
+    },
+    {
+      "name": "NCR Ranger",
+      "description": "Elite scout and law enforcement officer of the New California Republic. Protects trade routes and settlements from raiders and mutant threats.",
+      "setting_id": 1
+    },
+    {
+      "name": "Legion Centurion",
+      "description": "Military commander in Caesar's slaveholding empire modeled on ancient Rome. Disciplined warrior who conquers territory through organized brutality.",
+      "setting_id": 1
+    },
+    {
+      "name": "Tribal Shaman",
+      "description": "Spiritual leader of primitive post-war tribe. Maintains oral traditions and interprets omens while guiding people through wasteland dangers.",
+      "setting_id": 1
+    },
+    {
+      "name": "Synth Infiltrator",
+      "description": "Artificial human created by the Institute to blend into wasteland communities. Struggles with questions of identity and free will.",
+      "setting_id": 1
+    },
+    {
+      "name": "Minuteman Militia",
+      "description": "Citizen-soldier defending Commonwealth settlements from threats. Responds to distress calls and helps communities organize their defenses.",
+      "setting_id": 1
+    },
+    {
+      "name": "Railroad Agent",
+      "description": "Underground operative helping synthetic humans escape Institute control. Uses stealth and deception to free artificial beings from slavery.",
+      "setting_id": 1
+    },
+    {
+      "name": "Scavenger Boss",
+      "description": "Leader of salvage crews who strip useful materials from pre-war ruins. Coordinates dangerous expeditions into radioactive zones for valuable tech.",
+      "setting_id": 1
+    },
+    {
+      "name": "Radiation Cult Prophet",
+      "description": "Religious fanatic who worships atomic energy as divine force. Preaches that radiation purifies souls and seeks to spread the 'glow' to all.",
+      "setting_id": 1
+    },
+    {
+      "name": "Bounty Hunter",
+      "description": "Freelance tracker who hunts dangerous criminals and mutants for caps. Uses advanced weapons and survival skills to survive in hostile wasteland.",
+      "setting_id": 1
+    },
+    {
+      "name": "Settlement Mayor",
+      "description": "Elected leader of fortified community trying to rebuild civilization. Manages resources, trade agreements, and defense against wasteland threats.",
+      "setting_id": 1
+    },
+    {
+      "name": "Atom Cat Mechanic",
+      "description": "Power armor enthusiast and expert mechanic. Member of greaser-style gang that maintains and customizes pre-war military equipment.",
+      "setting_id": 1
+    },
+    {
+      "name": "Talon Company Mercenary",
+      "description": "Professional soldier-for-hire in well-equipped paramilitary organization. Takes contracts for caps regardless of moral implications.",
+      "setting_id": 1
+    },
+    {
+      "name": "Slave",
+      "description": "Captured survivor forced into bondage by raiders or slavers. Dreams of freedom while enduring harsh treatment and dangerous labor.",
+      "setting_id": 1
+    },
+    {
+      "name": "Wastelander Doctor",
+      "description": "Medical professional treating radiation sickness and combat injuries with limited supplies. Travels between settlements providing healing services.",
+      "setting_id": 1
+    },
+    {
+      "name": "Pre-War Ghoul",
+      "description": "Ancient survivor who lived through the Great War and remembers the old world. Possesses invaluable knowledge but haunted by loss of humanity.",
+      "setting_id": 1
+    },
+    {
+      "name": "Gunner Veteran",
+      "description": "Elite fighter in ruthless mercenary army. Heavily armed and armored soldier who takes any job that pays well in caps or equipment.",
+      "setting_id": 1
+    },
+    {
+      "name": "Children of Atom Zealot",
+      "description": "Fanatical believer in radioactive religion. Seeks to spread atomic fire across the wasteland and views mutations as divine blessings.",
+      "setting_id": 1
+    },
+    {
+      "name": "Institute Scientist",
+      "description": "Underground researcher developing advanced technology and synthetic humans. Views surface dwellers as primitive subjects for experimentation.",
+      "setting_id": 1
+    },
+    {
+      "name": "Crimson Caravan Guard",
+      "description": "Armed escort protecting valuable trade caravans across dangerous wasteland routes. Fights off raiders, mutants, and hostile wildlife.",
+      "setting_id": 1
+    },
+    {
+      "name": "Tunnel Snake",
+      "description": "Member of underground gang controlling subway tunnels and sewer systems. Uses knowledge of urban ruins to ambush surface dwellers.",
+      "setting_id": 1
+    },
+    {
+      "name": "Nightkin Berserker",
+      "description": "Invisible super mutant driven insane by Stealth Boy addiction. Unpredictable and violent, feared even by other mutants.",
+      "setting_id": 1
+    },
+    {
+      "name": "Vault-Tec Overseer",
+      "description": "Administrator of underground vault conducting social experiments on residents. Maintains order through propaganda and authoritarian control.",
+      "setting_id": 1
+    }
+  ],
+  "class": [
+    {
+      "name": "Wasteland Survivor",
+      "description": "Hardy individual adapted to post-apocalyptic life. Expert at scavenging, radiation resistance, and improvised combat using whatever weapons are available.",
+      "class_trait": "Radiation resistance, scavenging, improvised weapons",
+      "setting_id": 1
+    },
+    {
+      "name": "Tech Specialist",
+      "description": "Engineer who maintains and repairs pre-war technology. Can jury-rig equipment, hack computer terminals, and understand complex mechanical systems.",
+      "class_trait": "Technology repair, hacking, jury-rigging",
+      "setting_id": 1
+    },
+    {
+      "name": "Raider",
+      "description": "Savage marauder who takes what they want through violence and intimidation. Skilled with brutal weapons and psychological warfare tactics.",
+      "class_trait": "Intimidation, brutal weapons, guerrilla tactics",
+      "setting_id": 1
+    },
+    {
+      "name": "Paladin",
+      "description": "Elite warrior-monk of the Brotherhood of Steel. Trained in power armor combat and dedicated to preserving technology from unworthy hands.",
+      "class_trait": "Power armor mastery, energy weapons, technology lore",
+      "setting_id": 1
+    },
+    {
+      "name": "Ghoul",
+      "description": "Radiation-mutated human with enhanced longevity and immunity to radiation. Feared by humans but possesses pre-war memories and experience.",
+      "class_trait": "Radiation immunity, extended lifespan, pre-war knowledge",
+      "setting_id": 1
+    },
+    {
+      "name": "Super Mutant",
+      "description": "Artificially enhanced giant with incredible strength and durability. Created through viral infection, possesses raw power but often reduced intelligence.",
+      "class_trait": "Superhuman strength, damage resistance, intimidating presence",
+      "setting_id": 1
+    },
+    {
+      "name": "Courier",
+      "description": "Professional messenger who travels dangerous routes between settlements. Expert navigator with knowledge of safe paths and local politics.",
+      "class_trait": "Navigation, local knowledge, fast travel",
+      "setting_id": 1
+    },
+    {
+      "name": "Medic",
+      "description": "Healing specialist using pre-war medical knowledge and wasteland herbs. Treats radiation sickness, injuries, and various mutant-related conditions.",
+      "class_trait": "Medical knowledge, radiation treatment, chemical crafting",
+      "setting_id": 1
+    },
+    {
+      "name": "Scavenger",
+      "description": "Expert at finding and salvaging useful materials from ruins. Can identify valuable pre-war artifacts and knows the best scavenging locations.",
+      "class_trait": "Salvage expertise, ruin navigation, artifact identification",
+      "setting_id": 1
+    },
+    {
+      "name": "Gunslinger",
+      "description": "Master of small arms and quick-draw techniques. Deadly accurate with pistols and rifles, specializes in precision shooting and gun maintenance.",
+      "class_trait": "Weapon accuracy, quick draw, gun maintenance",
+      "setting_id": 1
+    },
+    {
+      "name": "Psyker",
+      "description": "Mutant with psychic abilities enhanced by radiation exposure. Can read minds, move objects with thought, and influence others mentally.",
+      "class_trait": "Telepathy, telekinesis, mental influence",
+      "setting_id": 1
+    },
+    {
+      "name": "Tribal Warrior",
+      "description": "Fighter from primitive post-war society using traditional weapons and tactics. Combines ancestral wisdom with wasteland survival skills.",
+      "class_trait": "Traditional weapons, tribal lore, wilderness survival",
+      "setting_id": 1
+    }
+  ],
+  "race": [
+    {
+      "name": "Human",
+      "description": "Baseline human survivors with no major mutations. Most common inhabitants of the wasteland, organizing into various factions and settlements.",
+      "setting_id": 1
+    },
+    {
+      "name": "Ghoul",
+      "description": "Humans mutated by massive radiation exposure, with rotting flesh but greatly extended lifespans. Immune to radiation but feared by normal humans.",
+      "setting_id": 1
+    },
+    {
+      "name": "Super Mutant",
+      "description": "Artificially created giants mutated by the Forced Evolutionary Virus. Possess incredible strength and durability but often suffer reduced intelligence.",
+      "setting_id": 1
+    },
+    {
+      "name": "Synth",
+      "description": "Artificial humans created by advanced technology, indistinguishable from real people. Struggle with questions of identity and free will.",
+      "setting_id": 1
+    },
+    {
+      "name": "Mutant",
+      "description": "Humans with beneficial radiation-induced mutations. May have enhanced senses, natural armor, or other adaptive advantages.",
+      "setting_id": 1
+    },
+    {
+      "name": "Tribal",
+      "description": "Humans living in primitive post-war societies. Maintain oral traditions and spiritual beliefs while adapting to wasteland conditions.",
+      "setting_id": 1
+    }
+  ],
+  "sub_race": [
+    {
+      "parent_race_id": 502,
+      "name": "Feral Ghoul",
+      "description": "Ghouls who have lost their sanity to radiation exposure. Mindless and aggressive, attacking any living creature on sight.",
+      "setting_id": 1
+    },
+    {
+      "parent_race_id": 502,
+      "name": "Glowing One",
+      "description": "Heavily irradiated ghouls who emit dangerous radiation. Can heal other ghouls but are lethal to normal humans.",
+      "setting_id": 1
+    },
+    {
+      "parent_race_id": 503,
+      "name": "Nightkin",
+      "description": "Super mutants with blue-gray skin who used Stealth Boys extensively. Many suffer from schizophrenia and invisibility addiction.",
+      "setting_id": 1
+    },
+    {
+      "parent_race_id": 503,
+      "name": "Super Mutant Behemoth",
+      "description": "Enormous super mutants who continue growing throughout their lives. Mindless giants of incredible destructive power.",
+      "setting_id": 1
+    },
+    {
+      "parent_race_id": 504,
+      "name": "Generation 3 Synth",
+      "description": "Most advanced synthetic humans, completely indistinguishable from real people. Possess artificial memories and emotions.",
+      "setting_id": 1
+    },
+    {
+      "parent_race_id": 504,
+      "name": "Courser",
+      "description": "Elite synthetic humans designed for combat and retrieval operations. Enhanced reflexes and combat programming.",
+      "setting_id": 1
+    },
+    {
+      "parent_race_id": 505,
+      "name": "Psyker",
+      "description": "Mutants with psychic abilities including telepathy, telekinesis, and precognition. Often feared and persecuted by normal humans.",
+      "setting_id": 1
+    },
+    {
+      "parent_race_id": 505,
+      "name": "Rad-Child",
+      "description": "Mutants who gain health and strength from radiation exposure. Can survive in highly contaminated areas others cannot enter.",
+      "setting_id": 1
+    }
+  ],
+  "stat": [
+    {
+      "name": "Radiation Resistance",
+      "description": "Natural immunity to radioactive contamination and ability to survive in irradiated environments without protection.",
+      "stat_category": "Survival",
+      "setting_id": 1
+    },
+    {
+      "name": "Tech Aptitude",
+      "description": "Understanding of pre-war technology and ability to repair, modify, and operate complex mechanical and electronic systems.",
+      "stat_category": "Technical",
+      "setting_id": 1
+    },
+    {
+      "name": "Wasteland Survival",
+      "description": "Knowledge of post-apocalyptic dangers and skills needed to survive in harsh, contaminated environments.",
+      "stat_category": "Survival",
+      "setting_id": 1
+    },
+    {
+      "name": "Scavenging",
+      "description": "Ability to find useful materials and resources in ruins, debris, and abandoned locations.",
+      "stat_category": "Survival",
+      "setting_id": 1
+    },
+    {
+      "name": "Combat Hardiness",
+      "description": "Physical and mental toughness developed through constant exposure to violence and danger in the wasteland.",
+      "stat_category": "Combat",
+      "setting_id": 1
+    }
+  ],
+  "skills": [
+    {
+      "name": "Radiation Detection",
+      "description": "Sensing dangerous levels of radioactive contamination and identifying safe areas or contaminated zones",
+      "skill_trait": "Wisdom-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Scrap Electronics",
+      "description": "Salvaging useful components from pre-war electronic devices and jury-rigging new equipment",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Wasteland Medicine",
+      "description": "Treating radiation sickness, combat injuries, and various mutant-related medical conditions with limited supplies",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Power Armor Operation",
+      "description": "Wearing and maintaining pre-war military power armor suits with fusion core management",
+      "skill_trait": "Strength-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Energy Weapons Maintenance",
+      "description": "Repairing and calibrating laser rifles, plasma guns, and other directed-energy weapons",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Mutant Tracking",
+      "description": "Following and identifying various mutant creatures and understanding their behavior patterns",
+      "skill_trait": "Wisdom-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Settlement Defense",
+      "description": "Organizing community defenses against raiders, mutants, and other wasteland threats",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Radiation Cooking",
+      "description": "Preparing irradiated food and water to reduce contamination while preserving nutritional value",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Terminal Hacking",
+      "description": "Breaking into pre-war computer systems and accessing locked electronic information",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Improvised Weaponry",
+      "description": "Creating effective weapons from scavenged materials and household items",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Ghoul Empathy",
+      "description": "Understanding and communicating effectively with radiation-mutated humans",
+      "skill_trait": "Charisma-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Pre-War Lore",
+      "description": "Knowledge of old world history, culture, and technology before the Great War",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Caravan Trading",
+      "description": "Negotiating trade deals and organizing merchant expeditions across dangerous wasteland routes",
+      "skill_trait": "Charisma-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Tribal Diplomacy",
+      "description": "Communicating with primitive post-war societies and understanding their customs and beliefs",
+      "skill_trait": "Charisma-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Raider Psychology",
+      "description": "Understanding the mindset and tactics of savage wasteland gangs and marauders",
+      "skill_trait": "Wisdom-based",
+      "setting_id": 1
+    }
+  ],
+  "actor": [],
+  "actor_a_on_b_relations": [],
+  "actor_to_skills": [],
+  "actor_to_race": [],
+  "actor_to_class": [],
+  "actor_to_stat": [],
+  "faction": [
+    {
+      "name": "Brotherhood of Steel",
+      "description": "Quasi-religious military order dedicated to preserving and controlling pre-war technology. Operates from fortified bunkers with advanced power armor and energy weapons.",
+      "faction_type": "Military Order",
+      "setting_id": 1
+    },
+    {
+      "name": "New California Republic",
+      "description": "Democratic federation attempting to rebuild civilization based on old world American values. Controls vast territories through organized military and civilian government.",
+      "faction_type": "Government",
+      "setting_id": 1
+    },
+    {
+      "name": "Caesar's Legion",
+      "description": "Brutal slaveholding empire modeled on ancient Rome. Conquers tribes through military might and cultural assimilation under absolute dictator.",
+      "faction_type": "Empire",
+      "setting_id": 1
+    },
+    {
+      "name": "The Enclave",
+      "description": "Remnants of pre-war shadow government believing in human genetic purity. Seeks to exterminate all mutants and reclaim America for 'pure' humans.",
+      "faction_type": "Shadow Government",
+      "setting_id": 1
+    },
+    {
+      "name": "The Institute",
+      "description": "Underground scientific organization creating synthetic humans and advanced technology. Views surface dwellers as primitive subjects for experimentation.",
+      "faction_type": "Scientific Cabal",
+      "setting_id": 1
+    },
+    {
+      "name": "The Railroad",
+      "description": "Secret network helping synthetic humans escape Institute control. Uses covert operations and safe houses to liberate artificial beings.",
+      "faction_type": "Underground Railroad",
+      "setting_id": 1
+    },
+    {
+      "name": "The Minutemen",
+      "description": "Volunteer militia protecting Commonwealth settlements from threats. Responds to distress calls and helps communities organize their defenses.",
+      "faction_type": "Citizen Militia",
+      "setting_id": 1
+    },
+    {
+      "name": "Talon Company",
+      "description": "Well-equipped mercenary organization taking contracts for caps. Professional soldiers-for-hire with military discipline and advanced weapons.",
+      "faction_type": "Mercenary Company",
+      "setting_id": 1
+    },
+    {
+      "name": "The Gunners",
+      "description": "Ruthless mercenary army controlling territory through superior firepower. Recruits from raiders and ex-military for organized criminal operations.",
+      "faction_type": "Mercenary Army",
+      "setting_id": 1
+    },
+    {
+      "name": "Children of Atom",
+      "description": "Radioactive religious cult worshipping atomic energy as divine force. Believes radiation purifies souls and seeks to spread the 'glow' to all.",
+      "faction_type": "Religious Cult",
+      "setting_id": 1
+    },
+    {
+      "name": "Super Mutant Army",
+      "description": "Military force of artificially created giants seeking to transform all humans through viral infection. Led by charismatic Master figure.",
+      "faction_type": "Mutant Army",
+      "setting_id": 1
+    },
+    {
+      "name": "Crimson Caravan Company",
+      "description": "Major trading corporation controlling commercial routes across the wasteland. Employs armed guards and maintains trading posts.",
+      "faction_type": "Trading Company",
+      "setting_id": 1
+    },
+    {
+      "name": "Raiders of the Capital",
+      "description": "Savage gangs preying on weaker survivors through violence and intimidation. Loosely organized tribes fighting over territory and resources.",
+      "faction_type": "Raider Alliance",
+      "setting_id": 1
+    },
+    {
+      "name": "Atom Cats",
+      "description": "Greaser-style gang obsessed with power armor customization and maintenance. Friendly mechanics who help others while pursuing their hobby.",
+      "faction_type": "Tech Gang",
+      "setting_id": 1
+    },
+    {
+      "name": "The Followers of the Apocalypse",
+      "description": "Humanitarian organization providing medical care and education to wasteland communities. Pacifist group dedicated to helping survivors.",
+      "faction_type": "Humanitarian Group",
+      "setting_id": 1
+    }
+  ],
+  "faction_a_on_b_relations": [
+    {
+      "faction_a_id": 601,
+      "faction_b_id": 602,
+      "relation_type": "Wary",
+      "relation_desc": "Brotherhood of Steel views NCR's democratic ideals as chaotic and dangerous",
+      "setting_id": 1
+    },
+    {
+      "faction_a_id": 601,
+      "faction_b_id": 605,
+      "relation_type": "Hostile",
+      "relation_desc": "Brotherhood of Steel seeks to destroy Institute and capture their technology",
+      "setting_id": 1
+    },
+    {
+      "faction_a_id": 602,
+      "faction_b_id": 603,
+      "relation_type": "Hostile",
+      "relation_desc": "NCR and Caesar's Legion are locked in territorial war",
+      "setting_id": 1
+    },
+    {
+      "faction_a_id": 604,
+      "faction_b_id": 605,
+      "relation_type": "Allied",
+      "relation_desc": "Enclave and Institute share belief in human technological superiority",
+      "setting_id": 1
+    },
+    {
+      "faction_a_id": 605,
+      "faction_b_id": 606,
+      "relation_type": "Hostile",
+      "relation_desc": "Institute hunts Railroad agents who steal their synthetic property",
+      "setting_id": 1
+    },
+    {
+      "faction_a_id": 606,
+      "faction_b_id": 607,
+      "relation_type": "Cooperative",
+      "relation_desc": "Railroad and Minutemen both protect innocent people from oppression",
+      "setting_id": 1
+    },
+    {
+      "faction_a_id": 608,
+      "faction_b_id": 609,
+      "relation_type": "Business",
+      "relation_desc": "Talon Company sometimes contracts with Gunners for large operations",
+      "setting_id": 1
+    },
+    {
+      "faction_a_id": 610,
+      "faction_b_id": 611,
+      "relation_type": "Hostile",
+      "relation_desc": "Children of Atom views Super Mutants as blessed by radiation",
+      "setting_id": 1
+    },
+    {
+      "faction_a_id": 612,
+      "faction_b_id": 613,
+      "relation_type": "Business",
+      "relation_desc": "Crimson Caravan pays raiders for 'protection' on certain routes",
+      "setting_id": 1
+    },
+    {
+      "faction_a_id": 614,
+      "faction_b_id": 615,
+      "relation_type": "Friendly",
+      "relation_desc": "Atom Cats and Followers share knowledge and help wasteland communities",
+      "setting_id": 1
+    }
+  ],
+  "faction_members": [],
+  "location_": [
+    {
+      "name": "Vault 111",
+      "description": "Cryogenic preservation vault where survivors were frozen before the Great War. Most pods failed over time, leaving few living occupants.",
+      "location_type": "Underground Bunker",
+      "setting_id": 1
+    },
+    {
+      "name": "Diamond City",
+      "description": "Major settlement built inside Fenway Park baseball stadium. Heavily fortified trading hub with diverse population and strong security force.",
+      "location_type": "Fortified City",
+      "setting_id": 1
+    },
+    {
+      "name": "The Glowing Sea",
+      "description": "Heavily irradiated wasteland created by direct nuclear impact. Deadly radiation levels support only the most mutated creatures and plants.",
+      "location_type": "Radiation Zone",
+      "setting_id": 1
+    },
+    {
+      "name": "Brotherhood Bunker Alpha",
+      "description": "Underground military facility housing Brotherhood of Steel forces. Contains power armor bays, weapons storage, and technical workshops.",
+      "location_type": "Military Base",
+      "setting_id": 1
+    },
+    {
+      "name": "Goodneighbor",
+      "description": "Ghoul-friendly settlement accepting all outcasts and criminals. Rough town with few rules but strong sense of community among rejects.",
+      "location_type": "Outlaw Town",
+      "setting_id": 1
+    },
+    {
+      "name": "The Institute Underground",
+      "description": "Advanced scientific facility beneath ruins of MIT. Clean, sterile environment housing synthetic human production and research laboratories.",
+      "location_type": "Research Complex",
+      "setting_id": 1
+    },
+    {
+      "name": "Megaton",
+      "description": "Settlement built around an unexploded atomic bomb. Ramshackle town of scrap metal buildings with unique circular construction.",
+      "location_type": "Scrap Town",
+      "setting_id": 1
+    },
+    {
+      "name": "New Vegas Strip",
+      "description": "Preserved casino district powered by Hoover Dam. Glamorous entertainment center controlled by mysterious Mr. House and his robot army.",
+      "location_type": "Casino District",
+      "setting_id": 1
+    },
+    {
+      "name": "Rivet City",
+      "description": "Settlement constructed inside beached aircraft carrier. Multi-level community with market, clinic, and residential areas on ship decks.",
+      "location_type": "Ship Settlement",
+      "setting_id": 1
+    },
+    {
+      "name": "The Pitt",
+      "description": "Industrial hellscape built in ruins of Pittsburgh. Slave-labor factories produce steel and ammunition under brutal raider overlords.",
+      "location_type": "Industrial Slave City",
+      "setting_id": 1
+    }
+  ],
+  "location_to_faction": [
+    {
+      "location_id": 701,
+      "faction_id": 607,
+      "relation_type": "Controlled",
+      "setting_id": 1
+    },
+    {
+      "location_id": 702,
+      "faction_id": 612,
+      "relation_type": "Trade Hub",
+      "setting_id": 1
+    },
+    {
+      "location_id": 704,
+      "faction_id": 601,
+      "relation_type": "Headquarters",
+      "setting_id": 1
+    },
+    {
+      "location_id": 706,
+      "faction_id": 605,
+      "relation_type": "Headquarters",
+      "setting_id": 1
+    }
+  ],
+  "location_dungeon": [],
+  "location_city": [
+    {
+      "location_id": 702,
+      "population": 5000,
+      "government_type": "Elected Mayor",
+      "primary_industry": "Trade and Commerce",
+      "setting_id": 1
+    },
+    {
+      "location_id": 705,
+      "population": 800,
+      "government_type": "Criminal Council",
+      "primary_industry": "Black Market Trading",
+      "setting_id": 1
+    },
+    {
+      "location_id": 708,
+      "population": 12000,
+      "government_type": "Corporate Autocracy",
+      "primary_industry": "Gambling and Entertainment",
+      "setting_id": 1
+    }
+  ],
+  "location_city_districts": [],
+  "residents": [],
+  "location_flora_fauna": [
+    {
+      "location_id": 703,
+      "species_name": "Radscorpion",
+      "description": "Giant mutated scorpions with deadly poison stings and heavily armored carapaces. Hunt in packs through irradiated zones.",
+      "creature_type": "Mutant Predator",
+      "setting_id": 1
+    },
+    {
+      "location_id": 703,
+      "species_name": "Glowing Radroach",
+      "description": "Cockroaches mutated by radiation to emit green bioluminescence. Harmless scavengers that feed on radioactive waste.",
+      "creature_type": "Mutant Scavenger",
+      "setting_id": 1
+    }
+  ],
+  "location_a_on_b_relations": [],
+  "location_geographic_relations": [],
+  "location_political_relations": [],
+  "location_economic_relations": [],
+  "location_hierarchy": [],
+  "history": [
+    {
+      "name": "The Great War",
+      "description": "Global nuclear exchange that lasted only two hours but destroyed civilization. Chinese and American nuclear arsenals reduced the world to radioactive wasteland.",
+      "history_date": "October 23, 2077",
+      "history_type": "Global Catastrophe",
+      "setting_id": 1
+    },
+    {
+      "name": "Vault-Tec Experiments",
+      "description": "Secret social and scientific experiments conducted on vault dwellers by Vault-Tec Corporation. Most vaults were designed to test human behavior under extreme conditions.",
+      "history_date": "2077-2277",
+      "history_type": "Corporate Conspiracy",
+      "setting_id": 1
+    },
+    {
+      "name": "Master's Army Creation",
+      "description": "Richard Grey creates the Forced Evolutionary Virus and begins transforming humans into super mutants. Builds army to remake humanity in his image.",
+      "history_date": "2102-2162",
+      "history_type": "Scientific Catastrophe",
+      "setting_id": 1
+    },
+    {
+      "name": "NCR Foundation",
+      "description": "Survivors in California organize into New California Republic, first post-war democratic government. Begins expansion across western territories.",
+      "history_date": "2189",
+      "history_type": "Political Formation",
+      "setting_id": 1
+    },
+    {
+      "name": "Brotherhood Exodus",
+      "description": "Brotherhood of Steel splits into factions over technology sharing policies. Eastern chapter begins long journey across the wasteland.",
+      "history_date": "2254",
+      "history_type": "Military Schism",
+      "setting_id": 1
+    }
+  ],
+  "history_actor": [],
+  "history_location": [],
+  "history_faction": [],
+  "object_": [
+    {
+      "name": "Pip-Boy 3000",
+      "description": "Pre-war wrist-mounted computer providing health monitoring, inventory management, and map navigation. Standard equipment for vault dwellers.",
+      "object_type": "Wearable Technology",
+      "setting_id": 1
+    },
+    {
+      "name": "Nuka-Cola Quantum",
+      "description": "Rare pre-war soft drink with radioactive isotopes causing blue glow. Valuable collector's item and mild radiation source.",
+      "object_type": "Consumable",
+      "setting_id": 1
+    },
+    {
+      "name": "T-51b Power Armor",
+      "description": "Pre-war military exoskeleton providing protection and strength enhancement. Requires fusion cores for power and specialized training to operate.",
+      "object_type": "Military Equipment",
+      "setting_id": 1
+    },
+    {
+      "name": "Fat Man Launcher",
+      "description": "Shoulder-mounted catapult firing miniature nuclear warheads. Devastating weapon of mass destruction requiring rare mini-nukes as ammunition.",
+      "object_type": "Heavy Weapon",
+      "setting_id": 1
+    },
+    {
+      "name": "Stimpak",
+      "description": "Pre-war medical device providing instant healing through advanced pharmaceutical injection. Essential survival tool in dangerous wasteland.",
+      "object_type": "Medical Supply",
+      "setting_id": 1
+    },
+    {
+      "name": "RadAway",
+      "description": "Intravenous anti-radiation medication removing radioactive contamination from bloodstream. Crucial for survival in contaminated areas.",
+      "object_type": "Medical Supply",
+      "setting_id": 1
+    },
+    {
+      "name": "Laser Rifle",
+      "description": "Pre-war energy weapon firing concentrated light beams. Reliable and accurate but requires energy cells and technical maintenance.",
+      "object_type": "Energy Weapon",
+      "setting_id": 1
+    },
+    {
+      "name": "Bottle Caps",
+      "description": "Post-war currency backed by water merchants due to difficulty counterfeiting. Standard medium of exchange throughout the wasteland.",
+      "object_type": "Currency",
+      "setting_id": 1
+    },
+    {
+      "name": "Holotape",
+      "description": "Pre-war data storage device containing audio logs, programs, or games. Valuable source of information about old world.",
+      "object_type": "Data Storage",
+      "setting_id": 1
+    },
+    {
+      "name": "Fusion Core",
+      "description": "Pre-war nuclear battery providing long-term power for vehicles and power armor. Extremely valuable and difficult to manufacture.",
+      "object_type": "Power Source",
+      "setting_id": 1
+    }
+  ],
+  "history_object": [],
+  "object_to_owner": [],
+  "world_data": [
+    {
+      "name": "Radiation Levels",
+      "description": "Measurement of radioactive contamination in rads per hour. Areas above 200 rads require protection, above 1000 rads are lethal to unprotected humans.",
+      "data_type": "Environmental Hazard",
+      "setting_id": 1
+    },
+    {
+      "name": "Pre-War Technology",
+      "description": "Advanced devices from before the Great War including robots, computers, and energy weapons. Highly valued but difficult to maintain.",
+      "data_type": "Technology Level",
+      "setting_id": 1
+    },
+    {
+      "name": "Mutation Rates",
+      "description": "Percentage of population showing genetic mutations from radiation exposure. Varies by region with highest rates near ground zero sites.",
+      "data_type": "Biological Data",
+      "setting_id": 1
+    },
+    {
+      "name": "Trade Routes",
+      "description": "Established paths between settlements protected by armed guards. Essential for commerce but constantly threatened by raiders and mutants.",
+      "data_type": "Economic Infrastructure",
+      "setting_id": 1
+    },
+    {
+      "name": "Water Sources",
+      "description": "Clean water locations free from radioactive contamination. Most valuable resource in wasteland, often fought over by factions.",
+      "data_type": "Natural Resource",
+      "setting_id": 1
+    }
+  ],
+  "history_world_data": [],
+  "arc_type": [],
+  "litography_node": [],
+  "node_connection": [],
+  "litography_notes": [],
+  "litography_plot": [],
+  "litography_plot_section": [],
+  "litography_node_to_plot_section": [],
+  "litography_arc": [],
+  "arc_point": [],
+  "arc_to_node": [],
+  "arc_to_actor": [],
+  "litography_note_to_actor": [],
+  "litography_note_to_background": [],
+  "litography_note_to_faction": [],
+  "litography_note_to_location": [],
+  "litography_note_to_history": [],
+  "litography_note_to_object": [],
+  "litography_note_to_world_data": [],
+  "litography_note_to_class": [],
+  "litography_note_to_race": [],
+  "litography_note_to_sub_race": [],
+  "litography_note_to_skills": []
+}

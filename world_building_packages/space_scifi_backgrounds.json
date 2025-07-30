@@ -1,0 +1,273 @@
+{
+  "_package_info": {
+    "display_name": "Space SciFi Backgrounds",
+    "description": "Character backgrounds for space-faring civilizations including starship crews, colonists, military personnel, scientists, and those who encounter alien life",
+    "category": "Science Fiction",
+    "version": "1.0",
+    "author": "Storymaster"
+  },
+  "user": [],
+  "setting": [],
+  "storyline": [],
+  "storyline_to_setting": [],
+  "alignment": [],
+  "background": [
+    {
+      "name": "Starship Captain",
+      "description": "Commander of interstellar vessels responsible for crew, cargo, and navigation across the galaxy. Experienced leader making critical decisions in the void of space.",
+      "setting_id": 1
+    },
+    {
+      "name": "Space Marine",
+      "description": "Elite military soldier trained for combat in zero gravity and hostile alien environments. Equipped with powered armor and advanced weaponry.",
+      "setting_id": 1
+    },
+    {
+      "name": "Xenobiologist",
+      "description": "Scientist specializing in the study of alien life forms and ecosystems. First contact specialist analyzing extraterrestrial biology and behavior.",
+      "setting_id": 1
+    },
+    {
+      "name": "Colony Administrator",
+      "description": "Government official managing frontier settlements on newly terraformed worlds. Balances resource allocation, population growth, and interplanetary politics.",
+      "setting_id": 1
+    },
+    {
+      "name": "Smuggler",
+      "description": "Independent trader operating outside galactic law enforcement. Transports contraband, refugees, and sensitive cargo through dangerous space routes.",
+      "setting_id": 1
+    },
+    {
+      "name": "Galactic Diplomat",
+      "description": "Ambassador representing human or alien interests in interspecies negotiations. Mediates conflicts between different worlds and civilizations.",
+      "setting_id": 1
+    },
+    {
+      "name": "Asteroid Miner",
+      "description": "Resource extraction specialist working in dangerous conditions to harvest minerals from space rocks. Lives for months in cramped mining vessels.",
+      "setting_id": 1
+    },
+    {
+      "name": "Cybernetic Engineer",
+      "description": "Technical specialist maintaining robotic systems, AI networks, and cybernetic implants aboard starships and space stations.",
+      "setting_id": 1
+    },
+    {
+      "name": "Planetary Explorer",
+      "description": "Scout and surveyor who investigates uncharted worlds for colonization potential. First to set foot on alien soil and catalog new discoveries.",
+      "setting_id": 1
+    },
+    {
+      "name": "Space Station Commander",
+      "description": "Administrator overseeing orbital facilities that serve as trade hubs, research centers, or military outposts in strategic star systems.",
+      "setting_id": 1
+    },
+    {
+      "name": "Interstellar Merchant",
+      "description": "Trader conducting business across multiple star systems. Negotiates deals for exotic goods, rare materials, and alien technologies.",
+      "setting_id": 1
+    },
+    {
+      "name": "Terraforming Specialist",
+      "description": "Engineer who transforms hostile planets into habitable worlds. Uses massive machinery and biological agents to alter atmospheric conditions.",
+      "setting_id": 1
+    },
+    {
+      "name": "Galactic Bounty Hunter",
+      "description": "Licensed tracker pursuing dangerous criminals across star systems. Uses advanced technology and combat skills to capture fugitives.",
+      "setting_id": 1
+    },
+    {
+      "name": "Quantum Physicist",
+      "description": "Theoretical scientist studying faster-than-light travel, parallel dimensions, and exotic matter. Pioneer of breakthrough technologies.",
+      "setting_id": 1
+    },
+    {
+      "name": "Colonial Rebel",
+      "description": "Revolutionary fighting against oppressive galactic government or corporate control. Uses guerrilla tactics and underground networks.",
+      "setting_id": 1
+    },
+    {
+      "name": "Alien Contact Specialist",
+      "description": "Expert in first contact protocols and interspecies communication. Trained to establish peaceful relations with newly discovered civilizations.",
+      "setting_id": 1
+    },
+    {
+      "name": "Starfighter Pilot",
+      "description": "Combat pilot operating single-seat spacecraft in military engagements. Elite warrior with lightning reflexes and tactical expertise.",
+      "setting_id": 1
+    },
+    {
+      "name": "Space Medic",
+      "description": "Medical professional treating injuries and diseases in zero gravity environments. Expert in alien physiology and space-related medical conditions.",
+      "setting_id": 1
+    },
+    {
+      "name": "Orbital Engineer",
+      "description": "Construction specialist building and maintaining massive structures in space. Works on space elevators, ring worlds, and megastructures.",
+      "setting_id": 1
+    },
+    {
+      "name": "Galactic Archaeologist",
+      "description": "Scholar studying ruins and artifacts of ancient alien civilizations. Uncovers lost technologies and forgotten histories across the galaxy.",
+      "setting_id": 1
+    },
+    {
+      "name": "Corporate Executive",
+      "description": "High-ranking manager of interstellar mega-corporation controlling mining rights, trade routes, and colonial development across multiple worlds.",
+      "setting_id": 1
+    },
+    {
+      "name": "Refugee",
+      "description": "Displaced person fleeing war, environmental disaster, or alien invasion. Struggles to find new home while carrying memories of lost world.",
+      "setting_id": 1
+    },
+    {
+      "name": "AI Programmer",
+      "description": "Software engineer creating artificial intelligences for starship navigation, planetary management, and scientific research applications.",
+      "setting_id": 1
+    },
+    {
+      "name": "Wormhole Navigator",
+      "description": "Specialist pilot capable of safely guiding ships through unstable space-time anomalies for instantaneous interstellar travel.",
+      "setting_id": 1
+    },
+    {
+      "name": "Genetic Designer",
+      "description": "Biologist creating modified organisms for terraforming, agriculture, and adaptation to alien environments and atmospheric conditions.",
+      "setting_id": 1
+    },
+    {
+      "name": "Space Pirate",
+      "description": "Outlaw raiding merchant vessels and isolated settlements. Operates from hidden bases in asteroid fields and uncharted systems.",
+      "setting_id": 1
+    },
+    {
+      "name": "Cryogenic Technician",
+      "description": "Specialist managing suspended animation systems for long-duration space travel. Maintains life support for frozen passengers and crew.",
+      "setting_id": 1
+    },
+    {
+      "name": "Galactic Journalist",
+      "description": "Reporter covering interplanetary news, alien encounters, and political developments across multiple star systems and civilizations.",
+      "setting_id": 1
+    },
+    {
+      "name": "Orbital Farmer",
+      "description": "Agricultural specialist growing food in space-based hydroponics facilities. Feeds growing populations on space stations and colonies.",
+      "setting_id": 1
+    },
+    {
+      "name": "Psionic Operative",
+      "description": "Individual with mental powers working for military or intelligence agencies. Uses telepathy, precognition, and telekinesis for covert operations.",
+      "setting_id": 1
+    },
+    {
+      "name": "Solar Engineer",
+      "description": "Energy specialist maintaining fusion reactors, solar collectors, and power distribution systems across planets and space installations.",
+      "setting_id": 1
+    },
+    {
+      "name": "Alien Ambassador",
+      "description": "Non-human representative working to establish peaceful relations between their species and other galactic civilizations.",
+      "setting_id": 1
+    },
+    {
+      "name": "Void Walker",
+      "description": "Elite soldier trained for combat in the vacuum of space using specialized armor and maneuvering systems. Expert in zero-gravity warfare.",
+      "setting_id": 1
+    },
+    {
+      "name": "Galactic Librarian",
+      "description": "Keeper of vast digital archives containing the collected knowledge of multiple civilizations. Protects information from loss or corruption.",
+      "setting_id": 1
+    },
+    {
+      "name": "Hyperspace Researcher",
+      "description": "Scientist studying the physics of faster-than-light travel and alternate dimensions. Develops new propulsion technologies and navigation methods.",
+      "setting_id": 1
+    },
+    {
+      "name": "Colony Security Chief",
+      "description": "Law enforcement officer maintaining order on frontier worlds. Deals with crime, alien threats, and civil unrest in remote settlements.",
+      "setting_id": 1
+    },
+    {
+      "name": "Stellar Cartographer",
+      "description": "Navigator creating detailed maps of star systems, trade routes, and hazardous regions. Essential for safe interstellar travel.",
+      "setting_id": 1
+    },
+    {
+      "name": "Exobiologist",
+      "description": "Researcher studying life forms that exist in extreme environments like gas giants, neutron stars, and the vacuum of space itself.",
+      "setting_id": 1
+    },
+    {
+      "name": "Space Salvager",
+      "description": "Independent operator recovering valuable materials from derelict ships, abandoned stations, and battlefield wreckage across the galaxy.",
+      "setting_id": 1
+    },
+    {
+      "name": "Galactic Peacekeeper",
+      "description": "Military officer serving in interstellar peacekeeping force. Intervenes in conflicts between worlds and protects neutral territories.",
+      "setting_id": 1
+    }
+  ],
+  "class": [],
+  "race": [],
+  "sub_race": [],
+  "stat": [],
+  "skills": [],
+  "actor": [],
+  "actor_a_on_b_relations": [],
+  "actor_to_skills": [],
+  "actor_to_race": [],
+  "actor_to_class": [],
+  "actor_to_stat": [],
+  "faction": [],
+  "faction_a_on_b_relations": [],
+  "faction_members": [],
+  "location_": [],
+  "location_to_faction": [],
+  "location_dungeon": [],
+  "location_city": [],
+  "location_city_districts": [],
+  "residents": [],
+  "location_flora_fauna": [],
+  "location_a_on_b_relations": [],
+  "location_geographic_relations": [],
+  "location_political_relations": [],
+  "location_economic_relations": [],
+  "location_hierarchy": [],
+  "history": [],
+  "history_actor": [],
+  "history_location": [],
+  "history_faction": [],
+  "object_": [],
+  "history_object": [],
+  "object_to_owner": [],
+  "world_data": [],
+  "history_world_data": [],
+  "arc_type": [],
+  "litography_node": [],
+  "node_connection": [],
+  "litography_notes": [],
+  "litography_plot": [],
+  "litography_plot_section": [],
+  "litography_node_to_plot_section": [],
+  "litography_arc": [],
+  "arc_point": [],
+  "arc_to_node": [],
+  "arc_to_actor": [],
+  "litography_note_to_actor": [],
+  "litography_note_to_background": [],
+  "litography_note_to_faction": [],
+  "litography_note_to_location": [],
+  "litography_note_to_history": [],
+  "litography_note_to_object": [],
+  "litography_note_to_world_data": [],
+  "litography_note_to_class": [],
+  "litography_note_to_race": [],
+  "litography_note_to_sub_race": [],
+  "litography_note_to_skills": []
+}

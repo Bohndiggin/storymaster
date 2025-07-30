@@ -1,0 +1,253 @@
+{
+  "_package_info": {
+    "display_name": "Space SciFi Skills",
+    "description": "Futuristic skills for space-faring civilizations including cybernetics, energy weapons, starship operations, and advanced technologies",
+    "category": "Science Fiction",
+    "version": "1.0",
+    "author": "Storymaster"
+  },
+  "user": [],
+  "setting": [],
+  "storyline": [],
+  "storyline_to_setting": [],
+  "alignment": [],
+  "background": [],
+  "class": [],
+  "race": [],
+  "sub_race": [],
+  "stat": [],
+  "skills": [
+    {
+      "name": "Starship Piloting",
+      "description": "Operating spacecraft from small fighters to massive capital ships across interstellar distances",
+      "skill_trait": "Dexterity and Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Energy Weapons",
+      "description": "Mastery of plasma rifles, laser cannons, particle beams, and other directed-energy weapons",
+      "skill_trait": "Dexterity-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Cybernetics Interface",
+      "description": "Direct neural connection to computer systems and cybernetic enhancement control",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Zero-G Combat",
+      "description": "Fighting in weightless environments using specialized tactics and equipment",
+      "skill_trait": "Dexterity-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Quantum Computing",
+      "description": "Programming and operating quantum-based computer systems and AI networks",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Xenobiology",
+      "description": "Study and understanding of alien life forms, their physiology and behavior",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Psionics",
+      "description": "Mental powers including telepathy, telekinesis, and psychic manipulation",
+      "skill_trait": "Wisdom-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Gravitational Engineering",
+      "description": "Manipulating gravity fields for propulsion, construction, and defensive systems",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Nano-Technology",
+      "description": "Design and deployment of microscopic machines for medical, construction, and combat uses",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Void Walking",
+      "description": "Survival and maneuvering in the vacuum of space using powered armor and thrusters",
+      "skill_trait": "Constitution-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Holographic Programming",
+      "description": "Creating and manipulating hard-light constructs and holographic environments",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Plasma Engineering",
+      "description": "Harnessing super-heated plasma for weapons, shields, and power generation",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Temporal Mechanics",
+      "description": "Understanding and manipulating time-related phenomena and chronoton particles",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Genetic Modification",
+      "description": "Altering DNA and genetic structures for enhancement, adaptation, and healing",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Artificial Intelligence",
+      "description": "Creating, programming, and interfacing with synthetic consciousness systems",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Dimensional Travel",
+      "description": "Navigation through alternate dimensions, parallel universes, and pocket realities",
+      "skill_trait": "Wisdom-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Cryogenic Systems",
+      "description": "Operating suspended animation technology and ultra-low temperature equipment",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Stellar Cartography",
+      "description": "Mapping star systems, hyperspace routes, and navigating galactic territories",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Cybersecurity Warfare",
+      "description": "Digital combat including hacking, virus deployment, and electronic countermeasures",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Force Field Manipulation",
+      "description": "Generating and controlling energy barriers for defense and containment",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Terraforming",
+      "description": "Planetary engineering to make worlds habitable for specific species",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Mech Piloting",
+      "description": "Operating giant robotic suits and mechanical walkers in combat situations",
+      "skill_trait": "Dexterity-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Exosuit Operations",
+      "description": "Using powered armor systems for enhanced strength, protection, and capabilities",
+      "skill_trait": "Strength-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Alien Linguistics",
+      "description": "Learning and translating non-human languages and communication methods",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Fusion Reactor Control",
+      "description": "Operating nuclear fusion power systems and managing massive energy outputs",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Teleportation Technology",
+      "description": "Using matter transmission devices and instantaneous transportation systems",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Asteroid Mining",
+      "description": "Extracting resources from space rocks using specialized equipment and techniques",
+      "skill_trait": "Strength-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Radiation Shielding",
+      "description": "Protecting against cosmic radiation, gamma bursts, and radioactive environments",
+      "skill_trait": "Constitution-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Cloning Technology",
+      "description": "Creating genetic duplicates and growing replacement organs or organisms",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Dark Matter Manipulation",
+      "description": "Harnessing exotic matter for faster-than-light travel and energy generation",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    }
+  ],
+  "actor": [],
+  "actor_a_on_b_relations": [],
+  "actor_to_skills": [],
+  "actor_to_race": [],
+  "actor_to_class": [],
+  "actor_to_stat": [],
+  "faction": [],
+  "faction_a_on_b_relations": [],
+  "faction_members": [],
+  "location_": [],
+  "location_to_faction": [],
+  "location_dungeon": [],
+  "location_city": [],
+  "location_city_districts": [],
+  "residents": [],
+  "location_flora_fauna": [],
+  "location_a_on_b_relations": [],
+  "location_geographic_relations": [],
+  "location_political_relations": [],
+  "location_economic_relations": [],
+  "location_hierarchy": [],
+  "history": [],
+  "history_actor": [],
+  "history_location": [],
+  "history_faction": [],
+  "object_": [],
+  "history_object": [],
+  "object_to_owner": [],
+  "world_data": [],
+  "history_world_data": [],
+  "arc_type": [],
+  "litography_node": [],
+  "node_connection": [],
+  "litography_notes": [],
+  "litography_plot": [],
+  "litography_plot_section": [],
+  "litography_node_to_plot_section": [],
+  "litography_arc": [],
+  "arc_point": [],
+  "arc_to_node": [],
+  "arc_to_actor": [],
+  "litography_note_to_actor": [],
+  "litography_note_to_background": [],
+  "litography_note_to_faction": [],
+  "litography_note_to_location": [],
+  "litography_note_to_history": [],
+  "litography_note_to_object": [],
+  "litography_note_to_world_data": [],
+  "litography_note_to_class": [],
+  "litography_note_to_race": [],
+  "litography_note_to_sub_race": [],
+  "litography_note_to_skills": []
+}

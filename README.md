@@ -18,6 +18,12 @@ Storymaster is a comprehensive PyQt6-based creative writing application that sea
 - **Linked-list navigation** for easy story flow management
 - **Integrated scene notes** and beat descriptions
 
+### 🎭 Character Arcs
+- **Individual character development tracking** with dedicated arc management
+- **Arc point system** for plotting character growth and transformation
+- **Character-to-node connections** linking story beats to character development
+- **Arc type customization** for different character journey patterns
+
 ### 🌍 Lorekeeper - World Building Database
 - **Character management** - detailed actor profiles with relationships, backgrounds, classes, and races
 - **Faction system** - complex organizational structures with hierarchies and conflicts
@@ -40,18 +46,25 @@ Storymaster is a comprehensive PyQt6-based creative writing application that sea
 - Python 3.8 or higher
 - Git (for development)
 
-### One-Command Installation
+### Installation
 ```bash
 git clone https://github.com/Bohndiggin/storymaster.git
 cd storymaster
-python install.py
-```
 
-The installer automatically:
-- ✅ Creates an isolated virtual environment
-- ✅ Installs all required dependencies
-- ✅ Initializes the SQLite database schema
-- ✅ Optionally seeds with sample story data
+# Create virtual environment
+python -m venv .venv
+source .venv/bin/activate    # Linux/Mac
+.venv\Scripts\activate       # Windows
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Initialize database
+python init_database.py
+
+# Load sample data (optional)
+python seed.py
+```
 
 ### Launch Application
 ```bash
@@ -76,11 +89,10 @@ storymaster/
 │   ├── view/               # UI components (PyQt6)
 │   │   ├── common/         # Shared UI elements & user management
 │   │   ├── litographer/    # Story plotting interface
-│   │   └── lorekeeper/     # World-building interface
+│   │   ├── lorekeeper/     # World-building interface
+│   │   └── character_arcs/ # Character development interface
 │   ├── controller/         # Business logic
-│   │   ├── common/         # Shared controllers & user management
-│   │   ├── litographer/    # Plot management logic
-│   │   └── lorekeeper/     # World-building logic
+│   │   └── common/         # Shared controllers & user management
 │   └── main.py            # Application entry point
 ├── tests/                  # Comprehensive test suite
 │   ├── model/             # Database and logic tests
@@ -92,16 +104,20 @@ storymaster/
 │   ├── storymaster_icon.ico    # Windows executable icon
 │   ├── storymaster_icon.svg    # Vector icon (cross-platform)
 │   └── storymaster_icon_*.png  # Various sizes for system integration
-├── build_executable.py    # Cross-platform executable builder
-├── build_appimage.py      # Linux AppImage builder
-├── build_rpm.py          # Linux RPM package builder
-├── build_macos.py        # macOS app bundle builder
-├── storymaster.spec      # PyInstaller configuration
-├── storymaster.spec.rpm  # RPM package specification
-├── install.py            # Automated installer
-├── init_database.py      # Database initialization
-├── seed.py              # Sample data loader
-└── requirements.txt     # Python dependencies
+├── build_executable.py        # Cross-platform executable builder
+├── build_standalone.py        # Standalone executable builder (recommended)
+├── build_fast.py              # Fast development build
+├── build_appimage.py          # Linux AppImage builder
+├── build_rpm.py              # Linux RPM package builder
+├── build_macos.py            # macOS app bundle builder
+├── run_tests.py              # Lightweight test runner
+├── run_comprehensive_tests.py # Comprehensive test suite with coverage
+├── storymaster.spec          # PyInstaller configuration
+├── storymaster.spec.rpm      # RPM package specification
+├── init_database.py          # Database initialization
+├── migrate_database.py       # Database migration tool
+├── seed.py                  # Sample data loader
+└── requirements.txt         # Python dependencies
 ```
 
 ## 🎮 Using Storymaster
@@ -162,15 +178,18 @@ python storymaster/main.py
 
 ### Testing
 ```bash
-# Run full test suite
-pytest
+# Run all tests
+python run_tests.py
 
-# Run specific modules
-pytest tests/model/litographer/
-pytest tests/model/lorekeeper/
+# Run pytest tests
+pytest tests/ -v
 
-# Verbose output
-pytest -v
+# Run specific test modules
+pytest tests/model/litographer/ -v
+pytest tests/controller/litographer/ -v
+
+# Run comprehensive tests with coverage
+python run_comprehensive_tests.py
 ```
 
 ### Code Quality
@@ -187,11 +206,14 @@ mypy storymaster/
 
 ### Database Management
 ```bash
-# Reset database
+# Initialize database
 python init_database.py
 
-# Reload sample data
+# Load sample data
 python seed.py
+
+# Handle schema updates
+python migrate_database.py
 ```
 
 ## 📦 Distribution & Building
@@ -200,11 +222,19 @@ Storymaster provides multiple distribution options for different platforms and u
 
 ### Executable Builds
 ```bash
-# Cross-platform executable (PyInstaller)
+# Standalone executables (recommended for distribution)
+python build_standalone.py
+
+# Traditional PyInstaller build
 python build_executable.py
 
+# Linux AppImage
+python build_appimage.py
+
+# Fast development build
+python build_fast.py
+
 # Platform-specific builds
-python build_appimage.py    # Linux AppImage (universal)
 python build_rpm.py         # Linux RPM packages  
 python build_macos.py       # macOS app bundles
 ```

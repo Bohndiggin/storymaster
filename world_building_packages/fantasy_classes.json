@@ -1,0 +1,223 @@
+{
+  "_package_info": {
+    "display_name": "Fantasy Classes",
+    "description": "Classic fantasy character classes including warriors, spellcasters, rogues, and hybrid classes with their abilities and roles",
+    "category": "Fantasy",
+    "version": "1.0",
+    "author": "Storymaster"
+  },
+  "user": [],
+  "setting": [],
+  "storyline": [],
+  "storyline_to_setting": [],
+  "alignment": [],
+  "background": [],
+  "class": [
+    {
+      "name": "Fighter",
+      "description": "Master of weapons and armor, excelling in physical combat through training and discipline. Versatile warriors capable of adapting to any battlefield situation.",
+      "class_trait": "Combat expertise, weapon mastery, tactical leadership",
+      "setting_id": 1
+    },
+    {
+      "name": "Wizard",
+      "description": "Scholar of arcane magic who studies spells from ancient tomes. Masters reality manipulation through careful preparation and deep magical knowledge.",
+      "class_trait": "Spellbook casting, ritual magic, arcane research",
+      "setting_id": 1
+    },
+    {
+      "name": "Cleric",
+      "description": "Divine spellcaster drawing power from deities or spiritual forces. Healer and protector who channels faith into miraculous abilities.",
+      "class_trait": "Divine magic, healing, undead turning",
+      "setting_id": 1
+    },
+    {
+      "name": "Rogue",
+      "description": "Master of stealth, deception, and precision strikes. Expert at finding weaknesses and exploiting them through cunning rather than brute force.",
+      "class_trait": "Sneak attack, stealth, skill expertise",
+      "setting_id": 1
+    },
+    {
+      "name": "Ranger",
+      "description": "Wilderness warrior combining combat skills with nature magic. Guardian of the wild places, expert tracker and beast companion.",
+      "class_trait": "Nature magic, animal companion, tracking",
+      "setting_id": 1
+    },
+    {
+      "name": "Paladin",
+      "description": "Holy warrior bound by sacred oaths to fight evil and protect the innocent. Combines martial prowess with divine magic and unwavering conviction.",
+      "class_trait": "Divine magic, lay on hands, smite evil",
+      "setting_id": 1
+    },
+    {
+      "name": "Barbarian",
+      "description": "Primal warrior who channels raw fury and instinct in battle. Tough survivalist from wild lands who fights with savage intensity.",
+      "class_trait": "Rage, damage resistance, primal instincts",
+      "setting_id": 1
+    },
+    {
+      "name": "Bard",
+      "description": "Versatile performer who weaves magic through music, stories, and art. Jack-of-all-trades combining spellcasting with social manipulation.",
+      "class_trait": "Bardic inspiration, versatile skills, charm magic",
+      "setting_id": 1
+    },
+    {
+      "name": "Sorcerer",
+      "description": "Innate spellcaster born with natural magical abilities. Manipulates raw magical energy through will and emotion rather than study.",
+      "class_trait": "Innate magic, metamagic, spontaneous casting",
+      "setting_id": 1
+    },
+    {
+      "name": "Warlock",
+      "description": "Spellcaster who gains power through pacts with otherworldly entities. Wielder of eldritch magic with mysterious patrons and dark knowledge.",
+      "class_trait": "Eldritch blast, patron powers, otherworldly magic",
+      "setting_id": 1
+    },
+    {
+      "name": "Druid",
+      "description": "Nature priest who protects the natural world and its balance. Shapeshifter and elemental magic user with deep connection to primal forces.",
+      "class_trait": "Wild shape, nature magic, elemental control",
+      "setting_id": 1
+    },
+    {
+      "name": "Monk",
+      "description": "Martial artist who achieves supernatural abilities through discipline and meditation. Weaponless fighter drawing power from inner energy.",
+      "class_trait": "Unarmed combat, ki powers, supernatural speed",
+      "setting_id": 1
+    },
+    {
+      "name": "Artificer",
+      "description": "Magical inventor who creates wondrous items and mechanical devices. Combines arcane knowledge with crafting skills and technological innovation.",
+      "class_trait": "Magical items, infusions, technological magic",
+      "setting_id": 1
+    },
+    {
+      "name": "Necromancer",
+      "description": "Dark spellcaster specializing in death magic and undead minions. Master of life and death energies, feared for their forbidden knowledge.",
+      "class_trait": "Undead minions, death magic, soul manipulation",
+      "setting_id": 1
+    },
+    {
+      "name": "Assassin",
+      "description": "Professional killer specializing in stealth, poison, and precise elimination of targets. Shadow warrior trained in the arts of murder.",
+      "class_trait": "Death attack, poison use, stealth mastery",
+      "setting_id": 1
+    },
+    {
+      "name": "Knight",
+      "description": "Noble warrior bound by codes of honor and chivalry. Heavily armored cavalry fighter dedicated to protection of the innocent and service to lords.",
+      "class_trait": "Heavy armor, mounted combat, noble bearing",
+      "setting_id": 1
+    },
+    {
+      "name": "Elementalist",
+      "description": "Spellcaster specializing in elemental forces of fire, water, earth, and air. Master of destructive natural energies and elemental summoning.",
+      "class_trait": "Elemental magic, elemental summoning, elemental immunity",
+      "setting_id": 1
+    },
+    {
+      "name": "Witch",
+      "description": "Mystical practitioner of hedge magic and ancient traditions. Herbalist and curse-weaver dwelling on the edges of civilization.",
+      "class_trait": "Curse magic, herbalism, familiar companion",
+      "setting_id": 1
+    },
+    {
+      "name": "Alchemist",
+      "description": "Scholar-craftsman who creates magical potions, explosives, and transmutative substances. Scientist-wizard blending magic with experimental methods.",
+      "class_trait": "Potion brewing, explosive devices, transmutation",
+      "setting_id": 1
+    },
+    {
+      "name": "Beast Master",
+      "description": "Warrior with supernatural bond to animal companions. Hunter and trainer who fights alongside loyal creature allies in perfect coordination.",
+      "class_trait": "Animal companions, beast communication, pack tactics",
+      "setting_id": 1
+    },
+    {
+      "name": "Spellsword",
+      "description": "Warrior-mage combining martial combat with magical enhancement. Balanced fighter who augments weapons and armor with arcane power.",
+      "class_trait": "Weapon enhancement, combat magic, magical defense",
+      "setting_id": 1
+    },
+    {
+      "name": "Shadow Dancer",
+      "description": "Mystical warrior who manipulates darkness and shadow. Stealthy combatant who moves between planes and strikes from concealment.",
+      "class_trait": "Shadow magic, plane shifting, darkness manipulation",
+      "setting_id": 1
+    },
+    {
+      "name": "Oracle",
+      "description": "Divine prophet gifted with supernatural foresight and mystical knowledge. Seer who receives visions and guidance from higher powers.",
+      "class_trait": "Prophecy, divine visions, fate manipulation",
+      "setting_id": 1
+    },
+    {
+      "name": "Demon Hunter",
+      "description": "Specialized warrior trained to combat fiends and otherworldly threats. Holy warrior with knowledge of planar enemies and their weaknesses.",
+      "class_trait": "Fiend hunting, planar knowledge, protective wards",
+      "setting_id": 1
+    },
+    {
+      "name": "Berserker",
+      "description": "Frenzied warrior who enters battle trance states of unstoppable fury. Fierce combatant who becomes more dangerous when wounded.",
+      "class_trait": "Battle frenzy, pain immunity, unstoppable rage",
+      "setting_id": 1
+    }
+  ],
+  "race": [],
+  "sub_race": [],
+  "stat": [],
+  "skills": [],
+  "actor": [],
+  "actor_a_on_b_relations": [],
+  "actor_to_skills": [],
+  "actor_to_race": [],
+  "actor_to_class": [],
+  "actor_to_stat": [],
+  "faction": [],
+  "faction_a_on_b_relations": [],
+  "faction_members": [],
+  "location_": [],
+  "location_to_faction": [],
+  "location_dungeon": [],
+  "location_city": [],
+  "location_city_districts": [],
+  "residents": [],
+  "location_flora_fauna": [],
+  "location_a_on_b_relations": [],
+  "location_geographic_relations": [],
+  "location_political_relations": [],
+  "location_economic_relations": [],
+  "location_hierarchy": [],
+  "history": [],
+  "history_actor": [],
+  "history_location": [],
+  "history_faction": [],
+  "object_": [],
+  "history_object": [],
+  "object_to_owner": [],
+  "world_data": [],
+  "history_world_data": [],
+  "arc_type": [],
+  "litography_node": [],
+  "node_connection": [],
+  "litography_notes": [],
+  "litography_plot": [],
+  "litography_plot_section": [],
+  "litography_node_to_plot_section": [],
+  "litography_arc": [],
+  "arc_point": [],
+  "arc_to_node": [],
+  "arc_to_actor": [],
+  "litography_note_to_actor": [],
+  "litography_note_to_background": [],
+  "litography_note_to_faction": [],
+  "litography_note_to_location": [],
+  "litography_note_to_history": [],
+  "litography_note_to_object": [],
+  "litography_note_to_world_data": [],
+  "litography_note_to_class": [],
+  "litography_note_to_race": [],
+  "litography_note_to_sub_race": [],
+  "litography_note_to_skills": []
+}

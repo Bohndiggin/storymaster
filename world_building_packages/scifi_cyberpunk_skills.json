@@ -1,0 +1,289 @@
+{
+  "_package_info": {
+    "display_name": "SciFi Cyberpunk Skills",
+    "description": "Street-smart abilities for dystopian cyberpunk futures including hacking, corporate infiltration, augmentation tech, and urban survival",
+    "category": "Science Fiction",
+    "version": "1.0",
+    "author": "Storymaster"
+  },
+  "user": [],
+  "setting": [],
+  "storyline": [],
+  "storyline_to_setting": [],
+  "alignment": [],
+  "background": [],
+  "class": [],
+  "race": [],
+  "sub_race": [],
+  "stat": [],
+  "skills": [
+    {
+      "name": "Netrunning",
+      "description": "Hacking into computer systems and navigating cyberspace using neural interface implants",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Corporate Infiltration",
+      "description": "Blending into corporate environments through social engineering and identity manipulation",
+      "skill_trait": "Charisma-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Cybernetic Maintenance",
+      "description": "Installing, repairing, and upgrading cybernetic implants and body modifications",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Street Knowledge",
+      "description": "Understanding urban underground networks, gang territories, and black market operations",
+      "skill_trait": "Wisdom-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Data Mining",
+      "description": "Extracting valuable information from digital networks and encrypted databases",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Neural Hacking",
+      "description": "Directly interfacing with human minds to extract or implant memories and thoughts",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Corporate Espionage",
+      "description": "Gathering intelligence on megacorporation activities through covert surveillance",
+      "skill_trait": "Dexterity-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Augmented Combat",
+      "description": "Fighting using cybernetic enhancements, smart weapons, and tactical implants",
+      "skill_trait": "Dexterity-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Virtual Reality Navigation",
+      "description": "Moving through and manipulating digital environments and virtual worlds",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Electronic Warfare",
+      "description": "Disrupting enemy systems through jamming, viruses, and electromagnetic attacks",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Bio-modification",
+      "description": "Altering human biology through genetic engineering and biological augmentation",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Urban Parkour",
+      "description": "Moving through dense city environments using enhanced agility and wall-running",
+      "skill_trait": "Dexterity-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Drone Control",
+      "description": "Operating multiple robotic units simultaneously for surveillance and combat",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Memory Extraction",
+      "description": "Recovering deleted or hidden information from human and artificial minds",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Street Fighting",
+      "description": "Brutal unarmed combat adapted for urban environments and gang warfare",
+      "skill_trait": "Strength-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Holographic Disguise",
+      "description": "Using hard-light projections and digital camouflage to alter appearance",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Corporate Psychology",
+      "description": "Understanding and manipulating corporate hierarchy and executive mindsets",
+      "skill_trait": "Wisdom-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Illegal Augmentation",
+      "description": "Installing black market cybernetics and experimental body modifications",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Data Encryption",
+      "description": "Protecting information using advanced cryptographic techniques and quantum security",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Synthetic Drug Creation",
+      "description": "Manufacturing psychoactive substances and performance-enhancing chemicals",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "AI Communication",
+      "description": "Interfacing with artificial intelligences and understanding machine consciousness",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Vehicle Hacking",
+      "description": "Taking control of automated vehicles and transportation systems",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Surveillance Detection",
+      "description": "Identifying and avoiding corporate monitoring systems and tracking devices",
+      "skill_trait": "Wisdom-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Wetware Programming",
+      "description": "Coding software directly into biological neural networks and brain tissue",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Black Market Trading",
+      "description": "Negotiating deals for illegal goods, information, and contraband technology",
+      "skill_trait": "Charisma-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Digital Forensics",
+      "description": "Analyzing electronic evidence and tracing digital footprints through networks",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Corpo-speak",
+      "description": "Fluency in corporate jargon, business protocols, and executive communication",
+      "skill_trait": "Charisma-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Stimulant Resistance",
+      "description": "Building tolerance to drugs, toxins, and chemical enhancement compounds",
+      "skill_trait": "Constitution-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Information Brokering",
+      "description": "Buying, selling, and trading valuable data and intelligence on the grey market",
+      "skill_trait": "Charisma-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Cybernetic Integration",
+      "description": "Maximizing compatibility between organic tissue and artificial implants",
+      "skill_trait": "Constitution-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Quantum Encryption",
+      "description": "Using quantum mechanics principles to create unbreakable communication codes",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Gang Diplomacy",
+      "description": "Negotiating with street gangs, criminal organizations, and underground factions",
+      "skill_trait": "Charisma-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Biometric Spoofing",
+      "description": "Faking fingerprints, retinal scans, and other biological security measures",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Corporate Sabotage",
+      "description": "Disrupting megacorporation operations through targeted attacks and system failures",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Neural Interface",
+      "description": "Direct brain-computer connection for enhanced reaction time and data access",
+      "skill_trait": "Intelligence-based",
+      "setting_id": 1
+    },
+    {
+      "name": "Urban Survival",
+      "description": "Thriving in overcrowded, polluted, and dangerous metropolitan environments",
+      "skill_trait": "Constitution-based",
+      "setting_id": 1
+    }
+  ],
+  "actor": [],
+  "actor_a_on_b_relations": [],
+  "actor_to_skills": [],
+  "actor_to_race": [],
+  "actor_to_class": [],
+  "actor_to_stat": [],
+  "faction": [],
+  "faction_a_on_b_relations": [],
+  "faction_members": [],
+  "location_": [],
+  "location_to_faction": [],
+  "location_dungeon": [],
+  "location_city": [],
+  "location_city_districts": [],
+  "residents": [],
+  "location_flora_fauna": [],
+  "location_a_on_b_relations": [],
+  "location_geographic_relations": [],
+  "location_political_relations": [],
+  "location_economic_relations": [],
+  "location_hierarchy": [],
+  "history": [],
+  "history_actor": [],
+  "history_location": [],
+  "history_faction": [],
+  "object_": [],
+  "history_object": [],
+  "object_to_owner": [],
+  "world_data": [],
+  "history_world_data": [],
+  "arc_type": [],
+  "litography_node": [],
+  "node_connection": [],
+  "litography_notes": [],
+  "litography_plot": [],
+  "litography_plot_section": [],
+  "litography_node_to_plot_section": [],
+  "litography_arc": [],
+  "arc_point": [],
+  "arc_to_node": [],
+  "arc_to_actor": [],
+  "litography_note_to_actor": [],
+  "litography_note_to_background": [],
+  "litography_note_to_faction": [],
+  "litography_note_to_location": [],
+  "litography_note_to_history": [],
+  "litography_note_to_object": [],
+  "litography_note_to_world_data": [],
+  "litography_note_to_class": [],
+  "litography_note_to_race": [],
+  "litography_note_to_sub_race": [],
+  "litography_note_to_skills": []
+}

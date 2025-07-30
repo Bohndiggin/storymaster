@@ -1,0 +1,320 @@
+{
+  "_package_info": {
+    "display_name": "Fantasy Factions",
+    "description": "Common fantasy factions including guilds, orders, kingdoms, and organizations with their relationships and power dynamics",
+    "category": "Fantasy",
+    "version": "1.0",
+    "author": "Storymaster"
+  },
+  "user": [],
+  "setting": [],
+  "storyline": [],
+  "storyline_to_setting": [],
+  "alignment": [],
+  "background": [],
+  "class": [],
+  "race": [],
+  "sub_race": [],
+  "stat": [],
+  "skills": [],
+  "actor": [],
+  "actor_a_on_b_relations": [],
+  "actor_to_skills": [],
+  "actor_to_race": [],
+  "actor_to_class": [],
+  "actor_to_stat": [],
+  "faction": [
+    {
+      "name": "Order of the Silver Dawn",
+      "description": "Elite paladin order dedicated to protecting the innocent and vanquishing undead. Known for their silver-blessed weapons and unwavering moral code.",
+      "faction_type": "Religious Order",
+      "setting_id": 1
+    },
+    {
+      "name": "Thieves' Guild of Shadowport",
+      "description": "Underground criminal organization controlling smuggling, burglary, and information networks. Operates from hidden bases in major cities.",
+      "faction_type": "Criminal Guild",
+      "setting_id": 1
+    },
+    {
+      "name": "Circle of the Ancient Oak",
+      "description": "Druidic society protecting ancient forests and natural balance. Opposes those who would exploit or destroy nature for profit.",
+      "faction_type": "Nature Cult",
+      "setting_id": 1
+    },
+    {
+      "name": "Mages' Collegium",
+      "description": "Scholarly institution for magical research and education. Controls licensing of wizards and regulation of dangerous magical practices.",
+      "faction_type": "Academic Guild",
+      "setting_id": 1
+    },
+    {
+      "name": "Iron Brotherhood",
+      "description": "Mercenary company of veteran warriors available for hire. Known for their discipline, loyalty to contracts, and heavy armor tactics.",
+      "faction_type": "Mercenary Company",
+      "setting_id": 1
+    },
+    {
+      "name": "The Crimson Merchants",
+      "description": "Powerful trading consortium with extensive networks across kingdoms. Controls many trade routes and has significant political influence.",
+      "faction_type": "Trade Guild",
+      "setting_id": 1
+    },
+    {
+      "name": "Kingdom of Valorheart",
+      "description": "Noble kingdom ruled by a just monarch. Known for its knights, fair laws, and protection of smaller settlements from threats.",
+      "faction_type": "Kingdom",
+      "setting_id": 1
+    },
+    {
+      "name": "The Dark Covenant",
+      "description": "Secretive cult worshipping dark powers and seeking forbidden knowledge. Practices necromancy and demon summoning in hidden temples.",
+      "faction_type": "Evil Cult",
+      "setting_id": 1
+    },
+    {
+      "name": "Rangers of the Wildlands",
+      "description": "Wilderness guardians protecting frontier settlements from monsters and bandits. Expert trackers and beast masters.",
+      "faction_type": "Ranger Order",
+      "setting_id": 1
+    },
+    {
+      "name": "The Scholars of Eternity",
+      "description": "Ancient order dedicated to preserving knowledge and maintaining great libraries. Neutral in conflicts but protective of learning.",
+      "faction_type": "Scholar Order",
+      "setting_id": 1
+    },
+    {
+      "name": "Dwarven Mining Consortium",
+      "description": "Alliance of dwarven clans controlling major mining operations. Provides metals and gems while defending mountain territories.",
+      "faction_type": "Trade Consortium",
+      "setting_id": 1
+    },
+    {
+      "name": "Elven Court of Starfall",
+      "description": "Aristocratic elven society governing ancient forest realms. Maintains isolationist policies while practicing high magic.",
+      "faction_type": "Noble Court",
+      "setting_id": 1
+    },
+    {
+      "name": "The Broken Chain",
+      "description": "Revolutionary organization seeking to overthrow tyrannical rulers and free oppressed peoples. Uses guerrilla tactics and popular uprisings.",
+      "faction_type": "Revolutionary Group",
+      "setting_id": 1
+    },
+    {
+      "name": "Temple of the Golden Sun",
+      "description": "Major religious institution worshipping the sun god. Provides healing, charity, and spiritual guidance while opposing undead and darkness.",
+      "faction_type": "Religious Temple",
+      "setting_id": 1
+    },
+    {
+      "name": "Assassins of the Veiled Moon",
+      "description": "Elite organization of killers-for-hire operating in shadows. Known for exotic poisons, stealth techniques, and absolute discretion.",
+      "faction_type": "Assassin Guild",
+      "setting_id": 1
+    },
+    {
+      "name": "The Wandering Troupe",
+      "description": "Traveling performers and storytellers who also serve as spies and message carriers. Welcome in most places but trusted by few.",
+      "faction_type": "Performer Guild",
+      "setting_id": 1
+    },
+    {
+      "name": "Order of the Void",
+      "description": "Monastic order seeking enlightenment through meditation and martial arts. Maintains neutrality while perfecting mind and body discipline.",
+      "faction_type": "Monastic Order",
+      "setting_id": 1
+    },
+    {
+      "name": "The Sea Wolves",
+      "description": "Notorious pirate confederation raiding coastal settlements and merchant ships. Loose alliance held together by shared profits and mutual protection.",
+      "faction_type": "Pirate Alliance",
+      "setting_id": 1
+    },
+    {
+      "name": "Imperial Legion of Drakmoor",
+      "description": "Military force of an expansionist empire seeking to conquer neighboring lands. Disciplined soldiers with advanced tactics and siege weapons.",
+      "faction_type": "Imperial Army",
+      "setting_id": 1
+    },
+    {
+      "name": "The Hearthkeepers",
+      "description": "Network of innkeepers, tavern owners, and hospitality workers who secretly gather information and aid travelers with hidden agendas.",
+      "faction_type": "Information Network",
+      "setting_id": 1
+    }
+  ],
+  "faction_a_on_b_relations": [
+    {
+      "faction_a_id": 301,
+      "faction_b_id": 308,
+      "relation_type": "Hostile",
+      "relation_desc": "The Order of the Silver Dawn actively hunts members of The Dark Covenant",
+      "setting_id": 1
+    },
+    {
+      "faction_a_id": 301,
+      "faction_b_id": 314,
+      "relation_type": "Allied",
+      "relation_desc": "The Order of the Silver Dawn works closely with the Temple of the Golden Sun",
+      "setting_id": 1
+    },
+    {
+      "faction_a_id": 302,
+      "faction_b_id": 315,
+      "relation_type": "Business",
+      "relation_desc": "The Thieves' Guild occasionally contracts the Assassins of the Veiled Moon",
+      "setting_id": 1
+    },
+    {
+      "faction_a_id": 302,
+      "faction_b_id": 307,
+      "relation_type": "Hostile",
+      "relation_desc": "The Thieves' Guild operates against the Kingdom of Valorheart's law enforcement",
+      "setting_id": 1
+    },
+    {
+      "faction_a_id": 303,
+      "faction_b_id": 311,
+      "relation_type": "Wary",
+      "relation_desc": "The Circle of the Ancient Oak watches the Dwarven Mining Consortium's environmental impact",
+      "setting_id": 1
+    },
+    {
+      "faction_a_id": 303,
+      "faction_b_id": 312,
+      "relation_type": "Allied",
+      "relation_desc": "The Circle of the Ancient Oak has ancient agreements with the Elven Court of Starfall",
+      "setting_id": 1
+    },
+    {
+      "faction_a_id": 304,
+      "faction_b_id": 310,
+      "relation_type": "Cooperative",
+      "relation_desc": "The Mages' Collegium shares knowledge with the Scholars of Eternity",
+      "setting_id": 1
+    },
+    {
+      "faction_a_id": 305,
+      "faction_b_id": 306,
+      "relation_type": "Business",
+      "relation_desc": "The Iron Brotherhood is often hired by the Crimson Merchants as caravan guards",
+      "setting_id": 1
+    },
+    {
+      "faction_a_id": 306,
+      "faction_b_id": 318,
+      "relation_type": "Hostile",
+      "relation_desc": "The Crimson Merchants' ships are frequent targets of the Sea Wolves",
+      "setting_id": 1
+    },
+    {
+      "faction_a_id": 307,
+      "faction_b_id": 313,
+      "relation_type": "Supportive",
+      "relation_desc": "The Kingdom of Valorheart secretly funds the Broken Chain against tyrannical neighbors",
+      "setting_id": 1
+    },
+    {
+      "faction_a_id": 308,
+      "faction_b_id": 315,
+      "relation_type": "Business",
+      "relation_desc": "The Dark Covenant sometimes employs the Assassins of the Veiled Moon",
+      "setting_id": 1
+    },
+    {
+      "faction_a_id": 309,
+      "faction_b_id": 311,
+      "relation_type": "Cooperative",
+      "relation_desc": "The Rangers of the Wildlands help protect Dwarven mining outposts from monsters",
+      "setting_id": 1
+    },
+    {
+      "faction_a_id": 312,
+      "faction_b_id": 319,
+      "relation_type": "Hostile",
+      "relation_desc": "The Elven Court of Starfall opposes the Imperial Legion of Drakmoor's expansion",
+      "setting_id": 1
+    },
+    {
+      "faction_a_id": 313,
+      "faction_b_id": 319,
+      "relation_type": "Hostile",
+      "relation_desc": "The Broken Chain actively resists the Imperial Legion of Drakmoor's conquests",
+      "setting_id": 1
+    },
+    {
+      "faction_a_id": 316,
+      "faction_b_id": 320,
+      "relation_type": "Cooperative",
+      "relation_desc": "The Wandering Troupe shares information with the Hearthkeepers network",
+      "setting_id": 1
+    },
+    {
+      "faction_a_id": 317,
+      "faction_b_id": 301,
+      "relation_type": "Respectful",
+      "relation_desc": "The Order of the Void respects the Silver Dawn's dedication but remains neutral",
+      "setting_id": 1
+    },
+    {
+      "faction_a_id": 318,
+      "faction_b_id": 305,
+      "relation_type": "Hostile",
+      "relation_desc": "The Sea Wolves clash with Iron Brotherhood ships hired as naval escorts",
+      "setting_id": 1
+    },
+    {
+      "faction_a_id": 320,
+      "faction_b_id": 302,
+      "relation_type": "Wary",
+      "relation_desc": "The Hearthkeepers are cautious of Thieves' Guild infiltration attempts",
+      "setting_id": 1
+    }
+  ],
+  "faction_members": [],
+  "location_": [],
+  "location_to_faction": [],
+  "location_dungeon": [],
+  "location_city": [],
+  "location_city_districts": [],
+  "residents": [],
+  "location_flora_fauna": [],
+  "location_a_on_b_relations": [],
+  "location_geographic_relations": [],
+  "location_political_relations": [],
+  "location_economic_relations": [],
+  "location_hierarchy": [],
+  "history": [],
+  "history_actor": [],
+  "history_location": [],
+  "history_faction": [],
+  "object_": [],
+  "history_object": [],
+  "object_to_owner": [],
+  "world_data": [],
+  "history_world_data": [],
+  "arc_type": [],
+  "litography_node": [],
+  "node_connection": [],
+  "litography_notes": [],
+  "litography_plot": [],
+  "litography_plot_section": [],
+  "litography_node_to_plot_section": [],
+  "litography_arc": [],
+  "arc_point": [],
+  "arc_to_node": [],
+  "arc_to_actor": [],
+  "litography_note_to_actor": [],
+  "litography_note_to_background": [],
+  "litography_note_to_faction": [],
+  "litography_note_to_location": [],
+  "litography_note_to_history": [],
+  "litography_note_to_object": [],
+  "litography_note_to_world_data": [],
+  "litography_note_to_class": [],
+  "litography_note_to_race": [],
+  "litography_note_to_sub_race": [],
+  "litography_note_to_skills": []
+}

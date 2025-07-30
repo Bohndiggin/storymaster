@@ -1,0 +1,223 @@
+{
+  "_package_info": {
+    "display_name": "Fantasy Stats",
+    "description": "Character attributes and statistics for fantasy settings including physical abilities, mental traits, magical aptitudes, and social characteristics",
+    "category": "Fantasy",
+    "version": "1.0",
+    "author": "Storymaster"
+  },
+  "user": [],
+  "setting": [],
+  "storyline": [],
+  "storyline_to_setting": [],
+  "alignment": [],
+  "background": [],
+  "class": [],
+  "race": [],
+  "sub_race": [],
+  "stat": [
+    {
+      "name": "Strength",
+      "description": "Physical power and muscle mass. Determines carrying capacity, melee damage, and ability to perform feats of raw power.",
+      "stat_category": "Physical",
+      "setting_id": 1
+    },
+    {
+      "name": "Dexterity",
+      "description": "Agility, reflexes, and hand-eye coordination. Affects accuracy with ranged weapons, stealth, and acrobatic maneuvers.",
+      "stat_category": "Physical",
+      "setting_id": 1
+    },
+    {
+      "name": "Constitution",
+      "description": "Health, stamina, and physical resilience. Determines hit points, resistance to disease, and endurance in harsh conditions.",
+      "stat_category": "Physical",
+      "setting_id": 1
+    },
+    {
+      "name": "Intelligence",
+      "description": "Reasoning ability, memory, and analytical thinking. Affects spellcasting for wizards, skill points, and problem-solving capability.",
+      "stat_category": "Mental",
+      "setting_id": 1
+    },
+    {
+      "name": "Wisdom",
+      "description": "Intuition, common sense, and spiritual awareness. Influences perception, divine magic, and understanding of the natural world.",
+      "stat_category": "Mental",
+      "setting_id": 1
+    },
+    {
+      "name": "Charisma",
+      "description": "Force of personality, leadership ability, and social magnetism. Affects persuasion, intimidation, and certain magical abilities.",
+      "stat_category": "Social",
+      "setting_id": 1
+    },
+    {
+      "name": "Arcane Power",
+      "description": "Innate magical energy and connection to mystical forces. Determines mana pool and effectiveness of arcane spells.",
+      "stat_category": "Magical",
+      "setting_id": 1
+    },
+    {
+      "name": "Divine Favor",
+      "description": "Blessing from deities and connection to divine realms. Influences holy magic, turning undead, and miraculous healing.",
+      "stat_category": "Magical",
+      "setting_id": 1
+    },
+    {
+      "name": "Willpower",
+      "description": "Mental fortitude and resistance to magical influence. Protects against charm effects, fear, and mental domination.",
+      "stat_category": "Mental",
+      "setting_id": 1
+    },
+    {
+      "name": "Luck",
+      "description": "Supernatural fortune and tendency for favorable outcomes. Affects critical hit chances, treasure finding, and avoiding disasters.",
+      "stat_category": "Mystical",
+      "setting_id": 1
+    },
+    {
+      "name": "Honor",
+      "description": "Reputation and adherence to moral codes. Influences social standing, trustworthiness, and certain magical abilities based on virtue.",
+      "stat_category": "Social",
+      "setting_id": 1
+    },
+    {
+      "name": "Nature Affinity",
+      "description": "Connection to the natural world and wild places. Affects druidic magic, animal handling, and survival in wilderness environments.",
+      "stat_category": "Mystical",
+      "setting_id": 1
+    },
+    {
+      "name": "Shadow Mastery",
+      "description": "Affinity for darkness and stealth-based abilities. Influences sneaking, backstab damage, and shadow magic effectiveness.",
+      "stat_category": "Mystical",
+      "setting_id": 1
+    },
+    {
+      "name": "Elemental Attunement",
+      "description": "Harmony with elemental forces of fire, water, earth, and air. Determines elemental spell power and resistance to elemental damage.",
+      "stat_category": "Magical",
+      "setting_id": 1
+    },
+    {
+      "name": "Battle Fury",
+      "description": "Capacity for berserker rage and combat frenzy. Affects damage bonus when wounded and ability to ignore pain in battle.",
+      "stat_category": "Combat",
+      "setting_id": 1
+    },
+    {
+      "name": "Psychic Sensitivity",
+      "description": "Ability to perceive thoughts, emotions, and spiritual energies. Influences telepathic abilities and detection of supernatural presence.",
+      "stat_category": "Mental",
+      "setting_id": 1
+    },
+    {
+      "name": "Bloodline Power",
+      "description": "Inherited magical abilities from draconic, fey, or celestial ancestry. Affects sorcerous magic and supernatural racial abilities.",
+      "stat_category": "Magical",
+      "setting_id": 1
+    },
+    {
+      "name": "Tactical Awareness",
+      "description": "Understanding of battlefield strategy and combat positioning. Improves initiative, flanking bonuses, and leadership abilities.",
+      "stat_category": "Combat",
+      "setting_id": 1
+    },
+    {
+      "name": "Spiritual Purity",
+      "description": "Freedom from corruption and alignment with good forces. Protects against evil magic and enhances holy abilities.",
+      "stat_category": "Mystical",
+      "setting_id": 1
+    },
+    {
+      "name": "Artistic Talent",
+      "description": "Creative ability and aesthetic sense. Affects bardic magic, crafting beautiful items, and inspiring others through art.",
+      "stat_category": "Social",
+      "setting_id": 1
+    },
+    {
+      "name": "Primal Instinct",
+      "description": "Connection to savage, animalistic nature. Enhances survival skills, predator awareness, and shapeshifting abilities.",
+      "stat_category": "Mystical",
+      "setting_id": 1
+    },
+    {
+      "name": "Scholarly Knowledge",
+      "description": "Accumulated learning and research expertise. Affects spell research, ancient lore, and identification of magical items.",
+      "stat_category": "Mental",
+      "setting_id": 1
+    },
+    {
+      "name": "Combat Reflexes",
+      "description": "Lightning-fast reactions in dangerous situations. Improves armor class, initiative, and ability to avoid surprise attacks.",
+      "stat_category": "Combat",
+      "setting_id": 1
+    },
+    {
+      "name": "Empathy",
+      "description": "Ability to understand and connect with others emotionally. Affects healing magic, animal friendship, and diplomatic relations.",
+      "stat_category": "Social",
+      "setting_id": 1
+    },
+    {
+      "name": "Courage",
+      "description": "Bravery in the face of danger and supernatural fear. Provides immunity to fear effects and bonus when protecting others.",
+      "stat_category": "Mental",
+      "setting_id": 1
+    }
+  ],
+  "skills": [],
+  "actor": [],
+  "actor_a_on_b_relations": [],
+  "actor_to_skills": [],
+  "actor_to_race": [],
+  "actor_to_class": [],
+  "actor_to_stat": [],
+  "faction": [],
+  "faction_a_on_b_relations": [],
+  "faction_members": [],
+  "location_": [],
+  "location_to_faction": [],
+  "location_dungeon": [],
+  "location_city": [],
+  "location_city_districts": [],
+  "residents": [],
+  "location_flora_fauna": [],
+  "location_a_on_b_relations": [],
+  "location_geographic_relations": [],
+  "location_political_relations": [],
+  "location_economic_relations": [],
+  "location_hierarchy": [],
+  "history": [],
+  "history_actor": [],
+  "history_location": [],
+  "history_faction": [],
+  "object_": [],
+  "history_object": [],
+  "object_to_owner": [],
+  "world_data": [],
+  "history_world_data": [],
+  "arc_type": [],
+  "litography_node": [],
+  "node_connection": [],
+  "litography_notes": [],
+  "litography_plot": [],
+  "litography_plot_section": [],
+  "litography_node_to_plot_section": [],
+  "litography_arc": [],
+  "arc_point": [],
+  "arc_to_node": [],
+  "arc_to_actor": [],
+  "litography_note_to_actor": [],
+  "litography_note_to_background": [],
+  "litography_note_to_faction": [],
+  "litography_note_to_location": [],
+  "litography_note_to_history": [],
+  "litography_note_to_object": [],
+  "litography_note_to_world_data": [],
+  "litography_note_to_class": [],
+  "litography_note_to_race": [],
+  "litography_note_to_sub_race": [],
+  "litography_note_to_skills": []
+}
