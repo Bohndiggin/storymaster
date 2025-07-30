@@ -2,17 +2,16 @@
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import (QHBoxLayout, QLabel, QMessageBox, QSplitter,
+from PyQt6.QtWidgets import (QHBoxLayout, QLabel, QMessageBox, QPushButton, QSplitter,
                              QStackedWidget, QVBoxLayout, QWidget)
 
 from storymaster.model.lorekeeper.entity_mappings import get_entity_mapping
 from storymaster.view.common.custom_widgets import enable_smart_tab_navigation
-from storymaster.view.common.theme import COLORS, FONTS, get_splitter_style
+from storymaster.view.common.theme import COLORS, FONTS, get_button_style, get_splitter_style
 from storymaster.view.lorekeeper.entity_page import EntityDetailPage
 from storymaster.view.lorekeeper.lorekeeper_model_adapter import \
     LorekeeperModelAdapter
-from storymaster.view.lorekeeper.lorekeeper_navigation import (
-    LorekeeperBrowser, LorekeeperNavigation)
+from storymaster.view.lorekeeper.lorekeeper_navigation import LorekeeperNavigation
 
 
 class NewLorekeeperPage(QWidget):
@@ -25,6 +24,7 @@ class NewLorekeeperPage(QWidget):
         self.model_adapter = LorekeeperModelAdapter(model, setting_id)
         self.current_table_name = ""
         self.current_entity = None
+        self.current_entities = []  # Store current entities for filtering
         self.detail_pages = {}  # Cache detail pages by table name
         self.setup_ui()
 
@@ -68,34 +68,169 @@ class NewLorekeeperPage(QWidget):
 
     def create_left_panel(self) -> QWidget:
         """Create the left navigation and browser panel"""
-        # Create vertical splitter for navigation and browser
+        # Create vertical splitter for the entire left panel
         left_splitter = QSplitter(Qt.Orientation.Vertical)
         left_splitter.setHandleWidth(3)
         left_splitter.setStyleSheet(get_splitter_style())
 
-        # Navigation
+        # Create container for top half (navigation + header/search)
+        top_half_container = QWidget()
+        top_half_layout = QVBoxLayout()
+        top_half_layout.setContentsMargins(2, 2, 2, 2)
+        top_half_layout.setSpacing(2)
+
+        # Navigation widget (top of top half)
         self.navigation = LorekeeperNavigation()
         self.navigation.category_changed.connect(self.on_category_changed)
-        self.navigation.setMinimumHeight(
-            150
-        )  # Minimum height to keep navigation usable
-        left_splitter.addWidget(self.navigation)
+        self.navigation.setMinimumHeight(150)  # Minimum height for navigation
+        top_half_layout.addWidget(self.navigation)
 
-        # Browser
-        self.browser = LorekeeperBrowser()
-        self.browser.entity_selected.connect(self.on_entity_selected)
-        self.browser.new_entity_requested.connect(self.on_new_entity_requested)
-        self.browser.setMinimumHeight(200)  # Minimum height to show meaningful content
-        left_splitter.addWidget(self.browser)
+        # Browser header and search (bottom of top half)
+        self.browser_header = self.create_browser_header()
+        self.browser_search = self.create_browser_search()
+        
+        top_half_layout.addWidget(self.browser_header)
+        top_half_layout.addWidget(self.browser_search)
+        top_half_container.setLayout(top_half_layout)
+        
+        # Create container for bottom half (entity list)
+        bottom_half_container = QWidget()
+        bottom_half_layout = QVBoxLayout()
+        bottom_half_layout.setContentsMargins(2, 2, 2, 2)
+        bottom_half_layout.setSpacing(0)
+        
+        # Add entity list to bottom half
+        self.entity_list = self.create_entity_list()
+        bottom_half_layout.addWidget(self.entity_list)
+        bottom_half_container.setLayout(bottom_half_layout)
 
-        # Set initial proportions (navigation smaller, browser larger)
-        left_splitter.setStretchFactor(0, 0)  # Navigation - don't stretch
-        left_splitter.setStretchFactor(1, 1)  # Browser - stretches
+        # Add both halves to the main splitter
+        left_splitter.addWidget(top_half_container)
+        left_splitter.addWidget(bottom_half_container)
 
-        # Set initial sizes (navigation ~250px, browser gets the rest)
-        left_splitter.setSizes([250, 400])
+        # Set proportions: top half and bottom half equal
+        left_splitter.setStretchFactor(0, 1)  # Top half (nav + header + search)
+        left_splitter.setStretchFactor(1, 1)  # Bottom half (list)
+        left_splitter.setSizes([300, 300])  # Equal initial sizes
 
         return left_splitter
+
+    def create_browser_header(self) -> QWidget:
+        """Create the browser header with title and new button"""
+        header_widget = QWidget()
+        header_layout = QHBoxLayout()
+        header_layout.setContentsMargins(0, 0, 0, 0)
+        header_layout.setSpacing(4)
+
+        self.title_label = QLabel()
+        font = QFont()
+        font.setPointSize(14)
+        font.setBold(True)
+        self.title_label.setFont(font)
+        header_layout.addWidget(self.title_label)
+
+        header_layout.addStretch()
+
+        self.new_button = QPushButton("New")
+        self.new_button.clicked.connect(self.on_new_entity_requested)
+        self.new_button.setStyleSheet(get_button_style("primary"))
+        header_layout.addWidget(self.new_button)
+
+        header_widget.setLayout(header_layout)
+        return header_widget
+
+    def create_browser_search(self) -> QWidget:
+        """Create the browser search bar"""
+        from storymaster.view.lorekeeper.lorekeeper_navigation import SearchBar
+        self.search_bar = SearchBar()
+        self.search_bar.search_changed.connect(self.filter_entities)
+        return self.search_bar
+
+    def create_entity_list(self) -> QWidget:
+        """Create the entity list widget"""
+        from storymaster.view.lorekeeper.lorekeeper_navigation import EntityListWidget
+        self.entity_list_widget = EntityListWidget()
+        self.entity_list_widget.entity_selected.connect(self.on_entity_selected)
+        return self.entity_list_widget
+
+    def set_category_display(self, table_name: str):
+        """Set the current category display"""
+        mapping = get_entity_mapping(table_name)
+
+        if mapping:
+            self.title_label.setText(f"{mapping.icon} {mapping.plural_name}")
+            self.new_button.setText(f"New {mapping.display_name}")
+        else:
+            display_name = table_name.replace("_", " ").title()
+            self.title_label.setText(display_name)
+            self.new_button.setText(f"New {display_name}")
+
+    def set_entities(self, entities: list):
+        """Set the list of entities to display"""
+        self.current_entities = entities
+        self.entity_list_widget.set_entities(entities, self.current_table_name)
+
+    def filter_entities(self, search_text: str):
+        """Filter entities based on search text"""
+        if not hasattr(self, 'current_entities'):
+            return
+            
+        if not search_text:
+            self.entity_list_widget.set_entities(
+                self.current_entities, self.current_table_name
+            )
+            return
+
+        # Simple text search across entity fields
+        filtered_entities = []
+        search_lower = search_text.lower()
+
+        for entity in self.current_entities:
+            # Search in name fields
+            if (
+                hasattr(entity, "name")
+                and entity.name
+                and search_lower in entity.name.lower()
+            ):
+                filtered_entities.append(entity)
+                continue
+
+            # Search in character names
+            if (
+                hasattr(entity, "first_name")
+                and entity.first_name
+                and search_lower in entity.first_name.lower()
+            ):
+                filtered_entities.append(entity)
+                continue
+
+            if (
+                hasattr(entity, "last_name")
+                and entity.last_name
+                and search_lower in entity.last_name.lower()
+            ):
+                filtered_entities.append(entity)
+                continue
+
+            # Search in title
+            if (
+                hasattr(entity, "title")
+                and entity.title
+                and search_lower in entity.title.lower()
+            ):
+                filtered_entities.append(entity)
+                continue
+
+            # Search in description
+            if (
+                hasattr(entity, "description")
+                and entity.description
+                and search_lower in entity.description.lower()
+            ):
+                filtered_entities.append(entity)
+                continue
+
+        self.entity_list_widget.set_entities(filtered_entities, self.current_table_name)
 
     def create_right_panel(self) -> QWidget:
         """Create the right entity details panel"""
@@ -170,7 +305,7 @@ class NewLorekeeperPage(QWidget):
                 )
 
         self.current_table_name = table_name
-        self.browser.set_category(table_name)
+        self.set_category_display(table_name)
 
         # Load entities for this category
         self.load_entities(table_name)
@@ -217,7 +352,7 @@ class NewLorekeeperPage(QWidget):
         try:
             # Get entities from model
             entities = self.get_entities_from_model(table_name)
-            self.browser.set_entities(entities)
+            self.set_entities(entities)
         except Exception as e:
             QMessageBox.warning(self, "Error", f"Failed to load {table_name}: {str(e)}")
 
