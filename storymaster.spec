@@ -42,6 +42,11 @@ test_data_path = project_dir / 'tests' / 'model' / 'database' / 'test_data'
 if test_data_path.exists():
     datas.append((str(test_data_path), 'tests/model/database/test_data'))
 
+# Include world building packages
+world_building_path = project_dir / 'world_building_packages'
+if world_building_path.exists():
+    datas.append((str(world_building_path), 'world_building_packages'))
+
 # Note: .env file not needed - using hardcoded defaults in code
 
 # Include UI files using glob

@@ -18,6 +18,11 @@ for ui_dir in ['common']:
     for ui_file in ui_files:
         datas.append((ui_file, f'storymaster/view/{ui_dir}'))
 
+# Include world building packages
+world_building_path = project_dir / 'world_building_packages'
+if world_building_path.exists():
+    datas.append((str(world_building_path), 'world_building_packages'))
+
 # Minimal hidden imports - only core PyQt6
 hiddenimports = [
     'PyQt6.QtCore',

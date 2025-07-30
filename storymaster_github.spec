@@ -35,6 +35,11 @@ main_icon = project_dir / 'assets/storymaster_icon.ico'
 if main_icon.exists():
     datas.append((str(main_icon), 'assets'))
 
+# Include world building packages
+world_building_path = project_dir / 'world_building_packages'
+if world_building_path.exists():
+    datas.append((str(world_building_path), 'world_building_packages'))
+
 # Minimal hidden imports - only what's absolutely needed
 hiddenimports = [
     'PyQt6.QtCore',
