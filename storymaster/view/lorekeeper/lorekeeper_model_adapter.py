@@ -994,12 +994,22 @@ class LorekeeperModelAdapter:
                     from storymaster.model.database.schema.base import \
                         FactionMembers
 
+                    # Determine which entity is the actor and which is the faction
+                    if entity.__class__.__name__ == "Actor":
+                        actor_id = entity.id
+                        faction_id = related_entity.id
+                    elif entity.__class__.__name__ == "Faction":
+                        actor_id = related_entity.id
+                        faction_id = entity.id
+                    else:
+                        return False  # Invalid entity types for faction members relationship
+
                     # Check if membership already exists
                     existing = (
                         session.query(FactionMembers)
                         .filter(
-                            (FactionMembers.actor_id == entity.id)
-                            & (FactionMembers.faction_id == related_entity.id)
+                            (FactionMembers.actor_id == actor_id)
+                            & (FactionMembers.faction_id == faction_id)
                         )
                         .first()
                     )
@@ -1009,8 +1019,8 @@ class LorekeeperModelAdapter:
 
                     # Create new membership
                     new_membership = FactionMembers(
-                        actor_id=entity.id,
-                        faction_id=related_entity.id,
+                        actor_id=actor_id,
+                        faction_id=faction_id,
                         setting_id=self.setting_id,
                         actor_role=(
                             relationship_data.get("role", "")
@@ -1026,12 +1036,22 @@ class LorekeeperModelAdapter:
                 elif relationship_name == "residents":
                     from storymaster.model.database.schema.base import Resident
 
+                    # Determine which entity is the actor and which is the location
+                    if entity.__class__.__name__ == "Actor":
+                        actor_id = entity.id
+                        location_id = related_entity.id
+                    elif entity.__class__.__name__ == "Location":
+                        actor_id = related_entity.id
+                        location_id = entity.id
+                    else:
+                        return False  # Invalid entity types for residents relationship
+
                     # Check if residency already exists
                     existing = (
                         session.query(Resident)
                         .filter(
-                            (Resident.actor_id == entity.id)
-                            & (Resident.location_id == related_entity.id)
+                            (Resident.actor_id == actor_id)
+                            & (Resident.location_id == location_id)
                         )
                         .first()
                     )
@@ -1041,8 +1061,8 @@ class LorekeeperModelAdapter:
 
                     # Create new residency
                     new_residency = Resident(
-                        actor_id=entity.id,
-                        location_id=related_entity.id,
+                        actor_id=actor_id,
+                        location_id=location_id,
                         setting_id=self.setting_id,
                     )
                     session.add(new_residency)
@@ -1051,12 +1071,22 @@ class LorekeeperModelAdapter:
                     from storymaster.model.database.schema.base import \
                         ObjectToOwner
 
+                    # Determine which entity is the actor and which is the object
+                    if entity.__class__.__name__ == "Actor":
+                        actor_id = entity.id
+                        object_id = related_entity.id
+                    elif entity.__class__.__name__ == "Object_":
+                        actor_id = related_entity.id
+                        object_id = entity.id
+                    else:
+                        return False  # Invalid entity types for object ownership relationship
+
                     # Check if ownership already exists
                     existing = (
                         session.query(ObjectToOwner)
                         .filter(
-                            (ObjectToOwner.actor_id == entity.id)
-                            & (ObjectToOwner.object_id == related_entity.id)
+                            (ObjectToOwner.actor_id == actor_id)
+                            & (ObjectToOwner.object_id == object_id)
                         )
                         .first()
                     )
@@ -1066,8 +1096,8 @@ class LorekeeperModelAdapter:
 
                     # Create new ownership
                     new_ownership = ObjectToOwner(
-                        actor_id=entity.id,
-                        object_id=related_entity.id,
+                        actor_id=actor_id,
+                        object_id=object_id,
                         setting_id=self.setting_id,
                     )
                     session.add(new_ownership)
@@ -1076,12 +1106,22 @@ class LorekeeperModelAdapter:
                     from storymaster.model.database.schema.base import \
                         LocationToFaction
 
+                    # Determine which entity is the location and which is the faction
+                    if entity.__class__.__name__ == "Location":
+                        location_id = entity.id
+                        faction_id = related_entity.id
+                    elif entity.__class__.__name__ == "Faction":
+                        location_id = related_entity.id
+                        faction_id = entity.id
+                    else:
+                        return False  # Invalid entity types for location-faction relationship
+
                     # Check if control already exists
                     existing = (
                         session.query(LocationToFaction)
                         .filter(
-                            (LocationToFaction.location_id == entity.id)
-                            & (LocationToFaction.faction_id == related_entity.id)
+                            (LocationToFaction.location_id == location_id)
+                            & (LocationToFaction.faction_id == faction_id)
                         )
                         .first()
                     )
@@ -1091,8 +1131,8 @@ class LorekeeperModelAdapter:
 
                     # Create new control
                     new_control = LocationToFaction(
-                        location_id=entity.id,
-                        faction_id=related_entity.id,
+                        location_id=location_id,
+                        faction_id=faction_id,
                         setting_id=self.setting_id,
                     )
                     session.add(new_control)

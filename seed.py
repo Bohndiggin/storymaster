@@ -848,7 +848,6 @@ def main():
             # Residences
             residents = [
                 schema.Resident(
-                    id=1,
                     actor_id=1,
                     location_id=1,
                     setting_id=1,
@@ -858,7 +857,6 @@ def main():
                     notes="Lives in the Guild's grand tower overlooking the harbor",
                 ),
                 schema.Resident(
-                    id=2,
                     actor_id=2,
                     location_id=1,
                     setting_id=1,
