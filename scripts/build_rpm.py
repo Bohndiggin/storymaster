@@ -57,7 +57,7 @@ def create_source_tarball():
             base_files = [
                 "storymaster/",
                 "tests/",
-                "init_database.py",
+                "scripts/",  # Include scripts directory
                 "requirements.txt",
                 "assets/",  # Include assets directory with icons
             ]

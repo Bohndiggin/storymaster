@@ -104,19 +104,20 @@ storymaster/
 │   ├── storymaster_icon.ico    # Windows executable icon
 │   ├── storymaster_icon.svg    # Vector icon (cross-platform)
 │   └── storymaster_icon_*.png  # Various sizes for system integration
-├── build_executable.py        # Cross-platform executable builder
-├── build_standalone.py        # Standalone executable builder (recommended)
-├── build_fast.py              # Fast development build
-├── build_appimage.py          # Linux AppImage builder
-├── build_rpm.py              # Linux RPM package builder
-├── build_macos.py            # macOS app bundle builder
-├── run_tests.py              # Lightweight test runner
-├── run_comprehensive_tests.py # Comprehensive test suite with coverage
+├── scripts/                # Build and utility scripts
+│   ├── build_executable.py        # Cross-platform executable builder
+│   ├── build_standalone.py        # Standalone executable builder (recommended)
+│   ├── build_fast.py              # Fast development build
+│   ├── build_appimage.py          # Linux AppImage builder
+│   ├── build_rpm.py              # Linux RPM package builder
+│   ├── build_macos.py            # macOS app bundle builder
+│   ├── run_tests.py              # Lightweight test runner
+│   ├── run_comprehensive_tests.py # Comprehensive test suite with coverage
+│   ├── init_database.py          # Database initialization
+│   ├── migrate_database.py       # Database migration tool
+│   └── seed.py                  # Sample data loader
 ├── storymaster.spec          # PyInstaller configuration
 ├── storymaster.spec.rpm      # RPM package specification
-├── init_database.py          # Database initialization
-├── migrate_database.py       # Database migration tool
-├── seed.py                  # Sample data loader
 └── requirements.txt         # Python dependencies
 ```
 
@@ -213,7 +214,7 @@ python scripts/init_database.py
 python scripts/seed.py
 
 # Handle schema updates
-python migrate_database.py
+python scripts/migrate_database.py
 ```
 
 ## 📦 Distribution & Building
@@ -223,20 +224,20 @@ Storymaster provides multiple distribution options for different platforms and u
 ### Executable Builds
 ```bash
 # Standalone executables (recommended for distribution)
-python build_standalone.py
+python scripts/build_standalone.py
 
 # Traditional PyInstaller build
-python build_executable.py
+python scripts/build_executable.py
 
 # Linux AppImage
-python build_appimage.py
+python scripts/build_appimage.py
 
 # Fast development build
-python build_fast.py
+python scripts/build_fast.py
 
 # Platform-specific builds
-python build_rpm.py         # Linux RPM packages  
-python build_macos.py       # macOS app bundles
+python scripts/build_rpm.py         # Linux RPM packages  
+python scripts/build_macos.py       # macOS app bundles
 ```
 
 ### Distribution Features

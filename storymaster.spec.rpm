@@ -42,7 +42,7 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/pixmaps
 # Install the application
 cp -r storymaster $RPM_BUILD_ROOT%{_datadir}/%{name}/
 cp -r tests $RPM_BUILD_ROOT%{_datadir}/%{name}/
-cp init_database.py $RPM_BUILD_ROOT%{_datadir}/%{name}/
+cp -r scripts $RPM_BUILD_ROOT%{_datadir}/%{name}/
 cp -r assets $RPM_BUILD_ROOT%{_datadir}/%{name}/
 
 
@@ -63,13 +63,13 @@ if [ ! -f "$HOME/.local/share/storymaster/storymaster.db" ]; then
     export TEST_DATABASE_CONNECTION="sqlite:///$HOME/.local/share/storymaster/test_storymaster.db"
     
     echo "Initializing Storymaster database..."
-    python3 init_database.py
+    python3 scripts/init_database.py
     
     # Ask user if they want sample data
     echo "Would you like to load sample data? (y/n)"
     read -r response
     if [[ "$response" =~ ^[Yy]$ ]]; then
-        python3 seed.py
+        python3 scripts/seed.py
     fi
 else
     # Set database location for existing installation
