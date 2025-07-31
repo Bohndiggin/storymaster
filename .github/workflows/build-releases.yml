@@ -40,7 +40,7 @@ jobs:
         GITHUB_ACTIONS: true
         QT_QPA_PLATFORM: offscreen 
     
-    - name: Build Windows executable (with debug)
+    - name: Build Windows executable (using build script)
       run: |
         # Disable Windows Defender real-time protection for build directory
         powershell -Command "Add-MpPreference -ExclusionPath $PWD"
@@ -51,8 +51,8 @@ jobs:
         echo "Available disk space:"
         powershell -Command "Get-PSDrive C | Select-Object Used,Free"
         echo "=================="
-        # Run PyInstaller with Windows-specific spec file (no --debug flag with .spec)
-        python -m PyInstaller --clean --log-level=INFO storymaster-windows.spec
+        # Use the build script which creates the portable package and archive
+        python scripts/build_executable.py
       timeout-minutes: 25  # Increased timeout for debug build
       env:
         PYTHONIOENCODING: utf-8

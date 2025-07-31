@@ -119,8 +119,11 @@ def build_executable():
     print()
 
     try:
+        # Choose spec file based on platform
+        spec_file = "storymaster-windows.spec" if platform.system().lower() == "windows" else "storymaster.spec"
+        
         # Run PyInstaller with our spec file and real-time output
-        cmd = [sys.executable, "-m", "PyInstaller", "--clean", "--log-level=INFO", "storymaster.spec"]
+        cmd = [sys.executable, "-m", "PyInstaller", "--clean", "--log-level=INFO", spec_file]
 
         print(f"   Running: {' '.join(cmd)}")
         print("   " + "=" * 50)
