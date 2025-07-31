@@ -51,8 +51,8 @@ jobs:
         echo "Available disk space:"
         powershell -Command "Get-PSDrive C | Select-Object Used,Free"
         echo "=================="
-        # Run PyInstaller directly with debug flags
-        python -m PyInstaller --clean --log-level=DEBUG --debug=imports storymaster.spec
+        # Run PyInstaller with Windows-specific spec file (no --debug flag with .spec)
+        python -m PyInstaller --clean --log-level=INFO storymaster-windows.spec
       timeout-minutes: 25  # Increased timeout for debug build
       env:
         PYTHONIOENCODING: utf-8
