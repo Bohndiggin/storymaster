@@ -5,8 +5,8 @@ This generates the version_info.py file with proper imports
 """
 
 def create_version_info():
-    """Create version_info.py file with simpler format that PyInstaller can handle"""
-    # Use the old-style format that PyInstaller expects
+    """Create version_info.py file in the exact format PyInstaller expects"""
+    # PyInstaller expects this exact text-based format without imports or variables
     version_content = '''# UTF-8
 #
 # For more details about fixed file info 'ffi' see:
@@ -55,7 +55,7 @@ VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
     with open('version_info.py', 'w', encoding='utf-8') as f:
         f.write(version_content)
     
-    print("Created version_info.py with PyInstaller-compatible format")
+    print("Created version_info.py with PyInstaller text-based format")
     return True
 
 if __name__ == "__main__":
