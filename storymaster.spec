@@ -239,54 +239,69 @@ binaries = []
 # Include enchant libraries for spell checking
 import platform
 system_name = platform.system().lower()
-if system_name == "windows":
-    # Try to find enchant libraries on Windows
-    import glob
-    enchant_paths = [
-        r"C:\ProgramData\chocolatey\lib\enchant\tools\bin\libenchant*.dll",
-        r"C:\tools\enchant\bin\libenchant*.dll",
-        r"C:\enchant\bin\libenchant*.dll"
-    ]
-    for pattern in enchant_paths:
-        for lib_file in glob.glob(pattern):
-            if os.path.exists(lib_file):
-                binaries.append((lib_file, '.'))
-                print(f"  ✓ Including enchant library: {lib_file}")
-    
-    # Include dictionaries
-    dict_paths = [
-        r"C:\ProgramData\chocolatey\lib\enchant\tools\share\enchant\*",
-        r"C:\tools\enchant\share\enchant\*",
-        r"C:\enchant\share\enchant\*"
-    ]
-    for pattern in dict_paths:
-        for dict_dir in glob.glob(pattern):
-            if os.path.isdir(dict_dir):
-                binaries.append((dict_dir, 'enchant'))
-                print(f"  ✓ Including enchant dictionaries: {dict_dir}")
 
-elif system_name == "linux":
-    # Try to find enchant libraries on Linux
-    enchant_lib_paths = [
-        "/usr/lib/x86_64-linux-gnu/libenchant-2.so*",
-        "/usr/lib/libenchant-2.so*",
-        "/lib/x86_64-linux-gnu/libenchant-2.so*"
-    ]
-    for pattern in enchant_lib_paths:
-        for lib_file in glob.glob(pattern):
-            if os.path.exists(lib_file) and os.path.isfile(lib_file):
-                binaries.append((lib_file, '.'))
-                print(f"  ✓ Including enchant library: {lib_file}")
+# Try to get enchant libraries from PyEnchant installation
+try:
+    import enchant
+    import glob
     
-    # Include dictionaries
-    dict_paths = [
-        "/usr/share/enchant-2",
-        "/usr/share/enchant"
-    ]
-    for dict_path in dict_paths:
-        if os.path.exists(dict_path):
-            binaries.append((dict_path, 'enchant'))
-            print(f"  ✓ Including enchant dictionaries: {dict_path}")
+    # Get the enchant installation directory
+    enchant_dir = os.path.dirname(enchant.__file__)
+    print(f"  Found PyEnchant at: {enchant_dir}")
+    
+    if system_name == "windows":
+        # Look for DLLs in PyEnchant installation
+        dll_patterns = [
+            os.path.join(enchant_dir, "data", "mingw*", "bin", "*.dll"),
+            os.path.join(enchant_dir, "lib", "*.dll"),
+            os.path.join(enchant_dir, "*.dll")
+        ]
+        for pattern in dll_patterns:
+            for dll_file in glob.glob(pattern):
+                if os.path.isfile(dll_file):
+                    binaries.append((dll_file, '.'))
+                    print(f"  ✓ Including enchant DLL: {dll_file}")
+        
+        # Look for dictionaries and data
+        data_patterns = [
+            os.path.join(enchant_dir, "data", "mingw*", "share", "enchant", "*"),
+            os.path.join(enchant_dir, "data", "mingw*", "share", "hunspell", "*"),
+        ]
+        for pattern in data_patterns:
+            for data_item in glob.glob(pattern):
+                if os.path.exists(data_item):
+                    if os.path.isdir(data_item):
+                        datas.append((data_item, f'enchant/{os.path.basename(data_item)}'))
+                    else:
+                        datas.append((data_item, 'enchant'))
+                    print(f"  ✓ Including enchant data: {data_item}")
+    
+    elif system_name == "linux":
+        # On Linux, still look for system libraries since PyEnchant doesn't bundle them
+        enchant_lib_paths = [
+            "/usr/lib/x86_64-linux-gnu/libenchant-2.so*",
+            "/usr/lib/libenchant-2.so*",
+            "/lib/x86_64-linux-gnu/libenchant-2.so*"
+        ]
+        for pattern in enchant_lib_paths:
+            for lib_file in glob.glob(pattern):
+                if os.path.exists(lib_file) and os.path.isfile(lib_file):
+                    binaries.append((lib_file, '.'))
+                    print(f"  ✓ Including enchant library: {lib_file}")
+        
+        # Include system dictionaries
+        dict_paths = [
+            "/usr/share/enchant-2",
+            "/usr/share/enchant",
+            "/usr/share/hunspell"
+        ]
+        for dict_path in dict_paths:
+            if os.path.exists(dict_path):
+                datas.append((dict_path, f'enchant/{os.path.basename(dict_path)}'))
+                print(f"  ✓ Including enchant dictionaries: {dict_path}")
+
+except ImportError:
+    print("  ⚠️  PyEnchant not available - spell checking will be disabled in executable")
 
 # Include Python shared library for AppImage compatibility
 import sysconfig
