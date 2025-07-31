@@ -338,6 +338,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=str(project_dir / 'assets/storymaster_icon.ico') if os.name == 'nt' and (project_dir / 'assets/storymaster_icon.ico').exists() else (str(project_dir / 'assets/storymaster_icon_64.png') if (project_dir / 'assets/storymaster_icon_64.png').exists() else None),
+    # Temporarily disable icon to debug Windows build hanging
+    icon=None,
     # No version info to avoid Windows build hanging
 )
