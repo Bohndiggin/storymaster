@@ -154,12 +154,18 @@ def build_executable():
             universal_newlines=True
         )
         
+        # Track last output time to detect hangs
+        import time
+        last_output_time = time.time()
+        
         # Show real-time output
         output_lines = []
         for line in process.stdout:
             line = line.strip()
             if line:
                 output_lines.append(line)
+                last_output_time = time.time()  # Update last output time
+                
                 # Show key progress messages
                 if any(keyword in line.lower() for keyword in [
                     'analyzing', 'building', 'collecting', 'copying', 'executing', 'writing'
@@ -167,6 +173,14 @@ def build_executable():
                     progress_active.clear()  # Stop progress spinner
                     print(f"\r   {line}")
                     progress_active.set()  # Restart progress spinner
+                
+                # Show critical final steps
+                if any(keyword in line.lower() for keyword in [
+                    'copying version', 'copying 0 resources', 'copying bootloader', 'exe completed'
+                ]):
+                    progress_active.clear()
+                    print(f"\r   [FINAL] {line}")
+                    progress_active.set()
         
         process.wait()
         progress_active.clear()  # Stop progress indicator

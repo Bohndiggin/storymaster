@@ -39,10 +39,15 @@ jobs:
         QT_QPA_PLATFORM: offscreen 
     
     - name: Build Windows executable (same as local)
-      run: python scripts/build_executable.py
-      timeout-minutes: 15  # Allow more time for full build
+      run: |
+        # Disable Windows Defender real-time protection for build directory
+        powershell -Command "Add-MpPreference -ExclusionPath $PWD"
+        # Run the build
+        python scripts/build_executable.py
+      timeout-minutes: 20  # Increased timeout for Windows builds
       env:
         PYTHONIOENCODING: utf-8
+        PYINSTALLER_CONFIG_DIR: ${{ runner.temp }}/pyinstaller
     
     - name: Upload Windows artifacts
       uses: actions/upload-artifact@v4
