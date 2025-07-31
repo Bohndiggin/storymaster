@@ -81,6 +81,18 @@ for icon_file in icon_files:
 version_file = project_dir / 'version_info.py'
 print(f"Version file: {version_file} - {'exists' if version_file.exists() else 'MISSING'}")
 
+# Create version_info.py if it doesn't exist
+if not version_file.exists():
+    print("Creating version_info.py...")
+    try:
+        import subprocess
+        import sys
+        subprocess.run([sys.executable, str(project_dir / 'scripts/create_version_info.py')], 
+                      cwd=str(project_dir), check=True)
+        print("  ✓ Version info created")
+    except Exception as e:
+        print(f"  ✗ Failed to create version info: {e}")
+
 # Hidden imports needed for PyQt6 and SQLAlchemy
 hiddenimports = [
     # Core PyQt6 modules (only what we actually use)
