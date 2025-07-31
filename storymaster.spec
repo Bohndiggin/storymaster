@@ -1,13 +1,21 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 import os
+import glob
 from pathlib import Path
+
+# PyInstaller imports (added automatically by PyInstaller, but explicit for clarity)
+try:
+    from PyInstaller.building.build_main import Analysis
+    from PyInstaller.building.api import PYZ, EXE, COLLECT
+except ImportError:
+    # These will be available when PyInstaller processes the spec
+    pass
 
 # Get the absolute path to the project directory
 project_dir = Path(os.getcwd())
 
 # Define data files to include
-import glob
 
 datas = []
 
@@ -56,8 +64,9 @@ if world_building_path.exists():
 # Include enchant data files if pyenchant is installed
 try:
     import enchant
-    enchant_data_dir = enchant.get_enchant_data_dir()
-    if enchant_data_dir and os.path.exists(enchant_data_dir):
+    # Use the enchant module directory instead of non-existent function
+    enchant_data_dir = os.path.join(os.path.dirname(enchant.__file__), 'data')
+    if os.path.exists(enchant_data_dir):
         datas.append((enchant_data_dir, 'enchant_data'))
         print(f"  ✓ Including enchant data: {enchant_data_dir}")
 except ImportError:
@@ -243,7 +252,6 @@ system_name = platform.system().lower()
 # Try to get enchant libraries from PyEnchant installation
 try:
     import enchant
-    import glob
     
     # Get the enchant installation directory
     enchant_dir = os.path.dirname(enchant.__file__)
@@ -252,9 +260,9 @@ try:
     if system_name == "windows":
         # Look for DLLs in PyEnchant installation
         dll_patterns = [
-            os.path.join(enchant_dir, "data", "mingw*", "bin", "*.dll"),
-            os.path.join(enchant_dir, "lib", "*.dll"),
-            os.path.join(enchant_dir, "*.dll")
+            enchant_dir + "/data/mingw*/bin/*.dll",
+            enchant_dir + "/lib/*.dll", 
+            enchant_dir + "/*.dll"
         ]
         for pattern in dll_patterns:
             for dll_file in glob.glob(pattern):
@@ -264,8 +272,8 @@ try:
         
         # Look for dictionaries and data
         data_patterns = [
-            os.path.join(enchant_dir, "data", "mingw*", "share", "enchant", "*"),
-            os.path.join(enchant_dir, "data", "mingw*", "share", "hunspell", "*"),
+            enchant_dir + "/data/mingw*/share/enchant/*",
+            enchant_dir + "/data/mingw*/share/hunspell/*",
         ]
         for pattern in data_patterns:
             for data_item in glob.glob(pattern):
