@@ -7,11 +7,13 @@ Creates portable executable with minimal dependencies.
 """
 
 import os
-import platform
+import platform  
 import shutil
+import stat
 import subprocess
 import sys
 import time
+import traceback
 from pathlib import Path
 
 
@@ -55,20 +57,50 @@ def check_dependencies():
 
 
 def clean_build():
-    """Clean Windows build artifacts"""
+    """Clean Windows build artifacts (skip on CI - fresh environment)"""
+    
+    # Skip cleaning on CI - GitHub Actions provides fresh runners
+    if os.environ.get('GITHUB_ACTIONS'):
+        print("[CLEAN] Skipping clean (CI environment is already fresh)")
+        return True
+    
     print("[CLEAN] Removing previous build...")
     
-    dirs_to_remove = ["build", "dist"]
-    for dir_name in dirs_to_remove:
-        if Path(dir_name).exists():
-            shutil.rmtree(dir_name)
-            print(f"  Removed {dir_name}/")
-    
-    # Clean pyc files
-    for pyc_file in Path(".").rglob("*.pyc"):
-        pyc_file.unlink()
+    try:
+        dirs_to_remove = ["build", "dist"]
+        for dir_name in dirs_to_remove:
+            dir_path = Path(dir_name)
+            if dir_path.exists():
+                print(f"  Removing {dir_name}/...")
+                # On Windows, sometimes need to handle readonly files
+                def handle_readonly(func, path, exc):
+                    if exc[1].errno == 13:  # Permission denied
+                        os.chmod(path, stat.S_IWRITE)
+                        func(path)
+                    else:
+                        raise
+                
+                shutil.rmtree(dir_path, onerror=handle_readonly)
+                print(f"  ✓ Removed {dir_name}/")
         
-    print("[OK] Clean complete")
+        # Clean pyc files
+        pyc_count = 0
+        for pyc_file in Path(".").rglob("*.pyc"):
+            try:
+                pyc_file.unlink()
+                pyc_count += 1
+            except Exception:
+                pass  # Ignore individual pyc file errors
+        
+        if pyc_count > 0:
+            print(f"  ✓ Removed {pyc_count} .pyc files")
+            
+        print("[OK] Clean complete")
+        return True
+        
+    except Exception as e:
+        print(f"[ERROR] Clean failed: {e}")
+        return False
 
 
 def build_exe():

@@ -84,11 +84,16 @@ def ensure_version_info():
 
 
 def clean_previous_builds():
-    """Clean up previous build artifacts"""
+    """Clean up previous build artifacts (skip on CI - fresh environment)"""
+    
+    # Skip cleaning on CI - GitHub Actions provides fresh runners
+    if os.environ.get('GITHUB_ACTIONS'):
+        print("\n[CLEAN] Skipping clean (CI environment is already fresh)")
+        return True
+    
     print("\n[CLEAN] Cleaning previous builds...")
 
     dirs_to_clean = ["build", "dist", "__pycache__"]
-    files_to_clean = ["*.pyc"]
 
     for dir_name in dirs_to_clean:
         if Path(dir_name).exists():
