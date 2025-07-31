@@ -170,6 +170,18 @@ hiddenimports = [
 
 # Include all essential PyQt6 binaries for cross-platform compatibility
 binaries = []
+
+# Include Python shared library for AppImage compatibility
+import sysconfig
+python_lib = sysconfig.get_config_var('LDLIBRARY')
+if python_lib:
+    python_lib_path = Path(sysconfig.get_config_var('LIBDIR')) / python_lib
+    if python_lib_path.exists():
+        binaries.append((str(python_lib_path), '.'))
+        print(f"  ✓ Including Python library: {python_lib_path}")
+    else:
+        print(f"  ✗ Python library not found: {python_lib_path}")
+
 if plugins_path.exists():
     # Include Qt libraries for all platforms (Linux .so, Windows .dll)
     qt_bin_path = pyqt6_path / 'Qt6' / 'bin'
