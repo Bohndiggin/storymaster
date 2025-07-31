@@ -37,9 +37,9 @@ jobs:
         GITHUB_ACTIONS: true
         QT_QPA_PLATFORM: offscreen 
     
-    - name: Build Windows executable (GitHub Actions optimized)
-      run: python scripts/build_executable_github.py
-      timeout-minutes: 10  # Faster build, shorter timeout
+    - name: Build Windows executable (same as local)
+      run: python scripts/build_executable.py
+      timeout-minutes: 15  # Allow more time for full build
       env:
         PYTHONIOENCODING: utf-8
     
@@ -48,8 +48,8 @@ jobs:
       with:
         name: storymaster-windows
         path: |
-          dist/storymaster/
-          storymaster-windows-*.zip
+          dist/storymaster_portable/
+          storymaster-*-windows-*.zip
 
   build-macos:
     runs-on: macos-latest
@@ -142,9 +142,9 @@ jobs:
         DISPLAY: :99
         QT_QPA_PLATFORM: offscreen
     
-    - name: Build Linux executable (GitHub Actions optimized)
-      run: xvfb-run -a python scripts/build_executable_github.py
-      timeout-minutes: 8  # Linux builds faster
+    - name: Build Linux executable (same as local)
+      run: xvfb-run -a python scripts/build_executable.py
+      timeout-minutes: 15  # Allow more time for full build
       env:
         DISPLAY: :99
     
@@ -169,8 +169,8 @@ jobs:
       with:
         name: storymaster-linux
         path: |
-          dist/storymaster/
-          storymaster-linux-*.tar.gz
+          dist/storymaster_portable/
+          storymaster-*-linux-*.tar.gz
           *.AppImage
           ~/rpmbuild/RPMS/noarch/*.rpm
 
