@@ -61,16 +61,8 @@ if world_building_path.exists():
 
 # Note: .env file not needed - using hardcoded defaults in code
 
-# Include enchant data files if pyenchant is installed
-try:
-    import enchant
-    # Use the enchant module directory instead of non-existent function
-    enchant_data_dir = os.path.join(os.path.dirname(enchant.__file__), 'data')
-    if os.path.exists(enchant_data_dir):
-        datas.append((enchant_data_dir, 'enchant_data'))
-        print(f"  ✓ Including enchant data: {enchant_data_dir}")
-except ImportError:
-    print("  ⚠️  PyEnchant not available during spec processing")
+# Skip enchant data files for now to avoid build issues
+print("  ⚠️  Skipping enchant data files - spell checking will work without bundled dictionaries")
 
 # Include UI files using glob
 for ui_dir in ['common', 'litographer', 'lorekeeper', 'character_arcs']:
@@ -240,9 +232,9 @@ hiddenimports = [
     # Other minimal dependencies
     'pkg_resources.extern',
     
-    # Spell checking dependencies (only if needed)
-    'enchant',
-    'enchant.checker',
+    # Spell checking dependencies (disabled for now)
+    # 'enchant',
+    # 'enchant.checker',
 ]
 
 # Include all essential PyQt6 binaries for cross-platform compatibility
@@ -252,67 +244,9 @@ binaries = []
 import platform
 system_name = platform.system().lower()
 
-# Try to get enchant libraries from PyEnchant installation
-try:
-    import enchant
-    
-    # Get the enchant installation directory
-    enchant_dir = os.path.dirname(enchant.__file__)
-    print(f"  Found PyEnchant at: {enchant_dir}")
-    
-    if system_name == "windows":
-        # Look for DLLs in PyEnchant installation
-        dll_patterns = [
-            enchant_dir + "/data/mingw*/bin/*.dll",
-            enchant_dir + "/lib/*.dll", 
-            enchant_dir + "/*.dll"
-        ]
-        for pattern in dll_patterns:
-            for dll_file in glob.glob(pattern):
-                if os.path.isfile(dll_file):
-                    binaries.append((dll_file, '.'))
-                    print(f"  ✓ Including enchant DLL: {dll_file}")
-        
-        # Look for dictionaries and data
-        data_patterns = [
-            enchant_dir + "/data/mingw*/share/enchant/*",
-            enchant_dir + "/data/mingw*/share/hunspell/*",
-        ]
-        for pattern in data_patterns:
-            for data_item in glob.glob(pattern):
-                if os.path.exists(data_item):
-                    if os.path.isdir(data_item):
-                        datas.append((data_item, f'enchant/{os.path.basename(data_item)}'))
-                    else:
-                        datas.append((data_item, 'enchant'))
-                    print(f"  ✓ Including enchant data: {data_item}")
-    
-    elif system_name == "linux":
-        # On Linux, still look for system libraries since PyEnchant doesn't bundle them
-        enchant_lib_paths = [
-            "/usr/lib/x86_64-linux-gnu/libenchant-2.so*",
-            "/usr/lib/libenchant-2.so*",
-            "/lib/x86_64-linux-gnu/libenchant-2.so*"
-        ]
-        for pattern in enchant_lib_paths:
-            for lib_file in glob.glob(pattern):
-                if os.path.exists(lib_file) and os.path.isfile(lib_file):
-                    binaries.append((lib_file, '.'))
-                    print(f"  ✓ Including enchant library: {lib_file}")
-        
-        # Include system dictionaries
-        dict_paths = [
-            "/usr/share/enchant-2",
-            "/usr/share/enchant",
-            "/usr/share/hunspell"
-        ]
-        for dict_path in dict_paths:
-            if os.path.exists(dict_path):
-                datas.append((dict_path, f'enchant/{os.path.basename(dict_path)}'))
-                print(f"  ✓ Including enchant dictionaries: {dict_path}")
-
-except ImportError:
-    print("  ⚠️  PyEnchant not available - spell checking will be disabled in executable")
+# Skip enchant bundling for now to avoid build issues
+# PyEnchant will still work if available, but won't be bundled
+print("  ⚠️  Skipping enchant bundling - spell checking will use system enchant if available")
 
 # Include Python shared library for AppImage compatibility
 import sysconfig
