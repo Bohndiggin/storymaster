@@ -40,19 +40,12 @@ jobs:
         GITHUB_ACTIONS: true
         QT_QPA_PLATFORM: offscreen 
     
-    - name: Build Windows executable (using build script)
+    - name: Build Windows executable (optimized)
       run: |
         # Disable Windows Defender real-time protection for build directory
         powershell -Command "Add-MpPreference -ExclusionPath $PWD"
-        # Show system info for debugging
-        echo "=== DEBUG INFO ==="
-        echo "Python version: $(python --version)"
-        echo "PyInstaller version: $(python -m PyInstaller --version)"
-        echo "Available disk space:"
-        powershell -Command "Get-PSDrive C | Select-Object Used,Free"
-        echo "=================="
-        # Use the build script which creates the portable package and archive
-        python scripts/build_executable.py
+        # Use Windows-specific build script for faster, more reliable builds
+        python scripts/build_windows.py
       timeout-minutes: 25  # Increased timeout for debug build
       env:
         PYTHONIOENCODING: utf-8
@@ -159,8 +152,8 @@ jobs:
         DISPLAY: :99
         QT_QPA_PLATFORM: offscreen
     
-    - name: Build Linux executable (same as local)
-      run: xvfb-run -a python scripts/build_executable.py
+    - name: Build Linux executable (optimized)
+      run: xvfb-run -a python scripts/build_linux.py
       timeout-minutes: 15  # Allow more time for full build
       env:
         DISPLAY: :99
