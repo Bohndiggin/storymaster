@@ -318,17 +318,20 @@ a = Analysis(
 
 pyz = PYZ(a.pure)
 
-# Use DIRECTORY mode for faster, more reliable builds in CI
+# Create one-file executable without version info to avoid hanging
 exe = EXE(
     pyz,
     a.scripts,
+    a.binaries,
+    a.datas,
     [],
-    exclude_binaries=True,
     name='storymaster',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=False,
+    upx_exclude=[],
+    runtime_tmpdir=None,
     console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
@@ -336,16 +339,5 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     icon=str(project_dir / 'assets/storymaster_icon.ico') if os.name == 'nt' and (project_dir / 'assets/storymaster_icon.ico').exists() else (str(project_dir / 'assets/storymaster_icon_64.png') if (project_dir / 'assets/storymaster_icon_64.png').exists() else None),
-    # Skip version info for CI builds to avoid hanging
-)
-
-# Directory mode - more reliable than one-file for CI
-coll = COLLECT(
-    exe,
-    a.binaries,
-    a.datas,
-    strip=False,
-    upx=False,
-    upx_exclude=[],
-    name='storymaster'
+    # No version info to avoid Windows build hanging
 )
