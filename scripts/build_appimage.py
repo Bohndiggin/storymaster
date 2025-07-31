@@ -84,15 +84,19 @@ def install_python_app(appdir):
         # Check if PyInstaller executable exists (try portable directory first)
         pyinstaller_exe = Path("dist/storymaster_portable/storymaster")
         if not pyinstaller_exe.exists():
-            # Fallback to direct dist path
-            pyinstaller_exe = Path("dist/storymaster")
-            if not pyinstaller_exe.exists() or pyinstaller_exe.is_dir():
-                print("[ERROR] PyInstaller executable not found")
-                print("Looked for:")
-                print("  - dist/storymaster_portable/storymaster")
-                print("  - dist/storymaster")
-                print("Please run 'python scripts/build_executable.py' first")
-                return False
+            # Fallback to GitHub Actions directory structure
+            pyinstaller_exe = Path("dist/storymaster/storymaster")
+            if not pyinstaller_exe.exists():
+                # Final fallback to direct dist path
+                pyinstaller_exe = Path("dist/storymaster")
+                if not pyinstaller_exe.exists() or pyinstaller_exe.is_dir():
+                    print("[ERROR] PyInstaller executable not found")
+                    print("Looked for:")
+                    print("  - dist/storymaster_portable/storymaster")
+                    print("  - dist/storymaster/storymaster")
+                    print("  - dist/storymaster")
+                    print("Please run 'python scripts/build_executable.py' first")
+                    return False
 
         # Copy the PyInstaller executable to AppDir
         exe_dst = appdir / "usr/bin/storymaster"
