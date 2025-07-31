@@ -74,7 +74,7 @@ def ensure_version_info():
     if not version_file.exists():
         print("Creating version_info.py...")
         try:
-            subprocess.run([sys.executable, "create_version_info.py"], check=True)
+            subprocess.run([sys.executable, "scripts/create_version_info.py"], check=True)
             print("✓ Version info created")
         except subprocess.CalledProcessError:
             print("Warning: Could not create version info")

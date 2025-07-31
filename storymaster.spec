@@ -53,6 +53,16 @@ if world_building_path.exists():
 
 # Note: .env file not needed - using hardcoded defaults in code
 
+# Include enchant data files if pyenchant is installed
+try:
+    import enchant
+    enchant_data_dir = enchant.get_enchant_data_dir()
+    if enchant_data_dir and os.path.exists(enchant_data_dir):
+        datas.append((enchant_data_dir, 'enchant_data'))
+        print(f"  ✓ Including enchant data: {enchant_data_dir}")
+except ImportError:
+    print("  ⚠️  PyEnchant not available during spec processing")
+
 # Include UI files using glob
 for ui_dir in ['common', 'litographer', 'lorekeeper', 'character_arcs']:
     ui_pattern = str(project_dir / 'storymaster' / 'view' / ui_dir / '*.ui')
@@ -85,10 +95,53 @@ print(f"Version file: {version_file} - {'exists' if version_file.exists() else '
 if not version_file.exists():
     print("Creating version_info.py...")
     try:
-        import subprocess
-        import sys
-        subprocess.run([sys.executable, str(project_dir / 'scripts/create_version_info.py')], 
-                      cwd=str(project_dir), check=True)
+        # Create version info directly in the spec file to avoid path issues
+        version_content = '''# UTF-8
+#
+# For more details about fixed file info 'ffi' see:
+# http://msdn.microsoft.com/en-us/library/ms646997.aspx
+VSVersionInfo(
+  ffi=FixedFileInfo(
+# filevers and prodvers should be always a tuple with four items: (1, 2, 3, 4)
+# Set not needed items to zero 0.
+filevers=(1,0,0,0),
+prodvers=(1,0,0,0),
+# Contains a bitmask that specifies the valid bits 'flags'r
+mask=0x3f,
+# Contains a bitmask that specifies the Boolean attributes of the file.
+flags=0x0,
+# The operating system for which this file was designed.
+# 0x4 - NT and there is no need to change it.
+OS=0x40004,
+# The general type of file.
+# 0x1 - the file is an application.
+fileType=0x1,
+# The function of the file.
+# 0x0 - the function is not defined for this fileType
+subtype=0x0,
+# Creation date and time stamp.
+date=(0, 0)
+),
+kids=[
+StringFileInfo(
+  [
+  StringTable(
+    u'040904B0',
+    [StringStruct(u'CompanyName', u'Storymaster Development'),
+    StringStruct(u'FileDescription', u'Storymaster - Creative Writing Tool'),
+    StringStruct(u'FileVersion', u'1.0.0.0'),
+    StringStruct(u'InternalName', u'storymaster'),
+    StringStruct(u'LegalCopyright', u'Copyright (C) 2025'),
+    StringStruct(u'OriginalFilename', u'storymaster.exe'),
+    StringStruct(u'ProductName', u'Storymaster'),
+    StringStruct(u'ProductVersion', u'1.0.0.0')])
+  ]), 
+VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
+  ]
+)
+'''
+        with open(str(version_file), 'w', encoding='utf-8') as f:
+            f.write(version_content)
         print("  ✓ Version info created")
     except Exception as e:
         print(f"  ✗ Failed to create version info: {e}")
@@ -182,6 +235,58 @@ hiddenimports = [
 
 # Include all essential PyQt6 binaries for cross-platform compatibility
 binaries = []
+
+# Include enchant libraries for spell checking
+import platform
+system_name = platform.system().lower()
+if system_name == "windows":
+    # Try to find enchant libraries on Windows
+    import glob
+    enchant_paths = [
+        r"C:\ProgramData\chocolatey\lib\enchant\tools\bin\libenchant*.dll",
+        r"C:\tools\enchant\bin\libenchant*.dll",
+        r"C:\enchant\bin\libenchant*.dll"
+    ]
+    for pattern in enchant_paths:
+        for lib_file in glob.glob(pattern):
+            if os.path.exists(lib_file):
+                binaries.append((lib_file, '.'))
+                print(f"  ✓ Including enchant library: {lib_file}")
+    
+    # Include dictionaries
+    dict_paths = [
+        r"C:\ProgramData\chocolatey\lib\enchant\tools\share\enchant\*",
+        r"C:\tools\enchant\share\enchant\*",
+        r"C:\enchant\share\enchant\*"
+    ]
+    for pattern in dict_paths:
+        for dict_dir in glob.glob(pattern):
+            if os.path.isdir(dict_dir):
+                binaries.append((dict_dir, 'enchant'))
+                print(f"  ✓ Including enchant dictionaries: {dict_dir}")
+
+elif system_name == "linux":
+    # Try to find enchant libraries on Linux
+    enchant_lib_paths = [
+        "/usr/lib/x86_64-linux-gnu/libenchant-2.so*",
+        "/usr/lib/libenchant-2.so*",
+        "/lib/x86_64-linux-gnu/libenchant-2.so*"
+    ]
+    for pattern in enchant_lib_paths:
+        for lib_file in glob.glob(pattern):
+            if os.path.exists(lib_file) and os.path.isfile(lib_file):
+                binaries.append((lib_file, '.'))
+                print(f"  ✓ Including enchant library: {lib_file}")
+    
+    # Include dictionaries
+    dict_paths = [
+        "/usr/share/enchant-2",
+        "/usr/share/enchant"
+    ]
+    for dict_path in dict_paths:
+        if os.path.exists(dict_path):
+            binaries.append((dict_path, 'enchant'))
+            print(f"  ✓ Including enchant dictionaries: {dict_path}")
 
 # Include Python shared library for AppImage compatibility
 import sysconfig
