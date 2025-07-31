@@ -246,7 +246,7 @@ system_name = platform.system().lower()
 
 # Skip enchant bundling for now to avoid build issues
 # PyEnchant will still work if available, but won't be bundled
-print("  ⚠️  Skipping enchant bundling - spell checking will use system enchant if available")
+print("  NOTICE  Skipping enchant bundling - spell checking will use system enchant if available")
 
 # Include Python shared library for AppImage compatibility
 import sysconfig
