@@ -81,12 +81,18 @@ def install_python_app(appdir):
     print("\n[PACKAGE] Installing PyInstaller executable into AppDir...")
 
     try:
-        # Check if PyInstaller executable exists
-        pyinstaller_exe = Path("dist/storymaster")
+        # Check if PyInstaller executable exists (try portable directory first)
+        pyinstaller_exe = Path("dist/storymaster_portable/storymaster")
         if not pyinstaller_exe.exists():
-            print("[ERROR] PyInstaller executable not found at dist/storymaster")
-            print("Please run 'python scripts/build_executable.py' first")
-            return False
+            # Fallback to direct dist path
+            pyinstaller_exe = Path("dist/storymaster")
+            if not pyinstaller_exe.exists() or pyinstaller_exe.is_dir():
+                print("[ERROR] PyInstaller executable not found")
+                print("Looked for:")
+                print("  - dist/storymaster_portable/storymaster")
+                print("  - dist/storymaster")
+                print("Please run 'python scripts/build_executable.py' first")
+                return False
 
         # Copy the PyInstaller executable to AppDir
         exe_dst = appdir / "usr/bin/storymaster"
