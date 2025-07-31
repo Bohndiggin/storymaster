@@ -62,7 +62,7 @@ if world_building_path.exists():
 # Note: .env file not needed - using hardcoded defaults in code
 
 # Skip enchant data files for now to avoid build issues
-print("  NOTICE  Skipping enchant data files - spell checking will work without bundled dictionaries")
+print("Skipping enchant data files - spell checking will work without bundled dictionaries")
 
 # Include UI files using glob
 for ui_dir in ['common', 'litographer', 'lorekeeper', 'character_arcs']:
@@ -243,7 +243,7 @@ system_name = platform.system().lower()
 
 # Skip enchant bundling for now to avoid build issues
 # PyEnchant will still work if available, but won't be bundled
-print("  NOTICE  Skipping enchant bundling - spell checking will use system enchant if available")
+print("Skipping enchant bundling - spell checking will use system enchant if available")
 
 # Include Python shared library for AppImage compatibility
 import sysconfig
@@ -318,29 +318,34 @@ a = Analysis(
 
 pyz = PYZ(a.pure)
 
-# Create one-file executable for easier distribution
+# Use DIRECTORY mode for faster, more reliable builds in CI
 exe = EXE(
     pyz,
     a.scripts,
-    a.binaries,
-    a.datas,
     [],
+    exclude_binaries=True,
     name='storymaster',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=False,  # Disable UPX compression - reduces false positives
-    upx_exclude=[],
-    runtime_tmpdir=None,
-    console=False,  # Set to True for debugging
+    upx=False,
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
     icon=str(project_dir / 'assets/storymaster_icon.ico') if os.name == 'nt' and (project_dir / 'assets/storymaster_icon.ico').exists() else (str(project_dir / 'assets/storymaster_icon_64.png') if (project_dir / 'assets/storymaster_icon_64.png').exists() else None),
-    version=str(project_dir / 'version_info.py') if (project_dir / 'version_info.py').exists() else None,
+    # Skip version info for CI builds to avoid hanging
 )
 
-# Note: For one-file mode, no COLLECT is needed
-# The executable includes everything in a single file
+# Directory mode - more reliable than one-file for CI
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.datas,
+    strip=False,
+    upx=False,
+    upx_exclude=[],
+    name='storymaster'
+)
