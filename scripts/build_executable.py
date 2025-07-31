@@ -75,11 +75,11 @@ def ensure_version_info():
         print("Creating version_info.py...")
         try:
             subprocess.run([sys.executable, "scripts/create_version_info.py"], check=True)
-            print("✓ Version info created")
+            print("Version info created")
         except subprocess.CalledProcessError:
             print("Warning: Could not create version info")
     else:
-        print("✓ Version info exists")
+        print("Version info exists")
     return True
 
 

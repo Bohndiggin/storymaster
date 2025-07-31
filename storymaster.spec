@@ -62,7 +62,7 @@ if world_building_path.exists():
 # Note: .env file not needed - using hardcoded defaults in code
 
 # Skip enchant data files for now to avoid build issues
-print("  ⚠️  Skipping enchant data files - spell checking will work without bundled dictionaries")
+print("  NOTICE  Skipping enchant data files - spell checking will work without bundled dictionaries")
 
 # Include UI files using glob
 for ui_dir in ['common', 'litographer', 'lorekeeper', 'character_arcs']:
@@ -83,10 +83,10 @@ print("Checking icon files:")
 for icon_file in icon_files:
     icon_path = project_dir / icon_file
     if icon_path.exists():
-        print(f"  ✓ Found: {icon_path}")
+        print(f"  Found: {icon_path}")
         datas.append((str(icon_path), 'assets'))
     else:
-        print(f"  ✗ Missing: {icon_path}")
+        print(f"  Missing: {icon_path}")
 
 # Check version info file
 version_file = project_dir / 'version_info.py'
@@ -146,9 +146,9 @@ version_info = VSVersionInfo(
 '''
         with open(str(version_file), 'w', encoding='utf-8') as f:
             f.write(version_content)
-        print("  ✓ Version info created")
+        print("  Version info created")
     except Exception as e:
-        print(f"  ✗ Failed to create version info: {e}")
+        print(f"  Failed to create version info: {e}")
 
 # Hidden imports needed for PyQt6 and SQLAlchemy
 hiddenimports = [
@@ -255,9 +255,9 @@ if python_lib:
     python_lib_path = Path(sysconfig.get_config_var('LIBDIR')) / python_lib
     if python_lib_path.exists():
         binaries.append((str(python_lib_path), '.'))
-        print(f"  ✓ Including Python library: {python_lib_path}")
+        print(f"  Including Python library: {python_lib_path}")
     else:
-        print(f"  ✗ Python library not found: {python_lib_path}")
+        print(f"  Python library not found: {python_lib_path}")
 
 if plugins_path.exists():
     # Include Qt libraries for all platforms (Linux .so, Windows .dll)

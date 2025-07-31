@@ -55,7 +55,7 @@ VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
     with open('version_info.py', 'w', encoding='utf-8') as f:
         f.write(version_content)
     
-    print("✓ Created version_info.py with PyInstaller-compatible format")
+    print("Created version_info.py with PyInstaller-compatible format")
     return True
 
 if __name__ == "__main__":
