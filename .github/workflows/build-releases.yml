@@ -46,6 +46,9 @@ jobs:
         powershell -Command "Add-MpPreference -ExclusionPath $PWD"
         # Use Windows-specific build script for faster, more reliable builds
         python scripts/build_windows.py
+        echo "=== Build completed, checking created files ==="
+        dir dist\ /s
+        dir storymaster-*.zip 2>nul || echo "No ZIP files found"
       timeout-minutes: 25  # Increased timeout for debug build
       env:
         PYTHONIOENCODING: utf-8
@@ -57,7 +60,7 @@ jobs:
         name: storymaster-windows
         path: |
           dist/storymaster_portable/
-          storymaster-*-windows-*.zip
+          storymaster-windows-*.zip
 
   build-macos:
     runs-on: macos-latest
@@ -92,9 +95,15 @@ jobs:
       run: |
         if command -v hdiutil &> /dev/null; then
           hdiutil create -srcfolder Storymaster.app -volname "Storymaster" Storymaster-macOS.dmg
+          echo "=== DMG created ==="
+          ls -la Storymaster-macOS.dmg
         else
           tar -czf Storymaster-macOS.tar.gz Storymaster.app
+          echo "=== TAR.GZ created instead of DMG ==="
+          ls -la Storymaster-macOS.tar.gz
         fi
+        echo "=== All macOS build files ==="
+        ls -la Storymaster*
     
     - name: Upload macOS artifacts
       uses: actions/upload-artifact@v4
@@ -153,13 +162,20 @@ jobs:
         QT_QPA_PLATFORM: offscreen
     
     - name: Build Linux executable (optimized)
-      run: xvfb-run -a python scripts/build_linux.py
+      run: |
+        xvfb-run -a python scripts/build_linux.py
+        echo "=== Build completed, checking created files ==="
+        ls -la dist/
+        ls -la storymaster-*.tar.gz 2>/dev/null || echo "No TAR.GZ files found"
       timeout-minutes: 15  # Allow more time for full build
       env:
         DISPLAY: :99
     
     - name: Build AppImage
-      run: xvfb-run -a python scripts/build_appimage.py
+      run: |
+        xvfb-run -a python scripts/build_appimage.py
+        echo "=== AppImage build completed, checking created files ==="
+        ls -la *.AppImage 2>/dev/null || echo "No AppImage files found"
       env:
         DISPLAY: :99
     
@@ -180,14 +196,14 @@ jobs:
         name: storymaster-linux
         path: |
           dist/storymaster_portable/
-          storymaster-*-linux-*.tar.gz
+          storymaster-linux-*.tar.gz
           *.AppImage
           ~/rpmbuild/RPMS/noarch/*.rpm
 
   create-release:
     needs: [build-windows, build-macos, build-linux]
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/') && (success() || failure())
     
     steps:
     - uses: actions/checkout@v4
@@ -196,16 +212,59 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         path: release-artifacts
+        
+    - name: Debug downloaded artifacts
+      run: |
+        echo "=== Downloaded artifacts structure ==="
+        find release-artifacts -type f -ls | head -30
+        echo
+        echo "=== Artifact directories ==="
+        ls -la release-artifacts/
+        echo
+        echo "=== Contents of each artifact directory ==="
+        for dir in release-artifacts/*/; do
+          echo "Directory: $dir"
+          ls -la "$dir" | head -10
+          echo
+        done
     
     - name: Prepare release files
       run: |
+        echo "=== Debugging artifact contents ==="
+        find release-artifacts -type f -ls
+        echo
+        echo "=== Creating release-files directory ==="
         mkdir -p release-files
-        find release-artifacts -type f -name "*.zip" -exec cp {} release-files/ \;
-        find release-artifacts -type f -name "*.dmg" -exec cp {} release-files/ \;
-        find release-artifacts -type f -name "*.tar.gz" -exec cp {} release-files/ \;
-        find release-artifacts -type f -name "*.AppImage" -exec cp {} release-files/ \;
-        find release-artifacts -type f -name "*.rpm" -exec cp {} release-files/ \;
+        
+        echo "=== Copying ZIP files ==="
+        find release-artifacts -type f -name "*.zip" -print -exec cp {} release-files/ \;
+        
+        echo "=== Copying DMG files ==="
+        find release-artifacts -type f -name "*.dmg" -print -exec cp {} release-files/ \;
+        
+        echo "=== Copying TAR.GZ files ==="
+        find release-artifacts -type f -name "*.tar.gz" -print -exec cp {} release-files/ \;
+        
+        echo "=== Copying AppImage files ==="
+        find release-artifacts -type f -name "*.AppImage" -print -exec cp {} release-files/ \;
+        
+        echo "=== Copying RPM files ==="
+        find release-artifacts -type f -name "*.rpm" -print -exec cp {} release-files/ \;
+        
+        echo "=== Final release files ==="
         ls -la release-files/
+        
+        echo "=== Checking for any missing common file patterns ==="
+        find release-artifacts -type f \( -name "*storymaster*" -o -name "*Storymaster*" \) | head -20
+        
+        # Count files for release
+        file_count=$(find release-files -type f | wc -l)
+        echo "=== Found $file_count files for release ==="
+        
+        if [ "$file_count" -eq 0 ]; then
+          echo "WARNING: No files found for release!"
+          echo "This might cause the release to fail or be empty."
+        fi
         
     - name: Create Release
       uses: softprops/action-gh-release@v2
