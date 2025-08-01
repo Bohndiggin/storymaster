@@ -446,36 +446,48 @@ def get_label_style(label_type="normal"):
             background-color: transparent;
         }}
     """
-    
+
     if label_type == "header":
-        return base_style + f"""
+        return (
+            base_style
+            + f"""
         QLabel {{
             font-size: {FONTS['size_large']};
             font-weight: {FONTS['weight_bold']};
             color: {COLORS['text_accent']};
         }}
         """
+        )
     elif label_type == "muted":
-        return base_style + f"""
+        return (
+            base_style
+            + f"""
         QLabel {{
             color: {COLORS['text_muted']};
             font-style: italic;
         }}
         """
+        )
     elif label_type == "bold":
-        return base_style + f"""
+        return (
+            base_style
+            + f"""
         QLabel {{
             font-weight: {FONTS['weight_bold']};
         }}
         """
+        )
     elif label_type == "small":
-        return base_style + f"""
+        return (
+            base_style
+            + f"""
         QLabel {{
             font-size: {FONTS['size_small']};
             color: {COLORS['text_secondary']};
         }}
         """
-    
+        )
+
     return base_style
 
 

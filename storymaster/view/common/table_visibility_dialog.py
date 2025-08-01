@@ -38,7 +38,7 @@ class TableVisibilityDialog(QDialog):
         self.setWindowTitle("Configure Table Visibility")
         self.setModal(True)
         self.resize(500, 600)
-        
+
         # Apply theme styling
         self.setStyleSheet(
             get_dialog_style()

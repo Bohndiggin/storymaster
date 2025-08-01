@@ -731,17 +731,23 @@ class ActorToSkills(BaseTable):
         String(255)
     )  # Their particular specialty in this skill
     notes: Mapped[str | None] = mapped_column(Text)
-    
+
     # Additional basic relationship fields
     description: Mapped[str | None] = mapped_column(Text)
     status: Mapped[str | None] = mapped_column(String(50))  # Current skill status
     strength: Mapped[int | None] = mapped_column(Integer)  # 1-10 overall skill strength
     is_public: Mapped[bool | None] = mapped_column(Boolean, default=True)
-    
+
     # Skill-specific additional fields
-    practice_frequency: Mapped[str | None] = mapped_column(String(100))  # How often practiced
-    skill_applications: Mapped[str | None] = mapped_column(Text)  # How they use this skill
-    learning_goals: Mapped[str | None] = mapped_column(Text)  # What they want to achieve
+    practice_frequency: Mapped[str | None] = mapped_column(
+        String(100)
+    )  # How often practiced
+    skill_applications: Mapped[str | None] = mapped_column(
+        Text
+    )  # How they use this skill
+    learning_goals: Mapped[str | None] = mapped_column(
+        Text
+    )  # What they want to achieve
 
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
@@ -935,18 +941,20 @@ class FactionMembers(BaseTable):
     responsibilities: Mapped[str | None] = mapped_column(Text)
     loyalty: Mapped[int | None] = mapped_column(Integer)  # 1-10 scale
     join_date: Mapped[str | None] = mapped_column(String(50))  # Store as string for now
-    
+
     # Basic relationship fields (common to all relationships)
     description: Mapped[str | None] = mapped_column(Text)
     notes: Mapped[str | None] = mapped_column(Text)
     status: Mapped[str | None] = mapped_column(String(50))
     strength: Mapped[int | None] = mapped_column(Integer)  # 1-10 scale
     is_public: Mapped[bool | None] = mapped_column(Boolean, default=True)
-    
+
     # Membership-specific additional fields
     how_joined: Mapped[str | None] = mapped_column(Text)  # How they joined the faction
     reputation_within: Mapped[int | None] = mapped_column(Integer)  # 1-10 scale
-    personal_goals: Mapped[str | None] = mapped_column(Text)  # Their personal goals within the faction
+    personal_goals: Mapped[str | None] = mapped_column(
+        Text
+    )  # Their personal goals within the faction
     conflicts: Mapped[str | None] = mapped_column(Text)  # Internal conflicts or issues
 
     setting_id: Mapped[int] = mapped_column(
@@ -1068,16 +1076,24 @@ class LocationToFaction(BaseTable):
     status: Mapped[str | None] = mapped_column(
         String(50)
     )  # Active, Disputed, Lost, etc.
-    
+
     # Additional basic relationship fields
     description: Mapped[str | None] = mapped_column(Text)
-    strength: Mapped[int | None] = mapped_column(Integer)  # 1-10 scale (overall control strength)
+    strength: Mapped[int | None] = mapped_column(
+        Integer
+    )  # 1-10 scale (overall control strength)
     is_public: Mapped[bool | None] = mapped_column(Boolean, default=True)
-    
+
     # Territory-specific additional fields
-    local_opposition: Mapped[str | None] = mapped_column(Text)  # Local resistance or opposition
-    key_supporters: Mapped[str | None] = mapped_column(Text)  # Key local supporters or allies
-    control_mechanisms: Mapped[str | None] = mapped_column(Text)  # How they maintain control
+    local_opposition: Mapped[str | None] = mapped_column(
+        Text
+    )  # Local resistance or opposition
+    key_supporters: Mapped[str | None] = mapped_column(
+        Text
+    )  # Key local supporters or allies
+    control_mechanisms: Mapped[str | None] = mapped_column(
+        Text
+    )  # How they maintain control
 
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
@@ -1157,16 +1173,20 @@ class Resident(BaseTable):
     )  # House, Apartment, Inn, etc.
     notes: Mapped[str | None] = mapped_column(Text)
     is_public_knowledge: Mapped[bool | None] = mapped_column(Boolean, default=True)
-    
+
     # Additional basic relationship fields
     description: Mapped[str | None] = mapped_column(Text)
     status: Mapped[str | None] = mapped_column(String(50))  # Current residency status
     strength: Mapped[int | None] = mapped_column(Integer)  # 1-10 attachment to place
-    
+
     # Residency-specific additional fields
     reason_for_living: Mapped[str | None] = mapped_column(Text)  # Why they live here
-    living_conditions: Mapped[str | None] = mapped_column(Text)  # Quality of life, conditions
-    relationships_neighbors: Mapped[str | None] = mapped_column(Text)  # Relationships with neighbors
+    living_conditions: Mapped[str | None] = mapped_column(
+        Text
+    )  # Quality of life, conditions
+    relationships_neighbors: Mapped[str | None] = mapped_column(
+        Text
+    )  # Relationships with neighbors
     future_plans: Mapped[str | None] = mapped_column(Text)  # Plans to stay/leave
 
     setting_id: Mapped[int] = mapped_column(
@@ -1555,17 +1575,21 @@ class ObjectToOwner(BaseTable):
     )  # Current, Lost, Hidden, etc.
     notes: Mapped[str | None] = mapped_column(Text)
     is_public_knowledge: Mapped[bool | None] = mapped_column(Boolean, default=True)
-    
+
     # Additional basic relationship fields
     description: Mapped[str | None] = mapped_column(Text)
     status: Mapped[str | None] = mapped_column(String(50))  # Current ownership status
     strength: Mapped[int | None] = mapped_column(Integer)  # 1-10 attachment/importance
-    
+
     # Ownership-specific additional fields
-    item_condition: Mapped[str | None] = mapped_column(String(100))  # Condition of the item
+    item_condition: Mapped[str | None] = mapped_column(
+        String(100)
+    )  # Condition of the item
     usage_frequency: Mapped[str | None] = mapped_column(String(100))  # How often used
     storage_location: Mapped[str | None] = mapped_column(Text)  # Where it's kept
-    acquisition_story: Mapped[str | None] = mapped_column(Text)  # Story of how they got it
+    acquisition_story: Mapped[str | None] = mapped_column(
+        Text
+    )  # Story of how they got it
 
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"

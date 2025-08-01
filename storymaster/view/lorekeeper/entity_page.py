@@ -2,25 +2,50 @@
 
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QFont, QPalette
-from PyQt6.QtWidgets import (QCheckBox, QComboBox, QFormLayout, QFrame,
-                             QGroupBox, QHBoxLayout, QLabel, QLineEdit,
-                             QListWidget, QListWidgetItem, QPushButton,
-                             QScrollArea, QSplitter, QTextEdit, QVBoxLayout,
-                             QWidget)
+from PyQt6.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QFormLayout,
+    QFrame,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QListWidget,
+    QListWidgetItem,
+    QPushButton,
+    QScrollArea,
+    QSplitter,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
 
-from storymaster.model.lorekeeper.entity_mappings import (EntityMapping,
-                                                          FieldSection,
-                                                          get_entity_mapping)
+from storymaster.model.lorekeeper.entity_mappings import (
+    EntityMapping,
+    FieldSection,
+    get_entity_mapping,
+)
 from storymaster.view.common.custom_widgets import (
-    TabNavigationComboBox, TabNavigationLineEdit, TabNavigationTextEdit,
-    enable_smart_tab_navigation)
-from storymaster.view.common.theme import (COLORS, FONTS, get_button_style,
-                                           get_group_box_style,
-                                           get_input_style, get_label_style,
-                                           get_splitter_style)
-from storymaster.view.common.tooltips import (LOREKEEPER_TOOLTIPS,
-                                              apply_general_tooltips,
-                                              apply_lorekeeper_tooltips)
+    TabNavigationComboBox,
+    TabNavigationLineEdit,
+    TabNavigationTextEdit,
+    enable_smart_tab_navigation,
+)
+from storymaster.view.common.theme import (
+    COLORS,
+    FONTS,
+    get_button_style,
+    get_group_box_style,
+    get_input_style,
+    get_label_style,
+    get_splitter_style,
+)
+from storymaster.view.common.tooltips import (
+    LOREKEEPER_TOOLTIPS,
+    apply_general_tooltips,
+    apply_lorekeeper_tooltips,
+)
 
 
 class SectionWidget(QGroupBox):
@@ -609,8 +634,9 @@ class EntityDetailPage(QWidget):
         """Handle adding a new relationship"""
         from PyQt6.QtWidgets import QDialog, QMessageBox
 
-        from storymaster.view.lorekeeper.entity_selection_dialog import \
-            EntitySelectionDialog
+        from storymaster.view.lorekeeper.entity_selection_dialog import (
+            EntitySelectionDialog,
+        )
 
         if not self.model_adapter:
             QMessageBox.warning(
@@ -673,8 +699,9 @@ class EntityDetailPage(QWidget):
         """Handle editing a relationship"""
         from PyQt6.QtWidgets import QDialog, QMessageBox
 
-        from storymaster.view.lorekeeper.relationship_details_dialog import \
-            RelationshipDetailsDialog
+        from storymaster.view.lorekeeper.relationship_details_dialog import (
+            RelationshipDetailsDialog,
+        )
 
         if not self.model_adapter:
             QMessageBox.warning(

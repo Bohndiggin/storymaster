@@ -95,8 +95,15 @@ class ArcTypeDialog(QDialog):
         except Exception as e:
             # Handle unique constraint violations more specifically
             error_message = str(e)
-            if "UNIQUE constraint failed" in error_message or "already exists" in error_message.lower():
-                QMessageBox.warning(self, "Duplicate Arc Type", f"An arc type named '{name}' already exists. Please choose a different name.")
+            if (
+                "UNIQUE constraint failed" in error_message
+                or "already exists" in error_message.lower()
+            ):
+                QMessageBox.warning(
+                    self,
+                    "Duplicate Arc Type",
+                    f"An arc type named '{name}' already exists. Please choose a different name.",
+                )
             else:
                 QMessageBox.critical(self, "Error", f"Failed to save arc type: {e}")
 

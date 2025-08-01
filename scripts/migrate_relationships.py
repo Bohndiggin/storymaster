@@ -16,50 +16,52 @@ sys.path.insert(0, str(storymaster_dir))
 try:
     from sqlalchemy import create_engine, text, inspect
     from sqlalchemy.exc import OperationalError
-    
+
     # Load environment variables
-    
+
     def get_database_url():
         """Get the database URL from environment or default"""
         db_url = None
         if not db_url:
             # Use the same path as seed.py
-            db_path = os.path.expanduser('~/.local/share/storymaster/storymaster.db')
+            db_path = os.path.expanduser("~/.local/share/storymaster/storymaster.db")
             db_url = f"sqlite:///{db_path}"
-        elif not db_url.startswith("sqlite:///") and not os.path.isabs(db_url.replace("sqlite:///", "")):
+        elif not db_url.startswith("sqlite:///") and not os.path.isabs(
+            db_url.replace("sqlite:///", "")
+        ):
             # Make relative SQLite paths absolute
             db_file = db_url.replace("sqlite:///", "")
             db_path = current_dir / db_file
             db_url = f"sqlite:///{db_path}"
         return db_url
-    
+
     def column_exists(inspector, table_name, column_name):
         """Check if a column exists in a table"""
         try:
             columns = inspector.get_columns(table_name)
-            return any(col['name'] == column_name for col in columns)
+            return any(col["name"] == column_name for col in columns)
         except Exception:
             return False
-    
+
     def table_exists(inspector, table_name):
         """Check if a table exists"""
         try:
             return table_name in inspector.get_table_names()
         except Exception:
             return False
-    
+
     def add_column_if_not_exists(engine, table_name, column_name, column_definition):
         """Add a column to a table if it doesn't exist"""
         inspector = inspect(engine)
-        
+
         if not table_exists(inspector, table_name):
             print(f"  Table {table_name} does not exist, skipping...")
             return False
-            
+
         if column_exists(inspector, table_name, column_name):
             print(f"  Column {column_name} already exists in {table_name}")
             return False
-        
+
         try:
             with engine.connect() as conn:
                 sql = f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_definition}"
@@ -70,17 +72,17 @@ try:
         except Exception as e:
             print(f"  ✗ Failed to add {column_name} to {table_name}: {e}")
             return False
-    
+
     def migrate_relationship_tables():
         """Migrate all relationship tables with new fields"""
         print("Starting relationship table migration...")
-        
+
         # Get database connection
         db_url = get_database_url()
         print(f"Using database: {db_url}")
-        
+
         engine = create_engine(db_url)
-        
+
         # Define migrations for each relationship table
         migrations = {
             "faction_members": [
@@ -213,46 +215,51 @@ try:
                 # Historical faction fields may already exist, check first
             ],
         }
-        
+
         total_added = 0
-        
+
         for table_name, columns in migrations.items():
             print(f"\nMigrating table: {table_name}")
-            
+
             for column_name, column_def in columns:
-                if add_column_if_not_exists(engine, table_name, column_name, column_def):
+                if add_column_if_not_exists(
+                    engine, table_name, column_name, column_def
+                ):
                     total_added += 1
-        
+
         print(f"\n✅ Migration completed! Added {total_added} new columns.")
         print("Relationship dialogs will now have much richer data fields.")
-        
+
         return True
-    
+
     def main():
         """Main migration function"""
         print("🚀 Storymaster Relationship Database Migration")
         print("=" * 50)
-        
+
         try:
             success = migrate_relationship_tables()
             if success:
                 print("\n🎉 All relationship tables have been successfully enhanced!")
-                print("You can now use the relationship dialogs with full data persistence.")
+                print(
+                    "You can now use the relationship dialogs with full data persistence."
+                )
             else:
                 print("\n❌ Migration encountered some issues.")
                 return 1
-                
+
         except Exception as e:
             print(f"\n💥 Migration failed: {e}")
             import traceback
+
             traceback.print_exc()
             return 1
-        
+
         return 0
-    
+
     if __name__ == "__main__":
         sys.exit(main())
-        
+
 except ImportError as e:
     print(f"❌ Missing required dependencies: {e}")
     print("Please install the required packages:")

@@ -2,15 +2,27 @@
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import (QHBoxLayout, QLabel, QMessageBox, QPushButton, QSplitter,
-                             QStackedWidget, QVBoxLayout, QWidget)
+from PyQt6.QtWidgets import (
+    QHBoxLayout,
+    QLabel,
+    QMessageBox,
+    QPushButton,
+    QSplitter,
+    QStackedWidget,
+    QVBoxLayout,
+    QWidget,
+)
 
 from storymaster.model.lorekeeper.entity_mappings import get_entity_mapping
 from storymaster.view.common.custom_widgets import enable_smart_tab_navigation
-from storymaster.view.common.theme import COLORS, FONTS, get_button_style, get_splitter_style
+from storymaster.view.common.theme import (
+    COLORS,
+    FONTS,
+    get_button_style,
+    get_splitter_style,
+)
 from storymaster.view.lorekeeper.entity_page import EntityDetailPage
-from storymaster.view.lorekeeper.lorekeeper_model_adapter import \
-    LorekeeperModelAdapter
+from storymaster.view.lorekeeper.lorekeeper_model_adapter import LorekeeperModelAdapter
 from storymaster.view.lorekeeper.lorekeeper_navigation import LorekeeperNavigation
 
 
@@ -88,17 +100,17 @@ class NewLorekeeperPage(QWidget):
         # Browser header and search (bottom of top half)
         self.browser_header = self.create_browser_header()
         self.browser_search = self.create_browser_search()
-        
+
         top_half_layout.addWidget(self.browser_header)
         top_half_layout.addWidget(self.browser_search)
         top_half_container.setLayout(top_half_layout)
-        
+
         # Create container for bottom half (entity list)
         bottom_half_container = QWidget()
         bottom_half_layout = QVBoxLayout()
         bottom_half_layout.setContentsMargins(2, 2, 2, 2)
         bottom_half_layout.setSpacing(0)
-        
+
         # Add entity list to bottom half
         self.entity_list = self.create_entity_list()
         bottom_half_layout.addWidget(self.entity_list)
@@ -142,6 +154,7 @@ class NewLorekeeperPage(QWidget):
     def create_browser_search(self) -> QWidget:
         """Create the browser search bar"""
         from storymaster.view.lorekeeper.lorekeeper_navigation import SearchBar
+
         self.search_bar = SearchBar()
         self.search_bar.search_changed.connect(self.filter_entities)
         return self.search_bar
@@ -149,6 +162,7 @@ class NewLorekeeperPage(QWidget):
     def create_entity_list(self) -> QWidget:
         """Create the entity list widget"""
         from storymaster.view.lorekeeper.lorekeeper_navigation import EntityListWidget
+
         self.entity_list_widget = EntityListWidget()
         self.entity_list_widget.entity_selected.connect(self.on_entity_selected)
         return self.entity_list_widget
@@ -172,9 +186,9 @@ class NewLorekeeperPage(QWidget):
 
     def filter_entities(self, search_text: str):
         """Filter entities based on search text"""
-        if not hasattr(self, 'current_entities'):
+        if not hasattr(self, "current_entities"):
             return
-            
+
         if not search_text:
             self.entity_list_widget.set_entities(
                 self.current_entities, self.current_table_name

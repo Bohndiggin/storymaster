@@ -4,18 +4,37 @@ from datetime import datetime
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import (QCheckBox, QComboBox, QDateEdit, QDialog,
-                             QFormLayout, QGroupBox, QHBoxLayout, QLabel,
-                             QLineEdit, QPushButton, QSlider, QSpinBox,
-                             QTabWidget, QTextEdit, QVBoxLayout)
+from PyQt6.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QDateEdit,
+    QDialog,
+    QFormLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QSlider,
+    QSpinBox,
+    QTabWidget,
+    QTextEdit,
+    QVBoxLayout,
+)
 
 from storymaster.model.lorekeeper.entity_mappings import get_entity_mapping
-from storymaster.view.common.theme import (COLORS, get_button_style,
-                                           get_checkbox_style,
-                                           get_dateedit_style,
-                                           get_dialog_style, get_input_style,
-                                           get_label_style, get_slider_style,
-                                           get_spinbox_style, get_tab_style)
+from storymaster.view.common.theme import (
+    COLORS,
+    get_button_style,
+    get_checkbox_style,
+    get_dateedit_style,
+    get_dialog_style,
+    get_input_style,
+    get_label_style,
+    get_slider_style,
+    get_spinbox_style,
+    get_tab_style,
+)
 
 
 class RelationshipDetailsDialog(QDialog):
@@ -211,7 +230,6 @@ class RelationshipDetailsDialog(QDialog):
 
         tab.setLayout(layout)
         return tab
-
 
     def create_character_relationship_tab(self) -> QGroupBox:
         """Create tab for character-to-character relationships"""
@@ -941,26 +959,26 @@ class RelationshipDetailsDialog(QDialog):
     def parse_faction_relationship_data(self, data):
         """Parse faction-to-faction relationship data from database format"""
         # Basic Info fields (description, notes are in Basic Info tab)
-        if hasattr(self, 'description_edit'):
+        if hasattr(self, "description_edit"):
             self.description_edit.setPlainText(data.get("description", ""))
-        
-        if hasattr(self, 'notes_edit'):
+
+        if hasattr(self, "notes_edit"):
             self.notes_edit.setPlainText(data.get("notes", ""))
 
         # Set status combo
         status = data.get("status", "")
-        if status and hasattr(self, 'status_combo'):
+        if status and hasattr(self, "status_combo"):
             index = self.status_combo.findText(status)
             if index >= 0:
                 self.status_combo.setCurrentIndex(index)
 
         # Set strength slider
-        if hasattr(self, 'strength_slider'):
+        if hasattr(self, "strength_slider"):
             strength = data.get("strength", 5)
             self.strength_slider.setValue(strength)
 
         # Set is_public checkbox
-        if hasattr(self, 'is_public'):
+        if hasattr(self, "is_public"):
             is_public = data.get("is_public", True)
             self.is_public.setChecked(is_public)
 
@@ -1039,28 +1057,28 @@ class RelationshipDetailsDialog(QDialog):
     def _parse_basic_relationship_data(self, data):
         """Helper method to parse common basic relationship fields"""
         # Basic Info fields (description, notes are in Basic Info tab)
-        if hasattr(self, 'description_edit'):
+        if hasattr(self, "description_edit"):
             description = data.get("description", "")
             self.description_edit.setPlainText(description)
-        
-        if hasattr(self, 'notes_edit'):
+
+        if hasattr(self, "notes_edit"):
             notes = data.get("notes", "")
             self.notes_edit.setPlainText(notes)
 
         # Set status combo
         status = data.get("status", "")
-        if status and hasattr(self, 'status_combo'):
+        if status and hasattr(self, "status_combo"):
             index = self.status_combo.findText(status)
             if index >= 0:
                 self.status_combo.setCurrentIndex(index)
 
         # Set strength slider
-        if hasattr(self, 'strength_slider'):
+        if hasattr(self, "strength_slider"):
             strength = data.get("strength", 5)
             self.strength_slider.setValue(strength)
 
         # Set is_public checkbox
-        if hasattr(self, 'is_public'):
+        if hasattr(self, "is_public"):
             is_public = data.get("is_public", True)
             self.is_public.setChecked(is_public)
 
@@ -1071,15 +1089,17 @@ class RelationshipDetailsDialog(QDialog):
 
         # Collect basic info data for relationship types that support it
         if self.has_basic_info_fields():
-            self.relationship_data.update({
-                "status": self.status_combo.currentText(),
-                "strength": self.strength_slider.value(),
-                "description": self.description_edit.toPlainText(),
-                "notes": self.notes_edit.toPlainText(),
-                "is_public": self.is_public.isChecked(),
-            })
+            self.relationship_data.update(
+                {
+                    "status": self.status_combo.currentText(),
+                    "strength": self.strength_slider.value(),
+                    "description": self.description_edit.toPlainText(),
+                    "notes": self.notes_edit.toPlainText(),
+                    "is_public": self.is_public.isChecked(),
+                }
+            )
             # Add timeline field if it exists (only for some relationship types)
-            if hasattr(self, 'timeline_edit'):
+            if hasattr(self, "timeline_edit"):
                 self.relationship_data["timeline"] = self.timeline_edit.toPlainText()
 
         # Add relationship-specific data
@@ -1131,9 +1151,12 @@ class RelationshipDetailsDialog(QDialog):
         except Exception as e:
             print(f"💥 Save error: {str(e)}")
             import traceback
+
             traceback.print_exc()
             QMessageBox.critical(
-                self, "Database Error", f"Error saving relationship: {str(e)}\n\nRelationship Type: {self.relationship_type}\nCheck console for detailed error information."
+                self,
+                "Database Error",
+                f"Error saving relationship: {str(e)}\n\nRelationship Type: {self.relationship_type}\nCheck console for detailed error information.",
             )
 
     def get_relationship_data(self) -> dict:

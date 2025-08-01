@@ -5,16 +5,26 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy.orm import Session
 
 from storymaster.model.common.common_model import BaseModel
-from storymaster.model.database.schema.base import (Actor, Alignment,
-                                                    Background, Class_,
-                                                    Faction, History,
-                                                    LitographyNotes, Location,
-                                                    LocationCity,
-                                                    LocationCityDistricts,
-                                                    LocationDungeon,
-                                                    LocationFloraFauna,
-                                                    Object_, Race, Skills,
-                                                    Stat, SubRace, WorldData)
+from storymaster.model.database.schema.base import (
+    Actor,
+    Alignment,
+    Background,
+    Class_,
+    Faction,
+    History,
+    LitographyNotes,
+    Location,
+    LocationCity,
+    LocationCityDistricts,
+    LocationDungeon,
+    LocationFloraFauna,
+    Object_,
+    Race,
+    Skills,
+    Stat,
+    SubRace,
+    WorldData,
+)
 
 
 class LorekeeperModelAdapter:
@@ -56,7 +66,9 @@ class LorekeeperModelAdapter:
                     from sqlalchemy.orm import joinedload
 
                     from storymaster.model.database.schema.base import (
-                        Storyline, StorylineToSetting)
+                        Storyline,
+                        StorylineToSetting,
+                    )
 
                     storylines = (
                         session.query(Storyline)
@@ -253,8 +265,9 @@ class LorekeeperModelAdapter:
 
                 # Get relationships based on type
                 if relationship_name == "actor_a_on_b_relations":
-                    from storymaster.model.database.schema.base import \
-                        ActorAOnBRelations
+                    from storymaster.model.database.schema.base import (
+                        ActorAOnBRelations,
+                    )
 
                     relations = (
                         session.query(ActorAOnBRelations)
@@ -275,7 +288,10 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "faction_members":
                     from storymaster.model.database.schema.base import (
-                        Actor, Faction, FactionMembers)
+                        Actor,
+                        Faction,
+                        FactionMembers,
+                    )
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "Faction":
@@ -305,7 +321,10 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "residents":
                     from storymaster.model.database.schema.base import (
-                        Actor, Location, Resident)
+                        Actor,
+                        Location,
+                        Resident,
+                    )
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "Location":
@@ -334,7 +353,10 @@ class LorekeeperModelAdapter:
                         ]
                 elif relationship_name == "object_to_owner":
                     from storymaster.model.database.schema.base import (
-                        Actor, Object_, ObjectToOwner)
+                        Actor,
+                        Object_,
+                        ObjectToOwner,
+                    )
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "Object_":
@@ -364,7 +386,10 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "location_to_faction":
                     from storymaster.model.database.schema.base import (
-                        Faction, Location, LocationToFaction)
+                        Faction,
+                        Location,
+                        LocationToFaction,
+                    )
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "Location":
@@ -394,7 +419,10 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "actor_to_skills":
                     from storymaster.model.database.schema.base import (
-                        Actor, ActorToSkills, Skills)
+                        Actor,
+                        ActorToSkills,
+                        Skills,
+                    )
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "Actor":
@@ -424,7 +452,10 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "actor_to_race":
                     from storymaster.model.database.schema.base import (
-                        Actor, ActorToRace, Race)
+                        Actor,
+                        ActorToRace,
+                        Race,
+                    )
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "Actor":
@@ -454,7 +485,10 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "actor_to_class":
                     from storymaster.model.database.schema.base import (
-                        Actor, ActorToClass, Class_)
+                        Actor,
+                        ActorToClass,
+                        Class_,
+                    )
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "Actor":
@@ -484,7 +518,10 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "actor_to_stat":
                     from storymaster.model.database.schema.base import (
-                        Actor, ActorToStat, Stat)
+                        Actor,
+                        ActorToStat,
+                        Stat,
+                    )
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "Actor":
@@ -514,7 +551,10 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "history_actor":
                     from storymaster.model.database.schema.base import (
-                        Actor, History, HistoryActor)
+                        Actor,
+                        History,
+                        HistoryActor,
+                    )
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "Actor":
@@ -544,7 +584,9 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "faction_a_on_b_relations":
                     from storymaster.model.database.schema.base import (
-                        Faction, FactionAOnBRelations)
+                        Faction,
+                        FactionAOnBRelations,
+                    )
 
                     # Query database directly for fresh data
                     relations = (
@@ -570,7 +612,10 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "history_faction":
                     from storymaster.model.database.schema.base import (
-                        Faction, History, HistoryFaction)
+                        Faction,
+                        History,
+                        HistoryFaction,
+                    )
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "Faction":
@@ -600,7 +645,9 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "location_a_on_b_relations":
                     from storymaster.model.database.schema.base import (
-                        Location, LocationAOnBRelations)
+                        Location,
+                        LocationAOnBRelations,
+                    )
 
                     # Query database directly for fresh data
                     relations = (
@@ -626,7 +673,9 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "location_geographic_relations":
                     from storymaster.model.database.schema.base import (
-                        Location, LocationGeographicRelations)
+                        Location,
+                        LocationGeographicRelations,
+                    )
 
                     # Query database directly for fresh data
                     relations = (
@@ -652,7 +701,9 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "location_political_relations":
                     from storymaster.model.database.schema.base import (
-                        Location, LocationPoliticalRelations)
+                        Location,
+                        LocationPoliticalRelations,
+                    )
 
                     # Query database directly for fresh data
                     relations = (
@@ -678,7 +729,9 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "location_economic_relations":
                     from storymaster.model.database.schema.base import (
-                        Location, LocationEconomicRelations)
+                        Location,
+                        LocationEconomicRelations,
+                    )
 
                     # Query database directly for fresh data
                     relations = (
@@ -704,7 +757,9 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "location_hierarchy":
                     from storymaster.model.database.schema.base import (
-                        Location, LocationHierarchy)
+                        Location,
+                        LocationHierarchy,
+                    )
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "Location":
@@ -738,7 +793,9 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "location_city_districts":
                     from storymaster.model.database.schema.base import (
-                        Location, LocationCityDistricts)
+                        Location,
+                        LocationCityDistricts,
+                    )
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "Location":
@@ -773,8 +830,9 @@ class LorekeeperModelAdapter:
                         ]
 
                 elif relationship_name == "location_flora_fauna":
-                    from storymaster.model.database.schema.base import \
-                        LocationFloraFauna
+                    from storymaster.model.database.schema.base import (
+                        LocationFloraFauna,
+                    )
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "Location":
@@ -789,7 +847,10 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "litography_note_to_world_data":
                     from storymaster.model.database.schema.base import (
-                        LitographyNotes, LitographyNoteToWorldData, WorldData)
+                        LitographyNotes,
+                        LitographyNoteToWorldData,
+                        WorldData,
+                    )
 
                     # Query database directly for fresh data
                     if entity.__class__.__name__ == "LitographyNotes":
@@ -821,7 +882,10 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "litography_note_to_actor":
                     from storymaster.model.database.schema.base import (
-                        Actor, LitographyNotes, LitographyNoteToActor)
+                        Actor,
+                        LitographyNotes,
+                        LitographyNoteToActor,
+                    )
 
                     if entity.__class__.__name__ == "LitographyNotes":
                         note_relations = (
@@ -848,7 +912,10 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "litography_note_to_location":
                     from storymaster.model.database.schema.base import (
-                        LitographyNotes, LitographyNoteToLocation, Location)
+                        LitographyNotes,
+                        LitographyNoteToLocation,
+                        Location,
+                    )
 
                     if entity.__class__.__name__ == "LitographyNotes":
                         note_relations = (
@@ -875,7 +942,10 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "litography_note_to_object":
                     from storymaster.model.database.schema.base import (
-                        LitographyNotes, LitographyNoteToObject, Object_)
+                        LitographyNotes,
+                        LitographyNoteToObject,
+                        Object_,
+                    )
 
                     if entity.__class__.__name__ == "LitographyNotes":
                         note_relations = (
@@ -902,7 +972,10 @@ class LorekeeperModelAdapter:
 
                 elif relationship_name == "litography_note_to_faction":
                     from storymaster.model.database.schema.base import (
-                        Faction, LitographyNotes, LitographyNoteToFaction)
+                        Faction,
+                        LitographyNotes,
+                        LitographyNoteToFaction,
+                    )
 
                     if entity.__class__.__name__ == "LitographyNotes":
                         note_relations = (
@@ -950,8 +1023,9 @@ class LorekeeperModelAdapter:
 
                 # Create relationship based on type
                 if relationship_name == "actor_a_on_b_relations":
-                    from storymaster.model.database.schema.base import \
-                        ActorAOnBRelations
+                    from storymaster.model.database.schema.base import (
+                        ActorAOnBRelations,
+                    )
 
                     # Check if relationship already exists
                     existing = (
@@ -991,8 +1065,7 @@ class LorekeeperModelAdapter:
                     session.add(new_relation)
 
                 elif relationship_name == "faction_members":
-                    from storymaster.model.database.schema.base import \
-                        FactionMembers
+                    from storymaster.model.database.schema.base import FactionMembers
 
                     # Determine which entity is the actor and which is the faction
                     if entity.__class__.__name__ == "Actor":
@@ -1068,8 +1141,7 @@ class LorekeeperModelAdapter:
                     session.add(new_residency)
 
                 elif relationship_name == "object_to_owner":
-                    from storymaster.model.database.schema.base import \
-                        ObjectToOwner
+                    from storymaster.model.database.schema.base import ObjectToOwner
 
                     # Determine which entity is the actor and which is the object
                     if entity.__class__.__name__ == "Actor":
@@ -1103,8 +1175,7 @@ class LorekeeperModelAdapter:
                     session.add(new_ownership)
 
                 elif relationship_name == "location_to_faction":
-                    from storymaster.model.database.schema.base import \
-                        LocationToFaction
+                    from storymaster.model.database.schema.base import LocationToFaction
 
                     # Determine which entity is the location and which is the faction
                     if entity.__class__.__name__ == "Location":
@@ -1138,8 +1209,7 @@ class LorekeeperModelAdapter:
                     session.add(new_control)
 
                 elif relationship_name == "actor_to_skills":
-                    from storymaster.model.database.schema.base import \
-                        ActorToSkills
+                    from storymaster.model.database.schema.base import ActorToSkills
 
                     # Check if skill relation already exists
                     existing = (
@@ -1164,8 +1234,7 @@ class LorekeeperModelAdapter:
                     session.add(new_skill_relation)
 
                 elif relationship_name == "actor_to_race":
-                    from storymaster.model.database.schema.base import \
-                        ActorToRace
+                    from storymaster.model.database.schema.base import ActorToRace
 
                     # Check if race relation already exists
                     existing = (
@@ -1189,8 +1258,7 @@ class LorekeeperModelAdapter:
                     session.add(new_race_relation)
 
                 elif relationship_name == "actor_to_class":
-                    from storymaster.model.database.schema.base import \
-                        ActorToClass
+                    from storymaster.model.database.schema.base import ActorToClass
 
                     # Check if class relation already exists
                     existing = (
@@ -1215,8 +1283,7 @@ class LorekeeperModelAdapter:
                     session.add(new_class_relation)
 
                 elif relationship_name == "actor_to_stat":
-                    from storymaster.model.database.schema.base import \
-                        ActorToStat
+                    from storymaster.model.database.schema.base import ActorToStat
 
                     # Check if stat relation already exists
                     existing = (
@@ -1241,8 +1308,7 @@ class LorekeeperModelAdapter:
                     session.add(new_stat_relation)
 
                 elif relationship_name == "history_actor":
-                    from storymaster.model.database.schema.base import \
-                        HistoryActor
+                    from storymaster.model.database.schema.base import HistoryActor
 
                     # Check if history relation already exists
                     existing = (
@@ -1266,8 +1332,9 @@ class LorekeeperModelAdapter:
                     session.add(new_history_relation)
 
                 elif relationship_name == "faction_a_on_b_relations":
-                    from storymaster.model.database.schema.base import \
-                        FactionAOnBRelations
+                    from storymaster.model.database.schema.base import (
+                        FactionAOnBRelations,
+                    )
 
                     # Check if relationship already exists
                     existing = (
@@ -1355,8 +1422,7 @@ class LorekeeperModelAdapter:
                     session.add(new_relation)
 
                 elif relationship_name == "history_faction":
-                    from storymaster.model.database.schema.base import \
-                        HistoryFaction
+                    from storymaster.model.database.schema.base import HistoryFaction
 
                     # Check if history relation already exists
                     existing = (
@@ -1405,8 +1471,9 @@ class LorekeeperModelAdapter:
                     session.add(new_history_relation)
 
                 elif relationship_name == "location_a_on_b_relations":
-                    from storymaster.model.database.schema.base import \
-                        LocationAOnBRelations
+                    from storymaster.model.database.schema.base import (
+                        LocationAOnBRelations,
+                    )
 
                     # Check if relationship already exists
                     existing = (
@@ -1472,8 +1539,9 @@ class LorekeeperModelAdapter:
                     session.add(new_relation)
 
                 elif relationship_name == "location_geographic_relations":
-                    from storymaster.model.database.schema.base import \
-                        LocationGeographicRelations
+                    from storymaster.model.database.schema.base import (
+                        LocationGeographicRelations,
+                    )
 
                     # Check if relationship already exists
                     existing = (
@@ -1542,8 +1610,9 @@ class LorekeeperModelAdapter:
                     session.add(new_relation)
 
                 elif relationship_name == "location_political_relations":
-                    from storymaster.model.database.schema.base import \
-                        LocationPoliticalRelations
+                    from storymaster.model.database.schema.base import (
+                        LocationPoliticalRelations,
+                    )
 
                     # Check if relationship already exists
                     existing = (
@@ -1607,8 +1676,9 @@ class LorekeeperModelAdapter:
                     session.add(new_relation)
 
                 elif relationship_name == "location_economic_relations":
-                    from storymaster.model.database.schema.base import \
-                        LocationEconomicRelations
+                    from storymaster.model.database.schema.base import (
+                        LocationEconomicRelations,
+                    )
 
                     # Check if relationship already exists
                     existing = (
@@ -1674,8 +1744,7 @@ class LorekeeperModelAdapter:
                     session.add(new_relation)
 
                 elif relationship_name == "location_hierarchy":
-                    from storymaster.model.database.schema.base import \
-                        LocationHierarchy
+                    from storymaster.model.database.schema.base import LocationHierarchy
 
                     # Check if relationship already exists
                     existing = (
@@ -1729,8 +1798,9 @@ class LorekeeperModelAdapter:
                     session.add(new_relation)
 
                 elif relationship_name == "location_city_districts":
-                    from storymaster.model.database.schema.base import \
-                        LocationCityDistricts
+                    from storymaster.model.database.schema.base import (
+                        LocationCityDistricts,
+                    )
 
                     # Check if relationship already exists
                     existing = (
@@ -1754,8 +1824,9 @@ class LorekeeperModelAdapter:
                     session.add(new_relation)
 
                 elif relationship_name == "location_flora_fauna":
-                    from storymaster.model.database.schema.base import \
-                        LocationFloraFauna
+                    from storymaster.model.database.schema.base import (
+                        LocationFloraFauna,
+                    )
 
                     # For flora/fauna, we're adding a new entry, not linking to another entity
                     # The related_entity in this case would be the data for the flora/fauna
@@ -1781,8 +1852,9 @@ class LorekeeperModelAdapter:
                     session.add(new_flora_fauna)
 
                 elif relationship_name == "litography_note_to_world_data":
-                    from storymaster.model.database.schema.base import \
-                        LitographyNoteToWorldData
+                    from storymaster.model.database.schema.base import (
+                        LitographyNoteToWorldData,
+                    )
 
                     # Check if relationship already exists
                     existing = (
@@ -1807,8 +1879,9 @@ class LorekeeperModelAdapter:
                     session.add(new_relation)
 
                 elif relationship_name == "litography_note_to_actor":
-                    from storymaster.model.database.schema.base import \
-                        LitographyNoteToActor
+                    from storymaster.model.database.schema.base import (
+                        LitographyNoteToActor,
+                    )
 
                     existing = (
                         session.query(LitographyNoteToActor)
@@ -1828,8 +1901,9 @@ class LorekeeperModelAdapter:
                     session.add(new_relation)
 
                 elif relationship_name == "litography_note_to_location":
-                    from storymaster.model.database.schema.base import \
-                        LitographyNoteToLocation
+                    from storymaster.model.database.schema.base import (
+                        LitographyNoteToLocation,
+                    )
 
                     existing = (
                         session.query(LitographyNoteToLocation)
@@ -1852,8 +1926,9 @@ class LorekeeperModelAdapter:
                     session.add(new_relation)
 
                 elif relationship_name == "litography_note_to_object":
-                    from storymaster.model.database.schema.base import \
-                        LitographyNoteToObject
+                    from storymaster.model.database.schema.base import (
+                        LitographyNoteToObject,
+                    )
 
                     existing = (
                         session.query(LitographyNoteToObject)
@@ -1873,8 +1948,9 @@ class LorekeeperModelAdapter:
                     session.add(new_relation)
 
                 elif relationship_name == "litography_note_to_faction":
-                    from storymaster.model.database.schema.base import \
-                        LitographyNoteToFaction
+                    from storymaster.model.database.schema.base import (
+                        LitographyNoteToFaction,
+                    )
 
                     existing = (
                         session.query(LitographyNoteToFaction)
@@ -1910,8 +1986,9 @@ class LorekeeperModelAdapter:
             with Session(self.model.engine) as session:
                 # Remove relationship based on type
                 if relationship_name == "actor_a_on_b_relations":
-                    from storymaster.model.database.schema.base import \
-                        ActorAOnBRelations
+                    from storymaster.model.database.schema.base import (
+                        ActorAOnBRelations,
+                    )
 
                     relation = (
                         session.query(ActorAOnBRelations)
@@ -1932,8 +2009,7 @@ class LorekeeperModelAdapter:
                         session.delete(relation)
 
                 elif relationship_name == "faction_members":
-                    from storymaster.model.database.schema.base import \
-                        FactionMembers
+                    from storymaster.model.database.schema.base import FactionMembers
 
                     membership = (
                         session.query(FactionMembers)
@@ -1983,8 +2059,9 @@ class LorekeeperModelAdapter:
             with Session(self.model.engine) as session:
                 # Update relationship based on type
                 if relationship_name == "actor_a_on_b_relations":
-                    from storymaster.model.database.schema.base import \
-                        ActorAOnBRelations
+                    from storymaster.model.database.schema.base import (
+                        ActorAOnBRelations,
+                    )
 
                     relation = (
                         session.query(ActorAOnBRelations)
@@ -2023,15 +2100,19 @@ class LorekeeperModelAdapter:
                         )
 
                 elif relationship_name == "faction_a_on_b_relations":
-                    from storymaster.model.database.schema.base import \
-                        FactionAOnBRelations
+                    from storymaster.model.database.schema.base import (
+                        FactionAOnBRelations,
+                    )
 
                     relation = (
                         session.query(FactionAOnBRelations)
                         .filter(
                             (
                                 (FactionAOnBRelations.faction_a_id == entity.id)
-                                & (FactionAOnBRelations.faction_b_id == related_entity.id)
+                                & (
+                                    FactionAOnBRelations.faction_b_id
+                                    == related_entity.id
+                                )
                             )
                             | (
                                 (FactionAOnBRelations.faction_a_id == related_entity.id)
@@ -2046,7 +2127,9 @@ class LorekeeperModelAdapter:
                         relation.description = relationship_data.get("description")
                         relation.notes = relationship_data.get("notes")
                         relation.timeline = relationship_data.get("timeline")
-                        relation.relationship_type = relationship_data.get("relationship_type")
+                        relation.relationship_type = relationship_data.get(
+                            "relationship_type"
+                        )
                         relation.status = relationship_data.get("status")
                         relation.strength = relationship_data.get("strength")
                         relation.trust_level = relationship_data.get("trust_level")
@@ -2054,8 +2137,7 @@ class LorekeeperModelAdapter:
                         relation.is_public = relationship_data.get("is_public", True)
 
                 elif relationship_name == "faction_members":
-                    from storymaster.model.database.schema.base import \
-                        FactionMembers
+                    from storymaster.model.database.schema.base import FactionMembers
 
                     # Determine which entity is the actor and which is the faction
                     if entity.__class__.__name__ == "Actor":
@@ -2083,7 +2165,7 @@ class LorekeeperModelAdapter:
                         membership.status = relationship_data.get("status")
                         membership.strength = relationship_data.get("strength")
                         membership.is_public = relationship_data.get("is_public", True)
-                        
+
                         # Map membership-specific data to dedicated database columns
                         membership.role = relationship_data.get("role")
                         membership.rank = relationship_data.get("rank")
@@ -2095,16 +2177,19 @@ class LorekeeperModelAdapter:
                         )
                         membership.loyalty = relationship_data.get("loyalty")
                         membership.join_date = relationship_data.get("join_date")
-                        
+
                         # Map additional membership fields
                         membership.how_joined = relationship_data.get("how_joined")
-                        membership.reputation_within = relationship_data.get("reputation_within")
-                        membership.personal_goals = relationship_data.get("personal_goals")
+                        membership.reputation_within = relationship_data.get(
+                            "reputation_within"
+                        )
+                        membership.personal_goals = relationship_data.get(
+                            "personal_goals"
+                        )
                         membership.conflicts = relationship_data.get("conflicts")
 
                 elif relationship_name == "location_to_faction":
-                    from storymaster.model.database.schema.base import \
-                        LocationToFaction
+                    from storymaster.model.database.schema.base import LocationToFaction
 
                     # Determine which entity is the location and which is the faction
                     if entity.__class__.__name__ == "Location":
@@ -2128,14 +2213,18 @@ class LorekeeperModelAdapter:
                     if control:
                         # Map basic info fields
                         control.description = relationship_data.get("description")
-                        control.status = relationship_data.get("status") 
+                        control.status = relationship_data.get("status")
                         control.strength = relationship_data.get("strength")
                         control.is_public = relationship_data.get("is_public", True)
-                        
+
                         # Map territory-specific fields
-                        control.local_opposition = relationship_data.get("local_opposition")
+                        control.local_opposition = relationship_data.get(
+                            "local_opposition"
+                        )
                         control.key_supporters = relationship_data.get("key_supporters")
-                        control.control_mechanisms = relationship_data.get("control_mechanisms")
+                        control.control_mechanisms = relationship_data.get(
+                            "control_mechanisms"
+                        )
                     else:
                         return False
 
@@ -2166,11 +2255,17 @@ class LorekeeperModelAdapter:
                         residency.description = relationship_data.get("description")
                         residency.status = relationship_data.get("status")
                         residency.strength = relationship_data.get("strength")
-                        
+
                         # Map residency-specific fields
-                        residency.reason_for_living = relationship_data.get("reason_for_living")
-                        residency.living_conditions = relationship_data.get("living_conditions")
-                        residency.relationships_neighbors = relationship_data.get("relationships_neighbors")
+                        residency.reason_for_living = relationship_data.get(
+                            "reason_for_living"
+                        )
+                        residency.living_conditions = relationship_data.get(
+                            "living_conditions"
+                        )
+                        residency.relationships_neighbors = relationship_data.get(
+                            "relationships_neighbors"
+                        )
                         residency.future_plans = relationship_data.get("future_plans")
                     else:
                         return False
@@ -2202,12 +2297,20 @@ class LorekeeperModelAdapter:
                         ownership.description = relationship_data.get("description")
                         ownership.status = relationship_data.get("status")
                         ownership.strength = relationship_data.get("strength")
-                        
+
                         # Map ownership-specific fields
-                        ownership.item_condition = relationship_data.get("item_condition")
-                        ownership.usage_frequency = relationship_data.get("usage_frequency")
-                        ownership.storage_location = relationship_data.get("storage_location")
-                        ownership.acquisition_story = relationship_data.get("acquisition_story")
+                        ownership.item_condition = relationship_data.get(
+                            "item_condition"
+                        )
+                        ownership.usage_frequency = relationship_data.get(
+                            "usage_frequency"
+                        )
+                        ownership.storage_location = relationship_data.get(
+                            "storage_location"
+                        )
+                        ownership.acquisition_story = relationship_data.get(
+                            "acquisition_story"
+                        )
                     else:
                         return False
 
@@ -2225,15 +2328,25 @@ class LorekeeperModelAdapter:
 
                     if skill_relation:
                         # Map basic info fields
-                        skill_relation.description = relationship_data.get("description")
+                        skill_relation.description = relationship_data.get(
+                            "description"
+                        )
                         skill_relation.status = relationship_data.get("status")
                         skill_relation.strength = relationship_data.get("strength")
-                        skill_relation.is_public = relationship_data.get("is_public", True)
-                        
+                        skill_relation.is_public = relationship_data.get(
+                            "is_public", True
+                        )
+
                         # Map skill-specific fields
-                        skill_relation.practice_frequency = relationship_data.get("practice_frequency")
-                        skill_relation.skill_applications = relationship_data.get("skill_applications")
-                        skill_relation.learning_goals = relationship_data.get("learning_goals")
+                        skill_relation.practice_frequency = relationship_data.get(
+                            "practice_frequency"
+                        )
+                        skill_relation.skill_applications = relationship_data.get(
+                            "skill_applications"
+                        )
+                        skill_relation.learning_goals = relationship_data.get(
+                            "learning_goals"
+                        )
                     else:
                         return False
 
@@ -2255,12 +2368,20 @@ class LorekeeperModelAdapter:
                         race_relation.notes = relationship_data.get("notes")
                         race_relation.status = relationship_data.get("status")
                         race_relation.strength = relationship_data.get("strength")
-                        race_relation.is_public = relationship_data.get("is_public", True)
-                        
+                        race_relation.is_public = relationship_data.get(
+                            "is_public", True
+                        )
+
                         # Map heritage-specific fields
-                        race_relation.heritage_pride = relationship_data.get("heritage_pride")
-                        race_relation.cultural_connection = relationship_data.get("cultural_connection")
-                        race_relation.racial_experiences = relationship_data.get("racial_experiences")
+                        race_relation.heritage_pride = relationship_data.get(
+                            "heritage_pride"
+                        )
+                        race_relation.cultural_connection = relationship_data.get(
+                            "cultural_connection"
+                        )
+                        race_relation.racial_experiences = relationship_data.get(
+                            "racial_experiences"
+                        )
                     else:
                         return False
 
@@ -2278,17 +2399,27 @@ class LorekeeperModelAdapter:
 
                     if class_relation:
                         # Map basic info fields
-                        class_relation.description = relationship_data.get("description")
+                        class_relation.description = relationship_data.get(
+                            "description"
+                        )
                         class_relation.notes = relationship_data.get("notes")
                         class_relation.status = relationship_data.get("status")
                         class_relation.strength = relationship_data.get("strength")
-                        class_relation.is_public = relationship_data.get("is_public", True)
-                        
+                        class_relation.is_public = relationship_data.get(
+                            "is_public", True
+                        )
+
                         # Map class-specific fields
-                        class_relation.training_location = relationship_data.get("training_location")
+                        class_relation.training_location = relationship_data.get(
+                            "training_location"
+                        )
                         class_relation.mentors = relationship_data.get("mentors")
-                        class_relation.class_goals = relationship_data.get("class_goals")
-                        class_relation.advancement_plans = relationship_data.get("advancement_plans")
+                        class_relation.class_goals = relationship_data.get(
+                            "class_goals"
+                        )
+                        class_relation.advancement_plans = relationship_data.get(
+                            "advancement_plans"
+                        )
                     else:
                         return False
 
@@ -2310,11 +2441,17 @@ class LorekeeperModelAdapter:
                         stat_relation.notes = relationship_data.get("notes")
                         stat_relation.status = relationship_data.get("status")
                         stat_relation.strength = relationship_data.get("strength")
-                        stat_relation.is_public = relationship_data.get("is_public", True)
-                        
+                        stat_relation.is_public = relationship_data.get(
+                            "is_public", True
+                        )
+
                         # Map stat-specific fields
-                        stat_relation.how_developed = relationship_data.get("how_developed")
-                        stat_relation.training_methods = relationship_data.get("training_methods")
+                        stat_relation.how_developed = relationship_data.get(
+                            "how_developed"
+                        )
+                        stat_relation.training_methods = relationship_data.get(
+                            "training_methods"
+                        )
                         stat_relation.stat_goals = relationship_data.get("stat_goals")
                     else:
                         return False
@@ -2343,18 +2480,32 @@ class LorekeeperModelAdapter:
 
                     if history_relation:
                         # Map basic info fields
-                        history_relation.description = relationship_data.get("description")
+                        history_relation.description = relationship_data.get(
+                            "description"
+                        )
                         history_relation.notes = relationship_data.get("notes")
                         history_relation.status = relationship_data.get("status")
                         history_relation.strength = relationship_data.get("strength")
-                        history_relation.is_public = relationship_data.get("is_public", True)
-                        
+                        history_relation.is_public = relationship_data.get(
+                            "is_public", True
+                        )
+
                         # Map historical involvement fields
-                        history_relation.role_in_event = relationship_data.get("role_in_event")
-                        history_relation.involvement_level = relationship_data.get("involvement_level")
-                        history_relation.impact_on_actor = relationship_data.get("impact_on_actor")
-                        history_relation.actor_perspective = relationship_data.get("actor_perspective")
-                        history_relation.consequences = relationship_data.get("consequences")
+                        history_relation.role_in_event = relationship_data.get(
+                            "role_in_event"
+                        )
+                        history_relation.involvement_level = relationship_data.get(
+                            "involvement_level"
+                        )
+                        history_relation.impact_on_actor = relationship_data.get(
+                            "impact_on_actor"
+                        )
+                        history_relation.actor_perspective = relationship_data.get(
+                            "actor_perspective"
+                        )
+                        history_relation.consequences = relationship_data.get(
+                            "consequences"
+                        )
                     else:
                         return False
 
@@ -2382,17 +2533,29 @@ class LorekeeperModelAdapter:
 
                     if history_relation:
                         # Map basic info fields
-                        history_relation.description = relationship_data.get("description")
+                        history_relation.description = relationship_data.get(
+                            "description"
+                        )
                         history_relation.notes = relationship_data.get("notes")
                         history_relation.status = relationship_data.get("status")
                         history_relation.strength = relationship_data.get("strength")
-                        history_relation.is_public = relationship_data.get("is_public", True)
-                        
+                        history_relation.is_public = relationship_data.get(
+                            "is_public", True
+                        )
+
                         # Map historical location fields
-                        history_relation.role_in_event = relationship_data.get("role_in_event")
-                        history_relation.location_impact = relationship_data.get("location_impact")
-                        history_relation.physical_changes = relationship_data.get("physical_changes")
-                        history_relation.ongoing_effects = relationship_data.get("ongoing_effects")
+                        history_relation.role_in_event = relationship_data.get(
+                            "role_in_event"
+                        )
+                        history_relation.location_impact = relationship_data.get(
+                            "location_impact"
+                        )
+                        history_relation.physical_changes = relationship_data.get(
+                            "physical_changes"
+                        )
+                        history_relation.ongoing_effects = relationship_data.get(
+                            "ongoing_effects"
+                        )
                     else:
                         return False
 
@@ -2420,11 +2583,15 @@ class LorekeeperModelAdapter:
 
                     if history_relation:
                         # Map basic info fields
-                        history_relation.description = relationship_data.get("description")
+                        history_relation.description = relationship_data.get(
+                            "description"
+                        )
                         history_relation.notes = relationship_data.get("notes")
                         history_relation.status = relationship_data.get("status")
                         history_relation.strength = relationship_data.get("strength")
-                        history_relation.is_public = relationship_data.get("is_public", True)
+                        history_relation.is_public = relationship_data.get(
+                            "is_public", True
+                        )
                     else:
                         return False
 
@@ -2447,8 +2614,9 @@ class LorekeeperModelAdapter:
         try:
             with Session(self.model.engine) as session:
                 if relationship_name == "actor_a_on_b_relations":
-                    from storymaster.model.database.schema.base import \
-                        ActorAOnBRelations
+                    from storymaster.model.database.schema.base import (
+                        ActorAOnBRelations,
+                    )
 
                     relation = (
                         session.query(ActorAOnBRelations)
@@ -2495,15 +2663,19 @@ class LorekeeperModelAdapter:
                         }
 
                 elif relationship_name == "faction_a_on_b_relations":
-                    from storymaster.model.database.schema.base import \
-                        FactionAOnBRelations
+                    from storymaster.model.database.schema.base import (
+                        FactionAOnBRelations,
+                    )
 
                     relation = (
                         session.query(FactionAOnBRelations)
                         .filter(
                             (
                                 (FactionAOnBRelations.faction_a_id == entity.id)
-                                & (FactionAOnBRelations.faction_b_id == related_entity.id)
+                                & (
+                                    FactionAOnBRelations.faction_b_id
+                                    == related_entity.id
+                                )
                             )
                             | (
                                 (FactionAOnBRelations.faction_a_id == related_entity.id)
@@ -2541,8 +2713,7 @@ class LorekeeperModelAdapter:
                         }
 
                 elif relationship_name == "faction_members":
-                    from storymaster.model.database.schema.base import \
-                        FactionMembers
+                    from storymaster.model.database.schema.base import FactionMembers
 
                     # Determine which entity is the actor and which is the faction
                     if entity.__class__.__name__ == "Actor":
@@ -2552,9 +2723,13 @@ class LorekeeperModelAdapter:
                         actor_id = related_entity.id
                         faction_id = entity.id
                     else:
-                        return {}  # Invalid entity types for faction members relationship
+                        return (
+                            {}
+                        )  # Invalid entity types for faction members relationship
 
-                    print(f"🔍 Querying faction_members with actor_id={actor_id}, faction_id={faction_id}")
+                    print(
+                        f"🔍 Querying faction_members with actor_id={actor_id}, faction_id={faction_id}"
+                    )
                     membership = (
                         session.query(FactionMembers)
                         .filter(
@@ -2566,17 +2741,23 @@ class LorekeeperModelAdapter:
 
                     if membership:
                         print(f"✅ Found membership record")
-                        print(f"   Description: '{getattr(membership, 'description', 'N/A')}'")
+                        print(
+                            f"   Description: '{getattr(membership, 'description', 'N/A')}'"
+                        )
                         print(f"   Status: '{getattr(membership, 'status', 'N/A')}'")
                         print(f"   Strength: {getattr(membership, 'strength', 'N/A')}")
                         data = {
                             # Basic info fields (now available after migration)
-                            "description": getattr(membership, 'description', None) or "",
-                            "notes": getattr(membership, 'notes', None) or "",
-                            "status": getattr(membership, 'status', None) or "",
-                            "strength": getattr(membership, 'strength', None) or 5,
-                            "is_public": getattr(membership, 'is_public', None) if getattr(membership, 'is_public', None) is not None else True,
-                            
+                            "description": getattr(membership, "description", None)
+                            or "",
+                            "notes": getattr(membership, "notes", None) or "",
+                            "status": getattr(membership, "status", None) or "",
+                            "strength": getattr(membership, "strength", None) or 5,
+                            "is_public": (
+                                getattr(membership, "is_public", None)
+                                if getattr(membership, "is_public", None) is not None
+                                else True
+                            ),
                             # Faction membership specific fields
                             "role": membership.role or "",
                             "rank": membership.rank or 1,
@@ -2584,13 +2765,17 @@ class LorekeeperModelAdapter:
                             "responsibilities": membership.responsibilities or "",
                             "loyalty": membership.loyalty or 7,
                             "join_date": membership.join_date or "",
-                            
                             # Additional membership fields
-                            "how_joined": getattr(membership, 'how_joined', None) or "",
-                            "reputation_within": getattr(membership, 'reputation_within', None) or 5,
-                            "personal_goals": getattr(membership, 'personal_goals', None) or "",
-                            "conflicts": getattr(membership, 'conflicts', None) or "",
-                            
+                            "how_joined": getattr(membership, "how_joined", None) or "",
+                            "reputation_within": getattr(
+                                membership, "reputation_within", None
+                            )
+                            or 5,
+                            "personal_goals": getattr(
+                                membership, "personal_goals", None
+                            )
+                            or "",
+                            "conflicts": getattr(membership, "conflicts", None) or "",
                             # Legacy fields (for backward compatibility)
                             "actor_role": membership.actor_role or "",
                             "relative_power": membership.relative_power or 1,
@@ -2626,16 +2811,25 @@ class LorekeeperModelAdapter:
                     if control:
                         return {
                             # Basic info fields
-                            "description": getattr(control, 'description', None) or "",
-                            "status": getattr(control, 'status', None) or "",
-                            "strength": getattr(control, 'strength', None) or 5,
-                            "is_public": getattr(control, 'is_public', None) if getattr(control, 'is_public', None) is not None else True,
-                            
+                            "description": getattr(control, "description", None) or "",
+                            "status": getattr(control, "status", None) or "",
+                            "strength": getattr(control, "strength", None) or 5,
+                            "is_public": (
+                                getattr(control, "is_public", None)
+                                if getattr(control, "is_public", None) is not None
+                                else True
+                            ),
                             # Territory-specific fields
-                            "local_opposition": getattr(control, 'local_opposition', None) or "",
-                            "key_supporters": getattr(control, 'key_supporters', None) or "",
-                            "control_mechanisms": getattr(control, 'control_mechanisms', None) or "",
-                            
+                            "local_opposition": getattr(
+                                control, "local_opposition", None
+                            )
+                            or "",
+                            "key_supporters": getattr(control, "key_supporters", None)
+                            or "",
+                            "control_mechanisms": getattr(
+                                control, "control_mechanisms", None
+                            )
+                            or "",
                             # Existing fields
                             "control_type": control.control_type or "",
                             "control_strength": control.control_strength or 5,
@@ -2670,23 +2864,36 @@ class LorekeeperModelAdapter:
                     if residency:
                         return {
                             # Basic info fields
-                            "description": getattr(residency, 'description', None) or "",
-                            "status": getattr(residency, 'status', None) or "",
-                            "strength": getattr(residency, 'strength', None) or 5,
-                            
+                            "description": getattr(residency, "description", None)
+                            or "",
+                            "status": getattr(residency, "status", None) or "",
+                            "strength": getattr(residency, "strength", None) or 5,
                             # Residency-specific fields
-                            "reason_for_living": getattr(residency, 'reason_for_living', None) or "",
-                            "living_conditions": getattr(residency, 'living_conditions', None) or "",
-                            "relationships_neighbors": getattr(residency, 'relationships_neighbors', None) or "",
-                            "future_plans": getattr(residency, 'future_plans', None) or "",
-                            
+                            "reason_for_living": getattr(
+                                residency, "reason_for_living", None
+                            )
+                            or "",
+                            "living_conditions": getattr(
+                                residency, "living_conditions", None
+                            )
+                            or "",
+                            "relationships_neighbors": getattr(
+                                residency, "relationships_neighbors", None
+                            )
+                            or "",
+                            "future_plans": getattr(residency, "future_plans", None)
+                            or "",
                             # Existing fields
                             "residency_type": residency.residency_type or "",
                             "residency_status": residency.residency_status or "",
                             "move_in_date": residency.move_in_date or "",
                             "housing_type": residency.housing_type or "",
                             "notes": residency.notes or "",
-                            "is_public_knowledge": residency.is_public_knowledge if residency.is_public_knowledge is not None else True,
+                            "is_public_knowledge": (
+                                residency.is_public_knowledge
+                                if residency.is_public_knowledge is not None
+                                else True
+                            ),
                         }
 
                 elif relationship_name == "object_to_owner":
@@ -2714,23 +2921,36 @@ class LorekeeperModelAdapter:
                     if ownership:
                         return {
                             # Basic info fields
-                            "description": getattr(ownership, 'description', None) or "",
-                            "status": getattr(ownership, 'status', None) or "",
-                            "strength": getattr(ownership, 'strength', None) or 5,
-                            
+                            "description": getattr(ownership, "description", None)
+                            or "",
+                            "status": getattr(ownership, "status", None) or "",
+                            "strength": getattr(ownership, "strength", None) or 5,
                             # Ownership-specific fields
-                            "item_condition": getattr(ownership, 'item_condition', None) or "",
-                            "usage_frequency": getattr(ownership, 'usage_frequency', None) or "",
-                            "storage_location": getattr(ownership, 'storage_location', None) or "",
-                            "acquisition_story": getattr(ownership, 'acquisition_story', None) or "",
-                            
+                            "item_condition": getattr(ownership, "item_condition", None)
+                            or "",
+                            "usage_frequency": getattr(
+                                ownership, "usage_frequency", None
+                            )
+                            or "",
+                            "storage_location": getattr(
+                                ownership, "storage_location", None
+                            )
+                            or "",
+                            "acquisition_story": getattr(
+                                ownership, "acquisition_story", None
+                            )
+                            or "",
                             # Existing fields
                             "ownership_type": ownership.ownership_type or "",
                             "acquisition_method": ownership.acquisition_method or "",
                             "acquisition_date": ownership.acquisition_date or "",
                             "ownership_status": ownership.ownership_status or "",
                             "notes": ownership.notes or "",
-                            "is_public_knowledge": ownership.is_public_knowledge if ownership.is_public_knowledge is not None else True,
+                            "is_public_knowledge": (
+                                ownership.is_public_knowledge
+                                if ownership.is_public_knowledge is not None
+                                else True
+                            ),
                         }
 
                 elif relationship_name == "actor_to_skills":
@@ -2748,23 +2968,37 @@ class LorekeeperModelAdapter:
                     if skill_relation:
                         return {
                             # Basic info fields
-                            "description": getattr(skill_relation, 'description', None) or "",
-                            "status": getattr(skill_relation, 'status', None) or "",
-                            "strength": getattr(skill_relation, 'strength', None) or 5,
-                            "is_public": getattr(skill_relation, 'is_public', None) if getattr(skill_relation, 'is_public', None) is not None else True,
-                            
+                            "description": getattr(skill_relation, "description", None)
+                            or "",
+                            "status": getattr(skill_relation, "status", None) or "",
+                            "strength": getattr(skill_relation, "strength", None) or 5,
+                            "is_public": (
+                                getattr(skill_relation, "is_public", None)
+                                if getattr(skill_relation, "is_public", None)
+                                is not None
+                                else True
+                            ),
                             # Skill-specific fields
-                            "practice_frequency": getattr(skill_relation, 'practice_frequency', None) or "",
-                            "skill_applications": getattr(skill_relation, 'skill_applications', None) or "",
-                            "learning_goals": getattr(skill_relation, 'learning_goals', None) or "",
-                            
+                            "practice_frequency": getattr(
+                                skill_relation, "practice_frequency", None
+                            )
+                            or "",
+                            "skill_applications": getattr(
+                                skill_relation, "skill_applications", None
+                            )
+                            or "",
+                            "learning_goals": getattr(
+                                skill_relation, "learning_goals", None
+                            )
+                            or "",
                             # Existing fields
                             "proficiency_level": skill_relation.proficiency_level or 1,
                             "how_learned": skill_relation.how_learned or "",
                             "experience_years": skill_relation.experience_years or 0,
                             "specialty": skill_relation.specialty or "",
                             "notes": skill_relation.notes or "",
-                            "skill_level": skill_relation.skill_level or 1,  # Legacy field
+                            "skill_level": skill_relation.skill_level
+                            or 1,  # Legacy field
                         }
 
                 elif relationship_name == "actor_to_race":
@@ -2782,16 +3016,29 @@ class LorekeeperModelAdapter:
                     if race_relation:
                         return {
                             # Basic info fields
-                            "description": getattr(race_relation, 'description', None) or "",
-                            "notes": getattr(race_relation, 'notes', None) or "",
-                            "status": getattr(race_relation, 'status', None) or "",
-                            "strength": getattr(race_relation, 'strength', None) or 5,
-                            "is_public": getattr(race_relation, 'is_public', None) if getattr(race_relation, 'is_public', None) is not None else True,
-                            
+                            "description": getattr(race_relation, "description", None)
+                            or "",
+                            "notes": getattr(race_relation, "notes", None) or "",
+                            "status": getattr(race_relation, "status", None) or "",
+                            "strength": getattr(race_relation, "strength", None) or 5,
+                            "is_public": (
+                                getattr(race_relation, "is_public", None)
+                                if getattr(race_relation, "is_public", None) is not None
+                                else True
+                            ),
                             # Heritage-specific fields
-                            "heritage_pride": getattr(race_relation, 'heritage_pride', None) or 5,
-                            "cultural_connection": getattr(race_relation, 'cultural_connection', None) or "",
-                            "racial_experiences": getattr(race_relation, 'racial_experiences', None) or "",
+                            "heritage_pride": getattr(
+                                race_relation, "heritage_pride", None
+                            )
+                            or 5,
+                            "cultural_connection": getattr(
+                                race_relation, "cultural_connection", None
+                            )
+                            or "",
+                            "racial_experiences": getattr(
+                                race_relation, "racial_experiences", None
+                            )
+                            or "",
                         }
 
                 elif relationship_name == "actor_to_class":
@@ -2808,21 +3055,32 @@ class LorekeeperModelAdapter:
 
                     if class_relation:
                         return {
-                            # Basic info fields 
-                            "description": getattr(class_relation, 'description', None) or "",
-                            "notes": getattr(class_relation, 'notes', None) or "",
-                            "status": getattr(class_relation, 'status', None) or "",
-                            "strength": getattr(class_relation, 'strength', None) or 5,
-                            "is_public": getattr(class_relation, 'is_public', None) if getattr(class_relation, 'is_public', None) is not None else True,
-                            
+                            # Basic info fields
+                            "description": getattr(class_relation, "description", None)
+                            or "",
+                            "notes": getattr(class_relation, "notes", None) or "",
+                            "status": getattr(class_relation, "status", None) or "",
+                            "strength": getattr(class_relation, "strength", None) or 5,
+                            "is_public": (
+                                getattr(class_relation, "is_public", None)
+                                if getattr(class_relation, "is_public", None)
+                                is not None
+                                else True
+                            ),
                             # Class-specific fields
-                            "training_location": getattr(class_relation, 'training_location', None) or "",
-                            "mentors": getattr(class_relation, 'mentors', None) or "",
-                            "class_goals": getattr(class_relation, 'class_goals', None) or "",
-                            "advancement_plans": getattr(class_relation, 'advancement_plans', None) or "",
-                            
+                            "training_location": getattr(
+                                class_relation, "training_location", None
+                            )
+                            or "",
+                            "mentors": getattr(class_relation, "mentors", None) or "",
+                            "class_goals": getattr(class_relation, "class_goals", None)
+                            or "",
+                            "advancement_plans": getattr(
+                                class_relation, "advancement_plans", None
+                            )
+                            or "",
                             # Existing fields
-                            "level": getattr(class_relation, 'level', None) or 1,
+                            "level": getattr(class_relation, "level", None) or 1,
                         }
 
                 elif relationship_name == "actor_to_stat":
@@ -2840,19 +3098,29 @@ class LorekeeperModelAdapter:
                     if stat_relation:
                         return {
                             # Basic info fields
-                            "description": getattr(stat_relation, 'description', None) or "",
-                            "notes": getattr(stat_relation, 'notes', None) or "",
-                            "status": getattr(stat_relation, 'status', None) or "",
-                            "strength": getattr(stat_relation, 'strength', None) or 5,
-                            "is_public": getattr(stat_relation, 'is_public', None) if getattr(stat_relation, 'is_public', None) is not None else True,
-                            
+                            "description": getattr(stat_relation, "description", None)
+                            or "",
+                            "notes": getattr(stat_relation, "notes", None) or "",
+                            "status": getattr(stat_relation, "status", None) or "",
+                            "strength": getattr(stat_relation, "strength", None) or 5,
+                            "is_public": (
+                                getattr(stat_relation, "is_public", None)
+                                if getattr(stat_relation, "is_public", None) is not None
+                                else True
+                            ),
                             # Stat-specific fields
-                            "how_developed": getattr(stat_relation, 'how_developed', None) or "",
-                            "training_methods": getattr(stat_relation, 'training_methods', None) or "",
-                            "stat_goals": getattr(stat_relation, 'stat_goals', None) or "",
-                            
+                            "how_developed": getattr(
+                                stat_relation, "how_developed", None
+                            )
+                            or "",
+                            "training_methods": getattr(
+                                stat_relation, "training_methods", None
+                            )
+                            or "",
+                            "stat_goals": getattr(stat_relation, "stat_goals", None)
+                            or "",
                             # Existing fields
-                            "value": getattr(stat_relation, 'value', None) or 10,
+                            "value": getattr(stat_relation, "value", None) or 10,
                         }
 
                 elif relationship_name == "history_actor":
@@ -2880,18 +3148,41 @@ class LorekeeperModelAdapter:
                     if history_relation:
                         return {
                             # Basic info fields
-                            "description": getattr(history_relation, 'description', None) or "",
-                            "notes": getattr(history_relation, 'notes', None) or "",
-                            "status": getattr(history_relation, 'status', None) or "",
-                            "strength": getattr(history_relation, 'strength', None) or 5,
-                            "is_public": getattr(history_relation, 'is_public', None) if getattr(history_relation, 'is_public', None) is not None else True,
-                            
+                            "description": getattr(
+                                history_relation, "description", None
+                            )
+                            or "",
+                            "notes": getattr(history_relation, "notes", None) or "",
+                            "status": getattr(history_relation, "status", None) or "",
+                            "strength": getattr(history_relation, "strength", None)
+                            or 5,
+                            "is_public": (
+                                getattr(history_relation, "is_public", None)
+                                if getattr(history_relation, "is_public", None)
+                                is not None
+                                else True
+                            ),
                             # Historical involvement fields
-                            "role_in_event": getattr(history_relation, 'role_in_event', None) or "",
-                            "involvement_level": getattr(history_relation, 'involvement_level', None) or "",
-                            "impact_on_actor": getattr(history_relation, 'impact_on_actor', None) or "",
-                            "actor_perspective": getattr(history_relation, 'actor_perspective', None) or "",
-                            "consequences": getattr(history_relation, 'consequences', None) or "",
+                            "role_in_event": getattr(
+                                history_relation, "role_in_event", None
+                            )
+                            or "",
+                            "involvement_level": getattr(
+                                history_relation, "involvement_level", None
+                            )
+                            or "",
+                            "impact_on_actor": getattr(
+                                history_relation, "impact_on_actor", None
+                            )
+                            or "",
+                            "actor_perspective": getattr(
+                                history_relation, "actor_perspective", None
+                            )
+                            or "",
+                            "consequences": getattr(
+                                history_relation, "consequences", None
+                            )
+                            or "",
                         }
 
                 elif relationship_name == "history_location":
@@ -2919,17 +3210,37 @@ class LorekeeperModelAdapter:
                     if history_relation:
                         return {
                             # Basic info fields
-                            "description": getattr(history_relation, 'description', None) or "",
-                            "notes": getattr(history_relation, 'notes', None) or "",
-                            "status": getattr(history_relation, 'status', None) or "",
-                            "strength": getattr(history_relation, 'strength', None) or 5,
-                            "is_public": getattr(history_relation, 'is_public', None) if getattr(history_relation, 'is_public', None) is not None else True,
-                            
+                            "description": getattr(
+                                history_relation, "description", None
+                            )
+                            or "",
+                            "notes": getattr(history_relation, "notes", None) or "",
+                            "status": getattr(history_relation, "status", None) or "",
+                            "strength": getattr(history_relation, "strength", None)
+                            or 5,
+                            "is_public": (
+                                getattr(history_relation, "is_public", None)
+                                if getattr(history_relation, "is_public", None)
+                                is not None
+                                else True
+                            ),
                             # Historical location fields
-                            "role_in_event": getattr(history_relation, 'role_in_event', None) or "",
-                            "location_impact": getattr(history_relation, 'location_impact', None) or "",
-                            "physical_changes": getattr(history_relation, 'physical_changes', None) or "",
-                            "ongoing_effects": getattr(history_relation, 'ongoing_effects', None) or "",
+                            "role_in_event": getattr(
+                                history_relation, "role_in_event", None
+                            )
+                            or "",
+                            "location_impact": getattr(
+                                history_relation, "location_impact", None
+                            )
+                            or "",
+                            "physical_changes": getattr(
+                                history_relation, "physical_changes", None
+                            )
+                            or "",
+                            "ongoing_effects": getattr(
+                                history_relation, "ongoing_effects", None
+                            )
+                            or "",
                         }
 
                 elif relationship_name == "history_faction":
@@ -2957,11 +3268,20 @@ class LorekeeperModelAdapter:
                     if history_relation:
                         return {
                             # Basic info fields
-                            "description": getattr(history_relation, 'description', None) or "",
-                            "notes": getattr(history_relation, 'notes', None) or "",
-                            "status": getattr(history_relation, 'status', None) or "",
-                            "strength": getattr(history_relation, 'strength', None) or 5,
-                            "is_public": getattr(history_relation, 'is_public', None) if getattr(history_relation, 'is_public', None) is not None else True,
+                            "description": getattr(
+                                history_relation, "description", None
+                            )
+                            or "",
+                            "notes": getattr(history_relation, "notes", None) or "",
+                            "status": getattr(history_relation, "status", None) or "",
+                            "strength": getattr(history_relation, "strength", None)
+                            or 5,
+                            "is_public": (
+                                getattr(history_relation, "is_public", None)
+                                if getattr(history_relation, "is_public", None)
+                                is not None
+                                else True
+                            ),
                         }
 
                 # Add more relationship types as needed

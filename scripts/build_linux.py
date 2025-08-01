@@ -67,6 +67,7 @@ def ensure_icons_exist():
         print("Using icon from assets: assets/storymaster_icon.ico")
     return True
 
+
 def ensure_version_info():
     """Ensure version info file exists"""
     print("Checking version info...")
@@ -74,7 +75,9 @@ def ensure_version_info():
     if not version_file.exists():
         print("Creating version_info.py...")
         try:
-            subprocess.run([sys.executable, "scripts/create_version_info.py"], check=True)
+            subprocess.run(
+                [sys.executable, "scripts/create_version_info.py"], check=True
+            )
             print("Version info created")
         except subprocess.CalledProcessError:
             print("Warning: Could not create version info")
@@ -85,12 +88,12 @@ def ensure_version_info():
 
 def clean_previous_builds():
     """Clean up previous build artifacts (skip on CI - fresh environment)"""
-    
+
     # Skip cleaning on CI - GitHub Actions provides fresh runners
-    if os.environ.get('GITHUB_ACTIONS'):
+    if os.environ.get("GITHUB_ACTIONS"):
         print("\n[CLEAN] Skipping clean (CI environment is already fresh)")
         return True
-    
+
     print("\n[CLEAN] Cleaning previous builds...")
 
     dirs_to_clean = ["build", "dist", "__pycache__"]
@@ -116,7 +119,7 @@ def build_executable():
     """Build the executable using PyInstaller"""
     import time
     import threading
-    
+
     print("\n[COMPILE] Building executable...")
     print("   This may take 5-10 minutes for Windows builds...")
     print("   Optimized for faster builds by excluding unnecessary Qt modules")
@@ -126,46 +129,58 @@ def build_executable():
     try:
         # Use Linux-specific spec file
         spec_file = "storymaster.spec"
-        
+
         # Run PyInstaller with Linux spec file and real-time output
-        cmd = [sys.executable, "-m", "PyInstaller", "--clean", "--log-level=INFO", spec_file]
+        cmd = [
+            sys.executable,
+            "-m",
+            "PyInstaller",
+            "--clean",
+            "--log-level=INFO",
+            spec_file,
+        ]
 
         print(f"   Running: {' '.join(cmd)}")
         print("   " + "=" * 50)
-        
+
         start_time = time.time()
-        
+
         # Start progress indicator in a separate thread
         progress_active = threading.Event()
         progress_active.set()
-        
+
         def show_progress():
-            chars = ['|', '/', '-', '\\']
+            chars = ["|", "/", "-", "\\"]
             i = 0
             while progress_active.is_set():
                 elapsed = int(time.time() - start_time)
                 mins, secs = divmod(elapsed, 60)
-                print(f"\r   Building... {chars[i % len(chars)]} ({mins:02d}:{secs:02d})", end='', flush=True)
+                print(
+                    f"\r   Building... {chars[i % len(chars)]} ({mins:02d}:{secs:02d})",
+                    end="",
+                    flush=True,
+                )
                 time.sleep(0.5)
                 i += 1
-        
+
         progress_thread = threading.Thread(target=show_progress, daemon=True)
         progress_thread.start()
-        
+
         # Run PyInstaller with real-time output
         process = subprocess.Popen(
-            cmd, 
-            stdout=subprocess.PIPE, 
+            cmd,
+            stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
             bufsize=1,
-            universal_newlines=True
+            universal_newlines=True,
         )
-        
+
         # Track last output time to detect hangs
         import time
+
         last_output_time = time.time()
-        
+
         # Show real-time output
         output_lines = []
         for line in process.stdout:
@@ -173,29 +188,43 @@ def build_executable():
             if line:
                 output_lines.append(line)
                 last_output_time = time.time()  # Update last output time
-                
+
                 # Show key progress messages
-                if any(keyword in line.lower() for keyword in [
-                    'analyzing', 'building', 'collecting', 'copying', 'executing', 'writing'
-                ]):
+                if any(
+                    keyword in line.lower()
+                    for keyword in [
+                        "analyzing",
+                        "building",
+                        "collecting",
+                        "copying",
+                        "executing",
+                        "writing",
+                    ]
+                ):
                     progress_active.clear()  # Stop progress spinner
                     print(f"\r   {line}")
                     progress_active.set()  # Restart progress spinner
-                
+
                 # Show critical final steps
-                if any(keyword in line.lower() for keyword in [
-                    'copying version', 'copying 0 resources', 'copying bootloader', 'exe completed'
-                ]):
+                if any(
+                    keyword in line.lower()
+                    for keyword in [
+                        "copying version",
+                        "copying 0 resources",
+                        "copying bootloader",
+                        "exe completed",
+                    ]
+                ):
                     progress_active.clear()
                     print(f"\r   [FINAL] {line}")
                     progress_active.set()
-        
+
         process.wait()
         progress_active.clear()  # Stop progress indicator
-        
+
         elapsed_time = time.time() - start_time
         mins, secs = divmod(int(elapsed_time), 60)
-        
+
         print(f"\r   Build completed in {mins:02d}:{secs:02d}")
         print("   " + "=" * 50)
 
@@ -346,15 +375,15 @@ def install_desktop_integration():
     if platform.system().lower() != "linux":
         print("[SKIP] Desktop integration (not Linux)")
         return True
-    
+
     print("\n[DESKTOP] Installing desktop integration...")
-    
+
     try:
         result = subprocess.run(
             [sys.executable, "scripts/install_desktop_integration.py"],
             check=True,
             capture_output=True,
-            text=True
+            text=True,
         )
         print("[OK] Desktop integration installed")
         return True
@@ -396,35 +425,39 @@ def create_archive():
 def test_executable():
     """Test the executable to ensure PyQt6 works"""
     print("\n[TEST] Testing executable...")
-    
+
     system = platform.system().lower()
     if system == "windows":
         exe_path = Path("dist/storymaster.exe")
     else:
         exe_path = Path("dist/storymaster")
-    
+
     if not exe_path.exists():
         print(f"[ERROR] Executable not found at {exe_path}")
         return False
-    
+
     try:
         # Copy test script to dist directory
         test_script = Path("test_pyqt_bundle.py")
         if test_script.exists():
             shutil.copy2(test_script, "dist/test_pyqt_bundle.py")
-        
+
         # Run the test
         if system == "windows":
             result = subprocess.run(
                 ["dist/storymaster.exe", "dist/test_pyqt_bundle.py"],
-                capture_output=True, text=True, timeout=30
+                capture_output=True,
+                text=True,
+                timeout=30,
             )
         else:
             result = subprocess.run(
                 ["dist/storymaster", "dist/test_pyqt_bundle.py"],
-                capture_output=True, text=True, timeout=30
+                capture_output=True,
+                text=True,
+                timeout=30,
             )
-        
+
         if result.returncode == 0:
             print("[OK] Executable test passed!")
             print("   PyQt6 is properly bundled and working")
@@ -438,7 +471,7 @@ def test_executable():
                 print(f"   STDERR: {result.stderr}")
             print("   The executable was built but may have PyQt6 issues")
             return True  # Don't fail the build, just warn
-    
+
     except subprocess.TimeoutExpired:
         print("[WARNING] Executable test timed out")
         print("   The executable may work but testing failed")
@@ -447,6 +480,7 @@ def test_executable():
         print(f"[WARNING] Could not test executable: {e}")
         print("   The executable was built but testing failed")
         return True  # Don't fail the build
+
 
 def print_completion_info():
     """Print build completion information"""

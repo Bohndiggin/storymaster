@@ -9,11 +9,13 @@ from datetime import datetime
 from unittest.mock import Mock, patch
 
 
-
 from tests.test_qt_utils import QT_AVAILABLE, QApplication, QPointF, QRectF
 
 # Skip all tests in this module if Qt is not available
-pytestmark = pytest.mark.skipif(not QT_AVAILABLE, reason="PyQt6 not available in headless environment")
+pytestmark = pytest.mark.skipif(
+    not QT_AVAILABLE, reason="PyQt6 not available in headless environment"
+)
+
 
 class TestGeometryUtilities:
     """Test geometry-related utility functions"""

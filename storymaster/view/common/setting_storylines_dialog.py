@@ -39,7 +39,7 @@ class SettingStorylinesDialog(QDialog):
         self.setWindowTitle("Manage Setting Storylines")
         self.setModal(True)
         self.resize(700, 500)
-        
+
         # Apply theme styling
         self.setStyleSheet(
             get_dialog_style()

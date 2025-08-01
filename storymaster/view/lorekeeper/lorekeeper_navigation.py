@@ -2,18 +2,42 @@
 
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QFont, QIcon
-from PyQt6.QtWidgets import (QComboBox, QFrame, QHBoxLayout, QLabel, QLineEdit,
-                             QListWidget, QListWidgetItem, QPushButton,
-                             QSplitter, QStackedWidget, QVBoxLayout, QWidget)
+from PyQt6.QtWidgets import (
+    QComboBox,
+    QFrame,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QListWidget,
+    QListWidgetItem,
+    QPushButton,
+    QSplitter,
+    QStackedWidget,
+    QVBoxLayout,
+    QWidget,
+)
 
 from storymaster.model.lorekeeper.entity_mappings import (
-    ENTITY_MAPPINGS, MAIN_CATEGORIES, SUPPORTING_CATEGORIES, get_entity_icon,
-    get_entity_mapping, get_plural_name)
-from storymaster.view.common.theme import (COLORS, DIMENSIONS, FONTS,
-                                           get_button_style, get_label_style,
-                                           get_list_style, get_splitter_style)
-from storymaster.view.common.tooltips import (apply_general_tooltips,
-                                              apply_lorekeeper_tooltips)
+    ENTITY_MAPPINGS,
+    MAIN_CATEGORIES,
+    SUPPORTING_CATEGORIES,
+    get_entity_icon,
+    get_entity_mapping,
+    get_plural_name,
+)
+from storymaster.view.common.theme import (
+    COLORS,
+    DIMENSIONS,
+    FONTS,
+    get_button_style,
+    get_label_style,
+    get_list_style,
+    get_splitter_style,
+)
+from storymaster.view.common.tooltips import (
+    apply_general_tooltips,
+    apply_lorekeeper_tooltips,
+)
 
 
 class EntityListWidget(QListWidget):

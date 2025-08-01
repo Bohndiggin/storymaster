@@ -4,10 +4,21 @@ Test suite for the node system functionality
 
 import pytest
 from unittest.mock import Mock, patch, MagicMock
-from tests.test_qt_utils import QT_AVAILABLE, QApplication, QGraphicsItem, QGraphicsScene, QGraphicsView, QPainter, QPointF, Qt
+from tests.test_qt_utils import (
+    QT_AVAILABLE,
+    QApplication,
+    QGraphicsItem,
+    QGraphicsScene,
+    QGraphicsView,
+    QPainter,
+    QPointF,
+    Qt,
+)
 
 # Skip all tests in this module if Qt is not available
-pytestmark = pytest.mark.skipif(not QT_AVAILABLE, reason="PyQt6 not available in headless environment")
+pytestmark = pytest.mark.skipif(
+    not QT_AVAILABLE, reason="PyQt6 not available in headless environment"
+)
 
 from storymaster.model.database.schema.base import (
     LitographyNode,

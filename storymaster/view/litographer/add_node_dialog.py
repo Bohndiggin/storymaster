@@ -37,12 +37,12 @@ class AddNodeDialog(QDialog):
         self.node_name_edit = QLineEdit()
         self.node_name_edit.setStyleSheet(get_input_style())
         self.node_name_edit.setPlaceholderText("Enter node name...")
-        
+
         self.node_description_edit = QTextEdit()
         self.node_description_edit.setStyleSheet(get_input_style())
         self.node_description_edit.setMaximumHeight(80)
         self.node_description_edit.setPlaceholderText("Optional description...")
-        
+
         self.node_type_combo = QComboBox()
         self.node_type_combo.setStyleSheet(get_input_style())
         apply_litographer_tooltips(self.node_type_combo, "node_type")
@@ -85,9 +85,13 @@ class AddNodeDialog(QDialog):
         if self.exec() == QDialog.DialogCode.Accepted:
             name = self.node_name_edit.text().strip()
             description = self.node_description_edit.toPlainText().strip()
-            
+
             return {
-                "name": name if name else f"New {self.node_type_combo.currentData().value} Node",
+                "name": (
+                    name
+                    if name
+                    else f"New {self.node_type_combo.currentData().value} Node"
+                ),
                 "description": description if description else None,
                 "node_type": self.node_type_combo.currentData(),
             }

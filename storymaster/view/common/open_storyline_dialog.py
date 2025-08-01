@@ -28,13 +28,9 @@ class OpenStorylineDialog(QDialog):
         self.model = model
         self.setWindowTitle("Open Storyline")
         self.setMinimumWidth(350)
-        
+
         # Apply theme styling
-        self.setStyleSheet(
-            get_dialog_style()
-            + get_button_style()
-            + get_input_style()
-        )
+        self.setStyleSheet(get_dialog_style() + get_button_style() + get_input_style())
 
         # --- Create Widgets ---
         self.storyline_combo = QComboBox()

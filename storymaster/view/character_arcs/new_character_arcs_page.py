@@ -219,10 +219,14 @@ class CharacterArcDetailPage(QWidget):
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        scroll_area.setStyleSheet(f"QScrollArea {{ background-color: {COLORS['bg_main']}; border: none; }}")
+        scroll_area.setStyleSheet(
+            f"QScrollArea {{ background-color: {COLORS['bg_main']}; border: none; }}"
+        )
 
         details_widget = QWidget()
-        details_widget.setStyleSheet(f"QWidget {{ background-color: {COLORS['bg_main']}; }}")
+        details_widget.setStyleSheet(
+            f"QWidget {{ background-color: {COLORS['bg_main']}; }}"
+        )
         details_layout = QVBoxLayout()
 
         # Arc information section

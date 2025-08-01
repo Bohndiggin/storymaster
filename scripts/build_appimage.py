@@ -106,7 +106,7 @@ def install_python_app(appdir):
 
         # Copy any additional data files that might be needed
         data_files = ["world_building_packages/", "tests/model/database/test_data/"]
-        
+
         for file_path in data_files:
             src = Path(file_path)
             if src.exists():

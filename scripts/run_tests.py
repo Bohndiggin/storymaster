@@ -14,42 +14,57 @@ current_dir = Path(__file__).parent
 project_root = current_dir.parent
 sys.path.insert(0, str(project_root))
 
+
 # Handle headless environments (CI/CD)
 def setup_headless_qt():
     """Configure Qt for headless operation"""
-    os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
-    os.environ.setdefault('DISPLAY', ':99')
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    os.environ.setdefault("DISPLAY", ":99")
+
 
 # Set up headless mode before importing Qt
-if 'CI' in os.environ or 'GITHUB_ACTIONS' in os.environ or '--headless' in sys.argv:
+if "CI" in os.environ or "GITHUB_ACTIONS" in os.environ or "--headless" in sys.argv:
     setup_headless_qt()
 
 try:
     from PyQt6.QtCore import QPointF
     from PyQt6.QtWidgets import QApplication, QGraphicsScene
+
     QT_AVAILABLE = True
 except ImportError as e:
     print(f"WARNING: PyQt6 not available ({e})")
     print("   Running in headless mode with mocked Qt components")
     QT_AVAILABLE = False
-    
+
     # Mock Qt classes for headless operation
     class MockQPointF:
         def __init__(self, x=0, y=0):
             self._x = x
             self._y = y
-        def x(self): return self._x
-        def y(self): return self._y
-    
+
+        def x(self):
+            return self._x
+
+        def y(self):
+            return self._y
+
     class MockQApplication:
-        def __init__(self, *args): pass
-        def quit(self): pass
-    
+        def __init__(self, *args):
+            pass
+
+        def quit(self):
+            pass
+
     class MockQGraphicsScene:
-        def __init__(self): self._items = []
-        def items(self): return self._items
-        def addItem(self, item): self._items.append(item)
-    
+        def __init__(self):
+            self._items = []
+
+        def items(self):
+            return self._items
+
+        def addItem(self, item):
+            self._items.append(item)
+
     QPointF = MockQPointF
     QApplication = MockQApplication
     QGraphicsScene = MockQGraphicsScene
@@ -200,7 +215,10 @@ def run_node_system_integration_tests():
     tests_total += 1
     try:
         if QT_AVAILABLE:
-            from storymaster.controller.common.main_page_controller import create_node_item
+            from storymaster.controller.common.main_page_controller import (
+                create_node_item,
+            )
+
             print("   PASS: Node system imports work")
         else:
             print("   PASS: Node system imports skipped in headless mode")
@@ -216,6 +234,7 @@ def run_node_system_integration_tests():
     tests_total += 1
     try:
         if QT_AVAILABLE:
+
             class MockNodeData:
                 def __init__(self, id_val, node_type_name="EXPOSITION"):
                     self.id = id_val
@@ -258,6 +277,7 @@ def run_node_system_integration_tests():
         if QT_AVAILABLE:
             # Ensure node_item exists from previous test
             if "node_item" not in locals():
+
                 class MockNodeData:
                     def __init__(self, id_val, node_type_name="EXPOSITION"):
                         self.id = id_val
@@ -270,7 +290,7 @@ def run_node_system_integration_tests():
                 class MockController:
                     def __init__(self):
                         pass
-                        
+
                 node_data = MockNodeData(1)
                 controller = MockController()
                 node_item = create_node_item(0, 0, 80, 80, node_data, controller)
@@ -372,12 +392,12 @@ def run_extended_test_suite():
     tests_total += 1
     try:
         from enum import Enum
-        
+
         # Define test enums inline since they were moved out of common_model
         class StorioModes(Enum):
             LOREKEEPER = "Lorekeeper"
             LITOGRAPHER = "Litographer"
-        
+
         class GroupListTypes(Enum):
             ACTORS = "actors"
             FACTIONS = "factions"
@@ -484,7 +504,7 @@ def main():
 
     # Create QApplication for GUI tests (or mock in headless mode)
     app = QApplication([])
-    
+
     if not QT_AVAILABLE:
         print("Storymaster Headless Test Suite")
         print("   (Running with mocked Qt components)")

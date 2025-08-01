@@ -31,13 +31,9 @@ class NewUserDialog(QDialog):
         self.model = model
         self.setWindowTitle("Create New User")
         self.setMinimumWidth(350)
-        
+
         # Apply theme styling
-        self.setStyleSheet(
-            get_dialog_style()
-            + get_button_style()
-            + get_input_style()
-        )
+        self.setStyleSheet(get_dialog_style() + get_button_style() + get_input_style())
 
         # --- Create Widgets ---
         self.username_line_edit = QLineEdit()

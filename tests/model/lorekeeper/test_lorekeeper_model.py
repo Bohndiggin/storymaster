@@ -8,9 +8,10 @@ from unittest.mock import Mock, patch
 from tests.test_qt_utils import QT_AVAILABLE, QApplication
 
 
-
 # Skip all tests in this module if Qt is not available
-pytestmark = pytest.mark.skipif(not QT_AVAILABLE, reason="PyQt6 not available in headless environment")
+pytestmark = pytest.mark.skipif(
+    not QT_AVAILABLE, reason="PyQt6 not available in headless environment"
+)
 
 from storymaster.model.database.schema.base import (
     Actor,
@@ -24,8 +25,10 @@ from storymaster.model.database.schema.base import (
     Class_,
     Background,
 )
+
 # Test enums moved inline since they're only used in tests
 from enum import Enum
+
 
 class GroupListTypes(Enum):
     ACTORS = "actors"
@@ -39,8 +42,21 @@ class GroupListTypes(Enum):
     SUB_RACES = "sub_races"
     WORLD_DATAS = "world_datas"
 
+
 class GroupData:
-    def __init__(self, actors, backgrounds, classes, factions, history, locations, objects, races, sub_races, world_datas):
+    def __init__(
+        self,
+        actors,
+        backgrounds,
+        classes,
+        factions,
+        history,
+        locations,
+        objects,
+        races,
+        sub_races,
+        world_datas,
+    ):
         self.actors = actors
         self.backgrounds = backgrounds
         self.classes = classes

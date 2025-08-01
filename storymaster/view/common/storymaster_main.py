@@ -54,7 +54,12 @@ class Ui_StorymasterMainWindow(object):
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout.setSpacing(0)
         self.horizontalLayout.setObjectName("horizontalLayout")
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        spacerItem = QtWidgets.QSpacerItem(
+            40,
+            20,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+        )
         self.horizontalLayout.addItem(spacerItem)
         self.litographerNavButton = QtWidgets.QPushButton(parent=self.bottomNavBar)
         self.litographerNavButton.setCheckable(True)
@@ -77,7 +82,12 @@ class Ui_StorymasterMainWindow(object):
         self.characterArcsNavButton.setObjectName("characterArcsNavButton")
         self.navButtonGroup.addButton(self.characterArcsNavButton)
         self.horizontalLayout.addWidget(self.characterArcsNavButton)
-        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        spacerItem1 = QtWidgets.QSpacerItem(
+            40,
+            20,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+        )
         self.horizontalLayout.addItem(spacerItem1)
         self.verticalLayout.addWidget(self.bottomNavBar)
         StorymasterMainWindow.setCentralWidget(self.centralWidget)
@@ -174,50 +184,126 @@ class Ui_StorymasterMainWindow(object):
 
     def retranslateUi(self, StorymasterMainWindow):
         _translate = QtCore.QCoreApplication.translate
-        StorymasterMainWindow.setWindowTitle(_translate("StorymasterMainWindow", "Storymaster"))
-        self.litographerToolbar.setWindowTitle(_translate("StorymasterMainWindow", "toolBar"))
-        self.litographerNavButton.setText(_translate("StorymasterMainWindow", "Litographer"))
-        self.lorekeeperNavButton.setText(_translate("StorymasterMainWindow", "Lorekeeper"))
-        self.characterArcsNavButton.setText(_translate("StorymasterMainWindow", "Character Arcs"))
+        StorymasterMainWindow.setWindowTitle(
+            _translate("StorymasterMainWindow", "Storymaster")
+        )
+        self.litographerToolbar.setWindowTitle(
+            _translate("StorymasterMainWindow", "toolBar")
+        )
+        self.litographerNavButton.setText(
+            _translate("StorymasterMainWindow", "Litographer")
+        )
+        self.lorekeeperNavButton.setText(
+            _translate("StorymasterMainWindow", "Lorekeeper")
+        )
+        self.characterArcsNavButton.setText(
+            _translate("StorymasterMainWindow", "Character Arcs")
+        )
         self.menuFile.setTitle(_translate("StorymasterMainWindow", "File"))
         self.menuStoryline.setTitle(_translate("StorymasterMainWindow", "Storyline"))
         self.menuSetting.setTitle(_translate("StorymasterMainWindow", "Setting"))
         self.menuUser.setTitle(_translate("StorymasterMainWindow", "User"))
         self.menuEdit.setTitle(_translate("StorymasterMainWindow", "Edit"))
         self.menuHelp.setTitle(_translate("StorymasterMainWindow", "Help"))
-        self.actionNewStoryline.setText(_translate("StorymasterMainWindow", "New Storyline"))
-        self.actionNewStoryline.setToolTip(_translate("StorymasterMainWindow", "Create a new storyline"))
-        self.actionNewSetting.setText(_translate("StorymasterMainWindow", "New Setting"))
-        self.actionNewSetting.setToolTip(_translate("StorymasterMainWindow", "Create a new setting"))
-        self.actionSwitchStoryline.setText(_translate("StorymasterMainWindow", "Switch Storyline"))
-        self.actionSwitchStoryline.setToolTip(_translate("StorymasterMainWindow", "Switch to a different storyline"))
-        self.actionSwitchSetting.setText(_translate("StorymasterMainWindow", "Switch Setting"))
-        self.actionSwitchSetting.setToolTip(_translate("StorymasterMainWindow", "Switch to a different setting"))
+        self.actionNewStoryline.setText(
+            _translate("StorymasterMainWindow", "New Storyline")
+        )
+        self.actionNewStoryline.setToolTip(
+            _translate("StorymasterMainWindow", "Create a new storyline")
+        )
+        self.actionNewSetting.setText(
+            _translate("StorymasterMainWindow", "New Setting")
+        )
+        self.actionNewSetting.setToolTip(
+            _translate("StorymasterMainWindow", "Create a new setting")
+        )
+        self.actionSwitchStoryline.setText(
+            _translate("StorymasterMainWindow", "Switch Storyline")
+        )
+        self.actionSwitchStoryline.setToolTip(
+            _translate("StorymasterMainWindow", "Switch to a different storyline")
+        )
+        self.actionSwitchSetting.setText(
+            _translate("StorymasterMainWindow", "Switch Setting")
+        )
+        self.actionSwitchSetting.setToolTip(
+            _translate("StorymasterMainWindow", "Switch to a different setting")
+        )
         self.actionNewPlot.setText(_translate("StorymasterMainWindow", "New Plot"))
-        self.actionNewPlot.setToolTip(_translate("StorymasterMainWindow", "Create a new plot in the current storyline"))
+        self.actionNewPlot.setToolTip(
+            _translate(
+                "StorymasterMainWindow", "Create a new plot in the current storyline"
+            )
+        )
         self.actionOpen.setText(_translate("StorymasterMainWindow", "Open Storyline"))
-        self.actionOpen.setToolTip(_translate("StorymasterMainWindow", "Open a different storyline"))
-        self.actionSwitchPlot.setText(_translate("StorymasterMainWindow", "Switch Plot"))
-        self.actionSwitchPlot.setToolTip(_translate("StorymasterMainWindow", "Switch to a different plot in the current storyline"))
-        self.actionDeletePlot.setText(_translate("StorymasterMainWindow", "Delete Plot"))
-        self.actionDeletePlot.setToolTip(_translate("StorymasterMainWindow", "Delete the current plot"))
+        self.actionOpen.setToolTip(
+            _translate("StorymasterMainWindow", "Open a different storyline")
+        )
+        self.actionSwitchPlot.setText(
+            _translate("StorymasterMainWindow", "Switch Plot")
+        )
+        self.actionSwitchPlot.setToolTip(
+            _translate(
+                "StorymasterMainWindow",
+                "Switch to a different plot in the current storyline",
+            )
+        )
+        self.actionDeletePlot.setText(
+            _translate("StorymasterMainWindow", "Delete Plot")
+        )
+        self.actionDeletePlot.setToolTip(
+            _translate("StorymasterMainWindow", "Delete the current plot")
+        )
         self.actionExit.setText(_translate("StorymasterMainWindow", "Exit"))
         self.actionUndo.setText(_translate("StorymasterMainWindow", "Undo"))
         self.actionRedo.setText(_translate("StorymasterMainWindow", "Redo"))
         self.actionAbout.setText(_translate("StorymasterMainWindow", "About"))
         self.actionAddNode.setText(_translate("StorymasterMainWindow", "Add Node"))
-        self.actionAddNode.setToolTip(_translate("StorymasterMainWindow", "Add a new node to the canvas"))
+        self.actionAddNode.setToolTip(
+            _translate("StorymasterMainWindow", "Add a new node to the canvas")
+        )
         self.actionNewUser.setText(_translate("StorymasterMainWindow", "New User"))
-        self.actionNewUser.setToolTip(_translate("StorymasterMainWindow", "Create a new user"))
-        self.actionSwitchUser.setText(_translate("StorymasterMainWindow", "Switch User"))
-        self.actionSwitchUser.setToolTip(_translate("StorymasterMainWindow", "Switch to a different user"))
-        self.actionManageUsers.setText(_translate("StorymasterMainWindow", "Manage Users"))
-        self.actionManageUsers.setToolTip(_translate("StorymasterMainWindow", "Manage users (add, switch, delete)"))
-        self.actionCreateBackup.setText(_translate("StorymasterMainWindow", "Create Backup"))
-        self.actionCreateBackup.setToolTip(_translate("StorymasterMainWindow", "Create a manual backup of the database"))
-        self.actionDatabaseManager.setText(_translate("StorymasterMainWindow", "Database Manager"))
-        self.actionDatabaseManager.setToolTip(_translate("StorymasterMainWindow", "Manage databases and backups"))
-        self.actionManageSetting.setText(_translate("StorymasterMainWindow", "Import Lore Packages"))
-        self.actionManageSetting.setToolTip(_translate("StorymasterMainWindow", "Import world building packages into current setting"))
-        self.actionImportFromJSON.setText(_translate("StorymasterMainWindow", "Import from JSON"))
-        self.actionImportFromJSON.setToolTip(_translate("StorymasterMainWindow", "Import storyline data from JSON file"))
+        self.actionNewUser.setToolTip(
+            _translate("StorymasterMainWindow", "Create a new user")
+        )
+        self.actionSwitchUser.setText(
+            _translate("StorymasterMainWindow", "Switch User")
+        )
+        self.actionSwitchUser.setToolTip(
+            _translate("StorymasterMainWindow", "Switch to a different user")
+        )
+        self.actionManageUsers.setText(
+            _translate("StorymasterMainWindow", "Manage Users")
+        )
+        self.actionManageUsers.setToolTip(
+            _translate("StorymasterMainWindow", "Manage users (add, switch, delete)")
+        )
+        self.actionCreateBackup.setText(
+            _translate("StorymasterMainWindow", "Create Backup")
+        )
+        self.actionCreateBackup.setToolTip(
+            _translate(
+                "StorymasterMainWindow", "Create a manual backup of the database"
+            )
+        )
+        self.actionDatabaseManager.setText(
+            _translate("StorymasterMainWindow", "Database Manager")
+        )
+        self.actionDatabaseManager.setToolTip(
+            _translate("StorymasterMainWindow", "Manage databases and backups")
+        )
+        self.actionManageSetting.setText(
+            _translate("StorymasterMainWindow", "Import Lore Packages")
+        )
+        self.actionManageSetting.setToolTip(
+            _translate(
+                "StorymasterMainWindow",
+                "Import world building packages into current setting",
+            )
+        )
+        self.actionImportFromJSON.setText(
+            _translate("StorymasterMainWindow", "Import from JSON")
+        )
+        self.actionImportFromJSON.setToolTip(
+            _translate("StorymasterMainWindow", "Import storyline data from JSON file")
+        )

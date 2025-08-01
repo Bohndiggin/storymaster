@@ -2,14 +2,26 @@
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import (QDialog, QHBoxLayout, QLabel, QLineEdit,
-                             QListWidget, QListWidgetItem, QMessageBox,
-                             QPushButton, QVBoxLayout)
+from PyQt6.QtWidgets import (
+    QDialog,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QListWidget,
+    QListWidgetItem,
+    QMessageBox,
+    QPushButton,
+    QVBoxLayout,
+)
 
 from storymaster.model.lorekeeper.entity_mappings import get_entity_mapping
-from storymaster.view.common.theme import (get_button_style, get_dialog_style,
-                                           get_input_style, get_label_style,
-                                           get_list_style)
+from storymaster.view.common.theme import (
+    get_button_style,
+    get_dialog_style,
+    get_input_style,
+    get_label_style,
+    get_list_style,
+)
 
 
 class EntitySelectionDialog(QDialog):

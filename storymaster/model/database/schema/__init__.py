@@ -93,7 +93,7 @@ __all__ = [
     "FactionAOnBRelations",
     "FactionMembers",
     "Location",
-    "LocationAOnBRelations", 
+    "LocationAOnBRelations",
     "LocationEconomicRelations",
     "LocationGeographicRelations",
     "LocationHierarchy",

@@ -54,7 +54,7 @@ class NodeNotesDialog(QDialog):
             f"Notes for {node_data.name} ({node_data.node_type.name.title()})"
         )
         self.setMinimumSize(600, 400)
-        
+
         # Apply comprehensive theme styling
         self.setStyleSheet(
             get_dialog_style()
@@ -576,7 +576,9 @@ class LoreSelectionDialog(QDialog):
         # Entity type selector
         type_layout = QHBoxLayout()
         entity_type_label = QLabel("Entity Type:")
-        entity_type_label.setStyleSheet("background-color: transparent; color: #ffffff;")
+        entity_type_label.setStyleSheet(
+            "background-color: transparent; color: #ffffff;"
+        )
         type_layout.addWidget(entity_type_label)
 
         self.entity_type_combo = QComboBox()
@@ -601,7 +603,9 @@ class LoreSelectionDialog(QDialog):
 
         # Entity list
         select_entity_label = QLabel("Select Entity:")
-        select_entity_label.setStyleSheet("background-color: transparent; color: #ffffff;")
+        select_entity_label.setStyleSheet(
+            "background-color: transparent; color: #ffffff;"
+        )
         layout.addWidget(select_entity_label)
         self.entity_list = QListWidget()
         self.entity_list.itemDoubleClicked.connect(self.accept)

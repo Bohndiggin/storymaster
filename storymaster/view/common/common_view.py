@@ -30,6 +30,6 @@ class MainView(BaseView):
         super().__init__()
         self.ui = Ui_StorymasterMainWindow()
         self.ui.setupUi(self)
-        
+
         # Override the generated stylesheet with our theme system
         self.setStyleSheet(get_main_window_style())

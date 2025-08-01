@@ -56,7 +56,7 @@ class DatabaseManagerDialog(QDialog):
         self.setWindowTitle("Database & Backup Manager")
         self.setModal(True)
         self.resize(600, 500)
-        
+
         # Apply theme styling
         self.setStyleSheet(
             get_dialog_style()

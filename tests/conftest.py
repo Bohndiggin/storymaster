@@ -7,15 +7,18 @@ import os
 import sys
 from unittest.mock import patch, Mock, MagicMock
 
+
 # Handle headless environments (CI/CD)
 def setup_headless_qt():
     """Configure Qt for headless operation"""
-    os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
-    os.environ.setdefault('DISPLAY', ':99')
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    os.environ.setdefault("DISPLAY", ":99")
+
 
 # Set up headless mode before importing Qt
-if 'CI' in os.environ or 'GITHUB_ACTIONS' in os.environ or '--headless' in sys.argv:
+if "CI" in os.environ or "GITHUB_ACTIONS" in os.environ or "--headless" in sys.argv:
     setup_headless_qt()
+
 
 # Mock problematic application modules before they're imported
 def mock_application_modules():
@@ -23,17 +26,17 @@ def mock_application_modules():
     if not QT_AVAILABLE:
         # Mock the problematic application modules
         problematic_modules = [
-            'storymaster.view.common.plot_manager_dialog',
-            'storymaster.controller.common.main_page_controller', 
-            'storymaster.view.common.custom_widgets',
-            'storymaster.view.common.spellcheck',
-            'storymaster.view.common.new_user_dialog',
-            'storymaster.view.common.new_setting_dialog',
-            'storymaster.view.common.new_storyline_dialog',
-            'storymaster.view.common.storyline_settings_dialog',
-            'storymaster.view.common.spell_check_config'
+            "storymaster.view.common.plot_manager_dialog",
+            "storymaster.controller.common.main_page_controller",
+            "storymaster.view.common.custom_widgets",
+            "storymaster.view.common.spellcheck",
+            "storymaster.view.common.new_user_dialog",
+            "storymaster.view.common.new_setting_dialog",
+            "storymaster.view.common.new_storyline_dialog",
+            "storymaster.view.common.storyline_settings_dialog",
+            "storymaster.view.common.spell_check_config",
         ]
-        
+
         for module_name in problematic_modules:
             if module_name not in sys.modules:
                 mock_module = MagicMock()
@@ -54,13 +57,15 @@ def mock_application_modules():
                 mock_module.NewUserDialog = MagicMock()
                 mock_module.NewSettingDialog = MagicMock()
                 mock_module.NewStorylineDialog = MagicMock()
-                mock_module.StorylineSettingsDialog = MagicMock() 
+                mock_module.StorylineSettingsDialog = MagicMock()
                 mock_module.SpellCheckConfigDialog = MagicMock()
                 sys.modules[module_name] = mock_module
+
 
 # Try to import Qt first to determine availability
 try:
     from PyQt6.QtWidgets import QApplication, QMessageBox
+
     QT_AVAILABLE = True
 except ImportError as e:
     QT_AVAILABLE = False
@@ -70,34 +75,35 @@ mock_application_modules()
 
 # Continue with Qt mocking if needed
 if not QT_AVAILABLE:
-    
+
     class MockQApplication:
         @staticmethod
         def instance():
             return None
+
         def __init__(self, *args):
             pass
-    
+
     class MockQMessageBox:
         class StandardButton:
-            Yes = 'Yes'
-        
+            Yes = "Yes"
+
         @staticmethod
         def information(*args, **kwargs):
             return Mock()
-        
+
         @staticmethod
         def warning(*args, **kwargs):
             return Mock()
-            
+
         @staticmethod
         def critical(*args, **kwargs):
             return Mock()
-            
+
         @staticmethod
         def question(*args, **kwargs):
             return MockQMessageBox.StandardButton.Yes
-    
+
     QApplication = MockQApplication
     QMessageBox = MockQMessageBox
 
@@ -108,7 +114,7 @@ def qapp():
     if not QT_AVAILABLE:
         # Return mock app for headless environments
         return MockQApplication()
-    
+
     app = QApplication.instance()
     if app is None:
         app = QApplication([])
@@ -125,10 +131,10 @@ def mock_message_boxes():
             "information": Mock(),
             "warning": Mock(),
             "critical": Mock(),
-            "question": Mock(return_value='Yes'),
+            "question": Mock(return_value="Yes"),
         }
         return
-    
+
     with patch.object(
         QMessageBox, "information", return_value=Mock()
     ) as mock_info, patch.object(

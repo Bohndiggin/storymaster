@@ -6,11 +6,14 @@ import pytest
 from enum import Enum
 from storymaster.model.common.common_model import BaseModel
 
+
 # Test enums - moved here since they're only used in tests
 class StorioModes(Enum):
     """The modes in storio"""
+
     LOREKEEPER = "Lorekeeper"
     LITOGRAPHER = "Litographer"
+
 
 class GroupListTypes(Enum):
     ACTORS = "actors"
@@ -24,12 +27,13 @@ class GroupListTypes(Enum):
     SUB_RACES = "sub_races"
     WORLD_DATAS = "world_datas"
 
+
 class GroupData:
     """Structure of data grouped"""
-    
+
     def __init__(
         self,
-        actors, 
+        actors,
         backgrounds,
         classes,
         factions,
@@ -57,6 +61,8 @@ class GroupData:
         if not return_list:
             return []
         return [item.as_dict() for item in return_list]
+
+
 from storymaster.model.database.schema.base import (
     Actor,
     Background,

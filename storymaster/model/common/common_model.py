@@ -470,7 +470,6 @@ class BaseModel:
             session.add(new_item)
             session.commit()
 
-
     # Character Arc Management Methods
     def get_character_arcs(
         self, storyline_id: int | None = None
@@ -899,7 +898,7 @@ class BaseModel:
                 .options(
                     joinedload(schema.Actor.setting),
                     joinedload(schema.Actor.background),
-                    joinedload(schema.Actor.alignment)
+                    joinedload(schema.Actor.alignment),
                 )
                 .filter(schema.Actor.setting_id == setting_id)
                 .order_by(schema.Actor.first_name, schema.Actor.last_name)

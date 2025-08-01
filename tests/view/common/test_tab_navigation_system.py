@@ -5,12 +5,21 @@ Comprehensive tests for the tab navigation system
 import pytest
 from unittest.mock import Mock, patch, MagicMock, call
 from tests.test_qt_utils import (
-    QT_AVAILABLE, QKeyEvent, Qt, QTextEdit, QLineEdit, QComboBox, QWidget,
-    QVBoxLayout, QApplication
+    QT_AVAILABLE,
+    QKeyEvent,
+    Qt,
+    QTextEdit,
+    QLineEdit,
+    QComboBox,
+    QWidget,
+    QVBoxLayout,
+    QApplication,
 )
 
 # Skip all tests in this module if Qt is not available
-pytestmark = pytest.mark.skipif(not QT_AVAILABLE, reason="PyQt6 not available in headless environment")
+pytestmark = pytest.mark.skipif(
+    not QT_AVAILABLE, reason="PyQt6 not available in headless environment"
+)
 
 # Conditionally import Qt-dependent modules
 if QT_AVAILABLE:
@@ -27,6 +36,7 @@ if QT_AVAILABLE:
 else:
     # Mock for headless environments
     from unittest.mock import MagicMock
+
     TabNavigationTextEdit = MagicMock()
     TabNavigationLineEdit = MagicMock()
     TabNavigationComboBox = MagicMock()

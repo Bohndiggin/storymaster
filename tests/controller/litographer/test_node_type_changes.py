@@ -6,7 +6,9 @@ import pytest
 from tests.test_qt_utils import QT_AVAILABLE, QPointF, QApplication, QGraphicsScene
 
 # Skip all tests in this module if Qt is not available
-pytestmark = pytest.mark.skipif(not QT_AVAILABLE, reason="PyQt6 not available in headless environment")
+pytestmark = pytest.mark.skipif(
+    not QT_AVAILABLE, reason="PyQt6 not available in headless environment"
+)
 
 # Conditionally import Qt-dependent modules
 if QT_AVAILABLE:
@@ -14,6 +16,7 @@ if QT_AVAILABLE:
 else:
     # Mock for headless environments
     from unittest.mock import MagicMock
+
     create_node_item = MagicMock()
 
 

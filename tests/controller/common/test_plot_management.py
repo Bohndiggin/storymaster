@@ -6,8 +6,10 @@ import pytest
 from unittest.mock import Mock, patch, MagicMock
 from tests.test_qt_utils import QT_AVAILABLE, QApplication, QDialog, QMessageBox
 
-# Skip all tests in this module if Qt is not available  
-pytestmark = pytest.mark.skipif(not QT_AVAILABLE, reason="PyQt6 not available in headless environment")
+# Skip all tests in this module if Qt is not available
+pytestmark = pytest.mark.skipif(
+    not QT_AVAILABLE, reason="PyQt6 not available in headless environment"
+)
 
 from storymaster.model.database.schema.base import (
     LitographyPlot,
@@ -22,6 +24,7 @@ if QT_AVAILABLE:
 else:
     # Mock for headless environments
     from unittest.mock import MagicMock
+
     PlotManagerDialog = MagicMock()
 
 
