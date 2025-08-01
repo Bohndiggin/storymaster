@@ -123,6 +123,9 @@ def create_first_user(model: BaseModel) -> bool:
         return True
 
     try:
+        # Extract world building packages before saving
+        selected_packages = setting_data.pop("_selected_packages", [])
+        
         user_model.add_row("setting", setting_data)
 
         # Get the newly created setting
@@ -133,6 +136,14 @@ def create_first_user(model: BaseModel) -> bool:
 
         if not new_setting:
             raise ValueError("Failed to retrieve newly created setting")
+
+        # Import selected world building packages if any
+        if selected_packages:
+            try:
+                setting_dialog.import_packages_for_setting(selected_packages, new_setting.id)
+            except Exception as pkg_error:
+                print(f"Warning: Error importing world building packages: {pkg_error}")
+                # Don't fail the entire setup for package import errors
 
         QMessageBox.information(
             None,

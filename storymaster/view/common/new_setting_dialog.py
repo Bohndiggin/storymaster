@@ -321,10 +321,22 @@ class NewSettingDialog(QDialog):
         Returns None if canceled.
         """
         if self.exec() == QDialog.DialogCode.Accepted:
+            user_id = self.user_combo.currentData()
+            
+            # Validate that we have a valid user_id
+            if user_id is None:
+                QMessageBox.critical(
+                    self,
+                    "Invalid User Selection",
+                    "Please select a valid user. If no users are available, "
+                    "you may need to create a user first."
+                )
+                return None
+            
             setting_data = {
                 "name": self.name_line_edit.text().strip(),
                 "description": self.description_text_edit.toPlainText().strip(),
-                "user_id": self.user_combo.currentData(),
+                "user_id": user_id,
             }
             
             # Store selected packages to import after setting is created
