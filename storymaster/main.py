@@ -38,6 +38,38 @@ from storymaster.controller.common.user_startup import get_startup_user_id
 from storymaster.model.common.common_model import BaseModel
 from storymaster.view.common.common_view import MainView
 
+
+def debug_environment():
+    """Debug the environment for troubleshooting AppImage issues"""
+    print("=== Storymaster Environment Debug ===")
+    print(f"Frozen: {getattr(sys, 'frozen', False)}")
+    print(f"sys.executable: {sys.executable}")
+    print(f"sys.argv[0]: {sys.argv[0] if sys.argv else 'None'}")
+    print(f"__file__: {__file__}")
+    print(f"Current working directory: {Path.cwd()}")
+    
+    if getattr(sys, 'frozen', False):
+        if hasattr(sys, '_MEIPASS'):
+            print(f"PyInstaller bundle dir: {sys._MEIPASS}")
+            bundle_dir = Path(sys._MEIPASS)
+            wb_path = bundle_dir / "world_building_packages"
+            print(f"Bundle world_building_packages exists: {wb_path.exists()}")
+            if wb_path.exists():
+                print(f"Bundle world_building_packages files: {list(wb_path.glob('*.json'))}")
+    
+    # Test our utility function
+    try:
+        from storymaster.view.common.package_utils import get_world_building_packages_path
+        path = get_world_building_packages_path()
+        print(f"Package utility found path: {path}")
+    except ImportError as e:
+        print(f"Failed to import package utilities: {e}")
+    except Exception as e:
+        print(f"Error testing package utilities: {e}")
+    
+    print("======================================")
+    print()
+
 def check_and_run_migrations():
     """Check if database migrations are needed and run them"""
     try:
@@ -89,6 +121,21 @@ def check_and_run_migrations():
 
 
 if __name__ == "__main__":
+    # Check for debug flag
+    if "--debug-packages" in sys.argv:
+        debug_environment()
+        # Also test the utility directly
+        try:
+            from storymaster.view.common.package_utils import debug_world_building_packages
+            print(debug_world_building_packages())
+        except Exception as e:
+            print(f"Error running package debug: {e}")
+        sys.exit(0)
+    
+    # Enable debug output for AppImage troubleshooting (can be removed in production)
+    if getattr(sys, 'frozen', False):
+        debug_environment()
+    
     app = QApplication(sys.argv)
 
     # Check and run database migrations if needed

@@ -17,6 +17,8 @@ from PyQt6.QtWidgets import (
     QScrollArea,
 )
 
+from storymaster.view.common.package_utils import get_world_building_packages_path, debug_world_building_packages
+
 from storymaster.view.common.theme import (
     get_dialog_style,
     get_label_style,
@@ -26,14 +28,133 @@ from storymaster.view.common.theme import (
 
 # Import the world building import functionality
 import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
+from pathlib import Path
+
+# Add scripts directory to path with robust resolution
+current_file = Path(__file__).resolve()
+# Go up from: storymaster/view/common/import_lore_packages_dialog.py -> project root
+project_root = current_file.parent.parent.parent.parent
+scripts_dir = project_root / "scripts"
+
+if scripts_dir.exists():
+    sys.path.insert(0, str(scripts_dir))
+
 try:
     from import_world_building import import_world_building_package
-except ImportError:
-    # Fallback if import fails
-    def import_world_building_package(json_file_path: str, target_setting_id: int):
-        print(f"Warning: Could not import from {json_file_path} - import_world_building not available")
-        return False
+except ImportError as e:
+    # Import the necessary components for the embedded implementation
+    import json
+    from sqlalchemy.orm import Session
+    from storymaster.model.database import schema
+    
+    print(f"Warning: Could not import import_world_building module ({e}), using embedded implementation")
+    
+    def import_world_building_package(json_file_path: str, target_setting_id: int) -> bool:
+        """
+        Embedded world building package import functionality.
+        """
+        # Validate file exists
+        if not os.path.exists(json_file_path):
+            print(f"❌ JSON file not found: {json_file_path}")
+            return False
+        
+        # Load JSON data
+        try:
+            with open(json_file_path, 'r', encoding='utf-8') as f:
+                package_data = json.load(f)
+        except Exception as e:
+            print(f"❌ Error loading JSON file: {e}")
+            return False
+        
+        # Validate JSON structure
+        if not isinstance(package_data, dict):
+            print("❌ JSON must be a dictionary with table names as keys")
+            return False
+        
+        # Get package info if available
+        package_info = package_data.get('_package_info', {})
+        package_name = package_info.get('display_name', os.path.basename(json_file_path))
+        
+        print(f"📦 Importing world building package: {package_name}")
+        print(f"🎯 Target setting ID: {target_setting_id}")
+        
+        # Table name to SQLAlchemy class mapping (key tables for character arcs)
+        table_class_map = {
+            'arc_type': schema.ArcType,
+            'alignment': schema.Alignment,
+            'background': schema.Background, 
+            'class': schema.Class_,
+            'race': schema.Race,
+            'sub_race': schema.SubRace,
+            'stat': schema.Stat,
+            'skills': schema.Skills,
+            'actor': schema.Actor,
+            'faction': schema.Faction,
+            'location_': schema.Location,
+            'object_': schema.Object_,
+            'world_data': schema.WorldData,
+            'history': schema.History,
+        }
+        
+        # Import using the model's engine
+        from storymaster.model.common.common_model import BaseModel
+        temp_model = BaseModel(user_id=1)  # Temporary model instance for engine access
+        
+        try:
+            with Session(temp_model.engine) as session:
+                total_imported = 0
+                
+                # Import data table by table in dependency order
+                table_order = [
+                    'alignment', 'background', 'class', 'race', 'sub_race', 'stat', 'skills',
+                    'actor', 'faction', 'location_', 'history', 'object_', 'world_data', 'arc_type'
+                ]
+                
+                for table_name in table_order:
+                    if table_name in package_data and table_name in table_class_map:
+                        table_data = package_data[table_name]
+                        if table_data:  # Only process non-empty tables
+                            table_class = table_class_map[table_name]
+                            
+                            for item_data in table_data:
+                                try:
+                                    # Update setting_id to target setting
+                                    item_data_copy = item_data.copy()
+                                    item_data_copy['setting_id'] = target_setting_id
+                                    
+                                    # Check for duplicates based on name and setting_id (if name field exists)
+                                    if hasattr(table_class, 'name') and hasattr(table_class, 'setting_id'):
+                                        existing_item = session.query(table_class).filter_by(
+                                            name=item_data_copy['name'],
+                                            setting_id=target_setting_id
+                                        ).first()
+                                        
+                                        if existing_item:
+                                            print(f"⏭️  Skipping duplicate {table_name}: {item_data_copy['name']}")
+                                            continue
+                                    
+                                    # Create new record
+                                    new_item = table_class(**item_data_copy)
+                                    session.add(new_item)
+                                    total_imported += 1
+                                    
+                                except Exception as e:
+                                    print(f"⚠️  Error importing {table_name} item: {e}")
+                                    # Continue with other items
+                
+                # Commit all changes  
+                session.commit()
+                
+                if total_imported > 0:
+                    print(f"✅ Successfully imported {total_imported} items from {package_name}")
+                else:
+                    print(f"ℹ️  No new items imported from {package_name} (all items already exist)")
+                
+                return True
+                
+        except Exception as e:
+            print(f"❌ Database error during import: {e}")
+            return False
 
 
 class ImportLorePackagesDialog(QDialog):
@@ -139,12 +260,9 @@ class ImportLorePackagesDialog(QDialog):
                 child.widget().setParent(None)
         
         # Scan for available packages
-        packages_dir = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))),
-            "world_building_packages"
-        )
+        packages_dir = get_world_building_packages_path()
         
-        if os.path.exists(packages_dir):
+        if packages_dir and os.path.exists(packages_dir):
             package_count = 0
             for filename in sorted(os.listdir(packages_dir)):
                 if filename.endswith('.json'):
@@ -176,9 +294,27 @@ class ImportLorePackagesDialog(QDialog):
                 no_packages_label.setStyleSheet("color: #888888; font-style: italic; padding: 20px;")
                 self.packages_layout.addWidget(no_packages_label)
         else:
-            no_dir_label = QLabel("World building packages directory not found.\nExpected location: 'world_building_packages'")
+            # Generate debug information for troubleshooting
+            debug_info = debug_world_building_packages()
+            
+            # Show user-friendly message
+            no_dir_label = QLabel("World building packages directory not found.\n\nClick 'Show Debug Info' for troubleshooting details.")
             no_dir_label.setStyleSheet("color: #888888; font-style: italic; padding: 20px;")
             self.packages_layout.addWidget(no_dir_label)
+            
+            # Add debug button
+            debug_button = QPushButton("Show Debug Info")
+            debug_button.clicked.connect(lambda: self._show_debug_info(debug_info))
+            self.packages_layout.addWidget(debug_button)
+
+    def _show_debug_info(self, debug_info: str):
+        """Show debug information in a message box for troubleshooting"""
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle("World Building Packages Debug Info")
+        msg_box.setText("Debug information for troubleshooting world_building_packages location:")
+        msg_box.setDetailedText(debug_info)
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+        msg_box.exec()
 
     def _get_package_info(self, package_path: str) -> dict | None:
         """
