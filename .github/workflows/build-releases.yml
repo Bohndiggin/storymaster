@@ -46,13 +46,27 @@ jobs:
         powershell -Command "Add-MpPreference -ExclusionPath $PWD"
         # Use Windows-specific build script for faster, more reliable builds
         python scripts/build_windows.py
-        echo "=== Build completed, checking created files ==="
-        dir dist\ /s
-        dir storymaster-*.zip 2>nul || echo "No ZIP files found"
       timeout-minutes: 25  # Increased timeout for debug build
       env:
         PYTHONIOENCODING: utf-8
         PYINSTALLER_CONFIG_DIR: ${{ runner.temp }}/pyinstaller
+    
+    - name: Check Windows build artifacts
+      shell: powershell
+      run: |
+        Write-Host "=== Build completed, checking created files ==="
+        if (Test-Path "dist") {
+          Get-ChildItem -Path "dist" -Recurse | Format-Table Name, Length, LastWriteTime -AutoSize
+        } else {
+          Write-Host "dist directory not found"
+        }
+        Write-Host "=== Checking for ZIP files ==="
+        $zipFiles = Get-ChildItem -Path "storymaster-*.zip" -ErrorAction SilentlyContinue
+        if ($zipFiles) {
+          $zipFiles | Format-Table Name, Length -AutoSize
+        } else {
+          Write-Host "No ZIP files found"
+        }
     
     - name: Upload Windows artifacts
       uses: actions/upload-artifact@v4
