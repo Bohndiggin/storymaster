@@ -59,7 +59,7 @@ world_building_path = project_dir / 'world_building_packages'
 if world_building_path.exists():
     datas.append((str(world_building_path), 'world_building_packages'))
 
-# Windows-specific hidden imports (minimal for faster builds)
+# Windows-specific hidden imports (comprehensive for QtCore compatibility)
 hiddenimports = [
     'PyQt6.QtCore',
     'PyQt6.QtGui', 
@@ -67,21 +67,52 @@ hiddenimports = [
     'PyQt6.QtSvg',
     'PyQt6.sip',
     'PyQt6.QtPrintSupport',
+    # Additional Qt modules that might be implicitly imported
+    'PyQt6.QtCore._corebuiltin',
+    'PyQt6.QtCore._enum',
+    'PyQt6.sip',
+    'sip',
+    # SQLAlchemy
     'sqlalchemy',
     'sqlalchemy.dialects.sqlite',
     'sqlalchemy.orm',
     'sqlalchemy.engine',
+    # System modules that Qt might need
+    'encodings.utf_8',
+    'encodings.ascii',
+    'encodings.cp1252',
 ]
 
 # Windows-specific binaries
 binaries = []
 
-# Include Qt6 DLLs for Windows
+# Include Qt6 DLLs for Windows - comprehensive DLL inclusion
 qt_bin_path = pyqt6_path / 'Qt6' / 'bin'
 if qt_bin_path.exists():
+    # Include all Qt6 DLLs
     for lib_file in qt_bin_path.glob('Qt6*.dll'):
         if lib_file.is_file():
             binaries.append((str(lib_file), '.'))
+    
+    # Include additional essential DLLs that may be missing
+    essential_dlls = [
+        'msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll',
+        'api-ms-win-*.dll', 'ucrtbase.dll'
+    ]
+    
+    for dll_pattern in essential_dlls:
+        for dll_file in qt_bin_path.glob(dll_pattern):
+            if dll_file.is_file():
+                binaries.append((str(dll_file), '.'))
+
+# Also include Qt6 libraries from site-packages
+import site
+for site_dir in site.getsitepackages():
+    site_qt_path = Path(site_dir) / 'PyQt6' / 'Qt6' / 'bin'
+    if site_qt_path.exists():
+        for lib_file in site_qt_path.glob('*.dll'):
+            if lib_file.is_file():
+                binaries.append((str(lib_file), '.'))
 
 a = Analysis(
     ['storymaster/main.py'],
@@ -89,9 +120,9 @@ a = Analysis(
     binaries=binaries,
     datas=datas,
     hiddenimports=hiddenimports,
-    hookspath=[],
+    hookspath=['scripts'],
     hooksconfig={},
-    runtime_hooks=['scripts/runtime_hook_pyqt6.py'],
+    runtime_hooks=['scripts/runtime_hook_windows.py'],
     excludes=[
         # Aggressive exclusions for Windows to reduce size and build time
         'matplotlib', 'numpy', 'pandas', 'scipy', 'IPython', 'jupyter',

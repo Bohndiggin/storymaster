@@ -9,6 +9,19 @@ if getattr(sys, 'frozen', False):
     # Running in bundled mode
     bundle_dir = Path(sys._MEIPASS)
     
+    # Windows-specific DLL loading fix
+    if sys.platform.startswith('win'):
+        # Add bundle directory to DLL search path for Windows
+        if hasattr(os, 'add_dll_directory'):
+            try:
+                os.add_dll_directory(str(bundle_dir))
+            except (OSError, AttributeError):
+                pass
+        
+        # Fallback: prepend bundle directory to PATH
+        current_path = os.environ.get('PATH', '')
+        os.environ['PATH'] = f"{bundle_dir}{os.pathsep}{current_path}"
+    
     # Set Qt plugin paths
     qt_plugin_paths = [
         bundle_dir / 'PyQt6' / 'Qt6' / 'plugins',
