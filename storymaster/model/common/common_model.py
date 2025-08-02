@@ -24,6 +24,7 @@ class BaseModel:
         "setting": schema.Setting,
         "storyline_to_setting": schema.StorylineToSetting,
         "litography_node": schema.LitographyNode,
+        "node_connection": schema.NodeConnection,
         "litography_notes": schema.LitographyNotes,
         "litography_plot": schema.LitographyPlot,
         "litography_plot_section": schema.LitographyPlotSection,
@@ -904,3 +905,17 @@ class BaseModel:
                 .order_by(schema.Actor.first_name, schema.Actor.last_name)
                 .all()
             )
+
+    def get_setting_by_id(self, setting_id: int) -> schema.Setting | None:
+        """Gets a setting by ID."""
+        with Session(self.engine) as session:
+            return session.query(schema.Setting).filter_by(id=setting_id).first()
+
+    def get_storyline_by_id(self, storyline_id: int) -> schema.Storyline | None:
+        """Gets a storyline by ID."""
+        with Session(self.engine) as session:
+            return session.query(schema.Storyline).filter_by(id=storyline_id).first()
+
+    def get_table_class(self, table_name: str):
+        """Gets the SQLAlchemy ORM class for a given table name."""
+        return self._table_to_class_map.get(table_name)

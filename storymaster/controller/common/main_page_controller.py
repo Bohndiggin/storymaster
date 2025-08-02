@@ -2234,6 +2234,15 @@ class MainWindowController:
             try:
                 with open(file_path, "r", encoding="utf-8") as file:
                     json_data = json.load(file)
+
+                # Handle both JSON formats: nested under 'story_data' key or direct
+                if "story_data" in json_data:
+                    # New format: extract story_data subsection
+                    json_data = json_data["story_data"]
+                    self.view.ui.statusbar.showMessage(
+                        "Detected nested story_data format", 3000
+                    )
+
             except (json.JSONDecodeError, IOError) as e:
                 QMessageBox.critical(
                     self.view, "Import Error", f"Failed to load JSON file: {str(e)}"
@@ -2283,19 +2292,29 @@ class MainWindowController:
 
     def _validate_json_structure(self, json_data):
         """Validate that the JSON has the expected structure."""
-        required_keys = ["user", "setting", "storyline", "storyline_to_setting"]
-
         if not isinstance(json_data, dict):
             return False
 
-        # Check if it has basic required keys
-        for key in required_keys:
-            if key not in json_data:
-                return False
-            if not isinstance(json_data[key], list):
-                return False
+        # Check if it has at least some database table data
+        # More flexible validation - just needs to have some table-like structures
+        has_table_data = False
+        for key, value in json_data.items():
+            if isinstance(value, list) and key not in ["_consensus_models"]:
+                has_table_data = True
+                break
 
-        return True
+        if not has_table_data:
+            return False
+
+        # Optional: Check for typical required keys if they exist
+        typical_keys = ["user", "setting", "storyline"]
+        found_typical_keys = 0
+        for key in typical_keys:
+            if key in json_data and isinstance(json_data[key], list):
+                found_typical_keys += 1
+
+        # If we have some typical keys, that's good. If not, still proceed if we have table data
+        return has_table_data
 
     def _get_import_choice(self):
         """Get user choice for import destination."""
@@ -2360,18 +2379,60 @@ class MainWindowController:
                 if not setting_name:
                     setting_name = "Imported Setting"
 
-                # Create new setting and storyline
-                new_setting = self.model.create_setting(
-                    setting_name,
-                    json_data.get("setting", [{}])[0].get("description", ""),
-                )
-                new_storyline = self.model.create_storyline(
-                    storyline_name,
-                    json_data.get("storyline", [{}])[0].get("description", ""),
-                )
+                # Create new setting using add_row method
+                setting_data = {
+                    "name": setting_name,
+                    "description": json_data.get("setting", [{}])[0].get(
+                        "description", ""
+                    ),
+                    "user_id": self.model.user_id,
+                }
+                self.model.add_row("setting", setting_data)
 
-                # Link storyline to setting
-                self.model.add_storyline_to_setting(new_storyline.id, new_setting.id)
+                # Get the created setting by name
+                all_settings = self.model.get_all_settings()
+                new_setting = None
+                for setting in all_settings:
+                    if (
+                        setting.name == setting_name
+                        and setting.user_id == self.model.user_id
+                    ):
+                        new_setting = setting
+                        break
+
+                if not new_setting:
+                    raise ValueError(f"Failed to create setting: {setting_name}")
+
+                # Create new storyline using add_row method
+                storyline_data = {
+                    "name": storyline_name,
+                    "description": json_data.get("storyline", [{}])[0].get(
+                        "description", ""
+                    ),
+                    "user_id": self.model.user_id,
+                }
+                self.model.add_row("storyline", storyline_data)
+
+                # Get the created storyline by name
+                all_storylines = self.model.get_all_storylines()
+                new_storyline = None
+                for storyline in all_storylines:
+                    if (
+                        storyline.name == storyline_name
+                        and storyline.user_id == self.model.user_id
+                    ):
+                        new_storyline = storyline
+                        break
+
+                if not new_storyline:
+                    raise ValueError(f"Failed to create storyline: {storyline_name}")
+
+                # Link storyline to setting using add_row method
+                storyline_to_setting_data = {
+                    "storyline_id": new_storyline.id,
+                    "setting_id": new_setting.id,
+                }
+                self.model.add_row("storyline_to_setting", storyline_to_setting_data)
 
                 # Switch to new storyline and setting
                 self.current_storyline_id = new_storyline.id
@@ -2398,7 +2459,11 @@ class MainWindowController:
         skip_tables = {"user", "setting", "storyline", "storyline_to_setting"}
 
         for table_name, records in json_data.items():
-            if table_name in skip_tables or not isinstance(records, list):
+            if (
+                table_name in skip_tables
+                or not isinstance(records, list)
+                or table_name.startswith("_")
+            ):
                 continue
 
             # Get the corresponding model class
@@ -2414,6 +2479,14 @@ class MainWindowController:
 
                 # Update foreign keys to point to current setting/storyline
                 updated_record = record_data.copy()
+
+                # Remove keys that start with _ (metadata fields like _consensus_models)
+                keys_to_remove = [
+                    key for key in updated_record.keys() if key.startswith("_")
+                ]
+                for key in keys_to_remove:
+                    del updated_record[key]
+
                 if "setting_id" in updated_record:
                     updated_record["setting_id"] = setting_id
                 if "storyline_id" in updated_record:
@@ -2424,7 +2497,7 @@ class MainWindowController:
                     del updated_record["id"]
 
                 try:
-                    self.model.create_entity(table_name, updated_record)
+                    self.model.add_row(table_name, updated_record)
                 except Exception as e:
                     print(f"Failed to import {table_name} record: {e}")
                     # Continue with other records
@@ -3258,27 +3331,6 @@ class MainWindowController:
     # --- Lorekeeper Methods (DEPRECATED - old database interface) ---
     # NOTE: These methods are deprecated and left for compatibility
     # The new Lorekeeper interface uses NewLorekeeperPage instead
-
-    def on_tab_changed(self, index: int):
-        """Handle tab switching to populate the 'Add New Row' form when selected."""
-        # DEPRECATED: Old lorekeeper interface removed
-        return
-
-    def on_table_row_clicked(self, index):
-        """Populates the edit form with the data from the selected row."""
-        first_item_in_row = self.db_table_model.item(index.row(), 0)
-        if not first_item_in_row:
-            return
-
-        self.current_row_data = first_item_in_row.data(Qt.ItemDataRole.UserRole)
-
-        if self.current_row_data:
-            self._populate_form(
-                # self.view.ui.editFormLayout,  # Deprecated - removed
-                self.edit_form_widgets,
-                self.current_row_data,
-            )
-            self.view.ui.formTabWidget.setCurrentIndex(0)
 
     def populate_add_form(self):
         """Populates the 'Add New Row' tab with a blank form for the current table."""
