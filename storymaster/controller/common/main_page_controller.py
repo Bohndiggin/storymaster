@@ -90,6 +90,13 @@ from storymaster.view.common.storyline_switcher_dialog import StorylineSwitcherD
 from storymaster.view.common.user_manager_dialog import UserManagerDialog
 from storymaster.view.common.user_switcher_dialog import UserSwitcherDialog
 
+# Import export functionality
+import sys
+import os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "..", "scripts"))
+from export_to_json import export_setting_to_json
+
 # Import the dialogs
 from storymaster.view.litographer.add_node_dialog import AddNodeDialog
 from storymaster.view.litographer.node_notes_dialog import NodeNotesDialog
@@ -2115,6 +2122,9 @@ class MainWindowController:
         self.view.ui.actionImportFromJSON.triggered.connect(
             self.on_import_from_json_clicked
         )
+        self.view.ui.actionExportSettingToJSON.triggered.connect(
+            self.on_export_setting_to_json_clicked
+        )
         # Database and backup actions
         self.view.ui.actionDatabaseManager.triggered.connect(
             self.on_database_manager_clicked
@@ -2288,6 +2298,81 @@ class MainWindowController:
                 self.view,
                 "Import Error",
                 f"An unexpected error occurred during import: {str(e)}",
+            )
+
+    def on_export_setting_to_json_clicked(self):
+        """Export current setting and all world-building data to a JSON file."""
+        try:
+            # Check if we have a current setting
+            current_setting_id = self.model.current_setting_id
+            if not current_setting_id:
+                QMessageBox.warning(
+                    self.view,
+                    "Export Warning",
+                    "No setting is currently selected. Please select a setting first.",
+                )
+                return
+
+            # Get setting name for default filename
+            setting_name = "setting"
+            try:
+                current_setting = self.model.get_setting_by_id(current_setting_id)
+                if current_setting and current_setting.name:
+                    # Clean filename - remove invalid characters
+                    setting_name = "".join(
+                        c
+                        for c in current_setting.name
+                        if c.isalnum() or c in (" ", "-", "_")
+                    ).rstrip()
+                    setting_name = setting_name.replace(" ", "_")
+            except:
+                pass  # Use default if we can't get setting name
+
+            # Open file dialog to select output location
+            default_filename = f"{setting_name}_export.json"
+            file_path, _ = QFileDialog.getSaveFileName(
+                self.view,
+                "Export Setting to JSON",
+                default_filename,
+                "JSON files (*.json);;All files (*.*)",
+            )
+
+            if not file_path:
+                return  # User cancelled
+
+            # Show progress in status bar
+            self.view.ui.statusbar.showMessage("Exporting setting data...", 0)
+
+            # Perform the export
+            success = export_setting_to_json(current_setting_id, file_path)
+
+            if success:
+                self.view.ui.statusbar.showMessage(
+                    f"Setting exported successfully to {os.path.basename(file_path)}",
+                    5000,
+                )
+                QMessageBox.information(
+                    self.view,
+                    "Export Successful",
+                    f"Setting data has been exported to:\n{file_path}\n\n"
+                    f"This file can be imported using 'File > Import from JSON' to restore the setting.",
+                )
+            else:
+                self.view.ui.statusbar.showMessage(
+                    "Export failed - check console for details", 5000
+                )
+                QMessageBox.critical(
+                    self.view,
+                    "Export Error",
+                    "Failed to export setting data. Please check the console output for details.",
+                )
+
+        except Exception as e:
+            self.view.ui.statusbar.showMessage("Export failed", 5000)
+            QMessageBox.critical(
+                self.view,
+                "Export Error",
+                f"An unexpected error occurred during export: {str(e)}",
             )
 
     def _validate_json_structure(self, json_data):
@@ -2508,7 +2593,30 @@ class MainWindowController:
         storyline_data = dialog.get_storyline_data()
         if storyline_data is not None:
             try:
+                # Create the storyline
                 self.model.add_row("storyline", storyline_data)
+
+                # Get the newly created storyline ID and switch to it
+                storylines = self.model.get_all_storylines()
+                new_storyline = next(
+                    (
+                        s
+                        for s in storylines
+                        if s.name == storyline_data["name"]
+                        and s.user_id == storyline_data["user_id"]
+                    ),
+                    None,
+                )
+
+                if new_storyline:
+                    self.current_storyline_id = new_storyline.id
+                    # Reset to first plot of new storyline (creates default if needed)
+                    self._switch_to_first_plot_of_storyline()
+                    # Refresh views
+                    self.load_and_draw_nodes()
+                    self.load_plot_sections()
+                    self.update_status_indicators()
+
                 self.view.ui.statusbar.showMessage(
                     f"Created new storyline: {storyline_data['name']}", 5000
                 )
@@ -2579,8 +2687,13 @@ class MainWindowController:
                     self.view.ui.statusbar.showMessage(
                         f"Switched to storyline: {storyline_name}", 5000
                     )
-                    # TODO: Refresh views to show new storyline data
+
+                    # Reset to first plot of new storyline
+                    self._switch_to_first_plot_of_storyline()
+
+                    # Refresh views to show new storyline data
                     self.load_and_draw_nodes()
+                    self.load_plot_sections()
                     self.update_status_indicators()
                 except Exception as e:
                     QMessageBox.critical(
@@ -3063,6 +3176,38 @@ class MainWindowController:
         except Exception as e:
             print(f"Error loading plot sections: {e}")
             self.view.ui.statusbar.showMessage(f"Error loading sections: {e}", 5000)
+
+    def _switch_to_first_plot_of_storyline(self):
+        """Switch to the first plot of the current storyline, or create one if none exist"""
+        try:
+            with Session(self.model.engine) as session:
+                first_plot = (
+                    session.query(LitographyPlot)
+                    .filter_by(storyline_id=self.current_storyline_id)
+                    .first()
+                )
+
+                if first_plot:
+                    self.current_plot_id = first_plot.id
+                    self.current_plot_section_id = None  # Reset section selection
+                else:
+                    # Create a default plot for this storyline
+                    default_plot = LitographyPlot(
+                        title=f"Plot 1",
+                        description="Default plot for storyline",
+                        storyline_id=self.current_storyline_id,
+                    )
+                    session.add(default_plot)
+                    session.commit()
+                    session.refresh(default_plot)
+                    self.current_plot_id = default_plot.id
+                    self.current_plot_section_id = None
+
+        except Exception as e:
+            print(f"Error switching to first plot of storyline: {str(e)}")
+            # Fallback to a default plot ID
+            self.current_plot_id = 1
+            self.current_plot_section_id = None
 
     def get_nodes_in_section(self, section_id):
         """Get all nodes that belong to a specific plot section"""

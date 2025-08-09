@@ -150,9 +150,12 @@ class Ui_StorymasterMainWindow(object):
         self.actionManageSetting.setObjectName("actionManageSetting")
         self.actionImportFromJSON = QtGui.QAction(parent=StorymasterMainWindow)
         self.actionImportFromJSON.setObjectName("actionImportFromJSON")
+        self.actionExportSettingToJSON = QtGui.QAction(parent=StorymasterMainWindow)
+        self.actionExportSettingToJSON.setObjectName("actionExportSettingToJSON")
         self.litographerToolbar.addAction(self.actionAddNode)
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addAction(self.actionImportFromJSON)
+        self.menuFile.addAction(self.actionExportSettingToJSON)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionCreateBackup)
         self.menuFile.addAction(self.actionDatabaseManager)
@@ -306,4 +309,13 @@ class Ui_StorymasterMainWindow(object):
         )
         self.actionImportFromJSON.setToolTip(
             _translate("StorymasterMainWindow", "Import storyline data from JSON file")
+        )
+        self.actionExportSettingToJSON.setText(
+            _translate("StorymasterMainWindow", "Export Setting to JSON")
+        )
+        self.actionExportSettingToJSON.setToolTip(
+            _translate(
+                "StorymasterMainWindow",
+                "Export current setting and all world-building data to JSON file",
+            )
         )
