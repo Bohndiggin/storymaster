@@ -21,11 +21,9 @@ from typing import Dict, List, Any
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-# Add the project root to Python path for imports
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
-from storymaster.model.database import schema
-from storymaster.model.database.schema.base import BaseTable
+# Import schema directly from the same package
+from . import schema
+from .schema.base import BaseTable
 
 # Database configuration
 database_url = (

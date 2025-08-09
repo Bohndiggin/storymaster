@@ -91,11 +91,8 @@ from storymaster.view.common.user_manager_dialog import UserManagerDialog
 from storymaster.view.common.user_switcher_dialog import UserSwitcherDialog
 
 # Import export functionality
-import sys
 import os
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", "..", "scripts"))
-from export_to_json import export_setting_to_json
+from storymaster.model.database.export_to_json import export_setting_to_json
 
 # Import the dialogs
 from storymaster.view.litographer.add_node_dialog import AddNodeDialog
