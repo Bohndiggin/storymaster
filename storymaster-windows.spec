@@ -10,25 +10,32 @@ project_dir = Path(os.getcwd())
 # Windows-specific data files
 datas = []
 
-# Include PyQt6 plugins for Windows
-import PyQt6
-pyqt6_path = Path(PyQt6.__file__).parent
-plugins_path = pyqt6_path / 'Qt6' / 'plugins'
+# Simplified PyQt6 plugin inclusion with error handling
+try:
+    import PyQt6
+    pyqt6_path = Path(PyQt6.__file__).parent
+    plugins_path = pyqt6_path / 'Qt6' / 'plugins'
 
-if plugins_path.exists():
-    # Windows platform plugins
-    platforms_path = plugins_path / 'platforms'
-    if platforms_path.exists():
-        for platform_file in platforms_path.glob('*'):
-            if platform_file.is_file():
-                datas.append((str(platform_file), 'PyQt6/Qt6/plugins/platforms'))
-    
-    # Image format plugins
-    imageformats_path = plugins_path / 'imageformats'  
-    if imageformats_path.exists():
-        for img_file in imageformats_path.glob('*'):
-            if img_file.is_file():
-                datas.append((str(img_file), 'PyQt6/Qt6/plugins/imageformats'))
+    if plugins_path.exists():
+        # Essential platform plugins only
+        platforms_path = plugins_path / 'platforms'
+        if platforms_path.exists():
+            # Only include qwindows.dll which is essential for Windows
+            qwindows_dll = platforms_path / 'qwindows.dll'
+            if qwindows_dll.exists():
+                datas.append((str(qwindows_dll), 'PyQt6/Qt6/plugins/platforms'))
+        
+        # Essential image format plugins
+        imageformats_path = plugins_path / 'imageformats'  
+        if imageformats_path.exists():
+            essential_formats = ['qico.dll', 'qjpeg.dll', 'qpng.dll']
+            for fmt_dll in essential_formats:
+                fmt_path = imageformats_path / fmt_dll
+                if fmt_path.exists():
+                    datas.append((str(fmt_path), 'PyQt6/Qt6/plugins/imageformats'))
+
+except ImportError:
+    print("Warning: PyQt6 not found during spec file analysis")
 
 # Include UI files
 for ui_dir in ['common', 'litographer', 'lorekeeper', 'character_arcs']:
@@ -37,7 +44,7 @@ for ui_dir in ['common', 'litographer', 'lorekeeper', 'character_arcs']:
     for ui_file in ui_files:
         datas.append((ui_file, f'storymaster/view/{ui_dir}'))
 
-# Include Windows icon files
+# Include icon files (optional)
 icon_files = [
     'assets/storymaster_icon.ico',
     'assets/storymaster_icon_16.png',
@@ -50,7 +57,7 @@ for icon_file in icon_files:
     if icon_path.exists():
         datas.append((str(icon_path), 'assets'))
 
-# Include test data and world building packages
+# Include test data and world building packages (optional)
 test_data_path = project_dir / 'tests' / 'model' / 'database' / 'test_data'
 if test_data_path.exists():
     datas.append((str(test_data_path), 'tests/model/database/test_data'))
@@ -59,7 +66,7 @@ world_building_path = project_dir / 'world_building_packages'
 if world_building_path.exists():
     datas.append((str(world_building_path), 'world_building_packages'))
 
-# Windows-specific hidden imports (comprehensive for QtCore compatibility)
+# Minimal essential hidden imports
 hiddenimports = [
     'PyQt6.QtCore',
     'PyQt6.QtGui', 
@@ -67,66 +74,44 @@ hiddenimports = [
     'PyQt6.QtSvg',
     'PyQt6.sip',
     'PyQt6.QtPrintSupport',
-    # Additional Qt modules that might be implicitly imported
-    'PyQt6.QtCore._corebuiltin',
-    'PyQt6.QtCore._enum',
-    'PyQt6.sip',
     'sip',
     # SQLAlchemy
     'sqlalchemy',
     'sqlalchemy.dialects.sqlite',
     'sqlalchemy.orm',
     'sqlalchemy.engine',
-    # System modules that Qt might need
+    # Essential encodings
     'encodings.utf_8',
     'encodings.ascii',
     'encodings.cp1252',
 ]
 
-# Windows-specific binaries
+# Simplified binary collection
 binaries = []
 
-# Include Qt6 DLLs for Windows - comprehensive DLL inclusion
-qt_bin_path = pyqt6_path / 'Qt6' / 'bin'
-if qt_bin_path.exists():
-    # Include all Qt6 DLLs
-    for lib_file in qt_bin_path.glob('Qt6*.dll'):
-        if lib_file.is_file():
-            binaries.append((str(lib_file), '.'))
-    
-    # Include ICU DLLs (required for Qt6 text processing)
-    for icu_file in qt_bin_path.glob('icu*.dll'):
-        if icu_file.is_file():
-            binaries.append((str(icu_file), '.'))
-    
-    # Include additional essential Windows DLLs
-    essential_dlls = [
-        'msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll',
-        'api-ms-win-*.dll', 'ucrtbase.dll', 'concrt140.dll',
-        'msvcp140_1.dll', 'msvcp140_2.dll'
-    ]
-    
-    for dll_pattern in essential_dlls:
-        for dll_file in qt_bin_path.glob(dll_pattern):
-            if dll_file.is_file():
-                binaries.append((str(dll_file), '.'))
+# Include essential Qt6 DLLs only
+try:
+    qt_bin_path = pyqt6_path / 'Qt6' / 'bin'
+    if qt_bin_path.exists():
+        # Essential Qt6 DLLs only
+        essential_qt_dlls = [
+            'Qt6Core.dll', 'Qt6Gui.dll', 'Qt6Widgets.dll', 
+            'Qt6Svg.dll', 'Qt6PrintSupport.dll'
+        ]
+        
+        for dll_name in essential_qt_dlls:
+            dll_path = qt_bin_path / dll_name
+            if dll_path.exists():
+                binaries.append((str(dll_path), '.'))
+        
+        # ICU DLLs (required for Qt6 text processing)
+        for icu_file in qt_bin_path.glob('icu*.dll'):
+            if icu_file.is_file():
+                binaries.append((str(icu_file), '.'))
 
-# Include Visual C++ runtime from system directories
-import os
-system32_path = Path(os.environ.get('SYSTEMROOT', 'C:\\Windows')) / 'System32'
-for vc_dll in ['msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll']:
-    vc_dll_path = system32_path / vc_dll
-    if vc_dll_path.exists():
-        binaries.append((str(vc_dll_path), '.'))
-
-# Also include Qt6 libraries from site-packages
-import site
-for site_dir in site.getsitepackages():
-    site_qt_path = Path(site_dir) / 'PyQt6' / 'Qt6' / 'bin'
-    if site_qt_path.exists():
-        for lib_file in site_qt_path.glob('*.dll'):
-            if lib_file.is_file():
-                binaries.append((str(lib_file), '.'))
+except NameError:
+    # PyQt6 not available during spec analysis
+    pass
 
 a = Analysis(
     ['storymaster/main.py'],
@@ -134,11 +119,11 @@ a = Analysis(
     binaries=binaries,
     datas=datas,
     hiddenimports=hiddenimports,
-    hookspath=['scripts'],
+    hookspath=[],  # Remove custom hooks that might cause issues
     hooksconfig={},
-    runtime_hooks=['scripts/runtime_hook_windows.py'],
+    runtime_hooks=[],  # Remove runtime hooks that might cause build failures
     excludes=[
-        # Aggressive exclusions for Windows to reduce size and build time
+        # Conservative exclusions to avoid dependency issues
         'matplotlib', 'numpy', 'pandas', 'scipy', 'IPython', 'jupyter',
         'tkinter', 'unittest', 'pytest', '_pytest',
         'PyQt6.QtNetwork', 'PyQt6.QtOpenGL', 'PyQt6.QtMultimedia',
@@ -146,7 +131,7 @@ a = Analysis(
         'PyQt6.QtQuick', 'PyQt6.QtQml', 'PyQt6.QtTest'
     ],
     noarchive=False,
-    optimize=2,
+    optimize=1,  # Reduce optimization level to avoid issues
 )
 
 pyz = PYZ(a.pure)
@@ -164,12 +149,12 @@ exe = EXE(
     strip=False,
     upx=False,  # Disable UPX on Windows to avoid issues
     runtime_tmpdir=None,
-    console=False,  # Windows GUI app
+    console=True,  # Enable console for debugging Windows issues
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    # Use icon only if it exists and isn't causing issues
-    icon=str(project_dir / 'assets/storymaster_icon.ico') if (project_dir / 'assets/storymaster_icon.ico').exists() else None,
+    # Disable icon to avoid build issues
+    icon=None,
 )

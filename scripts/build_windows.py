@@ -148,6 +148,63 @@ def clean_build():
         return False
 
 
+def create_minimal_spec():
+    """Create a minimal fallback spec file for Windows"""
+    minimal_spec_content = '''# -*- mode: python ; coding: utf-8 -*-
+# Minimal Windows spec file for debugging build issues
+
+a = Analysis(
+    ['storymaster/main.py'],
+    pathex=['.'],
+    binaries=[],
+    datas=[],
+    hiddenimports=[
+        'PyQt6.QtCore',
+        'PyQt6.QtGui', 
+        'PyQt6.QtWidgets',
+        'PyQt6.sip',
+        'sqlalchemy',
+        'sqlalchemy.dialects.sqlite',
+    ],
+    hookspath=[],
+    hooksconfig={},
+    runtime_hooks=[],
+    excludes=[],
+    noarchive=False,
+    optimize=0,
+)
+
+pyz = PYZ(a.pure)
+
+exe = EXE(
+    pyz,
+    a.scripts,
+    a.binaries,
+    a.datas,
+    [],
+    name='storymaster-minimal',
+    debug=True,
+    bootloader_ignore_signals=False,
+    strip=False,
+    upx=False,
+    runtime_tmpdir=None,
+    console=True,
+    disable_windowed_traceback=False,
+    argv_emulation=False,
+    target_arch=None,
+    codesign_identity=None,
+    entitlements_file=None,
+    icon=None,
+)
+'''
+    
+    with open("storymaster-minimal.spec", "w", encoding="utf-8") as f:
+        f.write(minimal_spec_content)
+    
+    print("  Created minimal spec file: storymaster-minimal.spec")
+    return True
+
+
 def build_exe():
     """Build Windows executable using optimized spec"""
     print("[BUILD] Creating Windows executable...")
@@ -178,17 +235,28 @@ def build_exe():
         print(f"  Command: {' '.join(cmd)}")
         start_time = time.time()
 
-        # Run with real-time output
+        # Run with real-time output and comprehensive logging
         process = subprocess.Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1
         )
 
-        # Show progress
+        # Capture all output for debugging
+        all_output = []
+        error_lines = []
+        
+        # Show progress and capture output
         for line in process.stdout:
             line = line.strip()
+            all_output.append(line)
+            
+            # Capture error patterns
+            if any(error_word in line.lower() for error_word in ["error", "failed", "traceback", "exception"]):
+                error_lines.append(line)
+            
+            # Show relevant progress
             if line and any(
                 keyword in line.lower()
-                for keyword in ["info:", "building", "completed", "copying", "warning"]
+                for keyword in ["info:", "building", "completed", "copying", "warning", "error", "failed"]
             ):
                 print(f"    {line}")
 
@@ -200,7 +268,41 @@ def build_exe():
             return True
         else:
             print(f"[ERROR] Build failed (exit code: {process.returncode})")
-            return False
+            
+            # Show detailed error information
+            if error_lines:
+                print("\n[ERROR DETAILS] PyInstaller error messages:")
+                for error_line in error_lines[-10:]:  # Show last 10 error lines
+                    print(f"  {error_line}")
+            
+            # Write full log to file for debugging
+            log_file = Path("pyinstaller_build.log")
+            with open(log_file, "w", encoding="utf-8") as f:
+                f.write("\n".join(all_output))
+            print(f"[DEBUG] Full build log written to: {log_file}")
+            
+            # Try minimal spec as fallback
+            print("\n[FALLBACK] Attempting build with minimal spec...")
+            create_minimal_spec()
+            
+            # Try building with minimal spec
+            minimal_cmd = [
+                sys.executable, "-m", "PyInstaller", 
+                "--clean", "--log-level=INFO", 
+                "storymaster-minimal.spec"
+            ]
+            
+            print(f"  Minimal command: {' '.join(minimal_cmd)}")
+            minimal_result = subprocess.run(minimal_cmd, capture_output=True, text=True)
+            
+            if minimal_result.returncode == 0:
+                print("[OK] Minimal build succeeded!")
+                print("      This indicates an issue with the complex spec file configuration")
+                return True
+            else:
+                print("[ERROR] Minimal build also failed")
+                print("        This indicates a fundamental PyInstaller/environment issue")
+                return False
 
     except Exception as e:
         print(f"[ERROR] Build error: {e}")
