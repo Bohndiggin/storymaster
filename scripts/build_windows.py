@@ -149,22 +149,72 @@ def clean_build():
 
 
 def create_minimal_spec():
-    """Create a minimal fallback spec file for Windows"""
+    """Create an enhanced minimal spec file for Windows with essential UI components"""
     minimal_spec_content = '''# -*- mode: python ; coding: utf-8 -*-
-# Minimal Windows spec file for debugging build issues
+# Enhanced minimal Windows spec file with essential UI components
+
+import glob
+from pathlib import Path
+
+# Essential data files for UI functionality
+datas = []
+
+# Include UI files (essential for PyQt6 forms)
+print("Including UI files...")
+for ui_dir in ['common', 'litographer', 'lorekeeper', 'character_arcs']:
+    ui_pattern = f'storymaster/view/{ui_dir}/*.ui'
+    ui_files = glob.glob(ui_pattern)
+    for ui_file in ui_files:
+        datas.append((ui_file, f'storymaster/view/{ui_dir}'))
+        print(f"  Added UI file: {ui_file}")
+
+# Include essential Qt6 platform plugin (critical for Windows)
+print("Including Qt6 platform plugin...")
+try:
+    import PyQt6
+    pyqt6_path = Path(PyQt6.__file__).parent
+    qwindows_dll = pyqt6_path / 'Qt6' / 'plugins' / 'platforms' / 'qwindows.dll'
+    if qwindows_dll.exists():
+        datas.append((str(qwindows_dll), 'PyQt6/Qt6/plugins/platforms'))
+        print(f"  Added platform plugin: {qwindows_dll}")
+    else:
+        print("  Warning: qwindows.dll not found")
+        
+    # Include essential image format plugins
+    imageformats_path = pyqt6_path / 'Qt6' / 'plugins' / 'imageformats'
+    if imageformats_path.exists():
+        essential_formats = ['qico.dll', 'qjpeg.dll', 'qpng.dll']
+        for fmt_dll in essential_formats:
+            fmt_path = imageformats_path / fmt_dll
+            if fmt_path.exists():
+                datas.append((str(fmt_path), 'PyQt6/Qt6/plugins/imageformats'))
+                print(f"  Added image format: {fmt_dll}")
+except ImportError:
+    print("  Warning: PyQt6 not found during spec creation")
+
+print(f"Total data files included: {len(datas)}")
 
 a = Analysis(
     ['storymaster/main.py'],
     pathex=['.'],
     binaries=[],
-    datas=[],
+    datas=datas,
     hiddenimports=[
         'PyQt6.QtCore',
         'PyQt6.QtGui', 
         'PyQt6.QtWidgets',
+        'PyQt6.QtSvg',
         'PyQt6.sip',
+        'PyQt6.QtPrintSupport',
+        'sip',
         'sqlalchemy',
         'sqlalchemy.dialects.sqlite',
+        'sqlalchemy.orm',
+        'sqlalchemy.engine',
+        # Essential encodings
+        'encodings.utf_8',
+        'encodings.ascii',
+        'encodings.cp1252',
     ],
     hookspath=[],
     hooksconfig={},
@@ -296,12 +346,18 @@ def build_exe():
             minimal_result = subprocess.run(minimal_cmd, capture_output=True, text=True)
             
             if minimal_result.returncode == 0:
-                print("[OK] Minimal build succeeded!")
-                print("      This indicates an issue with the complex spec file configuration")
+                print("[OK] Enhanced minimal build succeeded!")
+                print("      ✓ Includes UI files and essential Qt6 plugins")
+                print("      ✓ Should have working PyQt6 interface")
+                print("      ⚠ Complex spec file has configuration issues - using minimal version")
                 return True
             else:
-                print("[ERROR] Minimal build also failed")
+                print("[ERROR] Enhanced minimal build also failed")
                 print("        This indicates a fundamental PyInstaller/environment issue")
+                print("        Check:")
+                print("        - PyQt6 installation")
+                print("        - Python version compatibility")
+                print("        - Windows Visual C++ runtime")
                 return False
 
     except Exception as e:
@@ -313,9 +369,18 @@ def create_portable():
     """Create Windows portable package"""
     print("[PACKAGE] Creating portable Windows package...")
 
+    # Check for both possible executable names
     exe_path = Path("dist/storymaster.exe")
-    if not exe_path.exists():
-        print(f"[ERROR] Executable not found: {exe_path}")
+    minimal_exe_path = Path("dist/storymaster-minimal.exe")
+    
+    if exe_path.exists():
+        final_exe = exe_path
+        print(f"  Using main executable: {exe_path}")
+    elif minimal_exe_path.exists():
+        final_exe = minimal_exe_path
+        print(f"  Using minimal executable: {minimal_exe_path}")
+    else:
+        print(f"[ERROR] No executable found: {exe_path} or {minimal_exe_path}")
         return False
 
     # Create portable directory
@@ -325,9 +390,9 @@ def create_portable():
     portable_dir.mkdir(parents=True)
 
     try:
-        # Copy executable
-        shutil.copy2(exe_path, portable_dir / "storymaster.exe")
-        print("  ✓ Copied executable")
+        # Copy executable with standard name
+        shutil.copy2(final_exe, portable_dir / "storymaster.exe")
+        print(f"  ✓ Copied executable from {final_exe.name}")
 
         # Copy database if exists
         if Path("storymaster.db").exists():
@@ -403,9 +468,18 @@ def validate_build():
     """Validate the built executable with Qt6 bundle test"""
     print("[VALIDATE] Testing built executable...")
     
+    # Check for both possible executable names
     exe_path = Path("dist/storymaster.exe")
-    if not exe_path.exists():
-        print("[ERROR] Executable not found for validation")
+    minimal_exe_path = Path("dist/storymaster-minimal.exe")
+    
+    if exe_path.exists():
+        final_exe = exe_path
+        print(f"  Validating main executable: {exe_path}")
+    elif minimal_exe_path.exists():
+        final_exe = minimal_exe_path
+        print(f"  Validating minimal executable: {minimal_exe_path}")
+    else:
+        print("[ERROR] No executable found for validation")
         return False
     
     try:
@@ -417,7 +491,7 @@ def validate_build():
         
         print("  Running Qt6 bundle validation test...")
         result = subprocess.run([
-            str(exe_path),
+            str(final_exe),
             "-c", f"exec(open('{test_script}').read())"
         ], capture_output=True, text=True, timeout=30)
         
@@ -442,6 +516,18 @@ def print_summary():
     print("\n" + "=" * 50)
     print("[SUCCESS] Windows Build Complete!")
     print("=" * 50)
+
+    # Check which executable was built
+    main_exe_path = Path("dist/storymaster.exe")
+    minimal_exe_path = Path("dist/storymaster-minimal.exe")
+    
+    if minimal_exe_path.exists() and not main_exe_path.exists():
+        print("🔧 MINIMAL BUILD USED")
+        print("   The complex spec failed, but enhanced minimal build succeeded")
+        print("   ✓ Includes UI files and Qt6 plugins")
+        print("   ✓ Should have functional interface")
+        exe_size = minimal_exe_path.stat().st_size / (1024 * 1024)
+        print(f"   Source: dist/storymaster-minimal.exe ({exe_size:.1f} MB)")
 
     exe_path = Path("dist/storymaster.exe")
     if exe_path.exists():
