@@ -57,7 +57,11 @@ storymaster = "storymaster.main:main"
 storymaster-gui = "storymaster.main:main"
 
 [tool.setuptools]
-packages = ["storymaster", "storymaster.controller", "storymaster.model", "storymaster.view"]
+packages = {find = {}}
+
+[tool.setuptools.packages.find]
+include = ["storymaster*"]
+exclude = ["tests*"]
 
 [tool.setuptools.package-data]
 storymaster = [
