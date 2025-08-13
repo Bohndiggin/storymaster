@@ -42,11 +42,24 @@ Storymaster is a comprehensive PyQt6-based creative writing application that sea
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- Python 3.8 or higher
-- Git (for development)
+### 🌟 Instant Installation (Recommended)
+**The fastest way to get started - no setup required!**
 
-### Installation
+```bash
+# Install and run with uvx (Python 3.8+ required)
+uvx run git+https://github.com/Bohndiggin/storymaster.git
+
+# Alternative: Install with pip
+pip install git+https://github.com/Bohndiggin/storymaster.git
+storymaster
+```
+
+*This method automatically handles dependencies, database setup, and launches the application!*
+
+### 🔧 Development Installation
+
+For contributors and developers who want to modify the code:
+
 ```bash
 git clone https://github.com/Bohndiggin/storymaster.git
 cd storymaster
@@ -64,17 +77,24 @@ python scripts/init_database.py
 
 # Load sample data (optional)
 python scripts/seed.py
-```
-
-### Launch Application
-```bash
-# Activate virtual environment
-source .venv/bin/activate    # Linux/Mac
-.venv\Scripts\activate       # Windows
 
 # Start Storymaster
 python storymaster/main.py
 ```
+
+### 💻 Windows Executable
+**Download ready-to-run executable from our releases:**
+- No Python installation required
+- All dependencies included
+- Just download, extract, and run `storymaster.exe`
+- Available in [GitHub Releases](https://github.com/Bohndiggin/storymaster/releases)
+
+### 🐧 Linux AppImage
+**Portable application for all Linux distributions:**
+- Download the `.AppImage` file from releases
+- Make executable: `chmod +x Storymaster-x86_64.AppImage`
+- Run directly: `./Storymaster-x86_64.AppImage`
+- Works on any Linux distribution without installation
 
 ## 📁 Architecture
 
