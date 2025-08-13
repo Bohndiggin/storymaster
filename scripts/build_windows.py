@@ -194,10 +194,56 @@ except ImportError:
 
 print(f"Total data files included: {len(datas)}")
 
+# Essential Qt6 DLLs for minimal build
+binaries = []
+print("Including essential Qt6 DLLs...")
+try:
+    import PyQt6
+    pyqt6_path = Path(PyQt6.__file__).parent
+    qt_bin_path = pyqt6_path / 'Qt6' / 'bin'
+    
+    if qt_bin_path.exists():
+        # Essential Qt6 DLLs only - these are required for basic functionality
+        essential_qt_dlls = [
+            'Qt6Core.dll',      # Core Qt functionality 
+            'Qt6Gui.dll',       # GUI components
+            'Qt6Widgets.dll',   # Widget toolkit
+            'Qt6Svg.dll',       # SVG support
+            'Qt6PrintSupport.dll'  # Print support
+        ]
+        
+        for dll_name in essential_qt_dlls:
+            dll_path = qt_bin_path / dll_name
+            if dll_path.exists():
+                binaries.append((str(dll_path), '.'))
+                print(f"  Added essential DLL: {dll_name}")
+            else:
+                print(f"  Warning: Essential DLL not found: {dll_name}")
+        
+        # ICU DLLs (required for Qt6 text processing)
+        icu_count = 0
+        for icu_file in qt_bin_path.glob('icu*.dll'):
+            if icu_file.is_file():
+                binaries.append((str(icu_file), '.'))
+                icu_count += 1
+        
+        if icu_count > 0:
+            print(f"  Added {icu_count} ICU DLLs for text processing")
+        else:
+            print("  Warning: No ICU DLLs found")
+            
+    else:
+        print(f"  Error: Qt6 bin directory not found: {qt_bin_path}")
+        
+except ImportError:
+    print("  Error: PyQt6 not available during DLL collection")
+
+print(f"Total binaries included: {len(binaries)}")
+
 a = Analysis(
     ['storymaster/main.py'],
     pathex=['.'],
-    binaries=[],
+    binaries=binaries,
     datas=datas,
     hiddenimports=[
         'PyQt6.QtCore',
