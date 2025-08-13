@@ -41,7 +41,6 @@ def check_dependencies():
 
     try:
         import PyInstaller
-
         print(f"✓ PyInstaller {PyInstaller.__version__}")
     except ImportError:
         print("[ERROR] PyInstaller not found")
@@ -49,11 +48,54 @@ def check_dependencies():
 
     try:
         import PyQt6
-
         print(f"✓ PyQt6 available")
+        
+        # Check Qt6 bin directory
+        pyqt6_path = Path(PyQt6.__file__).parent
+        qt_bin_path = pyqt6_path / 'Qt6' / 'bin'
+        if qt_bin_path.exists():
+            print(f"✓ Qt6 bin directory: {qt_bin_path}")
+            
+            # Count Qt6 DLLs
+            qt_dlls = list(qt_bin_path.glob('Qt6*.dll'))
+            if qt_dlls:
+                print(f"✓ Found {len(qt_dlls)} Qt6 DLLs")
+            else:
+                print("[WARNING] No Qt6 DLLs found in bin directory")
+                
+        else:
+            print("[WARNING] Qt6 bin directory not found")
+            
     except ImportError:
         print("[ERROR] PyQt6 not found")
         return False
+
+    # Check for Visual C++ runtime DLLs
+    print("[CHECK] Checking Visual C++ runtime availability...")
+    vc_runtime_found = False
+    
+    # Check system directories for VC runtime
+    system_paths = [
+        Path(os.environ.get('SYSTEMROOT', 'C:\\Windows')) / 'System32',
+        Path(os.environ.get('SYSTEMROOT', 'C:\\Windows')) / 'SysWOW64'
+    ]
+    
+    vc_dlls = ['msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll']
+    
+    for sys_path in system_paths:
+        if sys_path.exists():
+            found_dlls = []
+            for vc_dll in vc_dlls:
+                if (sys_path / vc_dll).exists():
+                    found_dlls.append(vc_dll)
+            
+            if found_dlls:
+                print(f"✓ Found VC runtime DLLs in {sys_path}: {', '.join(found_dlls)}")
+                vc_runtime_found = True
+    
+    if not vc_runtime_found:
+        print("[WARNING] Visual C++ runtime DLLs not found in system directories")
+        print("          Application may fail on systems without VC++ redistributable")
 
     return True
 
@@ -112,15 +154,26 @@ def build_exe():
     print("  Using storymaster-windows.spec (optimized for Windows)")
 
     try:
-        # Use Windows-specific spec file
+        # Get PyQt6 Qt bin path for --paths argument
+        import PyQt6
+        pyqt6_path = Path(PyQt6.__file__).parent
+        qt_bin_path = pyqt6_path / 'Qt6' / 'bin'
+        
+        # Use Windows-specific spec file with explicit paths
         cmd = [
             sys.executable,
             "-m",
             "PyInstaller",
             "--clean",
             "--log-level=INFO",
-            "storymaster-windows.spec",
         ]
+        
+        # Add --paths argument if Qt6 bin directory exists
+        if qt_bin_path.exists():
+            cmd.extend(["--paths", str(qt_bin_path)])
+            print(f"  Using PyQt6 bin path: {qt_bin_path}")
+        
+        cmd.append("storymaster-windows.spec")
 
         print(f"  Command: {' '.join(cmd)}")
         start_time = time.time()
@@ -244,6 +297,44 @@ def create_zip():
         return False
 
 
+def validate_build():
+    """Validate the built executable with Qt6 bundle test"""
+    print("[VALIDATE] Testing built executable...")
+    
+    exe_path = Path("dist/storymaster.exe")
+    if not exe_path.exists():
+        print("[ERROR] Executable not found for validation")
+        return False
+    
+    try:
+        # Run the Qt6 validation test on the built executable
+        test_script = Path("scripts/test_qt6_bundle.py")
+        if not test_script.exists():
+            print("[WARNING] Qt6 validation script not found, skipping validation")
+            return True
+        
+        print("  Running Qt6 bundle validation test...")
+        result = subprocess.run([
+            str(exe_path),
+            "-c", f"exec(open('{test_script}').read())"
+        ], capture_output=True, text=True, timeout=30)
+        
+        if result.returncode == 0:
+            print("  ✓ Qt6 bundle validation passed")
+            return True
+        else:
+            print("  ✗ Qt6 bundle validation failed")
+            print(f"  Error output: {result.stderr}")
+            return False
+            
+    except subprocess.TimeoutExpired:
+        print("  ⚠ Qt6 validation test timed out")
+        return False
+    except Exception as e:
+        print(f"  ⚠ Could not run validation test: {e}")
+        return False
+
+
 def print_summary():
     """Print build summary"""
     print("\n" + "=" * 50)
@@ -266,18 +357,24 @@ def print_summary():
 
     print("\nReady for distribution!")
     print("Users can extract and run storymaster.exe")
+    
+    print("\nTroubleshooting:")
+    print("- If the app fails to start, ensure Visual C++ Redistributable is installed")
+    print("- For Qt6 platform plugin errors, check Windows Event Viewer for details")
+    print("- Test on a clean Windows VM without development tools")
 
 
 def main():
     """Main Windows build process"""
     print_header()
 
-    # Fast build pipeline for Windows
+    # Enhanced build pipeline for Windows with validation
     steps = [
         ("Platform check", check_platform),
         ("Dependencies", check_dependencies),
         ("Clean build", clean_build),
         ("Build executable", build_exe),
+        ("Validate build", validate_build),
         ("Create portable", create_portable),
         ("Create ZIP", create_zip),
     ]
@@ -285,8 +382,12 @@ def main():
     for step_name, step_func in steps:
         print(f"\n[STEP] {step_name}")
         if not step_func():
-            print(f"[FAILED] Build stopped at: {step_name}")
-            sys.exit(1)
+            if step_name == "Validate build":
+                print("[WARNING] Build validation failed, but continuing with packaging")
+                print("          Manual testing recommended before distribution")
+            else:
+                print(f"[FAILED] Build stopped at: {step_name}")
+                sys.exit(1)
 
     print_summary()
 

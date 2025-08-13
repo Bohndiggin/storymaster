@@ -94,16 +94,30 @@ if qt_bin_path.exists():
         if lib_file.is_file():
             binaries.append((str(lib_file), '.'))
     
-    # Include additional essential DLLs that may be missing
+    # Include ICU DLLs (required for Qt6 text processing)
+    for icu_file in qt_bin_path.glob('icu*.dll'):
+        if icu_file.is_file():
+            binaries.append((str(icu_file), '.'))
+    
+    # Include additional essential Windows DLLs
     essential_dlls = [
         'msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll',
-        'api-ms-win-*.dll', 'ucrtbase.dll'
+        'api-ms-win-*.dll', 'ucrtbase.dll', 'concrt140.dll',
+        'msvcp140_1.dll', 'msvcp140_2.dll'
     ]
     
     for dll_pattern in essential_dlls:
         for dll_file in qt_bin_path.glob(dll_pattern):
             if dll_file.is_file():
                 binaries.append((str(dll_file), '.'))
+
+# Include Visual C++ runtime from system directories
+import os
+system32_path = Path(os.environ.get('SYSTEMROOT', 'C:\\Windows')) / 'System32'
+for vc_dll in ['msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll']:
+    vc_dll_path = system32_path / vc_dll
+    if vc_dll_path.exists():
+        binaries.append((str(vc_dll_path), '.'))
 
 # Also include Qt6 libraries from site-packages
 import site
