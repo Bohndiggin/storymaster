@@ -192,6 +192,20 @@ try:
 except ImportError:
     print("  Warning: PyQt6 not found during spec creation")
 
+# Include essential test data and world building packages
+print("Including essential data packages...")
+test_data_path = Path('.') / 'tests' / 'model' / 'database' / 'test_data'
+if test_data_path.exists():
+    datas.append((str(test_data_path), 'tests/model/database/test_data'))
+    print(f"  Added test data: {test_data_path}")
+
+world_building_path = Path('.') / 'world_building_packages'
+if world_building_path.exists():
+    datas.append((str(world_building_path), 'world_building_packages'))
+    print(f"  Added world building packages: {world_building_path}")
+else:
+    print("  Warning: world_building_packages directory not found")
+
 print(f"Total data files included: {len(datas)}")
 
 # Essential Qt6 DLLs for minimal build
@@ -237,6 +251,20 @@ try:
         
 except ImportError:
     print("  Error: PyQt6 not available during DLL collection")
+
+# Add Visual C++ runtime DLLs (critical for Qt6 functionality)
+print("Including Visual C++ runtime DLLs...")
+import os
+system32_path = Path(os.environ.get('SYSTEMROOT', 'C:\\\\Windows')) / 'System32'
+vc_runtime_dlls = ['msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll']
+
+for vc_dll in vc_runtime_dlls:
+    vc_dll_path = system32_path / vc_dll
+    if vc_dll_path.exists():
+        binaries.append((str(vc_dll_path), '.'))
+        print(f"  Added VC++ runtime: {vc_dll}")
+    else:
+        print(f"  Warning: VC++ runtime not found: {vc_dll}")
 
 print(f"Total binaries included: {len(binaries)}")
 

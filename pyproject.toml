@@ -1,0 +1,89 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "storymaster"
+version = "1.0.0"
+description = "A PyQt6-based creative writing tool that combines visual story plotting with comprehensive world-building"
+readme = "docs/README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Storymaster Development Team"}
+]
+keywords = ["writing", "storytelling", "plotting", "world-building", "creative-writing"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Text Processing",
+    "Topic :: Multimedia :: Graphics",
+    "Environment :: X11 Applications :: Qt",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "PyQt6>=6.5.0",
+    "SQLAlchemy>=2.0.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "PyInstaller>=6.0.0",
+]
+spellcheck = [
+    "pyenchant>=3.2.0",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/Bohndiggin/storymaster"
+"Bug Reports" = "https://github.com/Bohndiggin/storymaster/issues"
+"Source" = "https://github.com/Bohndiggin/storymaster"
+"Documentation" = "https://github.com/Bohndiggin/storymaster/blob/main/docs/README.md"
+
+[project.scripts]
+storymaster = "storymaster.main:main"
+
+[project.gui-scripts]
+storymaster-gui = "storymaster.main:main"
+
+[tool.setuptools]
+packages = ["storymaster", "storymaster.controller", "storymaster.model", "storymaster.view"]
+
+[tool.setuptools.package-data]
+storymaster = [
+    "view/**/*.ui",
+    "view/**/*.png",
+    "view/**/*.ico",
+    "view/**/*.svg",
+]
+
+[tool.setuptools.exclude-package-data]
+"*" = ["*.pyc", "__pycache__"]
+
+[tool.black]
+line-length = 100
+target-version = ['py39']
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--verbose",
+    "--tb=short",
+]

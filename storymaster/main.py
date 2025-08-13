@@ -146,7 +146,8 @@ def check_and_run_migrations():
         # Continue anyway - don't block startup
 
 
-if __name__ == "__main__":
+def main():
+    """Main entry point for Storymaster application"""
     # Check for debug flag
     if "--debug-packages" in sys.argv:
         debug_environment()
@@ -179,3 +180,7 @@ if __name__ == "__main__":
     view.show()
 
     sys.exit(app.exec())
+
+
+if __name__ == "__main__":
+    main()
