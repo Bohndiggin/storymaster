@@ -17,22 +17,48 @@ try:
     plugins_path = pyqt6_path / 'Qt6' / 'plugins'
 
     if plugins_path.exists():
-        # Essential platform plugins only
+        print("Including ALL Qt6 plugins for comprehensive Windows build...")
+        
+        # Include ALL platform plugins
         platforms_path = plugins_path / 'platforms'
         if platforms_path.exists():
-            # Only include qwindows.dll which is essential for Windows
-            qwindows_dll = platforms_path / 'qwindows.dll'
-            if qwindows_dll.exists():
-                datas.append((str(qwindows_dll), 'PyQt6/Qt6/plugins/platforms'))
+            platform_count = 0
+            for platform_dll in platforms_path.glob('*.dll'):
+                if platform_dll.is_file():
+                    datas.append((str(platform_dll), 'PyQt6/Qt6/plugins/platforms'))
+                    platform_count += 1
+                    print(f"  Added platform plugin: {platform_dll.name}")
+            print(f"  Total platform plugins: {platform_count}")
         
-        # Essential image format plugins
+        # Include ALL image format plugins
         imageformats_path = plugins_path / 'imageformats'  
         if imageformats_path.exists():
-            essential_formats = ['qico.dll', 'qjpeg.dll', 'qpng.dll']
-            for fmt_dll in essential_formats:
-                fmt_path = imageformats_path / fmt_dll
-                if fmt_path.exists():
-                    datas.append((str(fmt_path), 'PyQt6/Qt6/plugins/imageformats'))
+            imageformat_count = 0
+            for fmt_dll in imageformats_path.glob('*.dll'):
+                if fmt_dll.is_file():
+                    datas.append((str(fmt_dll), 'PyQt6/Qt6/plugins/imageformats'))
+                    imageformat_count += 1
+                    print(f"  Added image format plugin: {fmt_dll.name}")
+            print(f"  Total image format plugins: {imageformat_count}")
+        
+        # Include ALL other Qt6 plugin categories
+        plugin_categories = [
+            'iconengines', 'styles', 'accessible', 'printsupport',
+            'generic', 'bearer', 'audio', 'mediaservice', 'playlistformats',
+            'position', 'sensors', 'canbus', 'sqldrivers', 'texttospeech'
+        ]
+        
+        for category in plugin_categories:
+            category_path = plugins_path / category
+            if category_path.exists():
+                category_count = 0
+                for plugin_dll in category_path.glob('*.dll'):
+                    if plugin_dll.is_file():
+                        datas.append((str(plugin_dll), f'PyQt6/Qt6/plugins/{category}'))
+                        category_count += 1
+                        print(f"  Added {category} plugin: {plugin_dll.name}")
+                if category_count > 0:
+                    print(f"  Total {category} plugins: {category_count}")
 
 except ImportError:
     print("Warning: PyQt6 not found during spec file analysis")
@@ -66,8 +92,9 @@ world_building_path = project_dir / 'world_building_packages'
 if world_building_path.exists():
     datas.append((str(world_building_path), 'world_building_packages'))
 
-# Minimal essential hidden imports
+# Comprehensive Qt6 hidden imports for full functionality
 hiddenimports = [
+    # Core Qt6 modules
     'PyQt6.QtCore',
     'PyQt6.QtGui', 
     'PyQt6.QtWidgets',
@@ -75,15 +102,68 @@ hiddenimports = [
     'PyQt6.sip',
     'PyQt6.QtPrintSupport',
     'sip',
+    
+    # Additional Qt6 modules for comprehensive functionality
+    'PyQt6.QtOpenGL',
+    'PyQt6.QtOpenGLWidgets',
+    'PyQt6.QtMultimedia',
+    'PyQt6.QtMultimediaWidgets',
+    'PyQt6.QtNetwork',
+    'PyQt6.QtWebEngineWidgets',
+    'PyQt6.QtWebEngine',
+    'PyQt6.QtWebEngineCore',
+    'PyQt6.QtQuick',
+    'PyQt6.QtQml',
+    'PyQt6.QtCharts',
+    'PyQt6.QtDataVisualization',
+    'PyQt6.Qt3DCore',
+    'PyQt6.Qt3DRender',
+    'PyQt6.Qt3DInput',
+    'PyQt6.Qt3DLogic',
+    'PyQt6.Qt3DAnimation',
+    'PyQt6.Qt3DExtras',
+    'PyQt6.QtPositioning',
+    'PyQt6.QtLocation',
+    'PyQt6.QtSensors',
+    'PyQt6.QtSerialPort',
+    'PyQt6.QtBluetooth',
+    'PyQt6.QtNfc',
+    'PyQt6.QtTextToSpeech',
+    'PyQt6.QtHelp',
+    'PyQt6.QtSql',
+    'PyQt6.QtTest',
+    'PyQt6.QtConcurrent',
+    'PyQt6.QtDBus',
+    'PyQt6.QtDesigner',
+    'PyQt6.QtUiTools',
+    'PyQt6.QtXml',
+    'PyQt6.QtSvgWidgets',
+    'PyQt6.QtPdf',
+    'PyQt6.QtPdfWidgets',
+    'PyQt6.QtSpatialAudio',
+    'PyQt6.QtHttpServer',
+    'PyQt6.QtQuick3D',
+    'PyQt6.QtQuickWidgets',
+    'PyQt6.QtRemoteObjects',
+    'PyQt6.QtScxml',
+    'PyQt6.QtStateMachine',
+    'PyQt6.QtVirtualKeyboard',
+    'PyQt6.QtWebChannel',
+    'PyQt6.QtWebSockets',
+    
     # SQLAlchemy
     'sqlalchemy',
     'sqlalchemy.dialects.sqlite',
     'sqlalchemy.orm',
     'sqlalchemy.engine',
+    
     # Essential encodings
     'encodings.utf_8',
     'encodings.ascii',
     'encodings.cp1252',
+    'encodings.latin_1',
+    'encodings.utf_16',
+    'encodings.utf_32',
 ]
 
 # Simplified binary collection
@@ -93,16 +173,24 @@ binaries = []
 try:
     qt_bin_path = pyqt6_path / 'Qt6' / 'bin'
     if qt_bin_path.exists():
-        # Essential Qt6 DLLs only
-        essential_qt_dlls = [
-            'Qt6Core.dll', 'Qt6Gui.dll', 'Qt6Widgets.dll', 
-            'Qt6Svg.dll', 'Qt6PrintSupport.dll'
-        ]
+        # Include ALL Qt6 DLLs (comprehensive bundle)
+        print("Including all Qt6 DLLs for comprehensive Windows build...")
+        qt_dll_count = 0
+        for qt_dll in qt_bin_path.glob('Qt6*.dll'):
+            if qt_dll.is_file():
+                binaries.append((str(qt_dll), '.'))
+                qt_dll_count += 1
+                print(f"  Added Qt6 DLL: {qt_dll.name}")
         
-        for dll_name in essential_qt_dlls:
+        print(f"  Total Qt6 DLLs included: {qt_dll_count}")
+        
+        # Also include any other essential Qt dependencies
+        other_qt_dlls = ['libEGL.dll', 'libGLESv2.dll', 'opengl32sw.dll']
+        for dll_name in other_qt_dlls:
             dll_path = qt_bin_path / dll_name
             if dll_path.exists():
                 binaries.append((str(dll_path), '.'))
+                print(f"  Added Qt dependency: {dll_name}")
         
         # ICU DLLs (required for Qt6 text processing)
         for icu_file in qt_bin_path.glob('icu*.dll'):
@@ -123,12 +211,10 @@ a = Analysis(
     hooksconfig={},
     runtime_hooks=[],  # Remove runtime hooks that might cause build failures
     excludes=[
-        # Conservative exclusions to avoid dependency issues
+        # Only exclude non-essential packages that aren't needed
         'matplotlib', 'numpy', 'pandas', 'scipy', 'IPython', 'jupyter',
-        'tkinter', 'unittest', 'pytest', '_pytest',
-        'PyQt6.QtNetwork', 'PyQt6.QtOpenGL', 'PyQt6.QtMultimedia',
-        'PyQt6.QtWebEngine', 'PyQt6.QtWebEngineCore', 'PyQt6.QtWebEngineWidgets',
-        'PyQt6.QtQuick', 'PyQt6.QtQml', 'PyQt6.QtTest'
+        'tkinter', 'unittest', 'pytest', '_pytest'
+        # Note: Removed PyQt6 exclusions to include all Qt6 libraries
     ],
     noarchive=False,
     optimize=1,  # Reduce optimization level to avoid issues
