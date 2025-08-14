@@ -362,21 +362,15 @@ def build_exe():
         pyqt6_path = Path(PyQt6.__file__).parent
         qt_bin_path = pyqt6_path / 'Qt6' / 'bin'
         
-        # Use Windows-specific spec file with explicit paths
+        # Use Windows-specific spec file (paths are handled in the spec file itself)
         cmd = [
             sys.executable,
             "-m",
             "PyInstaller",
             "--clean",
             "--log-level=INFO",
+            "storymaster-windows.spec"
         ]
-        
-        # Add --paths argument if Qt6 bin directory exists
-        if qt_bin_path.exists():
-            cmd.extend(["--paths", str(qt_bin_path)])
-            print(f"  Using PyQt6 bin path: {qt_bin_path}")
-        
-        cmd.append("storymaster-windows.spec")
 
         print(f"  Command: {' '.join(cmd)}")
         start_time = time.time()
