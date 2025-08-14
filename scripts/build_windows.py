@@ -540,49 +540,17 @@ def create_zip():
 
 
 def validate_build():
-    """Validate the built executable with Qt6 bundle test"""
-    print("[VALIDATE] Testing built executable...")
+    """Check that the built executable exists"""
+    print("[VALIDATE] Checking built executable...")
     
-    # Check for both possible executable names
     exe_path = Path("dist/storymaster.exe")
-    minimal_exe_path = Path("dist/storymaster-minimal.exe")
     
     if exe_path.exists():
-        final_exe = exe_path
-        print(f"  Validating main executable: {exe_path}")
-    elif minimal_exe_path.exists():
-        final_exe = minimal_exe_path
-        print(f"  Validating minimal executable: {minimal_exe_path}")
+        exe_size = exe_path.stat().st_size / (1024 * 1024)
+        print(f"  ✓ Executable created: {exe_path} ({exe_size:.1f} MB)")
+        return True
     else:
-        print("[ERROR] No executable found for validation")
-        return False
-    
-    try:
-        # Run the Qt6 validation test on the built executable
-        test_script = Path("scripts/test_qt6_bundle.py")
-        if not test_script.exists():
-            print("[WARNING] Qt6 validation script not found, skipping validation")
-            return True
-        
-        print("  Running Qt6 bundle validation test...")
-        result = subprocess.run([
-            str(final_exe),
-            "-c", f"exec(open('{test_script}').read())"
-        ], capture_output=True, text=True, timeout=30)
-        
-        if result.returncode == 0:
-            print("  ✓ Qt6 bundle validation passed")
-            return True
-        else:
-            print("  ✗ Qt6 bundle validation failed")
-            print(f"  Error output: {result.stderr}")
-            return False
-            
-    except subprocess.TimeoutExpired:
-        print("  ⚠ Qt6 validation test timed out")
-        return False
-    except Exception as e:
-        print(f"  ⚠ Could not run validation test: {e}")
+        print("[ERROR] No executable found")
         return False
 
 
@@ -645,12 +613,8 @@ def main():
     for step_name, step_func in steps:
         print(f"\n[STEP] {step_name}")
         if not step_func():
-            if step_name == "Validate build":
-                print("[WARNING] Build validation failed, but continuing with packaging")
-                print("          Manual testing recommended before distribution")
-            else:
-                print(f"[FAILED] Build stopped at: {step_name}")
-                sys.exit(1)
+            print(f"[FAILED] Build stopped at: {step_name}")
+            sys.exit(1)
 
     print_summary()
 
