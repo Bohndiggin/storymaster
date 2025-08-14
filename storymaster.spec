@@ -356,10 +356,20 @@ if platform.system() == 'Darwin':
     )
 
     # Create macOS app bundle
+    # Try .icns first, then high-res PNG, then None
+    icns_icon = project_dir / 'assets/storymaster_icon.icns'
+    png_icon = project_dir / 'assets/storymaster_icon_1024.png'
+    
+    icon_path = None
+    if icns_icon.exists():
+        icon_path = str(icns_icon)
+    elif png_icon.exists():
+        icon_path = str(png_icon)  # PyInstaller can convert PNG to icns if Pillow available
+    
     app = BUNDLE(
         coll,
         name='Storymaster.app',
-        icon=str(project_dir / 'assets/storymaster_icon_64.png') if (project_dir / 'assets/storymaster_icon_64.png').exists() else None,
+        icon=icon_path,
         bundle_identifier='com.storymaster.app',
         info_plist={
             'CFBundleDisplayName': 'Storymaster',
