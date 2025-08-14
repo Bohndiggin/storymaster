@@ -318,43 +318,44 @@ a = Analysis(
 
 pyz = PYZ(a.pure)
 
-# Create executable optimized for macOS app bundles
-exe = EXE(
-    pyz,
-    a.scripts,
-    [],  # Don't bundle everything - use COLLECT for proper structure
-    name='storymaster',
-    debug=False,
-    bootloader_ignore_signals=False,
-    strip=False,
-    upx=False,
-    upx_exclude=[],
-    runtime_tmpdir=None,
-    console=False,
-    disable_windowed_traceback=False,
-    argv_emulation=False,
-    target_arch=None,
-    codesign_identity=None,
-    entitlements_file=None,
-    icon=str(project_dir / 'assets/storymaster_icon_64.png') if (project_dir / 'assets/storymaster_icon_64.png').exists() else None,
-    # No version info to avoid Windows build hanging
-)
-
-# Create COLLECT for proper macOS app bundle structure
-coll = COLLECT(
-    exe,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
-    strip=False,
-    upx=False,
-    upx_exclude=[],
-    name='storymaster'
-)
-
-# Create macOS app bundle
+# Platform-specific executable creation
 import platform
+
 if platform.system() == 'Darwin':
+    # macOS: Create executable for app bundle
+    exe = EXE(
+        pyz,
+        a.scripts,
+        [],  # Don't bundle everything - use COLLECT for proper structure
+        name='storymaster',
+        debug=False,
+        bootloader_ignore_signals=False,
+        strip=False,
+        upx=False,
+        upx_exclude=[],
+        runtime_tmpdir=None,
+        console=False,
+        disable_windowed_traceback=False,
+        argv_emulation=False,
+        target_arch=None,
+        codesign_identity=None,
+        entitlements_file=None,
+        icon=str(project_dir / 'assets/storymaster_icon_64.png') if (project_dir / 'assets/storymaster_icon_64.png').exists() else None,
+    )
+
+    # Create COLLECT for proper macOS app bundle structure
+    coll = COLLECT(
+        exe,
+        a.binaries,
+        a.zipfiles,
+        a.datas,
+        strip=False,
+        upx=False,
+        upx_exclude=[],
+        name='storymaster'
+    )
+
+    # Create macOS app bundle
     app = BUNDLE(
         coll,
         name='Storymaster.app',
@@ -378,4 +379,28 @@ if platform.system() == 'Darwin':
             ],
             'NSPrincipalClass': 'NSApplication'
         }
+    )
+else:
+    # Linux/Windows: Create one-file executable
+    exe = EXE(
+        pyz,
+        a.scripts,
+        a.binaries,
+        a.datas,
+        [],
+        name='storymaster',
+        debug=False,
+        bootloader_ignore_signals=False,
+        strip=False,
+        upx=False,
+        upx_exclude=[],
+        runtime_tmpdir=None,
+        console=False,
+        disable_windowed_traceback=False,
+        argv_emulation=False,
+        target_arch=None,
+        codesign_identity=None,
+        entitlements_file=None,
+        icon=str(project_dir / 'assets/storymaster_icon_64.png') if (project_dir / 'assets/storymaster_icon_64.png').exists() else None,
+        # No version info to avoid Windows build hanging
     )
