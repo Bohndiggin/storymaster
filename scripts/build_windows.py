@@ -473,6 +473,15 @@ def create_portable():
         if Path("storymaster.db").exists():
             shutil.copy2("storymaster.db", portable_dir / "storymaster.db")
             print("  ✓ Copied database")
+        
+        # Copy world building packages if they exist
+        world_building_src = Path("world_building_packages")
+        if world_building_src.exists():
+            world_building_dest = portable_dir / "world_building_packages"
+            shutil.copytree(world_building_src, world_building_dest)
+            print("  ✓ Copied world building packages")
+        else:
+            print("  ⚠ No world building packages found")
 
         # Create Windows README
         readme_content = """# Storymaster Portable for Windows
@@ -485,17 +494,24 @@ Double-click `storymaster.exe` to run
 - Includes Python runtime and all dependencies
 - Portable - works from any folder
 - Compatible with Windows 10/11
+- Includes world building packages for easy project setup
+
+## Contents
+- `storymaster.exe` - Main application
+- `world_building_packages/` - Pre-made world building templates (if included)
+- `storymaster.db` - Database file (created on first run)
 
 ## File Size
-~150MB (includes full Python + PyQt6 runtime)
+~50MB (includes PyQt6 runtime)
 
 ## Troubleshooting
 - If Windows Defender blocks it, allow the application
 - Run as Administrator if database creation fails
 - Check Windows Event Viewer for detailed error logs
+- Ensure Visual C++ Redistributable 2015-2022 is installed
 
 ## First Run
-- May take 10-15 seconds to start (extracting files)
+- May take 5-10 seconds to start (loading dependencies)
 - Creates storymaster.db database file
 - Subsequent runs are faster
 
