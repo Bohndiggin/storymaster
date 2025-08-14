@@ -362,14 +362,27 @@ def build_exe():
         pyqt6_path = Path(PyQt6.__file__).parent
         qt_bin_path = pyqt6_path / 'Qt6' / 'bin'
         
-        # Use Windows-specific spec file (paths are handled in the spec file itself)
+        # Use direct PyInstaller with auto-collection instead of spec file
         cmd = [
             sys.executable,
             "-m",
             "PyInstaller",
             "--clean",
             "--log-level=INFO",
-            "storymaster-windows.spec"
+            "--collect-all", "PyQt6",
+            "--add-data", "storymaster/view/common/*.ui;storymaster/view/common",
+            "--add-data", "storymaster/view/litographer/*.ui;storymaster/view/litographer", 
+            "--add-data", "storymaster/view/lorekeeper/*.ui;storymaster/view/lorekeeper",
+            "--add-data", "storymaster/view/character_arcs/*.ui;storymaster/view/character_arcs",
+            "--hidden-import", "PyQt6.QtCore",
+            "--hidden-import", "PyQt6.QtGui",
+            "--hidden-import", "PyQt6.QtWidgets",
+            "--hidden-import", "PyQt6.QtSvg",
+            "--hidden-import", "sqlalchemy.dialects.sqlite",
+            "--onefile",
+            "--console",
+            "--name", "storymaster",
+            "storymaster/main.py"
         ]
 
         print(f"  Command: {' '.join(cmd)}")
