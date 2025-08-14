@@ -99,9 +99,6 @@ jobs:
         GITHUB_ACTIONS: true
         QT_QPA_PLATFORM: offscreen
     
-    - name: Create macOS icon
-      run: python scripts/create_macos_icon.py
-    
     - name: Build macOS app bundle
       run: python scripts/build_macos.py --non-interactive
     
