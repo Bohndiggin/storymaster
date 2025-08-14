@@ -149,9 +149,9 @@ def clean_build():
 
 
 def create_minimal_spec():
-    """Create a comprehensive spec file for Windows with ALL Qt6 libraries and components"""
+    """Create a minimal spec file for Windows with essential Qt6 components only"""
     minimal_spec_content = '''# -*- mode: python ; coding: utf-8 -*-
-# Comprehensive Windows spec file with ALL Qt6 libraries and components
+# Minimal Windows spec file with essential Qt6 components only
 
 import glob
 from pathlib import Path
@@ -168,54 +168,41 @@ for ui_dir in ['common', 'litographer', 'lorekeeper', 'character_arcs']:
         datas.append((ui_file, f'storymaster/view/{ui_dir}'))
         print(f"  Added UI file: {ui_file}")
 
-# Include ALL Qt6 plugins for comprehensive functionality
-print("Including ALL Qt6 plugins...")
+# Include minimal Qt6 plugins for essential functionality only
+print("Including minimal Qt6 plugins...")
 try:
     import PyQt6
     pyqt6_path = Path(PyQt6.__file__).parent
     plugins_path = pyqt6_path / 'Qt6' / 'plugins'
     
     if plugins_path.exists():
-        # Include ALL platform plugins
+        # Include only essential platform plugins
         platforms_path = plugins_path / 'platforms'
         if platforms_path.exists():
-            platform_count = 0
-            for platform_dll in platforms_path.glob('*.dll'):
-                if platform_dll.is_file():
-                    datas.append((str(platform_dll), 'PyQt6/Qt6/plugins/platforms'))
-                    platform_count += 1
-                    print(f"  Added platform plugin: {platform_dll.name}")
-            print(f"  Total platform plugins: {platform_count}")
+            essential_platforms = ['qwindows.dll']  # Only Windows platform
+            for platform_dll in essential_platforms:
+                platform_path = platforms_path / platform_dll
+                if platform_path.exists():
+                    datas.append((str(platform_path), 'PyQt6/Qt6/plugins/platforms'))
+                    print(f"  Added essential platform plugin: {platform_dll}")
         
-        # Include ALL image format plugins
+        # Include only essential image format plugins
         imageformats_path = plugins_path / 'imageformats'
         if imageformats_path.exists():
-            imageformat_count = 0
-            for fmt_dll in imageformats_path.glob('*.dll'):
-                if fmt_dll.is_file():
-                    datas.append((str(fmt_dll), 'PyQt6/Qt6/plugins/imageformats'))
-                    imageformat_count += 1
-                    print(f"  Added image format plugin: {fmt_dll.name}")
-            print(f"  Total image format plugins: {imageformat_count}")
+            essential_formats = ['qico.dll', 'qjpeg.dll', 'qpng.dll']  # Basic image support
+            for fmt_dll in essential_formats:
+                fmt_path = imageformats_path / fmt_dll
+                if fmt_path.exists():
+                    datas.append((str(fmt_path), 'PyQt6/Qt6/plugins/imageformats'))
+                    print(f"  Added essential image format: {fmt_dll}")
         
-        # Include ALL other Qt6 plugin categories
-        plugin_categories = [
-            'iconengines', 'styles', 'accessible', 'printsupport',
-            'generic', 'bearer', 'audio', 'mediaservice', 'playlistformats',
-            'position', 'sensors', 'canbus', 'sqldrivers', 'texttospeech'
-        ]
-        
-        for category in plugin_categories:
-            category_path = plugins_path / category
-            if category_path.exists():
-                category_count = 0
-                for plugin_dll in category_path.glob('*.dll'):
-                    if plugin_dll.is_file():
-                        datas.append((str(plugin_dll), f'PyQt6/Qt6/plugins/{category}'))
-                        category_count += 1
-                        print(f"  Added {category} plugin: {plugin_dll.name}")
-                if category_count > 0:
-                    print(f"  Total {category} plugins: {category_count}")
+        # Include only essential iconengines
+        iconengines_path = plugins_path / 'iconengines'
+        if iconengines_path.exists():
+            for icon_dll in iconengines_path.glob('qsvgicon.dll'):
+                if icon_dll.is_file():
+                    datas.append((str(icon_dll), 'PyQt6/Qt6/plugins/iconengines'))
+                    print(f"  Added essential icon engine: {icon_dll.name}")
     else:
         print("  Warning: Qt6 plugins directory not found")
         
@@ -247,26 +234,22 @@ try:
     qt_bin_path = pyqt6_path / 'Qt6' / 'bin'
     
     if qt_bin_path.exists():
-        # Include ALL Qt6 DLLs for comprehensive functionality
-        print("  Including ALL Qt6 DLLs for comprehensive Windows build...")
-        qt_dll_count = 0
-        for qt_dll in qt_bin_path.glob('Qt6*.dll'):
-            if qt_dll.is_file():
-                binaries.append((str(qt_dll), '.'))
-                qt_dll_count += 1
-                print(f"  Added Qt6 DLL: {qt_dll.name}")
+        # Include only essential Qt6 DLLs for minimal build
+        print("  Including minimal Qt6 DLLs for Windows compatibility...")
+        essential_qt_dlls = [
+            'Qt6Core.dll',      # Core Qt functionality 
+            'Qt6Gui.dll',       # GUI components
+            'Qt6Widgets.dll',   # Widget toolkit
+            'Qt6Svg.dll',       # SVG support (for icons)
+        ]
         
-        print(f"  Total Qt6 DLLs included: {qt_dll_count}")
-        
-        # Also include any other essential Qt dependencies
-        other_qt_dlls = ['libEGL.dll', 'libGLESv2.dll', 'opengl32sw.dll']
-        for dll_name in other_qt_dlls:
+        for dll_name in essential_qt_dlls:
             dll_path = qt_bin_path / dll_name
             if dll_path.exists():
                 binaries.append((str(dll_path), '.'))
-                print(f"  Added Qt dependency: {dll_name}")
+                print(f"  Added essential Qt6 DLL: {dll_name}")
             else:
-                print(f"  Warning: Qt dependency not found: {dll_name}")
+                print(f"  Warning: Essential DLL not found: {dll_name}")
         
         # ICU DLLs (required for Qt6 text processing)
         icu_count = 0
@@ -317,53 +300,6 @@ a = Analysis(
         'PyQt6.QtPrintSupport',
         'sip',
         
-        # Additional Qt6 modules for comprehensive functionality
-        'PyQt6.QtOpenGL',
-        'PyQt6.QtOpenGLWidgets',
-        'PyQt6.QtMultimedia',
-        'PyQt6.QtMultimediaWidgets',
-        'PyQt6.QtNetwork',
-        'PyQt6.QtWebEngineWidgets',
-        'PyQt6.QtWebEngine',
-        'PyQt6.QtWebEngineCore',
-        'PyQt6.QtQuick',
-        'PyQt6.QtQml',
-        'PyQt6.QtCharts',
-        'PyQt6.QtDataVisualization',
-        'PyQt6.Qt3DCore',
-        'PyQt6.Qt3DRender',
-        'PyQt6.Qt3DInput',
-        'PyQt6.Qt3DLogic',
-        'PyQt6.Qt3DAnimation',
-        'PyQt6.Qt3DExtras',
-        'PyQt6.QtPositioning',
-        'PyQt6.QtLocation',
-        'PyQt6.QtSensors',
-        'PyQt6.QtSerialPort',
-        'PyQt6.QtBluetooth',
-        'PyQt6.QtNfc',
-        'PyQt6.QtTextToSpeech',
-        'PyQt6.QtHelp',
-        'PyQt6.QtSql',
-        'PyQt6.QtTest',
-        'PyQt6.QtConcurrent',
-        'PyQt6.QtDBus',
-        'PyQt6.QtDesigner',
-        'PyQt6.QtUiTools',
-        'PyQt6.QtXml',
-        'PyQt6.QtSvgWidgets',
-        'PyQt6.QtPdf',
-        'PyQt6.QtPdfWidgets',
-        'PyQt6.QtSpatialAudio',
-        'PyQt6.QtHttpServer',
-        'PyQt6.QtQuick3D',
-        'PyQt6.QtQuickWidgets',
-        'PyQt6.QtRemoteObjects',
-        'PyQt6.QtScxml',
-        'PyQt6.QtStateMachine',
-        'PyQt6.QtVirtualKeyboard',
-        'PyQt6.QtWebChannel',
-        'PyQt6.QtWebSockets',
         
         # SQLAlchemy
         'sqlalchemy',
@@ -375,9 +311,6 @@ a = Analysis(
         'encodings.utf_8',
         'encodings.ascii',
         'encodings.cp1252',
-        'encodings.latin_1',
-        'encodings.utf_16',
-        'encodings.utf_32',
     ],
     hookspath=[],
     hooksconfig={},
@@ -494,34 +427,10 @@ def build_exe():
                 f.write("\n".join(all_output))
             print(f"[DEBUG] Full build log written to: {log_file}")
             
-            # Try minimal spec as fallback
-            print("\n[FALLBACK] Attempting build with minimal spec...")
-            create_minimal_spec()
-            
-            # Try building with minimal spec
-            minimal_cmd = [
-                sys.executable, "-m", "PyInstaller", 
-                "--clean", "--log-level=INFO", 
-                "storymaster-minimal.spec"
-            ]
-            
-            print(f"  Minimal command: {' '.join(minimal_cmd)}")
-            minimal_result = subprocess.run(minimal_cmd, capture_output=True, text=True)
-            
-            if minimal_result.returncode == 0:
-                print("[OK] Enhanced minimal build succeeded!")
-                print("      ✓ Includes UI files and essential Qt6 plugins")
-                print("      ✓ Should have working PyQt6 interface")
-                print("      ⚠ Complex spec file has configuration issues - using minimal version")
-                return True
-            else:
-                print("[ERROR] Enhanced minimal build also failed")
-                print("        This indicates a fundamental PyInstaller/environment issue")
-                print("        Check:")
-                print("        - PyQt6 installation")
-                print("        - Python version compatibility")
-                print("        - Windows Visual C++ runtime")
-                return False
+            # Build failed - no fallback, fail completely
+            print(f"[ERROR] Windows build failed (exit code: {process.returncode})")
+            print("        No fallback - main spec must succeed")
+            return False
 
     except Exception as e:
         print(f"[ERROR] Build error: {e}")
@@ -686,9 +595,9 @@ def print_summary():
     
     if minimal_exe_path.exists() and not main_exe_path.exists():
         print("🔧 MINIMAL BUILD USED")
-        print("   The complex spec failed, but enhanced minimal build succeeded")
-        print("   ✓ Includes UI files and Qt6 plugins")
-        print("   ✓ Should have functional interface")
+        print("   The complex spec failed, but minimal build succeeded")
+        print("   ✓ Includes UI files and essential Qt6 plugins only")
+        print("   ✓ Should have better Windows compatibility")
         exe_size = minimal_exe_path.stat().st_size / (1024 * 1024)
         print(f"   Source: dist/storymaster-minimal.exe ({exe_size:.1f} MB)")
 
