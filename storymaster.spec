@@ -322,11 +322,11 @@ pyz = PYZ(a.pure)
 import platform
 
 if platform.system() == 'Darwin':
-    # macOS: Create executable for app bundle
+    # macOS: Create executable with separate resources for app bundle
     exe = EXE(
         pyz,
         a.scripts,
-        [],  # Don't bundle everything - use COLLECT for proper structure
+        exclude_binaries=True,  # Keep binaries separate for COLLECT
         name='storymaster',
         debug=False,
         bootloader_ignore_signals=False,
