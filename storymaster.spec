@@ -7,7 +7,7 @@ from pathlib import Path
 # PyInstaller imports (added automatically by PyInstaller, but explicit for clarity)
 try:
     from PyInstaller.building.build_main import Analysis
-    from PyInstaller.building.api import PYZ, EXE, COLLECT
+    from PyInstaller.building.api import PYZ, EXE, COLLECT, BUNDLE
 except ImportError:
     # These will be available when PyInstaller processes the spec
     pass
@@ -318,13 +318,11 @@ a = Analysis(
 
 pyz = PYZ(a.pure)
 
-# Create one-file executable without version info to avoid hanging
+# Create executable optimized for macOS app bundles
 exe = EXE(
     pyz,
     a.scripts,
-    a.binaries,
-    a.datas,
-    [],
+    [],  # Don't bundle everything - use COLLECT for proper structure
     name='storymaster',
     debug=False,
     bootloader_ignore_signals=False,
@@ -341,3 +339,43 @@ exe = EXE(
     icon=str(project_dir / 'assets/storymaster_icon_64.png') if (project_dir / 'assets/storymaster_icon_64.png').exists() else None,
     # No version info to avoid Windows build hanging
 )
+
+# Create COLLECT for proper macOS app bundle structure
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    strip=False,
+    upx=False,
+    upx_exclude=[],
+    name='storymaster'
+)
+
+# Create macOS app bundle
+import platform
+if platform.system() == 'Darwin':
+    app = BUNDLE(
+        coll,
+        name='Storymaster.app',
+        icon=str(project_dir / 'assets/storymaster_icon_64.png') if (project_dir / 'assets/storymaster_icon_64.png').exists() else None,
+        bundle_identifier='com.storymaster.app',
+        info_plist={
+            'CFBundleDisplayName': 'Storymaster',
+            'CFBundleName': 'Storymaster',
+            'CFBundleShortVersionString': '1.0.0',
+            'CFBundleVersion': '1.0.0',
+            'LSMinimumSystemVersion': '11.0',  # PyQt6 minimum requirement
+            'NSHighResolutionCapable': True,
+            'NSRequiresAquaSystemAppearance': False,
+            'LSApplicationCategoryType': 'public.app-category.productivity',
+            'CFBundleDocumentTypes': [
+                {
+                    'CFBundleTypeExtensions': ['db'],
+                    'CFBundleTypeName': 'Storymaster Database',
+                    'CFBundleTypeRole': 'Editor'
+                }
+            ],
+            'NSPrincipalClass': 'NSApplication'
+        }
+    )

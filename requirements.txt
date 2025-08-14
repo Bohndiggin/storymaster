@@ -12,4 +12,6 @@ isort==6.0.1
 Faker==37.4.2
 
 # Distribution dependencies
+# Note: For macOS builds, use PyInstaller develop branch instead due to PyQt6 compatibility issues
+# Install with: PYINSTALLER_COMPILE_BOOTLOADER=1 pip install git+https://github.com/pyinstaller/pyinstaller.git@develop
 pyinstaller==6.11.1

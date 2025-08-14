@@ -318,7 +318,7 @@ def create_with_pyinstaller(build_mode):
     print("\n[COMPILE] Building with PyInstaller...")
 
     try:
-        # PyInstaller command for macOS
+        # PyInstaller command for macOS with improved Qt6 handling
         cmd = [
             sys.executable,
             "-m",
@@ -328,31 +328,14 @@ def create_with_pyinstaller(build_mode):
             "--windowed",  # No console window
             "--name",
             "storymaster",
-            "--add-data",
-            "tests/model/database/test_data:tests/model/database/test_data",
-            "--hidden-import",
-            "PyQt6.QtCore",
-            "--hidden-import",
-            "PyQt6.QtGui",
-            "--hidden-import",
-            "PyQt6.QtWidgets",
-            "--hidden-import",
-            "sqlalchemy.dialects.sqlite",
+            # Use the spec file for comprehensive configuration
+            "--specpath",
+            ".",
+            "storymaster.spec",
         ]
 
-        # Add cross-compilation flags if building from Linux
-        if build_mode == "cross":
-            cmd.extend(
-                [
-                    "--target-arch",
-                    "x86_64",
-                    "--osx-bundle-identifier",
-                    "com.storymaster.app",
-                    # Note: This requires PyInstaller 5.0+ and proper osxcross setup
-                ]
-            )
-
-        cmd.append("storymaster/main.py")
+        # Cross-compilation is handled in the spec file
+        # No need to append main.py as it's defined in the spec file
 
         print(f"   Running: {' '.join(cmd)}")
 
@@ -375,7 +358,13 @@ def create_with_pyinstaller(build_mode):
         if result.returncode == 0:
             print("[OK] PyInstaller build completed")
 
-            # PyInstaller creates dist/storymaster/ - convert to .app bundle
+            # Check if PyInstaller already created Storymaster.app (BUNDLE mode)
+            app_bundle = Path("dist/Storymaster.app")
+            if app_bundle.exists():
+                print(f"[OK] App bundle already created by PyInstaller: {app_bundle}")
+                return True
+            
+            # Fallback: PyInstaller creates dist/storymaster/ - convert to .app bundle
             dist_dir = Path("dist/storymaster")
             if dist_dir.exists():
                 # Create proper .app bundle from PyInstaller output
@@ -429,9 +418,28 @@ def create_app_bundle_from_dist(dist_dir):
         return None
 
 
-def create_dmg_installer(app_bundle):
+def create_dmg_installer(app_bundle_path=None):
     """Create a DMG installer (requires macOS or additional tools)"""
     print("\n[DISK] Creating DMG installer...")
+    
+    # Determine app bundle path
+    if app_bundle_path is None:
+        # Try to find the app bundle
+        possible_paths = [
+            Path("dist/Storymaster.app"),
+            Path("Storymaster.app")
+        ]
+        app_bundle = None
+        for path in possible_paths:
+            if path.exists():
+                app_bundle = path
+                break
+        
+        if app_bundle is None:
+            print("[ERROR] No app bundle found")
+            return False
+    else:
+        app_bundle = app_bundle_path
 
     if platform.system() != "Darwin":
         print("[WARNING]  DMG creation requires macOS or cross-compilation tools")

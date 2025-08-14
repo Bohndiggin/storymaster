@@ -84,6 +84,9 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        # Use PyInstaller develop branch for macOS PyQt6 compatibility
+        pip uninstall -y pyinstaller
+        PYINSTALLER_COMPILE_BOOTLOADER=1 pip install git+https://github.com/pyinstaller/pyinstaller.git@develop
     
     - name: Run tests
       run: |
@@ -101,23 +104,36 @@ jobs:
     
     - name: Create DMG (if hdiutil available)
       run: |
+        # Look for the app bundle in dist/ first, then in current directory
+        if [ -d "dist/Storymaster.app" ]; then
+          APP_PATH="dist/Storymaster.app"
+        elif [ -d "Storymaster.app" ]; then
+          APP_PATH="Storymaster.app"
+        else
+          echo "Error: No Storymaster.app found"
+          exit 1
+        fi
+        
+        echo "Using app bundle at: $APP_PATH"
+        
         if command -v hdiutil &> /dev/null; then
-          hdiutil create -srcfolder Storymaster.app -volname "Storymaster" Storymaster-macOS.dmg
+          hdiutil create -srcfolder "$APP_PATH" -volname "Storymaster" Storymaster-macOS.dmg
           echo "=== DMG created ==="
           ls -la Storymaster-macOS.dmg
         else
-          tar -czf Storymaster-macOS.tar.gz Storymaster.app
+          tar -czf Storymaster-macOS.tar.gz "$APP_PATH"
           echo "=== TAR.GZ created instead of DMG ==="
           ls -la Storymaster-macOS.tar.gz
         fi
         echo "=== All macOS build files ==="
-        ls -la Storymaster*
+        ls -la Storymaster* dist/
     
     - name: Upload macOS artifacts
       uses: actions/upload-artifact@v4
       with:
         name: storymaster-macos
         path: |
+          dist/Storymaster.app/
           Storymaster.app/
           Storymaster-macOS.*
 
