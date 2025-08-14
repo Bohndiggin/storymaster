@@ -324,13 +324,6 @@ def create_with_pyinstaller(build_mode):
             "-m",
             "PyInstaller",
             "--clean",
-            "--onedir",  # Create a directory instead of single file
-            "--windowed",  # No console window
-            "--name",
-            "storymaster",
-            # Use the spec file for comprehensive configuration
-            "--specpath",
-            ".",
             "storymaster.spec",
         ]
 
