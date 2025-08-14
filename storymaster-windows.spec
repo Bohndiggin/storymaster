@@ -139,15 +139,32 @@ except NameError:
     # PyQt6 not available during spec analysis
     pass
 
+# Add Visual C++ runtime DLLs (critical for Qt6 functionality)
+print("Including Visual C++ runtime DLLs...")
+import os
+system32_path = Path(os.environ.get('SYSTEMROOT', 'C:\\Windows')) / 'System32'
+vc_runtime_dlls = ['msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll']
+
+for vc_dll in vc_runtime_dlls:
+    vc_dll_path = system32_path / vc_dll
+    if vc_dll_path.exists():
+        binaries.append((str(vc_dll_path), '.'))
+        print(f"  Added VC++ runtime: {vc_dll}")
+    else:
+        print(f"  Warning: VC++ runtime not found: {vc_dll}")
+
 a = Analysis(
     ['storymaster/main.py'],
     pathex=[str(project_dir)],
     binaries=binaries,
     datas=datas,
     hiddenimports=hiddenimports,
-    hookspath=[],  # Remove custom hooks that might cause issues
-    hooksconfig={},
-    runtime_hooks=[],  # Remove runtime hooks that might cause build failures
+    hookspath=[],
+    hooksconfig={
+        # Let PyInstaller collect all PyQt6 dependencies automatically
+        'pyqt6': {'auto-collection': True}
+    },
+    runtime_hooks=[],
     excludes=[
         # Exclude heavy packages that aren't needed
         'matplotlib', 'numpy', 'pandas', 'scipy', 'IPython', 'jupyter',
@@ -159,7 +176,7 @@ a = Analysis(
         'PyQt6.QtOpenGL', 'PyQt6.QtOpenGLWidgets', 'PyQt6.QtNetwork', 'PyQt6.QtPositioning'
     ],
     noarchive=False,
-    optimize=1,  # Reduce optimization level to avoid issues
+    optimize=0,  # No optimization to avoid dependency issues
 )
 
 pyz = PYZ(a.pure)
