@@ -29,10 +29,10 @@ def setup_qt_environment():
 
     # 3. Set Qt plugin paths - try multiple possible locations
     qt_plugin_candidates = [
-        bundle_dir / "PyQt6" / "Qt6" / "plugins",
+        bundle_dir / "PySide6" / "Qt6" / "plugins",
         bundle_dir / "plugins",
         bundle_dir / "qt6_plugins",
-        bundle_dir / "PyQt6" / "plugins"
+        bundle_dir / "PySide6" / "plugins"
     ]
 
     valid_plugin_paths = []
@@ -49,7 +49,7 @@ def setup_qt_environment():
 
     # 4. Set platform plugin path specifically (critical for Windows)
     platform_candidates = [
-        bundle_dir / "PyQt6" / "Qt6" / "plugins" / "platforms",
+        bundle_dir / "PySide6" / "Qt6" / "plugins" / "platforms",
         bundle_dir / "plugins" / "platforms",
         bundle_dir / "platforms"
     ]

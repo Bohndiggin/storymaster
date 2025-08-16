@@ -48,11 +48,11 @@ def check_dependencies():
 
     try:
         import PySide6
-        print(f"✓ PyQt6 available")
+        print(f"✓ PySide6 available")
         
         # Check Qt6 bin directory
-        pyqt6_path = Path(PyQt6.__file__).parent
-        qt_bin_path = pyqt6_path / 'Qt6' / 'bin'
+        pyside6_path = Path(PySide6.__file__).parent
+        qt_bin_path = pyside6_path / 'Qt6' / 'bin'
         if qt_bin_path.exists():
             print(f"✓ Qt6 bin directory: {qt_bin_path}")
             
@@ -67,7 +67,7 @@ def check_dependencies():
             print("[WARNING] Qt6 bin directory not found")
             
     except ImportError:
-        print("[ERROR] PyQt6 not found")
+        print("[ERROR] PySide6 not found")
         return False
 
     # Check for Visual C++ runtime DLLs
@@ -159,7 +159,7 @@ from pathlib import Path
 # Essential data files for UI functionality
 datas = []
 
-# Include UI files (essential for PyQt6 forms)
+# Include UI files (essential for PySide6 forms)
 print("Including UI files...")
 for ui_dir in ['common', 'litographer', 'lorekeeper', 'character_arcs']:
     ui_pattern = f'storymaster/view/{ui_dir}/*.ui'
@@ -172,8 +172,8 @@ for ui_dir in ['common', 'litographer', 'lorekeeper', 'character_arcs']:
 print("Including minimal Qt6 plugins...")
 try:
     import PySide6
-    pyqt6_path = Path(PyQt6.__file__).parent
-    plugins_path = pyqt6_path / 'Qt6' / 'plugins'
+    pyside6_path = Path(PySide6.__file__).parent
+    plugins_path = pyside6_path / 'Qt6' / 'plugins'
     
     if plugins_path.exists():
         # Include only essential platform plugins
@@ -183,7 +183,7 @@ try:
             for platform_dll in essential_platforms:
                 platform_path = platforms_path / platform_dll
                 if platform_path.exists():
-                    datas.append((str(platform_path), 'PyQt6/Qt6/plugins/platforms'))
+                    datas.append((str(platform_path), 'PySide6/Qt6/plugins/platforms'))
                     print(f"  Added essential platform plugin: {platform_dll}")
         
         # Include only essential image format plugins
@@ -193,7 +193,7 @@ try:
             for fmt_dll in essential_formats:
                 fmt_path = imageformats_path / fmt_dll
                 if fmt_path.exists():
-                    datas.append((str(fmt_path), 'PyQt6/Qt6/plugins/imageformats'))
+                    datas.append((str(fmt_path), 'PySide6/Qt6/plugins/imageformats'))
                     print(f"  Added essential image format: {fmt_dll}")
         
         # Include only essential iconengines
@@ -201,13 +201,13 @@ try:
         if iconengines_path.exists():
             for icon_dll in iconengines_path.glob('qsvgicon.dll'):
                 if icon_dll.is_file():
-                    datas.append((str(icon_dll), 'PyQt6/Qt6/plugins/iconengines'))
+                    datas.append((str(icon_dll), 'PySide6/Qt6/plugins/iconengines'))
                     print(f"  Added essential icon engine: {icon_dll.name}")
     else:
         print("  Warning: Qt6 plugins directory not found")
         
 except ImportError:
-    print("  Warning: PyQt6 not found during spec creation")
+    print("  Warning: PySide6 not found during spec creation")
 
 # Include essential test data and world building packages
 print("Including essential data packages...")
@@ -230,8 +230,8 @@ binaries = []
 print("Including essential Qt6 DLLs...")
 try:
     import PySide6
-    pyqt6_path = Path(PyQt6.__file__).parent
-    qt_bin_path = pyqt6_path / 'Qt6' / 'bin'
+    pyside6_path = Path(PySide6.__file__).parent
+    qt_bin_path = pyside6_path / 'Qt6' / 'bin'
     
     if qt_bin_path.exists():
         # Include only essential Qt6 DLLs for minimal build
@@ -267,7 +267,7 @@ try:
         print(f"  Error: Qt6 bin directory not found: {qt_bin_path}")
         
 except ImportError:
-    print("  Error: PyQt6 not available during DLL collection")
+    print("  Error: PySide6 not available during DLL collection")
 
 # Add Visual C++ runtime DLLs (critical for Qt6 functionality)
 print("Including Visual C++ runtime DLLs...")
@@ -292,12 +292,12 @@ a = Analysis(
     datas=datas,
     hiddenimports=[
         # Core Qt6 modules
-        'PyQt6.QtCore',
-        'PyQt6.QtGui', 
-        'PyQt6.QtWidgets',
-        'PyQt6.QtSvg',
-        'PyQt6.sip',
-        'PyQt6.QtPrintSupport',
+        'PySide6.QtCore',
+        'PySide6.QtGui', 
+        'PySide6.QtWidgets',
+        'PySide6.QtSvg',
+        'PySide6.sip',
+        'PySide6.QtPrintSupport',
         'sip',
         
         
@@ -357,10 +357,10 @@ def build_exe():
     print("  Using storymaster-windows.spec (optimized for Windows)")
 
     try:
-        # Get PyQt6 Qt bin path for --paths argument
+        # Get PySide6 Qt bin path for --paths argument
         import PySide6
-        pyqt6_path = Path(PyQt6.__file__).parent
-        qt_bin_path = pyqt6_path / 'Qt6' / 'bin'
+        pyside6_path = Path(PySide6.__file__).parent
+        qt_bin_path = pyside6_path / 'Qt6' / 'bin'
         
         # Use direct PyInstaller with auto-collection instead of spec file
         cmd = [
@@ -369,11 +369,11 @@ def build_exe():
             "PyInstaller",
             "--clean",
             "--log-level=INFO",
-            "--collect-all", "PyQt6",
-            "--hidden-import", "PyQt6.QtCore",
-            "--hidden-import", "PyQt6.QtGui",
-            "--hidden-import", "PyQt6.QtWidgets",
-            "--hidden-import", "PyQt6.QtSvg",
+            "--collect-all", "PySide6",
+            "--hidden-import", "PySide6.QtCore",
+            "--hidden-import", "PySide6.QtGui",
+            "--hidden-import", "PySide6.QtWidgets",
+            "--hidden-import", "PySide6.QtSvg",
             "--hidden-import", "sqlalchemy.dialects.sqlite",
             "--onefile",
             "--console",
@@ -502,7 +502,7 @@ Double-click `storymaster.exe` to run
 - `storymaster.db` - Database file (created on first run)
 
 ## File Size
-~50MB (includes PyQt6 runtime)
+~50MB (includes PySide6 runtime)
 
 ## Troubleshooting
 - If Windows Defender blocks it, allow the application

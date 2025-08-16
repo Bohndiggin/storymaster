@@ -32,7 +32,7 @@ try:
 
     QT_AVAILABLE = True
 except ImportError as e:
-    print(f"WARNING: PyQt6 not available ({e})")
+    print(f"WARNING: PySide6 not available ({e})")
     print("   Running in headless mode with mocked Qt components")
     QT_AVAILABLE = False
 

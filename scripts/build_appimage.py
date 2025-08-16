@@ -258,7 +258,7 @@ def create_installation_instructions():
 An AppImage is a portable application format for Linux that:
 - Runs on any Linux distribution
 - Requires no installation or root privileges
-- Includes all dependencies (Python, PyQt6, SQLAlchemy)
+- Includes all dependencies (Python, PySide6, SQLAlchemy)
 - Can be run directly after download
 
 ## How to Use
@@ -277,7 +277,7 @@ An AppImage is a portable application format for Linux that:
 
 - Linux x86_64 system with basic graphics libraries
 - **NO Python installation required**
-- **NO PyQt6 installation required**
+- **NO PySide6 installation required**
 - **NO SQLAlchemy installation required**
 
 **This AppImage is completely self-contained!**
@@ -319,12 +319,12 @@ If the AppImage doesn't run:
 3. Try running from terminal to see error messages
 4. Ensure you have basic graphics drivers installed
 
-**Note**: No Python, PyQt6, or SQLAlchemy installation needed - everything is bundled!
+**Note**: No Python, PySide6, or SQLAlchemy installation needed - everything is bundled!
 
 ## Benefits of This AppImage
 
 - [✓] Completely self-contained - no dependencies needed
-- [✓] Includes Python runtime, PyQt6, and SQLAlchemy
+- [✓] Includes Python runtime, PySide6, and SQLAlchemy
 - [✓] Works on any Linux distribution
 - [✓] No root privileges needed
 - [✓] No dependency conflicts with system packages
@@ -335,7 +335,7 @@ If the AppImage doesn't run:
 
 The AppImage is approximately 120-150MB because it includes:
 - Complete Python 3.11 runtime
-- Full PyQt6 GUI framework
+- Full PySide6 GUI framework
 - SQLAlchemy database layer
 - All platform plugins and libraries
 - UI files and assets

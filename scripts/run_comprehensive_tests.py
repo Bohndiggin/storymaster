@@ -132,7 +132,7 @@ def check_test_dependencies():
 
     dependencies = [
         ("pytest", "pytest"),
-        ("PyQt6", "PyQt6.QtWidgets"),
+        ("PySide6", "PySide6.QtWidgets"),
         ("SQLAlchemy", "sqlalchemy"),
         ("Mock", "unittest.mock"),
     ]

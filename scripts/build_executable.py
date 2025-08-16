@@ -285,7 +285,7 @@ def create_portable_package():
         readme_content = f"""# Storymaster Portable
 
 This is a standalone version of Storymaster that runs without installation.
-**No Python or PyQt6 installation required!**
+**No Python or PySide6 installation required!**
 
 ## How to Run
 
@@ -302,7 +302,7 @@ Open terminal in this directory and run:
 
 [+] **Fully Standalone**: No dependencies required
 [+] **Python Runtime**: Bundled Python {platform.python_version()}
-[+] **PyQt6 GUI**: Complete UI framework included
+[+] **PySide6 GUI**: Complete UI framework included
 [+] **SQLAlchemy**: Database layer bundled
 [+] **Cross-Platform**: Same features on Windows and Linux
 
@@ -324,7 +324,7 @@ You can seed it with sample data using the application's built-in functionality.
 
 ## File Sizes
 
-- Windows: ~150MB (includes full Python + PyQt6)
+- Windows: ~150MB (includes full Python + PySide6)
 - Linux: ~120MB (leverages some system libraries)
 
 ## Troubleshooting
@@ -430,7 +430,7 @@ def create_archive():
 
 
 def test_executable():
-    """Test the executable to ensure PyQt6 works"""
+    """Test the executable to ensure PySide6 works"""
     print("\n[TEST] Testing executable...")
 
     system = platform.system().lower()
@@ -467,7 +467,7 @@ def test_executable():
 
         if result.returncode == 0:
             print("[OK] Executable test passed!")
-            print("   PyQt6 is properly bundled and working")
+            print("   PySide6 is properly bundled and working")
             return True
         else:
             print(f"[WARNING] Executable test failed:")
@@ -476,7 +476,7 @@ def test_executable():
                 print(f"   STDOUT: {result.stdout}")
             if result.stderr:
                 print(f"   STDERR: {result.stderr}")
-            print("   The executable was built but may have PyQt6 issues")
+            print("   The executable was built but may have PySide6 issues")
             return True  # Don't fail the build, just warn
 
     except subprocess.TimeoutExpired:
@@ -513,12 +513,12 @@ def print_completion_info():
     print()
     print("[NOTE] The executable includes:")
     print("   • Complete Python runtime")
-    print("   • All dependencies (PyQt6, SQLAlchemy)")
-    print("   • PyQt6 platform plugins for Windows")
+    print("   • All dependencies (PySide6, SQLAlchemy)")
+    print("   • PySide6 platform plugins for Windows")
     print("   • Sample database and test data")
     print("   • UI files and resources")
     print()
-    print("[BUNDLE] PyQt6 bundling improvements:")
+    print("[BUNDLE] PySide6 bundling improvements:")
     print("   • Platform plugins included for Windows support")
     print("   • Runtime hooks for plugin path configuration")
     print("   • Additional Qt libraries bundled")

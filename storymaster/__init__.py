@@ -9,7 +9,7 @@ Copyright (c) 2025 Storymaster Development Team
 All rights reserved.
 """
 
-__version__ = "1.4.6.0"
+__version__ = "1.4.6.1"
 __author__ = "Storymaster Development Team"
 __license__ = "Proprietary"
 __copyright__ = "Copyright (c) 2025 Storymaster Development Team"

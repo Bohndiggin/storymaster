@@ -2,7 +2,7 @@
 """
 Qt6 Bundle Validation Script for Windows
 
-Tests whether PyQt6 is properly bundled and can be imported in a PyInstaller executable.
+Tests whether PySide6 is properly bundled and can be imported in a PyInstaller executable.
 This script can be run standalone or as part of the build validation process.
 """
 
@@ -35,13 +35,13 @@ def print_environment_info():
 
 
 def test_basic_imports():
-    """Test basic PyQt6 imports"""
-    print("[TEST] Basic PyQt6 imports...")
+    """Test basic PySide6 imports"""
+    print("[TEST] Basic PySide6 imports...")
     
     try:
         import PySide6
-        print(f"✓ PyQt6 imported successfully (version: {PyQt6.__version__})")
-        print(f"  Location: {PyQt6.__file__}")
+        print(f"✓ PySide6 imported successfully (version: {PySide6.__version__})")
+        print(f"  Location: {PySide6.__file__}")
     except ImportError as e:
         print(f"✗ Failed to import PySide6: {e}")
         return False
@@ -124,7 +124,7 @@ def test_bundle_files():
     
     # Check for platform plugins
     platform_paths = [
-        bundle_dir / "PyQt6" / "Qt6" / "plugins" / "platforms",
+        bundle_dir / "PySide6" / "Qt6" / "plugins" / "platforms",
         bundle_dir / "plugins" / "platforms",
         bundle_dir / "platforms"
     ]

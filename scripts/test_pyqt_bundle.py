@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Test script to verify PyQt6 works in bundled executable
-Run this to test if PyQt6 modules load correctly
+Test script to verify PySide6 works in bundled executable
+Run this to test if PySide6 modules load correctly
 """
 
 import sys
@@ -10,21 +10,21 @@ from pathlib import Path
 
 
 def test_pyqt_imports():
-    """Test importing PyQt6 modules"""
-    print("Testing PyQt6 imports...")
+    """Test importing PySide6 modules"""
+    print("Testing PySide6 imports...")
 
     try:
-        print("  Importing PyQt6.QtCore...", end=" ")
+        print("  Importing PySide6.QtCore...", end=" ")
         from PySide6.QtCore import QApplication, QTimer, Signal
 
         print("✓")
 
-        print("  Importing PyQt6.QtWidgets...", end=" ")
+        print("  Importing PySide6.QtWidgets...", end=" ")
         from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QVBoxLayout
 
         print("✓")
 
-        print("  Importing PyQt6.QtGui...", end=" ")
+        print("  Importing PySide6.QtGui...", end=" ")
         from PySide6.QtGui import QFont, QPixmap, QPainter
 
         print("✓")
@@ -63,7 +63,7 @@ def test_widget_creation():
         # Create a simple widget
         widget = QWidget()
         layout = QVBoxLayout()
-        label = QLabel("PyQt6 Bundle Test")
+        label = QLabel("PySide6 Bundle Test")
         layout.addWidget(label)
         widget.setLayout(layout)
 
@@ -88,7 +88,7 @@ def check_environment():
 
         # Check for Qt plugins
         qt_plugin_paths = [
-            bundle_path / "PyQt6" / "Qt6" / "plugins",
+            bundle_path / "PySide6" / "Qt6" / "plugins",
             bundle_path / "plugins",
         ]
 
@@ -113,7 +113,7 @@ def check_environment():
 def main():
     """Main test function"""
     print("=" * 50)
-    print("PyQt6 Bundle Test")
+    print("PySide6 Bundle Test")
     print("=" * 50)
 
     check_environment()
@@ -138,10 +138,10 @@ def main():
     print(f"Results: {passed}/{total} tests passed")
 
     if passed == total:
-        print("🎉 All tests passed! PyQt6 bundle is working correctly.")
+        print("🎉 All tests passed! PySide6 bundle is working correctly.")
         return True
     else:
-        print("❌ Some tests failed. PyQt6 bundle needs fixing.")
+        print("❌ Some tests failed. PySide6 bundle needs fixing.")
         return False
 
 

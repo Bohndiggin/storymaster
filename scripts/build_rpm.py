@@ -187,7 +187,7 @@ sudo rpm -i storymaster-1.0.0-1.*.noarch.rpm
 
 The RPM will automatically install required Python dependencies:
 - python3 >= 3.8
-- python3-PyQt6
+- python3-PySide6
 - python3-sqlalchemy >= 2.0
 
 ## Running Storymaster

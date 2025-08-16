@@ -500,7 +500,7 @@ def create_installation_instructions():
 
 - macOS 10.14 (Mojave) or later
 - Python 3.8 or newer (install from python.org if needed)
-- PyQt6 (usually auto-installed)
+- PySide6 (usually auto-installed)
 
 ## First Run
 
@@ -529,7 +529,7 @@ xattr -cr /Applications/Storymaster.app
 
 ### Dependencies missing:
 ```bash
-pip3 install PyQt6 SQLAlchemy
+pip3 install PySide6 SQLAlchemy
 ```
 
 ## Uninstalling
