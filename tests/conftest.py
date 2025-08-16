@@ -64,7 +64,7 @@ def mock_application_modules():
 
 # Try to import Qt first to determine availability
 try:
-    from PyQt6.QtWidgets import QApplication, QMessageBox
+    from PySide6.QtWidgets import QApplication, QMessageBox
 
     QT_AVAILABLE = True
 except ImportError as e:

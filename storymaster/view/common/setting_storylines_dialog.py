@@ -3,8 +3,8 @@ Dialog for managing setting-to-storyline relationships
 Select a setting, then choose which storylines to connect
 """
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import (
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import (
     QDialog,
     QVBoxLayout,
     QHBoxLayout,

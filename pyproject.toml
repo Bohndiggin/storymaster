@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "storymaster"
-version = "1.0.0"
+dynamic = ["version"]
 description = "A PyQt6-based creative writing tool that combines visual story plotting with comprehensive world-building"
 readme = "docs/README.md"
 license = {text = "MIT"}
@@ -57,11 +57,10 @@ storymaster = "storymaster.main:main"
 storymaster-gui = "storymaster.main:main"
 
 [tool.setuptools]
-packages = {find = {}}
+packages = {find = {include = ["storymaster*"], exclude = ["tests*"]}}
 
-[tool.setuptools.packages.find]
-include = ["storymaster*"]
-exclude = ["tests*"]
+[tool.setuptools.dynamic]
+version = {attr = "storymaster.__version__"}
 
 [tool.setuptools.package-data]
 storymaster = [

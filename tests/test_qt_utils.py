@@ -1,6 +1,6 @@
 """
 Shared Qt utilities for tests - handles headless environments
-Import Qt components from this module instead of directly from PyQt6
+Import Qt components from this module instead of directly from PySide6
 """
 
 import os
@@ -21,8 +21,8 @@ if "CI" in os.environ or "GITHUB_ACTIONS" in os.environ or "--headless" in sys.a
 
 # Try to import Qt components
 try:
-    from PyQt6.QtCore import QPointF, QRectF, Qt, QTimer
-    from PyQt6.QtWidgets import (
+    from PySide6.QtCore import QPointF, QRectF, Qt, QTimer
+    from PySide6.QtWidgets import (
         QApplication,
         QGraphicsView,
         QGraphicsScene,
@@ -40,12 +40,12 @@ try:
         QPushButton,
         QComboBox,
     )
-    from PyQt6.QtGui import QPainter
+    from PySide6.QtGui import QPainter
 
     # Try to import additional classes that might be needed
     try:
-        from PyQt6.QtGui import QKeyEvent, QMouseEvent, QContextMenuEvent
-        from PyQt6.QtCore import QPoint
+        from PySide6.QtGui import QKeyEvent, QMouseEvent, QContextMenuEvent
+        from PySide6.QtCore import QPoint
 
         EXTRA_QT_AVAILABLE = True
     except ImportError:

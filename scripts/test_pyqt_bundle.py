@@ -15,17 +15,17 @@ def test_pyqt_imports():
 
     try:
         print("  Importing PyQt6.QtCore...", end=" ")
-        from PyQt6.QtCore import QApplication, QTimer, pyqtSignal
+        from PySide6.QtCore import QApplication, QTimer, Signal
 
         print("✓")
 
         print("  Importing PyQt6.QtWidgets...", end=" ")
-        from PyQt6.QtWidgets import QWidget, QLabel, QPushButton, QVBoxLayout
+        from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QVBoxLayout
 
         print("✓")
 
         print("  Importing PyQt6.QtGui...", end=" ")
-        from PyQt6.QtGui import QFont, QPixmap, QPainter
+        from PySide6.QtGui import QFont, QPixmap, QPainter
 
         print("✓")
 
@@ -40,7 +40,7 @@ def test_qapplication():
     print("Testing QApplication creation...")
 
     try:
-        from PyQt6.QtWidgets import QApplication
+        from PySide6.QtWidgets import QApplication
 
         app = QApplication([])
         print("  QApplication created successfully ✓")
@@ -56,7 +56,7 @@ def test_widget_creation():
     print("Testing widget creation...")
 
     try:
-        from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout
+        from PySide6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout
 
         app = QApplication([])
 

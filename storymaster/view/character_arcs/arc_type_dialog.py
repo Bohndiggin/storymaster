@@ -1,7 +1,7 @@
 """Arc Type Add/Edit Dialog"""
 
-from PyQt6.QtWidgets import QDialog, QMessageBox
-from PyQt6.QtCore import Qt
+from PySide6.QtWidgets import QDialog, QMessageBox
+from PySide6.QtCore import Qt
 from .arc_type_dialog_ui import Ui_ArcTypeDialog
 from storymaster.view.common.theme import (
     get_button_style,

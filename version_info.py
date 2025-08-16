@@ -2,12 +2,25 @@
 #
 # For more details about fixed file info 'ffi' see:
 # http://msdn.microsoft.com/en-us/library/ms646997.aspx
+
+# Get version from package
+try:
+    import storymaster
+    version_parts = storymaster.__version__.split('.')
+    # Ensure we have 4 parts for Windows version info
+    while len(version_parts) < 4:
+        version_parts.append('0')
+    version_tuple = tuple(int(x) for x in version_parts[:4])
+except:
+    # Fallback if import fails
+    version_tuple = (1, 0, 0, 0)
+
 VSVersionInfo(
     ffi=FixedFileInfo(
         # filevers and prodvers should be always a tuple with four items: (1, 2, 3, 4)
         # Set not needed items to zero 0.
-        filevers=(1, 0, 0, 0),
-        prodvers=(1, 0, 0, 0),
+        filevers=version_tuple,
+        prodvers=version_tuple,
         # Contains a bitmask that specifies the valid bits 'flags'r
         mask=0x3F,
         # Contains a bitmask that specifies the Boolean attributes of the file.
@@ -34,12 +47,12 @@ VSVersionInfo(
                         StringStruct(
                             "FileDescription", "Storymaster - Creative Writing Tool"
                         ),
-                        StringStruct("FileVersion", "1.0.0.0"),
+                        StringStruct("FileVersion", getattr(storymaster, '__version__', '1.0.0')),
                         StringStruct("InternalName", "storymaster"),
                         StringStruct("LegalCopyright", "Copyright (C) 2025"),
                         StringStruct("OriginalFilename", "storymaster.exe"),
                         StringStruct("ProductName", "Storymaster"),
-                        StringStruct("ProductVersion", "1.0.0.0"),
+                        StringStruct("ProductVersion", getattr(storymaster, '__version__', '1.0.0')),
                     ],
                 )
             ]

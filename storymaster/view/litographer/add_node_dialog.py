@@ -2,7 +2,7 @@
 Defines the dialog for adding a new Litography Node.
 """
 
-from PyQt6.QtWidgets import (
+from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
     QDialogButtonBox,

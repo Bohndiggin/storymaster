@@ -1,5 +1,5 @@
 # Core dependencies for Storymaster
-PyQt6
+PySide6
 SQLAlchemy==2.0.41
 
 # Spell checking support (optional - falls back to basic word list if not available)

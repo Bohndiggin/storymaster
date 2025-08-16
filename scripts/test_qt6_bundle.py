@@ -39,29 +39,29 @@ def test_basic_imports():
     print("[TEST] Basic PyQt6 imports...")
     
     try:
-        import PyQt6
+        import PySide6
         print(f"✓ PyQt6 imported successfully (version: {PyQt6.__version__})")
         print(f"  Location: {PyQt6.__file__}")
     except ImportError as e:
-        print(f"✗ Failed to import PyQt6: {e}")
+        print(f"✗ Failed to import PySide6: {e}")
         return False
     
     try:
-        from PyQt6 import QtCore
+        from PySide6 import QtCore
         print(f"✓ QtCore imported successfully")
     except ImportError as e:
         print(f"✗ Failed to import QtCore: {e}")
         return False
     
     try:
-        from PyQt6 import QtGui
+        from PySide6 import QtGui
         print(f"✓ QtGui imported successfully")
     except ImportError as e:
         print(f"✗ Failed to import QtGui: {e}")
         return False
     
     try:
-        from PyQt6 import QtWidgets
+        from PySide6 import QtWidgets
         print(f"✓ QtWidgets imported successfully")
     except ImportError as e:
         print(f"✗ Failed to import QtWidgets: {e}")
@@ -75,8 +75,8 @@ def test_qt_application():
     print("\n[TEST] Qt Application creation...")
     
     try:
-        from PyQt6.QtWidgets import QApplication
-        from PyQt6.QtCore import QTimer
+        from PySide6.QtWidgets import QApplication
+        from PySide6.QtCore import QTimer
         
         # Create application without showing GUI
         app = QApplication([])
@@ -165,7 +165,7 @@ def test_simple_widget():
     print("\n[TEST] Simple widget creation...")
     
     try:
-        from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout
+        from PySide6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout
         
         # Create application if it doesn't exist
         app = QApplication.instance()

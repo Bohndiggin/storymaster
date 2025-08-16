@@ -1,7 +1,7 @@
 """Character Arc Add/Edit Dialog"""
 
-from PyQt6.QtWidgets import QDialog, QMessageBox, QListWidgetItem
-from PyQt6.QtCore import Qt
+from PySide6.QtWidgets import QDialog, QMessageBox, QListWidgetItem
+from PySide6.QtCore import Qt
 from .character_arc_dialog_ui import Ui_CharacterArcDialog
 from storymaster.view.common.theme import (
     get_button_style,

@@ -1,8 +1,8 @@
 """New user-friendly Lorekeeper main page"""
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import (
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QFont
+from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QMessageBox,
@@ -310,7 +310,7 @@ class NewLorekeeperPage(QWidget):
             try:
                 self.auto_save_current_entity()
             except Exception as e:
-                from PyQt6.QtWidgets import QMessageBox
+                from PySide6.QtWidgets import QMessageBox
 
                 QMessageBox.warning(
                     self,
@@ -339,7 +339,7 @@ class NewLorekeeperPage(QWidget):
             try:
                 self.auto_save_current_entity()
             except Exception as e:
-                from PyQt6.QtWidgets import QMessageBox
+                from PySide6.QtWidgets import QMessageBox
 
                 QMessageBox.warning(
                     self,

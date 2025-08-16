@@ -3,8 +3,8 @@ Spell Check Configuration Dialog and Settings
 """
 
 import os
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtWidgets import (
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtWidgets import (
     QDialog,
     QVBoxLayout,
     QHBoxLayout,
@@ -22,7 +22,7 @@ from PyQt6.QtWidgets import (
     QListWidgetItem,
     QSplitter,
 )
-from PyQt6.QtGui import QFont
+from PySide6.QtGui import QFont
 from .spellcheck import get_spell_checker
 from .theme import (
     get_button_style,
@@ -38,7 +38,7 @@ class SpellCheckConfigDialog(QDialog):
     Configuration dialog for spell check settings
     """
 
-    settings_changed = pyqtSignal()
+    settings_changed = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)

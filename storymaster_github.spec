@@ -18,17 +18,17 @@ for ui_dir in ['common', 'litographer', 'lorekeeper', 'character_arcs']:
     for ui_file in ui_files:
         datas.append((ui_file, f'storymaster/view/{ui_dir}'))
 
-# Include essential PyQt6 plugins for cross-platform AppImage compatibility
-import PyQt6
-pyqt6_path = Path(PyQt6.__file__).parent
-plugins_path = pyqt6_path / 'Qt6' / 'plugins'
+# Include essential PySide6 plugins for cross-platform AppImage compatibility
+import PySide6
+pyside6_path = Path(PySide6.__file__).parent
+plugins_path = pyside6_path / 'Qt6' / 'plugins'
 if plugins_path.exists():
     # Include ALL platform plugins for cross-platform support
     platforms_path = plugins_path / 'platforms'
     if platforms_path.exists():
         for platform_file in platforms_path.glob('*'):
             if platform_file.is_file():
-                datas.append((str(platform_file), 'PyQt6/Qt6/plugins/platforms'))
+                datas.append((str(platform_file), 'PySide6/Qt6/plugins/platforms'))
     
     # Include essential Linux plugin directories for AppImage
     essential_plugin_dirs = ['xcbglintegrations', 'generic']
@@ -37,7 +37,7 @@ if plugins_path.exists():
         if plugin_path.exists():
             for plugin_file in plugin_path.glob('*'):
                 if plugin_file.is_file():
-                    datas.append((str(plugin_file), f'PyQt6/Qt6/plugins/{plugin_dir}'))
+                    datas.append((str(plugin_file), f'PySide6/Qt6/plugins/{plugin_dir}'))
 
 # Essential icon (just the main one for GitHub Actions)
 main_icon = project_dir / 'assets/storymaster_icon.ico'
@@ -51,11 +51,11 @@ if world_building_path.exists():
 
 # Essential hidden imports for AppImage compatibility
 hiddenimports = [
-    'PyQt6.QtCore',
-    'PyQt6.QtGui', 
-    'PyQt6.QtWidgets',
-    'PyQt6.QtSvg',  # Re-enable for icon support
-    'PyQt6.sip',
+    'PySide6.QtCore',
+    'PySide6.QtGui', 
+    'PySide6.QtWidgets',
+    'PySide6.QtSvg',  # Re-enable for icon support
+    'PySide6.sip',
     'sqlalchemy.dialects.sqlite',
     'sqlalchemy.engine.default',
     'sqlalchemy.orm',
@@ -75,9 +75,9 @@ if python_lib:
     else:
         print(f"  ✗ Python library not found: {python_lib_path}")
 
-# Include essential PyQt6 libraries for Linux AppImage
+# Include essential PySide6 libraries for Linux AppImage
 if plugins_path.exists():
-    qt_lib_path = pyqt6_path / 'Qt6' / 'lib'
+    qt_lib_path = pyside6_path / 'Qt6' / 'lib'
     if qt_lib_path.exists():
         # Include essential Qt6 libraries for Linux
         for lib_file in qt_lib_path.glob('libQt6Core.so*'):
@@ -98,16 +98,16 @@ a = Analysis(
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
-    runtime_hooks=['scripts/runtime_hook_pyqt6.py'],
+    runtime_hooks=['scripts/runtime_hook_pyside6.py'],
     excludes=[
         # Exclude everything we don't need for faster build
         'matplotlib', 'numpy', 'pandas', 'scipy', 'IPython',
         'jupyter', 'notebook', 'tkinter', 'enchant',
-        'PyQt6.QtNetwork', 'PyQt6.QtOpenGL', 'PyQt6.QtMultimedia',
-        'PyQt6.QtWebEngine', 'PyQt6.QtWebEngineCore', 'PyQt6.QtWebEngineWidgets',
-        'PyQt6.QtQuick', 'PyQt6.QtQml', 'PyQt6.QtTest', 'PyQt6.QtBluetooth',
-        'PyQt6.QtPositioning', 'PyQt6.QtSerialPort',
-        'PyQt6.QtPrintSupport', 'pytest', 'unittest', '_pytest',
+        'PySide6.QtNetwork', 'PySide6.QtOpenGL', 'PySide6.QtMultimedia',
+        'PySide6.QtWebEngine', 'PySide6.QtWebEngineCore', 'PySide6.QtWebEngineWidgets',
+        'PySide6.QtQuick', 'PySide6.QtQml', 'PySide6.QtTest', 'PySide6.QtBluetooth',
+        'PySide6.QtPositioning', 'PySide6.QtSerialPort',
+        'PySide6.QtPrintSupport', 'pytest', 'unittest', '_pytest',
     ],
     noarchive=False,
     optimize=2,

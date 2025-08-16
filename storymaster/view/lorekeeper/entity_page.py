@@ -1,8 +1,8 @@
 """Entity detail page component for user-friendly Lorekeeper interface"""
 
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QFont, QPalette
-from PyQt6.QtWidgets import (
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QFont, QPalette
+from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QFormLayout,
@@ -52,7 +52,7 @@ class SectionWidget(QGroupBox):
     """Widget for displaying a logical section of entity fields"""
 
     # Signal emitted when a checkbox changes (field_name, checked)
-    checkbox_changed = pyqtSignal(str, bool)
+    checkbox_changed = Signal(str, bool)
 
     def __init__(self, section: FieldSection, model_adapter=None, parent=None):
         super().__init__(section.display_name, parent)
@@ -279,10 +279,10 @@ class SectionWidget(QGroupBox):
 class RelationshipWidget(QGroupBox):
     """Widget for displaying and managing entity relationships"""
 
-    relationship_selected = pyqtSignal(str, object)  # relationship_type, related_entity
-    add_relationship_requested = pyqtSignal(str)  # relationship_type
-    remove_relationship_requested = pyqtSignal(str, object)  # relationship_type, entity
-    edit_relationship_requested = pyqtSignal(str, object)  # relationship_type, entity
+    relationship_selected = Signal(str, object)  # relationship_type, related_entity
+    add_relationship_requested = Signal(str)  # relationship_type
+    remove_relationship_requested = Signal(str, object)  # relationship_type, entity
+    edit_relationship_requested = Signal(str, object)  # relationship_type, entity
 
     def __init__(
         self, relationship_name: str, relationship_display_name: str, parent=None
@@ -383,8 +383,8 @@ class RelationshipWidget(QGroupBox):
 class EntityDetailPage(QWidget):
     """Main page for viewing/editing entity details"""
 
-    entity_saved = pyqtSignal(object)  # entity
-    entity_deleted = pyqtSignal(object)  # entity
+    entity_saved = Signal(object)  # entity
+    entity_deleted = Signal(object)  # entity
 
     def __init__(self, table_name: str, model_adapter=None, parent=None):
         super().__init__(parent)
@@ -632,7 +632,7 @@ class EntityDetailPage(QWidget):
 
     def on_add_relationship(self, relationship_type: str):
         """Handle adding a new relationship"""
-        from PyQt6.QtWidgets import QDialog, QMessageBox
+        from PySide6.QtWidgets import QDialog, QMessageBox
 
         from storymaster.view.lorekeeper.entity_selection_dialog import (
             EntitySelectionDialog,
@@ -670,7 +670,7 @@ class EntityDetailPage(QWidget):
 
     def on_remove_relationship(self, relationship_type: str, related_entity):
         """Handle removing a relationship"""
-        from PyQt6.QtWidgets import QMessageBox
+        from PySide6.QtWidgets import QMessageBox
 
         entity_name = self.get_entity_display_name(related_entity)
         reply = QMessageBox.question(
@@ -697,7 +697,7 @@ class EntityDetailPage(QWidget):
 
     def on_edit_relationship(self, relationship_type: str, related_entity):
         """Handle editing a relationship"""
-        from PyQt6.QtWidgets import QDialog, QMessageBox
+        from PySide6.QtWidgets import QDialog, QMessageBox
 
         from storymaster.view.lorekeeper.relationship_details_dialog import (
             RelationshipDetailsDialog,

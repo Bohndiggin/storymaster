@@ -19,24 +19,24 @@ project_dir = Path(os.getcwd())
 
 datas = []
 
-# Include all essential PyQt6 plugins for cross-platform AppImage compatibility
-import PyQt6
-pyqt6_path = Path(PyQt6.__file__).parent
-plugins_path = pyqt6_path / 'Qt6' / 'plugins'
+# Include all essential PySide6 plugins for cross-platform AppImage compatibility
+import PySide6
+pyside6_path = Path(PySide6.__file__).parent
+plugins_path = pyside6_path / 'Qt6' / 'plugins'
 if plugins_path.exists():
     # Include ALL platform plugins for cross-platform support
     platforms_path = plugins_path / 'platforms'
     if platforms_path.exists():
         for platform_file in platforms_path.glob('*'):
             if platform_file.is_file():
-                datas.append((str(platform_file), 'PyQt6/Qt6/plugins/platforms'))
+                datas.append((str(platform_file), 'PySide6/Qt6/plugins/platforms'))
     
     # Include ALL image format plugins
     imageformats_path = plugins_path / 'imageformats'  
     if imageformats_path.exists():
         for img_file in imageformats_path.glob('*'):
             if img_file.is_file():
-                datas.append((str(img_file), 'PyQt6/Qt6/plugins/imageformats'))
+                datas.append((str(img_file), 'PySide6/Qt6/plugins/imageformats'))
     
     # Include other essential plugin directories for full compatibility
     essential_plugin_dirs = ['xcbglintegrations', 'wayland-decoration-client', 
@@ -47,7 +47,7 @@ if plugins_path.exists():
         if plugin_path.exists():
             for plugin_file in plugin_path.glob('*'):
                 if plugin_file.is_file():
-                    datas.append((str(plugin_file), f'PyQt6/Qt6/plugins/{plugin_dir}'))
+                    datas.append((str(plugin_file), f'PySide6/Qt6/plugins/{plugin_dir}'))
 
 # Include test data CSVs for seeding
 test_data_path = project_dir / 'tests' / 'model' / 'database' / 'test_data'
@@ -147,17 +147,17 @@ VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
     except Exception as e:
         print(f"  Failed to create version info: {e}")
 
-# Hidden imports needed for PyQt6 and SQLAlchemy
+# Hidden imports needed for PySide6 and SQLAlchemy
 hiddenimports = [
-    # Core PyQt6 modules (only what we actually use)
-    'PyQt6.QtCore',
-    'PyQt6.QtGui', 
-    'PyQt6.QtWidgets',
-    'PyQt6.QtSvg',
-    'PyQt6.sip',
+    # Core PySide6 modules (only what we actually use)
+    'PySide6.QtCore',
+    'PySide6.QtGui', 
+    'PySide6.QtWidgets',
+    'PySide6.QtSvg',
+    'PySide6.sip',
     
-    # Only essential additional PyQt6 modules 
-    'PyQt6.QtPrintSupport',
+    # Only essential additional PySide6 modules 
+    'PySide6.QtPrintSupport',
     
     # Comprehensive SQLAlchemy 2.0+ modules for AppImage compatibility
     'sqlalchemy',
@@ -234,7 +234,7 @@ hiddenimports = [
     # 'enchant.checker',
 ]
 
-# Include all essential PyQt6 binaries for cross-platform compatibility
+# Include all essential PySide6 binaries for cross-platform compatibility
 binaries = []
 
 # Include enchant libraries for spell checking
@@ -258,8 +258,8 @@ if python_lib:
 
 if plugins_path.exists():
     # Include Qt libraries for all platforms (Linux .so, Windows .dll)
-    qt_bin_path = pyqt6_path / 'Qt6' / 'bin'
-    qt_lib_path = pyqt6_path / 'Qt6' / 'lib'
+    qt_bin_path = pyside6_path / 'Qt6' / 'bin'
+    qt_lib_path = pyside6_path / 'Qt6' / 'lib'
     
     # Check both bin and lib directories
     for lib_dir in [qt_bin_path, qt_lib_path]:
@@ -283,7 +283,7 @@ a = Analysis(
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
-    runtime_hooks=['scripts/runtime_hook_pyqt6.py'],
+    runtime_hooks=['scripts/runtime_hook_pyside6.py'],
     excludes=[
         # Exclude unnecessary modules to reduce size and build time
         'matplotlib',
@@ -295,18 +295,18 @@ a = Analysis(
         'notebook',
         'tkinter',
         # Additional Qt modules we don't need
-        'PyQt6.QtNetwork',
-        'PyQt6.QtOpenGL',
-        'PyQt6.QtMultimedia',
-        'PyQt6.QtWebEngine',
-        'PyQt6.QtWebEngineCore',
-        'PyQt6.QtWebEngineWidgets',
-        'PyQt6.QtQuick',
-        'PyQt6.QtQml',
-        'PyQt6.QtTest',
-        'PyQt6.QtBluetooth',
-        'PyQt6.QtPositioning',
-        'PyQt6.QtSerialPort',
+        'PySide6.QtNetwork',
+        'PySide6.QtOpenGL',
+        'PySide6.QtMultimedia',
+        'PySide6.QtWebEngine',
+        'PySide6.QtWebEngineCore',
+        'PySide6.QtWebEngineWidgets',
+        'PySide6.QtQuick',
+        'PySide6.QtQml',
+        'PySide6.QtTest',
+        'PySide6.QtBluetooth',
+        'PySide6.QtPositioning',
+        'PySide6.QtSerialPort',
         # Test modules
         'pytest',
         'unittest',
@@ -377,7 +377,7 @@ if platform.system() == 'Darwin':
             'CFBundleName': 'Storymaster',
             'CFBundleShortVersionString': '1.0.0',
             'CFBundleVersion': '1.0.0',
-            'LSMinimumSystemVersion': '11.0',  # PyQt6 minimum requirement
+            'LSMinimumSystemVersion': '11.0',  # PySide6 minimum requirement
             'NSHighResolutionCapable': True,
             'NSRequiresAquaSystemAppearance': False,
             'LSApplicationCategoryType': 'public.app-category.productivity',

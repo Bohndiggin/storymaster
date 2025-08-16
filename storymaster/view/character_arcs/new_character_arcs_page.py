@@ -1,7 +1,7 @@
 """New Character Arc Management Page - Following Lorekeeper Design Pattern"""
 
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtWidgets import (
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtWidgets import (
     QWidget,
     QHBoxLayout,
     QVBoxLayout,
@@ -22,7 +22,7 @@ from PyQt6.QtWidgets import (
     QTreeWidgetItem,
     QScrollArea,
 )
-from PyQt6.QtGui import QFont
+from PySide6.QtGui import QFont
 
 from storymaster.model.database import schema
 from .arc_type_manager_dialog import ArcTypeManagerDialog
@@ -43,9 +43,9 @@ from storymaster.view.common.theme import (
 class CharacterArcBrowser(QWidget):
     """Browser for character arcs - similar to Lorekeeper browser"""
 
-    arc_selected = pyqtSignal(object)  # arc entity
-    new_arc_requested = pyqtSignal()
-    add_arc_type_requested = pyqtSignal()
+    arc_selected = Signal(object)  # arc entity
+    new_arc_requested = Signal()
+    add_arc_type_requested = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -144,8 +144,8 @@ class CharacterArcBrowser(QWidget):
 class CharacterArcDetailPage(QWidget):
     """Detail page for viewing/editing character arcs - similar to Lorekeeper entity page"""
 
-    arc_saved = pyqtSignal(object)  # arc
-    arc_deleted = pyqtSignal(object)  # arc
+    arc_saved = Signal(object)  # arc
+    arc_deleted = Signal(object)  # arc
 
     def __init__(self, model, parent=None):
         super().__init__(parent)

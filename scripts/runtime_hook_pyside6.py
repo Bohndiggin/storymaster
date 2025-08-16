@@ -1,5 +1,5 @@
 """
-Runtime hook for PyQt6 to ensure plugins are found properly in AppImage and other environments
+Runtime hook for PySide6 to ensure plugins are found properly in AppImage and other environments
 """
 
 import os
@@ -10,7 +10,7 @@ from pathlib import Path
 if getattr(sys, "frozen", False):
     # Running in bundled mode (PyInstaller)
     bundle_dir = Path(sys._MEIPASS)
-    qt_plugin_path = bundle_dir / "PyQt6" / "Qt6" / "plugins"
+    qt_plugin_path = bundle_dir / "PySide6" / "Qt6" / "plugins"
 
     # AppImage detection - AppImages set APPIMAGE and APPDIR environment variables
     is_appimage = os.environ.get("APPIMAGE") or os.environ.get("APPDIR")

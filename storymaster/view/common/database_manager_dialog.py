@@ -4,9 +4,9 @@ import os
 from pathlib import Path
 from typing import List, Optional
 
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal
-from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import (
+from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtGui import QFont
+from PySide6.QtWidgets import (
     QCheckBox,
     QDialog,
     QFileDialog,
@@ -40,7 +40,7 @@ from storymaster.view.common.theme import (
 class DatabaseManagerDialog(QDialog):
     """Dialog for managing database selection and backups"""
 
-    database_changed = pyqtSignal(str)  # Emitted when user selects a different database
+    database_changed = Signal(str)  # Emitted when user selects a different database
 
     def __init__(
         self,

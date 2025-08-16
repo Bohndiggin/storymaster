@@ -4,7 +4,7 @@ Defines the dialog for creating a new setting.
 
 import os
 import json
-from PyQt6.QtWidgets import (
+from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QDialog,

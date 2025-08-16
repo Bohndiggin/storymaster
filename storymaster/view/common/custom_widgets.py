@@ -2,9 +2,9 @@
 Custom widgets for Storymaster with improved tab navigation and user experience
 """
 
-from PyQt6.QtCore import Qt, QEvent
-from PyQt6.QtGui import QKeyEvent, QFocusEvent
-from PyQt6.QtWidgets import QTextEdit, QLineEdit, QComboBox, QApplication
+from PySide6.QtCore import Qt, QEvent
+from PySide6.QtGui import QKeyEvent, QFocusEvent
+from PySide6.QtWidgets import QTextEdit, QLineEdit, QComboBox, QApplication
 from .spellcheck import SpellCheckTextEdit, SpellCheckLineEdit, enable_spell_check
 
 
@@ -163,20 +163,21 @@ def setup_form_tab_navigation(form_widget):
     input_widgets = []
 
     # Look for common input widget types
-    widget_types = (
+    widget_types = [
         TabNavigationLineEdit,
         QLineEdit,
         TabNavigationTextEdit,
         QTextEdit,
         TabNavigationComboBox,
         QComboBox,
-    )
+    ]
 
     def find_widgets(parent):
         """Recursively find input widgets"""
-        for child in parent.findChildren(widget_types):
-            if child.focusPolicy() != Qt.FocusPolicy.NoFocus:
-                input_widgets.append(child)
+        for widget_type in widget_types:
+            for child in parent.findChildren(widget_type):
+                if child.focusPolicy() != Qt.FocusPolicy.NoFocus:
+                    input_widgets.append(child)
 
     find_widgets(form_widget)
 

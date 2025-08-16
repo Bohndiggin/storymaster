@@ -6,8 +6,8 @@ Provides real-time spell checking with visual feedback and suggestions
 import re
 import os
 from typing import List
-from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import (
+from PySide6.QtCore import Qt, QTimer
+from PySide6.QtGui import (
     QTextCursor,
     QTextCharFormat,
     QColor,
@@ -15,7 +15,7 @@ from PyQt6.QtGui import (
     QTextDocument,
     QAction,
 )
-from PyQt6.QtWidgets import QTextEdit, QLineEdit, QMenu, QApplication
+from PySide6.QtWidgets import QTextEdit, QLineEdit, QMenu, QApplication
 
 
 class SpellChecker:

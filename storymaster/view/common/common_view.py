@@ -1,7 +1,7 @@
 """Holds the common classes for views"""
 
-from PyQt6.QtCore import QPoint, QPropertyAnimation
-from PyQt6.QtWidgets import (
+from PySide6.QtCore import QPoint, QPropertyAnimation
+from PySide6.QtWidgets import (
     QApplication,
     QLineEdit,
     QListWidget,

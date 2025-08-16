@@ -23,12 +23,12 @@ world_building_path = project_dir / 'world_building_packages'
 if world_building_path.exists():
     datas.append((str(world_building_path), 'world_building_packages'))
 
-# Minimal hidden imports - only core PyQt6
+# Minimal hidden imports - only core PySide6
 hiddenimports = [
-    'PyQt6.QtCore',
-    'PyQt6.QtGui', 
-    'PyQt6.QtWidgets',
-    'PyQt6.sip',
+    'PySide6.QtCore',
+    'PySide6.QtGui', 
+    'PySide6.QtWidgets',
+    'PySide6.sip',
     'sqlalchemy.dialects.sqlite',
     'sqlalchemy.engine.default',
 ]
@@ -45,9 +45,9 @@ a = Analysis(
     excludes=[
         # Exclude everything we can for speed
         'matplotlib', 'numpy', 'pandas', 'scipy', 'IPython', 'jupyter', 'notebook', 'tkinter',
-        'PyQt6.QtNetwork', 'PyQt6.QtOpenGL', 'PyQt6.QtMultimedia', 'PyQt6.QtWebEngine',
-        'PyQt6.QtWebEngineCore', 'PyQt6.QtWebEngineWidgets', 'PyQt6.QtQuick', 'PyQt6.QtQml',
-        'PyQt6.QtTest', 'PyQt6.QtBluetooth', 'PyQt6.QtPositioning', 'PyQt6.QtSerialPort',
+        'PySide6.QtNetwork', 'PySide6.QtOpenGL', 'PySide6.QtMultimedia', 'PySide6.QtWebEngine',
+        'PySide6.QtWebEngineCore', 'PySide6.QtWebEngineWidgets', 'PySide6.QtQuick', 'PySide6.QtQml',
+        'PySide6.QtTest', 'PySide6.QtBluetooth', 'PySide6.QtPositioning', 'PySide6.QtSerialPort',
         'pytest', 'unittest', '_pytest',
     ],
     noarchive=False,

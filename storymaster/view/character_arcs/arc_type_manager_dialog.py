@@ -1,7 +1,7 @@
 """Arc Type Manager Dialog"""
 
-from PyQt6.QtWidgets import QDialog, QTableWidgetItem, QMessageBox, QHeaderView
-from PyQt6.QtCore import Qt
+from PySide6.QtWidgets import QDialog, QTableWidgetItem, QMessageBox, QHeaderView
+from PySide6.QtCore import Qt
 from .arc_type_dialog import ArcTypeDialog
 from .arc_type_manager_dialog_ui import Ui_ArcTypeManagerDialog
 from storymaster.view.common.theme import get_button_style, get_dialog_style, COLORS

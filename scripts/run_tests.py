@@ -27,8 +27,8 @@ if "CI" in os.environ or "GITHUB_ACTIONS" in os.environ or "--headless" in sys.a
     setup_headless_qt()
 
 try:
-    from PyQt6.QtCore import QPointF
-    from PyQt6.QtWidgets import QApplication, QGraphicsScene
+    from PySide6.QtCore import QPointF
+    from PySide6.QtWidgets import QApplication, QGraphicsScene
 
     QT_AVAILABLE = True
 except ImportError as e:
@@ -426,7 +426,7 @@ def run_extended_test_suite():
     print("\n4. Testing utility function concepts...")
     tests_total += 1
     try:
-        from PyQt6.QtCore import QPointF, QRectF
+        from PySide6.QtCore import QPointF, QRectF
 
         # Test geometry utilities
         def calculate_distance(p1, p2):

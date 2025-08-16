@@ -2,7 +2,7 @@
 User startup utilities for ensuring a user exists on application startup.
 """
 
-from PyQt6.QtWidgets import QMessageBox, QInputDialog, QApplication
+from PySide6.QtWidgets import QMessageBox, QInputDialog, QApplication
 
 from storymaster.model.common.common_model import BaseModel
 from storymaster.view.common.new_user_dialog import NewUserDialog

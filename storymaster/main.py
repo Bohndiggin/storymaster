@@ -1,4 +1,9 @@
-"""Storio's main file"""
+"""
+Storymaster - Main Application Entry Point
+
+Copyright (c) 2025 Storymaster Development Team
+All rights reserved.
+"""
 
 import os
 import sys
@@ -40,7 +45,7 @@ if getattr(sys, "frozen", False):
     if platform_path.exists():
         os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = str(platform_path)
 
-from PyQt6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication
 
 current_dir = Path(__file__).parent.parent
 sys.path.append(str(current_dir.resolve()))

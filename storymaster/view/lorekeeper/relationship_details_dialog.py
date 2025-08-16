@@ -2,9 +2,9 @@
 
 from datetime import datetime
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import (
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QFont
+from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QDateEdit,
@@ -1128,7 +1128,7 @@ class RelationshipDetailsDialog(QDialog):
             )
 
         # Actually save to the database
-        from PyQt6.QtWidgets import QMessageBox
+        from PySide6.QtWidgets import QMessageBox
 
         try:
             # Update the relationship in the database with the collected data

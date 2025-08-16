@@ -1,9 +1,14 @@
-"""Holds the controller for the main page"""
+"""
+Storymaster - Main Page Controller
+
+Copyright (c) 2025 Storymaster Development Team
+All rights reserved.
+"""
 
 import json
 
-from PyQt6.QtCore import QPointF, Qt, pyqtSignal
-from PyQt6.QtGui import (
+from PySide6.QtCore import QPointF, Qt, Signal
+from PySide6.QtGui import (
     QBrush,
     QColor,
     QFont,
@@ -13,7 +18,7 @@ from PyQt6.QtGui import (
     QStandardItem,
     QStandardItemModel,
 )
-from PyQt6.QtWidgets import (
+from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
     QFileDialog,
@@ -2119,9 +2124,9 @@ class MainWindowController:
         self.view.ui.actionImportFromJSON.triggered.connect(
             self.on_import_from_json_clicked
         )
-        self.view.ui.actionExportSettingToJSON.triggered.connect(
-            self.on_export_setting_to_json_clicked
-        )
+        # self.view.ui.actionExportSettingToJSON.triggered.connect(
+        #     self.on_export_setting_to_json_clicked
+        # )
         # Database and backup actions
         self.view.ui.actionDatabaseManager.triggered.connect(
             self.on_database_manager_clicked
@@ -2161,6 +2166,9 @@ class MainWindowController:
 
         # --- Litographer Toolbar ---
         self.view.ui.actionAddNode.triggered.connect(self.on_add_node_clicked)
+
+        # --- Help Menu ---
+        self.view.ui.actionAbout.triggered.connect(self.on_about_clicked)
 
         # --- Lorekeeper View Signals ---
         # Database tree and table view signals removed - using new Lorekeeper interface
@@ -2400,7 +2408,7 @@ class MainWindowController:
 
     def _get_import_choice(self):
         """Get user choice for import destination."""
-        from PyQt6.QtWidgets import (
+        from PySide6.QtWidgets import (
             QDialog,
             QVBoxLayout,
             QHBoxLayout,
@@ -3580,7 +3588,7 @@ class MainWindowController:
 
     def _create_integer_field(self, str_value: str):
         """Create a QLineEdit with integer-only input validation."""
-        from PyQt6.QtGui import QIntValidator
+        from PySide6.QtGui import QIntValidator
 
         field = QLineEdit(str_value)
         validator = QIntValidator()
@@ -3590,7 +3598,7 @@ class MainWindowController:
 
     def _create_float_field(self, str_value: str):
         """Create a QLineEdit with float input validation."""
-        from PyQt6.QtGui import QDoubleValidator
+        from PySide6.QtGui import QDoubleValidator
 
         field = QLineEdit(str_value)
         validator = QDoubleValidator()
@@ -3601,7 +3609,7 @@ class MainWindowController:
 
     def _create_boolean_field(self, str_value: str):
         """Create a QCheckBox for boolean values."""
-        from PyQt6.QtWidgets import QCheckBox
+        from PySide6.QtWidgets import QCheckBox
 
         field = QCheckBox()
         # Convert string to boolean
@@ -3820,3 +3828,10 @@ class MainWindowController:
         except Exception as e:
             # Continue with default behavior (show all tables)
             pass
+
+    def on_about_clicked(self):
+        """Handle showing the About dialog."""
+        from storymaster.view.common.about_dialog import AboutDialog
+        
+        dialog = AboutDialog(self.view)
+        dialog.exec()

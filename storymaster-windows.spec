@@ -10,11 +10,11 @@ project_dir = Path(os.getcwd())
 # Windows-specific data files
 datas = []
 
-# Minimal PyQt6 plugin inclusion for better compatibility
+# Minimal PySide6 plugin inclusion for better compatibility
 try:
-    import PyQt6
-    pyqt6_path = Path(PyQt6.__file__).parent
-    plugins_path = pyqt6_path / 'Qt6' / 'plugins'
+    import PySide6
+    pyside6_path = Path(PySide6.__file__).parent
+    plugins_path = pyside6_path / 'Qt6' / 'plugins'
 
     if plugins_path.exists():
         print("Including minimal Qt6 plugins for Windows compatibility...")
@@ -26,7 +26,7 @@ try:
             for platform_dll in essential_platforms:
                 platform_path = platforms_path / platform_dll
                 if platform_path.exists():
-                    datas.append((str(platform_path), 'PyQt6/Qt6/plugins/platforms'))
+                    datas.append((str(platform_path), 'PySide6/Qt6/plugins/platforms'))
                     print(f"  Added essential platform plugin: {platform_dll}")
         
         # Include only essential image format plugins
@@ -36,7 +36,7 @@ try:
             for fmt_dll in essential_formats:
                 fmt_path = imageformats_path / fmt_dll
                 if fmt_path.exists():
-                    datas.append((str(fmt_path), 'PyQt6/Qt6/plugins/imageformats'))
+                    datas.append((str(fmt_path), 'PySide6/Qt6/plugins/imageformats'))
                     print(f"  Added essential image format: {fmt_dll}")
         
         # Include only essential iconengines
@@ -44,11 +44,11 @@ try:
         if iconengines_path.exists():
             for icon_dll in iconengines_path.glob('qsvgicon.dll'):
                 if icon_dll.is_file():
-                    datas.append((str(icon_dll), 'PyQt6/Qt6/plugins/iconengines'))
+                    datas.append((str(icon_dll), 'PySide6/Qt6/plugins/iconengines'))
                     print(f"  Added essential icon engine: {icon_dll.name}")
 
 except ImportError:
-    print("Warning: PyQt6 not found during spec file analysis")
+    print("Warning: PySide6 not found during spec file analysis")
 
 # Include UI files
 for ui_dir in ['common', 'litographer', 'lorekeeper', 'character_arcs']:
@@ -82,11 +82,11 @@ if world_building_path.exists():
 # Minimal Qt6 hidden imports for essential functionality only
 hiddenimports = [
     # Core Qt6 modules (essential)
-    'PyQt6.QtCore',
-    'PyQt6.QtGui', 
-    'PyQt6.QtWidgets',
-    'PyQt6.QtSvg',
-    'PyQt6.sip',
+    'PySide6.QtCore',
+    'PySide6.QtGui', 
+    'PySide6.QtWidgets',
+    'PySide6.QtSvg',
+    'PySide6.sip',
     'sip',
     
     # SQLAlchemy
@@ -106,7 +106,7 @@ binaries = []
 
 # Include only essential Qt6 DLLs for minimal build
 try:
-    qt_bin_path = pyqt6_path / 'Qt6' / 'bin'
+    qt_bin_path = pyside6_path / 'Qt6' / 'bin'
     if qt_bin_path.exists():
         # Include only essential Qt6 DLLs
         print("Including minimal Qt6 DLLs for Windows compatibility...")
@@ -136,7 +136,7 @@ try:
             print(f"  Added {icu_count} ICU DLLs for text processing")
 
 except NameError:
-    # PyQt6 not available during spec analysis
+    # PySide6 not available during spec analysis
     pass
 
 # Add Visual C++ runtime DLLs (critical for Qt6 functionality)
@@ -161,8 +161,8 @@ a = Analysis(
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={
-        # Let PyInstaller collect all PyQt6 dependencies automatically
-        'pyqt6': {'auto-collection': True}
+        # Let PyInstaller collect all PySide6 dependencies automatically
+        'pyside6': {'auto-collection': True}
     },
     runtime_hooks=[],
     excludes=[
@@ -170,10 +170,10 @@ a = Analysis(
         'matplotlib', 'numpy', 'pandas', 'scipy', 'IPython', 'jupyter',
         'tkinter', 'unittest', 'pytest', '_pytest',
         # Exclude non-essential Qt6 modules for minimal build
-        'PyQt6.QtWebEngine', 'PyQt6.QtWebEngineWidgets', 'PyQt6.QtWebEngineCore',
-        'PyQt6.QtQuick', 'PyQt6.QtQml', 'PyQt6.QtCharts', 'PyQt6.QtDataVisualization',
-        'PyQt6.Qt3DCore', 'PyQt6.Qt3DRender', 'PyQt6.QtMultimedia', 'PyQt6.QtMultimediaWidgets',
-        'PyQt6.QtOpenGL', 'PyQt6.QtOpenGLWidgets', 'PyQt6.QtNetwork', 'PyQt6.QtPositioning'
+        'PySide6.QtWebEngine', 'PySide6.QtWebEngineWidgets', 'PySide6.QtWebEngineCore',
+        'PySide6.QtQuick', 'PySide6.QtQml', 'PySide6.QtCharts', 'PySide6.QtDataVisualization',
+        'PySide6.Qt3DCore', 'PySide6.Qt3DRender', 'PySide6.QtMultimedia', 'PySide6.QtMultimediaWidgets',
+        'PySide6.QtOpenGL', 'PySide6.QtOpenGLWidgets', 'PySide6.QtNetwork', 'PySide6.QtPositioning'
     ],
     noarchive=False,
     optimize=0,  # No optimization to avoid dependency issues

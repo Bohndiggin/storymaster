@@ -1,8 +1,8 @@
 """Navigation interface for user-friendly Lorekeeper"""
 
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QFont, QIcon
-from PyQt6.QtWidgets import (
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QFont, QIcon
+from PySide6.QtWidgets import (
     QComboBox,
     QFrame,
     QHBoxLayout,
@@ -43,7 +43,7 @@ from storymaster.view.common.tooltips import (
 class EntityListWidget(QListWidget):
     """Enhanced list widget for displaying entities"""
 
-    entity_selected = pyqtSignal(object)  # entity
+    entity_selected = Signal(object)  # entity
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -112,8 +112,8 @@ class EntityListWidget(QListWidget):
 class SearchBar(QWidget):
     """Search and filter bar"""
 
-    search_changed = pyqtSignal(str)  # search_text
-    filter_changed = pyqtSignal(str)  # filter_value
+    search_changed = Signal(str)  # search_text
+    filter_changed = Signal(str)  # filter_value
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -151,9 +151,9 @@ class SearchBar(QWidget):
 class LorekeeperNavigation(QWidget):
     """Main navigation widget for Lorekeeper"""
 
-    category_changed = pyqtSignal(str)  # table_name
-    entity_selected = pyqtSignal(str, object)  # table_name, entity
-    new_entity_requested = pyqtSignal(str)  # table_name
+    category_changed = Signal(str)  # table_name
+    entity_selected = Signal(str, object)  # table_name, entity
+    new_entity_requested = Signal(str)  # table_name
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -323,8 +323,8 @@ class LorekeeperNavigation(QWidget):
 class LorekeeperBrowser(QWidget):
     """Entity browser with list and search"""
 
-    entity_selected = pyqtSignal(object)  # entity
-    new_entity_requested = pyqtSignal()
+    entity_selected = Signal(object)  # entity
+    new_entity_requested = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)

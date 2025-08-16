@@ -47,7 +47,7 @@ def check_dependencies():
         return False
 
     try:
-        import PyQt6
+        import PySide6
         print(f"✓ PyQt6 available")
         
         # Check Qt6 bin directory
@@ -171,7 +171,7 @@ for ui_dir in ['common', 'litographer', 'lorekeeper', 'character_arcs']:
 # Include minimal Qt6 plugins for essential functionality only
 print("Including minimal Qt6 plugins...")
 try:
-    import PyQt6
+    import PySide6
     pyqt6_path = Path(PyQt6.__file__).parent
     plugins_path = pyqt6_path / 'Qt6' / 'plugins'
     
@@ -229,7 +229,7 @@ print(f"Total data files included: {len(datas)}")
 binaries = []
 print("Including essential Qt6 DLLs...")
 try:
-    import PyQt6
+    import PySide6
     pyqt6_path = Path(PyQt6.__file__).parent
     qt_bin_path = pyqt6_path / 'Qt6' / 'bin'
     
@@ -358,7 +358,7 @@ def build_exe():
 
     try:
         # Get PyQt6 Qt bin path for --paths argument
-        import PyQt6
+        import PySide6
         pyqt6_path = Path(PyQt6.__file__).parent
         qt_bin_path = pyqt6_path / 'Qt6' / 'bin'
         

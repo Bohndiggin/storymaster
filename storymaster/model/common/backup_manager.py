@@ -7,14 +7,14 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 
-from PyQt6.QtCore import QObject, QTimer, pyqtSignal
+from PySide6.QtCore import QObject, QTimer, Signal
 
 
 class BackupManager(QObject):
     """Manages automatic database backups with rolling backup functionality"""
 
-    backup_created = pyqtSignal(str)  # Signal emitted when backup is created
-    backup_failed = pyqtSignal(str)  # Signal emitted when backup fails
+    backup_created = Signal(str)  # Signal emitted when backup is created
+    backup_failed = Signal(str)  # Signal emitted when backup fails
 
     def __init__(
         self, database_path: str, backup_interval_minutes: int = 5, max_backups: int = 3
