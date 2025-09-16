@@ -100,33 +100,57 @@ jobs:
         QT_QPA_PLATFORM: offscreen
     
     - name: Build macOS app bundle
-      run: python scripts/build_macos.py --non-interactive
-    
-    - name: Create DMG (if hdiutil available)
       run: |
-        # Look for the app bundle in dist/ first, then in current directory
-        if [ -d "dist/Storymaster.app" ]; then
-          APP_PATH="dist/Storymaster.app"
-        elif [ -d "Storymaster.app" ]; then
-          APP_PATH="Storymaster.app"
-        else
-          echo "Error: No Storymaster.app found"
-          exit 1
-        fi
-        
-        echo "Using app bundle at: $APP_PATH"
-        
-        if command -v hdiutil &> /dev/null; then
-          hdiutil create -srcfolder "$APP_PATH" -volname "Storymaster" Storymaster-macOS.dmg
-          echo "=== DMG created ==="
+        # Clean any existing build artifacts to prevent PyInstaller conflicts
+        rm -rf dist/ build/
+        python scripts/build_macos.py --non-interactive
+    
+    - name: Create DMG (if not already created)
+      run: |
+        # Check if DMG was already created by build script
+        if [ -f "Storymaster-macOS.dmg" ]; then
+          echo "=== DMG already exists, verifying ==="
           ls -la Storymaster-macOS.dmg
+          if command -v hdiutil &> /dev/null; then
+            hdiutil verify Storymaster-macOS.dmg || echo "DMG verification failed"
+          fi
         else
-          tar -czf Storymaster-macOS.tar.gz "$APP_PATH"
-          echo "=== TAR.GZ created instead of DMG ==="
-          ls -la Storymaster-macOS.tar.gz
+          echo "=== DMG not found, creating it ==="
+
+          # Look for the app bundle in dist/ first, then in current directory
+          if [ -d "dist/Storymaster.app" ]; then
+            APP_PATH="dist/Storymaster.app"
+          elif [ -d "Storymaster.app" ]; then
+            APP_PATH="Storymaster.app"
+          else
+            echo "Error: No Storymaster.app found"
+            exit 1
+          fi
+
+          echo "Using app bundle at: $APP_PATH"
+
+          if command -v hdiutil &> /dev/null; then
+            echo "Creating DMG with hdiutil..."
+            hdiutil create -srcfolder "$APP_PATH" -volname "Storymaster" Storymaster-macOS.dmg
+            if [ $? -eq 0 ]; then
+              echo "=== DMG created successfully ==="
+              ls -la Storymaster-macOS.dmg
+              # Verify DMG integrity
+              hdiutil verify Storymaster-macOS.dmg
+            else
+              echo "=== DMG creation failed, creating TAR.GZ fallback ==="
+              tar -czf Storymaster-macOS.tar.gz "$APP_PATH"
+              ls -la Storymaster-macOS.tar.gz
+            fi
+          else
+            echo "=== hdiutil not available, creating TAR.GZ ==="
+            tar -czf Storymaster-macOS.tar.gz "$APP_PATH"
+            ls -la Storymaster-macOS.tar.gz
+          fi
         fi
+
         echo "=== All macOS build files ==="
-        ls -la Storymaster* dist/
+        ls -la Storymaster* dist/ || true
     
     - name: Upload macOS artifacts
       uses: actions/upload-artifact@v4

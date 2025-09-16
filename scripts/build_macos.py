@@ -456,7 +456,13 @@ def create_dmg_installer(app_bundle_path=None):
     try:
         dmg_name = "Storymaster-macOS.dmg"
 
-        # Create temporary DMG
+        # Remove existing DMG to prevent "File exists" error
+        if Path(dmg_name).exists():
+            print(f"[CLEAN] Removing existing {dmg_name}")
+            Path(dmg_name).unlink()
+
+        # Create DMG
+        print(f"[CREATE] Creating {dmg_name}...")
         subprocess.run(
             [
                 "hdiutil",
@@ -471,6 +477,20 @@ def create_dmg_installer(app_bundle_path=None):
         )
 
         print(f"[OK] DMG created: {dmg_name}")
+
+        # Verify DMG integrity
+        print("[VERIFY] Checking DMG integrity...")
+        verify_result = subprocess.run(
+            ["hdiutil", "verify", dmg_name],
+            capture_output=True,
+            text=True
+        )
+
+        if verify_result.returncode == 0:
+            print("[OK] DMG verification passed")
+        else:
+            print(f"[WARNING] DMG verification failed: {verify_result.stderr}")
+
         return True
 
     except subprocess.CalledProcessError as e:
@@ -659,6 +679,15 @@ def main():
 
     if choice == "1":
         success = create_with_pyinstaller(build_mode)
+        if success:
+            # Create DMG from PyInstaller-generated app bundle
+            app_bundle_path = Path("dist/Storymaster.app")
+            if app_bundle_path.exists():
+                dmg_success = create_dmg_installer(app_bundle_path)
+                if not dmg_success:
+                    print("[WARNING] DMG creation failed, but app bundle is available")
+            else:
+                print("[WARNING] App bundle not found for DMG creation")
     elif choice == "2":
         app_bundle = create_app_bundle_structure()
         create_info_plist(app_bundle)

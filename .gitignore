@@ -23,3 +23,5 @@ clockwork_gods_seed.py
 seed_shadow_necromancer.py
 storymaster-standalone-linux-x86_64.tar.gz
 duelist_data_importer.py
+*.dmg
+Storymaster.app/
