@@ -71,7 +71,7 @@ class AboutDialog(QDialog):
         layout.addWidget(copyright_label)
 
         # License
-        license_label = QLabel("Proprietary Software - All Rights Reserved")
+        license_label = QLabel("Licensed under the MIT License")
         license_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(license_label)
 
