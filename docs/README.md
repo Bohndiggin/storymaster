@@ -6,7 +6,7 @@
 ![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)
 
-Storymaster is a comprehensive PyQt6-based creative writing application that seamlessly combines visual story structure planning with detailed world-building capabilities. Perfect for novelists, screenwriters, and game designers who need to organize complex narratives and rich fictional worlds.
+Storymaster is a comprehensive PySide6-based creative writing application that seamlessly combines visual story structure planning with detailed world-building capabilities. Perfect for novelists, screenwriters, and game designers who need to organize complex narratives and rich fictional worlds.
 
 ## ✨ Key Features
 
@@ -106,7 +106,7 @@ storymaster/
 │   │   ├── common/         # Shared model components
 │   │   ├── litographer/    # Story plotting data models
 │   │   └── lorekeeper/     # World-building data models
-│   ├── view/               # UI components (PyQt6)
+│   ├── view/               # UI components (PySide6)
 │   │   ├── common/         # Shared UI elements & user management
 │   │   ├── litographer/    # Story plotting interface
 │   │   ├── lorekeeper/     # World-building interface
@@ -295,7 +295,7 @@ cp storymaster.db backup/storymaster_backup_$(date +%Y%m%d).db
 **Environment Problems:**
 - `ModuleNotFoundError` → Ensure virtual environment is activated
 - `Database connection failed` → Run `python scripts/init_database.py`
-- `PyQt6 import error` → Reinstall with `pip install PyQt6`
+- `PySide6 import error` → Reinstall with `pip install PySide6`
 
 **Database Issues:**
 - Corrupt database → Delete `storymaster.db` and run `init_database.py`
@@ -303,7 +303,7 @@ cp storymaster.db backup/storymaster_backup_$(date +%Y%m%d).db
 - Performance issues → Consider archiving old projects
 
 **UI Problems:**
-- Blank interface → Check console for PyQt6 errors
+- Blank interface → Check console for PySide6 errors
 - Node positioning issues → Clear cache and restart application
 - Menu not responding → Verify database connection
 
@@ -335,7 +335,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- Built with [PyQt6](https://www.riverbankcomputing.com/software/pyqt/) for the user interface
+- Built with [PySide6](https://doc.qt.io/qtforpython-6/) (Qt for Python) for the user interface
 - Database powered by [SQLAlchemy](https://www.sqlalchemy.org/) ORM
 - Inspired by professional story development tools and writing methodologies
 

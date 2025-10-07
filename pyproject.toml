@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "storymaster"
 dynamic = ["version"]
-description = "A PyQt6-based creative writing tool that combines visual story plotting with comprehensive world-building"
+description = "A PySide6-based creative writing tool that combines visual story plotting with comprehensive world-building"
 readme = "docs/README.md"
 license = {text = "MIT"}
 authors = [
@@ -28,7 +28,7 @@ classifiers = [
 ]
 requires-python = ">=3.9"
 dependencies = [
-    "PyQt6>=6.5.0",
+    "PySide6>=6.5.0",
     "SQLAlchemy>=2.0.0",
     "python-dotenv>=1.0.0",
 ]
