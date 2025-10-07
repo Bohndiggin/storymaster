@@ -38,16 +38,19 @@ class NewStorylineDialog(QDialog):
         self.name_line_edit = QLineEdit()
         self.description_text_edit = QTextEdit()
         self.user_combo = QComboBox()
+        self.setting_combo = QComboBox()
 
         # --- Configure Widgets ---
         self.description_text_edit.setMaximumHeight(100)
         self._populate_users()
+        self._populate_settings()
 
         # --- Layout ---
         form_layout = QFormLayout()
         form_layout.addRow("Storyline Name:", self.name_line_edit)
         form_layout.addRow("Description:", self.description_text_edit)
         form_layout.addRow("User:", self.user_combo)
+        form_layout.addRow("Setting:", self.setting_combo)
 
         # --- Dialog Buttons (OK/Cancel) ---
         self.button_box = QDialogButtonBox(
@@ -78,15 +81,39 @@ class NewStorylineDialog(QDialog):
             self.user_combo.addItem("Could not load users.")
             self.user_combo.setEnabled(False)
 
+    def _populate_settings(self):
+        """
+        Fetches the list of settings from the model and populates the combo box.
+        """
+        try:
+            # Get all settings
+            settings = self.model.get_all_settings()
+
+            # Add a "None" option first
+            self.setting_combo.addItem("-- No Setting --", None)
+
+            for setting in settings:
+                # Display setting name, store the setting ID as data
+                display_name = setting.name if setting.name else f"Setting {setting.id}"
+                self.setting_combo.addItem(display_name, setting.id)
+        except Exception as e:
+            print(f"Error populating settings list: {e}")
+            # Add a disabled item to show the error
+            self.setting_combo.addItem("Could not load settings.")
+            self.setting_combo.setEnabled(False)
+
     def get_storyline_data(self) -> dict | None:
         """
         Returns the storyline data if the dialog is accepted.
         Returns None if canceled.
         """
         if self.exec() == QDialog.DialogCode.Accepted:
-            return {
+            data = {
                 "name": self.name_line_edit.text().strip(),
                 "description": self.description_text_edit.toPlainText().strip(),
                 "user_id": self.user_combo.currentData(),
             }
+            # Include setting_id for linking
+            data["_selected_setting_id"] = self.setting_combo.currentData()
+            return data
         return None

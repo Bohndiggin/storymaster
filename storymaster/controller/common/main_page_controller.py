@@ -79,6 +79,7 @@ from storymaster.model.database.schema.base import (
     PlotSectionType,
     Race,
     Skills,
+    StorylineToSetting,
     SubRace,
     WorldData,
 )
@@ -2148,11 +2149,17 @@ class MainWindowController:
             self.on_manage_setting_clicked
         )
 
-        # Add storyline settings management (if action exists)
-        if hasattr(self.view.ui, "actionManageStorylineSettings"):
-            self.view.ui.actionManageStorylineSettings.triggered.connect(
-                self.on_manage_storyline_settings_clicked
+        # Add storyline settings management action programmatically if it doesn't exist
+        if not hasattr(self.view.ui, "actionManageStorylineSettings"):
+            from PySide6.QtGui import QAction
+            self.view.ui.actionManageStorylineSettings = QAction(
+                "Manage Storyline-Setting Links", self.view
             )
+            self.view.ui.menuSetting.addAction(self.view.ui.actionManageStorylineSettings)
+
+        self.view.ui.actionManageStorylineSettings.triggered.connect(
+            self.on_manage_storyline_settings_clicked
+        )
 
         # --- User Menu ---
         self.view.ui.actionNewUser.triggered.connect(self.on_new_user_clicked)
@@ -2183,15 +2190,39 @@ class MainWindowController:
         storyline_id = dialog.get_selected_storyline_id()
         if storyline_id is not None:
             self.current_storyline_id = storyline_id
-            self.view.ui.statusbar.showMessage(
-                f"Opened Storyline ID: {self.current_storyline_id}", 5000
-            )
+
+            # Update setting to match the storyline's associated setting
+            with Session(self.model.engine) as session:
+                storyline_setting = (
+                    session.query(StorylineToSetting)
+                    .filter_by(storyline_id=storyline_id)
+                    .first()
+                )
+                if storyline_setting:
+                    self.current_setting_id = storyline_setting.setting_id
+                    print(f"DEBUG: Updated setting to ID {self.current_setting_id} for storyline {storyline_id}")
+                else:
+                    # No setting linked - keep current setting or use first available
+                    print(f"DEBUG: No setting found for storyline {storyline_id}, keeping current setting")
+                    if self.current_setting_id is None:
+                        # If we don't have any setting, try to get the first available one
+                        settings = self.model.get_all_settings()
+                        if settings:
+                            self.current_setting_id = settings[0].id
+                            print(f"DEBUG: Using first available setting ID {self.current_setting_id}")
+
+            # Reset to first plot of opened storyline
+            self._switch_to_first_plot_of_storyline()
 
             # Refresh the current view with the new project's data
             if self.view.ui.pageStack.currentIndex() == 0:
+                self.load_plot_sections()
                 self.load_and_draw_nodes()
             else:
                 self._refresh_current_table_view()
+
+            # Update status indicators to show new storyline and setting (permanent display)
+            self.update_status_indicators()
 
     def on_database_manager_clicked(self):
         """Opens the database and backup manager dialog."""
@@ -2598,6 +2629,9 @@ class MainWindowController:
         storyline_data = dialog.get_storyline_data()
         if storyline_data is not None:
             try:
+                # Extract setting ID before creating storyline
+                selected_setting_id = storyline_data.pop("_selected_setting_id", None)
+
                 # Create the storyline
                 self.model.add_row("storyline", storyline_data)
 
@@ -2615,6 +2649,20 @@ class MainWindowController:
 
                 if new_storyline:
                     self.current_storyline_id = new_storyline.id
+
+                    # Link to setting if one was selected
+                    if selected_setting_id is not None:
+                        try:
+                            success = self.model.link_storyline_to_setting(
+                                new_storyline.id, selected_setting_id
+                            )
+                            if success:
+                                # Update current setting to the linked one
+                                self.current_setting_id = selected_setting_id
+                                print(f"DEBUG: Linked new storyline {new_storyline.id} to setting {selected_setting_id}")
+                        except Exception as e:
+                            print(f"Error linking storyline to setting: {e}")
+
                     # Reset to first plot of new storyline (creates default if needed)
                     self._switch_to_first_plot_of_storyline()
                     # Refresh views
@@ -2682,12 +2730,29 @@ class MainWindowController:
             if new_storyline_id:
                 try:
                     self.current_storyline_id = new_storyline_id
+
                     # Get storyline name for status message
                     storylines = self.model.get_all_storylines()
                     storyline_name = next(
                         (s.name for s in storylines if s.id == new_storyline_id),
                         "Unknown",
                     )
+
+                    # Update setting to match the storyline's associated setting
+                    with Session(self.model.engine) as session:
+                        storyline_setting = (
+                            session.query(StorylineToSetting)
+                            .filter_by(storyline_id=new_storyline_id)
+                            .first()
+                        )
+                        if storyline_setting:
+                            self.current_setting_id = storyline_setting.setting_id
+                        else:
+                            # No setting linked - keep current setting or use first available
+                            if self.current_setting_id is None:
+                                settings = self.model.get_all_settings()
+                                if settings:
+                                    self.current_setting_id = settings[0].id
 
                     self.view.ui.statusbar.showMessage(
                         f"Switched to storyline: {storyline_name}", 5000
@@ -3009,6 +3074,7 @@ class MainWindowController:
                 ):
                     if dialog.action == "switch" and dialog.selected_plot_id:
                         self.current_plot_id = dialog.selected_plot_id
+                        self.current_plot_section_id = None  # Reset section to avoid loading old sections
 
                         plot = session.query(LitographyPlot).get(self.current_plot_id)
                         plot_name = (
