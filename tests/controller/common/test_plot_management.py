@@ -255,7 +255,7 @@ class TestPlotManagerDialog:
         dialog.new_plot_input = Mock()
         dialog.new_plot_input.text.return_value = ""
 
-        with patch("PyQt6.QtWidgets.QMessageBox.warning") as mock_warning:
+        with patch("PySide6.QtWidgets.QMessageBox.warning") as mock_warning:
             dialog.on_add_plot()
             mock_warning.assert_called_once()
 
@@ -267,7 +267,7 @@ class TestPlotManagerDialog:
         dialog.new_plot_input = Mock()
         dialog.new_plot_input.text.return_value = "   "
 
-        with patch("PyQt6.QtWidgets.QMessageBox.warning") as mock_warning:
+        with patch("PySide6.QtWidgets.QMessageBox.warning") as mock_warning:
             dialog.on_add_plot()
             mock_warning.assert_called_once()
 
@@ -376,7 +376,7 @@ class TestPlotManagerDialog:
         dialog.plot_list = Mock()
         dialog.plot_list.selectedItems.return_value = [mock_item]
 
-        with patch("PyQt6.QtWidgets.QMessageBox.question") as mock_question:
+        with patch("PySide6.QtWidgets.QMessageBox.question") as mock_question:
             mock_question.return_value = QMessageBox.StandardButton.No
 
             dialog.on_delete_plot()
@@ -396,7 +396,7 @@ class TestPlotManagerDialog:
         dialog.plot_list = Mock()
         dialog.plot_list.selectedItems.return_value = [mock_item]
 
-        with patch("PyQt6.QtWidgets.QMessageBox.question") as mock_question:
+        with patch("PySide6.QtWidgets.QMessageBox.question") as mock_question:
             with patch.object(dialog, "accept") as mock_accept:
                 mock_question.return_value = QMessageBox.StandardButton.Yes
 

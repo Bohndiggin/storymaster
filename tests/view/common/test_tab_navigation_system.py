@@ -221,7 +221,7 @@ class TestTabNavigationComboBox:
         combo_box.view = Mock(return_value=mock_view)
 
         # Mock parent's keyPressEvent
-        with patch("PyQt6.QtWidgets.QComboBox.keyPressEvent") as mock_parent:
+        with patch("PySide6.QtWidgets.QComboBox.keyPressEvent") as mock_parent:
             enter_event = QKeyEvent(
                 QKeyEvent.Type.KeyPress,
                 Qt.Key.Key_Return,

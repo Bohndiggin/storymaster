@@ -211,14 +211,14 @@ class TestSpellCheckConfigDialog:
         # Test empty word
         config_dialog.add_word_input.setText("")
 
-        with patch("PyQt6.QtWidgets.QMessageBox.warning") as mock_warning:
+        with patch("PySide6.QtWidgets.QMessageBox.warning") as mock_warning:
             config_dialog.add_custom_word()
             mock_warning.assert_not_called()
 
         # Test word with numbers
         config_dialog.add_word_input.setText("test123")
 
-        with patch("PyQt6.QtWidgets.QMessageBox.warning") as mock_warning:
+        with patch("PySide6.QtWidgets.QMessageBox.warning") as mock_warning:
             config_dialog.add_custom_word()
             mock_warning.assert_called_once()
 

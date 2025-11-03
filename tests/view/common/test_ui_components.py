@@ -131,11 +131,10 @@ class TestNewSettingDialog:
 
             result = dialog.get_setting_data()
 
-            assert result == {
-                "name": "Test Setting",
-                "description": "Test description",
-                "user_id": 1,
-            }
+            # Check essential fields (ignore any internal fields like _selected_packages)
+            assert result["name"] == "Test Setting"
+            assert result["description"] == "Test description"
+            assert result["user_id"] == 1
 
     def test_new_setting_dialog_error_handling(self, qapp):
         """Test error handling when user loading fails"""
@@ -194,11 +193,10 @@ class TestNewStorylineDialog:
 
             result = dialog.get_storyline_data()
 
-            assert result == {
-                "name": "Test Storyline",
-                "description": "Test description",
-                "user_id": 1,
-            }
+            # Check essential fields (ignore any internal fields like _selected_setting_id)
+            assert result["name"] == "Test Storyline"
+            assert result["description"] == "Test description"
+            assert result["user_id"] == 1
 
     def test_new_storyline_dialog_get_data_rejected(self, qapp):
         """Test getting storyline data when dialog is rejected"""
@@ -252,7 +250,7 @@ class TestPlotManagerDialog:
         # Mock empty input
         dialog.new_plot_input.text = Mock(return_value="")
 
-        with patch("PyQt6.QtWidgets.QMessageBox.warning") as mock_warning:
+        with patch("PySide6.QtWidgets.QMessageBox.warning") as mock_warning:
             dialog.on_add_plot()
             mock_warning.assert_called_once()
 
@@ -296,7 +294,7 @@ class TestPlotManagerDialog:
         mock_item.text.return_value = "Main Plot (Current)"
         dialog.plot_list.selectedItems = Mock(return_value=[mock_item])
 
-        with patch("PyQt6.QtWidgets.QMessageBox.warning") as mock_warning:
+        with patch("PySide6.QtWidgets.QMessageBox.warning") as mock_warning:
             dialog.on_delete_plot()
             mock_warning.assert_called_once()
 
@@ -311,7 +309,7 @@ class TestPlotManagerDialog:
         mock_item.text.return_value = "Sub Plot"
         dialog.plot_list.selectedItems = Mock(return_value=[mock_item])
 
-        with patch("PyQt6.QtWidgets.QMessageBox.question") as mock_question:
+        with patch("PySide6.QtWidgets.QMessageBox.question") as mock_question:
             with patch.object(dialog, "accept") as mock_accept:
                 mock_question.return_value = QMessageBox.StandardButton.Yes
 

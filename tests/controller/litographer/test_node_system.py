@@ -281,7 +281,7 @@ class TestNodeEditingOperations:
         """Test the complete node creation workflow"""
         # Mock the node creation process
         node_data = {
-            "label": "New Scene",
+            "name": "New Scene",
             "node_type": NodeType.ACTION,
             "storyline_id": 1,
             "x_position": 200.0,
@@ -351,7 +351,7 @@ class TestNodeEditingOperations:
 
         # Mock copy operation
         copy_data = {
-            "label": f"{source_node.name} (Copy)",
+            "name": f"{source_node.name} (Copy)",
             "node_type": source_node.node_type,
             "description": source_node.description,
             "x_position": 100.0,  # Offset position

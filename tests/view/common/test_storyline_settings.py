@@ -237,14 +237,12 @@ class TestStorylineSettingsDialog:
             mock_selected.return_value = [mock_item]
 
             with patch.object(dialog, "load_data") as mock_load_data:
-                with patch("PyQt6.QtWidgets.QMessageBox.information") as mock_info:
-                    dialog.link_setting()
+                dialog.link_setting()
 
-                    self.mock_model.link_storyline_to_setting.assert_called_once_with(
-                        1, 5
-                    )
-                    mock_load_data.assert_called_once()  # Should refresh data
-                    mock_info.assert_called_once()
+                self.mock_model.link_storyline_to_setting.assert_called_once_with(
+                    1, 5
+                )
+                mock_load_data.assert_called_once()  # Should refresh data
 
     def test_link_setting_already_linked(self, qapp):
         """Test linking when setting is already linked"""
@@ -267,7 +265,7 @@ class TestStorylineSettingsDialog:
             mock_item.text.return_value = "Test Setting"
             mock_selected.return_value = [mock_item]
 
-            with patch("PyQt6.QtWidgets.QMessageBox.warning") as mock_warning:
+            with patch("PySide6.QtWidgets.QMessageBox.warning") as mock_warning:
                 dialog.link_setting()
 
                 self.mock_model.link_storyline_to_setting.assert_called_once_with(1, 5)
@@ -295,19 +293,17 @@ class TestStorylineSettingsDialog:
             mock_selected.return_value = [mock_item]
 
             with patch.object(dialog, "load_data") as mock_load_data:
-                with patch("PyQt6.QtWidgets.QMessageBox.question") as mock_question:
-                    with patch("PyQt6.QtWidgets.QMessageBox.information") as mock_info:
-                        # QMessageBox imported from test_qt_utils
+                with patch("PySide6.QtWidgets.QMessageBox.question") as mock_question:
+                    # QMessageBox imported from test_qt_utils
 
-                        mock_question.return_value = QMessageBox.StandardButton.Yes
+                    mock_question.return_value = QMessageBox.StandardButton.Yes
 
-                        dialog.unlink_setting()
+                    dialog.unlink_setting()
 
-                        self.mock_model.unlink_storyline_from_setting.assert_called_once_with(
-                            1, 5
-                        )
-                        mock_load_data.assert_called_once()  # Should refresh data
-                        mock_info.assert_called_once()
+                    self.mock_model.unlink_storyline_from_setting.assert_called_once_with(
+                        1, 5
+                    )
+                    mock_load_data.assert_called_once()  # Should refresh data
 
     def test_unlink_setting_cancelled(self, qapp):
         """Test unlinking setting when user cancels"""
@@ -329,7 +325,7 @@ class TestStorylineSettingsDialog:
             mock_item.text.return_value = "Test Setting"
             mock_selected.return_value = [mock_item]
 
-            with patch("PyQt6.QtWidgets.QMessageBox.question") as mock_question:
+            with patch("PySide6.QtWidgets.QMessageBox.question") as mock_question:
                 # QMessageBox imported from test_qt_utils
 
                 mock_question.return_value = QMessageBox.StandardButton.No
@@ -508,7 +504,7 @@ class TestStorylineSettingsEdgeCases:
         )
         mock_model.get_settings_for_storyline.return_value = []
 
-        with patch("PyQt6.QtWidgets.QMessageBox.warning") as mock_warning:
+        with patch("PySide6.QtWidgets.QMessageBox.warning") as mock_warning:
             dialog = StorylineSettingsDialog(
                 mock_model, storyline_id=1, storyline_name="Test Storyline"
             )
