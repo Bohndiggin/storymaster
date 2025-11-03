@@ -473,7 +473,7 @@ def create_portable():
         if Path("storymaster.db").exists():
             shutil.copy2("storymaster.db", portable_dir / "storymaster.db")
             print("  ✓ Copied database")
-        
+
         # Copy world building packages if they exist
         world_building_src = Path("world_building_packages")
         if world_building_src.exists():
@@ -482,6 +482,14 @@ def create_portable():
             print("  ✓ Copied world building packages")
         else:
             print("  ⚠ No world building packages found")
+
+        # Copy user guide if exists
+        guide_pdf = Path("GUIDE.pdf")
+        if guide_pdf.exists():
+            shutil.copy2(guide_pdf, portable_dir / "GUIDE.pdf")
+            print("  ✓ Copied user guide (GUIDE.pdf)")
+        else:
+            print("  ⚠ User guide not found (GUIDE.pdf)")
 
         # Create Windows README
         readme_content = """# Storymaster Portable for Windows
@@ -498,6 +506,7 @@ Double-click `storymaster.exe` to run
 
 ## Contents
 - `storymaster.exe` - Main application
+- `GUIDE.pdf` - Complete user guide with tutorials and tips
 - `world_building_packages/` - Pre-made world building templates (if included)
 - `storymaster.db` - Database file (created on first run)
 

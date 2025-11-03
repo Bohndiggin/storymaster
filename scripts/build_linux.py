@@ -282,11 +282,24 @@ def create_portable_package():
             shutil.copy2("storymaster.db", dist_dir / "storymaster.db")
             print("   Copied sample database")
 
+        # Copy user guide if exists
+        guide_pdf = Path("GUIDE.pdf")
+        if guide_pdf.exists():
+            shutil.copy2(guide_pdf, dist_dir / "GUIDE.pdf")
+            print("   ✓ Copied user guide (GUIDE.pdf)")
+        else:
+            print("   ⚠ User guide not found (GUIDE.pdf)")
+
         # Create a README for the portable package
         readme_content = f"""# Storymaster Portable
 
 This is a standalone version of Storymaster that runs without installation.
 **No Python or PySide6 installation required!**
+
+## Quick Start
+
+1. Read `GUIDE.pdf` for complete instructions and tutorials
+2. Run the application (see below)
 
 ## How to Run
 
@@ -307,9 +320,14 @@ Open terminal in this directory and run:
 [+] **SQLAlchemy**: Database layer bundled
 [+] **Cross-Platform**: Same features on Windows and Linux
 
+## Documentation
+
+- `GUIDE.pdf` - Complete user guide with tutorials, tips, and best practices
+- `README.txt` - This file (basic info)
+
 ## Database
 
-The `storymaster.db` file contains your story data. 
+The `storymaster.db` file contains your story data.
 To backup your work, simply copy this file.
 
 ## First Time Setup

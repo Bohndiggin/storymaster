@@ -192,6 +192,15 @@ def install_app_contents(app_bundle, build_mode):
             else:
                 print(f"   Skipped {file_path} (not found)")
 
+        # Copy user guide to Resources directory (root level for easy access)
+        guide_pdf = Path("GUIDE.pdf")
+        if guide_pdf.exists():
+            guide_dest = app_bundle / "Contents/Resources/GUIDE.pdf"
+            shutil.copy2(guide_pdf, guide_dest)
+            print("   ✓ Copied user guide (GUIDE.pdf)")
+        else:
+            print("   ⚠ User guide not found (GUIDE.pdf)")
+
         # Create launcher script
         launcher_script = app_bundle / "Contents/MacOS/storymaster"
         launcher_content = """#!/bin/bash

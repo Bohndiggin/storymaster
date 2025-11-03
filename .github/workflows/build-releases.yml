@@ -283,22 +283,30 @@ jobs:
         echo
         echo "=== Creating release-files directory ==="
         mkdir -p release-files
-        
+
         echo "=== Copying ZIP files ==="
         find release-artifacts -type f -name "*.zip" -print -exec cp {} release-files/ \;
-        
+
         echo "=== Copying DMG files ==="
         find release-artifacts -type f -name "*.dmg" -print -exec cp {} release-files/ \;
-        
+
         echo "=== Copying TAR.GZ files ==="
         find release-artifacts -type f -name "*.tar.gz" -print -exec cp {} release-files/ \;
-        
+
         echo "=== Copying AppImage files ==="
         find release-artifacts -type f -name "*.AppImage" -print -exec cp {} release-files/ \;
-        
+
         echo "=== Copying RPM files ==="
         find release-artifacts -type f -name "*.rpm" -print -exec cp {} release-files/ \;
-        
+
+        echo "=== Copying GUIDE.pdf ==="
+        if [ -f "GUIDE.pdf" ]; then
+          cp GUIDE.pdf release-files/
+          echo "  ✓ Copied GUIDE.pdf"
+        else
+          echo "  ⚠ GUIDE.pdf not found"
+        fi
+
         echo "=== Final release files ==="
         ls -la release-files/
         
@@ -323,41 +331,50 @@ jobs:
         files: release-files/*
         body: |
           ## 🏰 Storymaster Release
-          
+
           **Visual Story Plotting & World-Building Tool**
-          
+
+          ### 📖 Documentation
+
+          **📄 [GUIDE.pdf](GUIDE.pdf)** - Complete user guide with tutorials, tips, and best practices
+
+          *Note: GUIDE.pdf is also included in all platform downloads*
+
           ### 📦 Download Options:
-          
+
           **Windows:**
-          - `storymaster-windows.zip` - Portable executable
-          
+          - `storymaster-windows.zip` - Portable executable (includes GUIDE.pdf)
+
           **macOS:**
-          - `Storymaster-macOS.dmg` - Installer disk image
-          - `Storymaster-macOS.tar.gz` - Archive version
-          
+          - `Storymaster-macOS.dmg` - Installer disk image (includes GUIDE.pdf)
+          - `Storymaster-macOS.tar.gz` - Archive version (includes GUIDE.pdf)
+
           **Linux:**
           - `Storymaster-x86_64.AppImage` - Universal binary (recommended)
-          - `storymaster-linux.tar.gz` - Portable executable
+          - `storymaster-linux.tar.gz` - Portable executable (includes GUIDE.pdf)
           - `storymaster-*.rpm` - RPM package for Red Hat-based distributions
-          
+
           ### 🚀 Quick Start:
-          
-          1. **Windows**: Extract zip and run `storymaster.exe`
-          2. **macOS**: Open DMG and drag to Applications, or extract tar.gz
-          3. **Linux**: Make AppImage executable and run, or extract tar.gz
-          
+
+          1. **Download** your platform's package above
+          2. **Read GUIDE.pdf** for complete instructions and tutorials
+          3. **Run the application**:
+             - **Windows**: Extract zip and run `storymaster.exe`
+             - **macOS**: Open DMG and drag to Applications, or extract tar.gz
+             - **Linux**: Make AppImage executable and run, or extract tar.gz
+
           ### ✨ Features:
-          
+
           - **Multi-plot support** - Create and switch between different storylines
           - **Visual story plotting** with node-based structure
           - **Comprehensive world-building** database
           - **SQLite backend** - fully offline and portable
           - **Dark theme** UI for comfortable writing sessions
-          
+
           ---
-          
-          **First time using Storymaster?** The application will guide you through initial setup and optionally load sample data to get you started.
-          
-          **Questions or issues?** Check the documentation or create an issue on GitHub.
+
+          **First time using Storymaster?** Read GUIDE.pdf for a complete walkthrough. The application will guide you through initial setup and optionally load sample data to get you started.
+
+          **Questions or issues?** Check GUIDE.pdf or create an issue on GitHub.
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
