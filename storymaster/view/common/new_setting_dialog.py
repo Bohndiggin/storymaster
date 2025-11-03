@@ -2,8 +2,13 @@
 Defines the dialog for creating a new setting.
 """
 
-import os
 import json
+import os
+
+# Import the world building import functionality
+import sys
+from pathlib import Path
+
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -11,31 +16,26 @@ from PySide6.QtWidgets import (
     QDialogButtonBox,
     QFormLayout,
     QGroupBox,
+    QHBoxLayout,
+    QLabel,
     QLineEdit,
+    QMessageBox,
+    QPushButton,
     QScrollArea,
     QTextEdit,
     QVBoxLayout,
-    QHBoxLayout,
-    QLabel,
-    QMessageBox,
-    QPushButton,
-)
-
-from storymaster.view.common.package_utils import (
-    get_world_building_packages_path,
-    debug_world_building_packages,
 )
 
 from storymaster.model.common.common_model import BaseModel
+from storymaster.view.common.package_utils import (
+    debug_world_building_packages,
+    get_world_building_packages_path,
+)
 from storymaster.view.common.theme import (
-    get_dialog_style,
     get_button_style,
+    get_dialog_style,
     get_input_style,
 )
-
-# Import the world building import functionality
-import sys
-from pathlib import Path
 
 # Add scripts directory to path with robust resolution
 current_file = Path(__file__).resolve()
@@ -50,16 +50,16 @@ try:
 except ImportError as e:
     # Import the necessary components for the embedded implementation
     import json
+
     from sqlalchemy.orm import Session
+
     from storymaster.model.database import schema
 
     print(
         f"Warning: Could not import import_world_building module ({e}), using embedded implementation"
     )
 
-    def import_world_building_package(
-        json_file_path: str, target_setting_id: int
-    ) -> bool:
+    def import_world_building_package(json_file_path: str, target_setting_id: int) -> bool:
         """
         Embedded world building package import functionality.
         """
@@ -83,9 +83,7 @@ except ImportError as e:
 
         # Get package info if available
         package_info = package_data.get("_package_info", {})
-        package_name = package_info.get(
-            "display_name", os.path.basename(json_file_path)
-        )
+        package_name = package_info.get("display_name", os.path.basename(json_file_path))
 
         print(f"📦 Importing world building package: {package_name}")
         print(f"🎯 Target setting ID: {target_setting_id}")
@@ -145,7 +143,14 @@ except ImportError as e:
                                 try:
                                     # Update setting_id to target setting
                                     item_data_copy = item_data.copy()
-                                    item_data_copy["setting_id"] = target_setting_id
+
+                                    # Remove id field if present (let auto-increment handle it)
+                                    if "id" in item_data_copy:
+                                        del item_data_copy["id"]
+
+                                    # Override setting_id to target setting
+                                    if "setting_id" in item_data_copy:
+                                        item_data_copy["setting_id"] = target_setting_id
 
                                     # Check for duplicates based on name and setting_id (if name field exists)
                                     if hasattr(table_class, "name") and hasattr(
@@ -169,18 +174,18 @@ except ImportError as e:
                                     # Create new record
                                     new_item = table_class(**item_data_copy)
                                     session.add(new_item)
+                                    session.flush()  # Flush immediately to catch constraint errors
                                     total_imported += 1
 
                                 except Exception as e:
                                     print(f"⚠️  Error importing {table_name} item: {e}")
+                                    session.rollback()  # Rollback failed item, continue with others
                                     # Continue with other items
 
                 # Commit all changes
                 session.commit()
 
-                print(
-                    f"✅ Successfully imported {total_imported} items from {package_name}"
-                )
+                print(f"✅ Successfully imported {total_imported} items from {package_name}")
                 return True
 
         except Exception as e:
@@ -317,9 +322,7 @@ class NewSettingDialog(QDialog):
         """Show debug information in a message box for troubleshooting"""
         msg_box = QMessageBox(self)
         msg_box.setWindowTitle("World Building Packages Debug Info")
-        msg_box.setText(
-            "Debug information for troubleshooting world_building_packages location:"
-        )
+        msg_box.setText("Debug information for troubleshooting world_building_packages location:")
         msg_box.setDetailedText(debug_info)
         msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
         msg_box.exec()
@@ -417,6 +420,4 @@ class NewSettingDialog(QDialog):
             except Exception as e:
                 print(f"❌ Error importing {package_path}: {e}")
 
-        print(
-            f"🎉 Imported {success_count}/{len(package_paths)} world building packages!"
-        )
+        print(f"🎉 Imported {success_count}/{len(package_paths)} world building packages!")

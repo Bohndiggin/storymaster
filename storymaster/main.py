@@ -34,9 +34,7 @@ if getattr(sys, "frozen", False):
         if plugin_path.exists():
             current_path = os.environ.get("QT_PLUGIN_PATH", "")
             if current_path:
-                os.environ["QT_PLUGIN_PATH"] = (
-                    f"{current_path}{os.pathsep}{plugin_path}"
-                )
+                os.environ["QT_PLUGIN_PATH"] = f"{current_path}{os.pathsep}{plugin_path}"
             else:
                 os.environ["QT_PLUGIN_PATH"] = str(plugin_path)
 
@@ -72,9 +70,7 @@ def debug_environment():
             wb_path = bundle_dir / "world_building_packages"
             print(f"Bundle world_building_packages exists: {wb_path.exists()}")
             if wb_path.exists():
-                print(
-                    f"Bundle world_building_packages files: {list(wb_path.glob('*.json'))}"
-                )
+                print(f"Bundle world_building_packages files: {list(wb_path.glob('*.json'))}")
 
     # Test our utility function
     try:
@@ -96,6 +92,8 @@ def debug_environment():
 def check_and_run_migrations():
     """Check if database migrations are needed and run them"""
     try:
+        import sqlite3
+
         from sqlalchemy import create_engine, inspect
 
         # Get database URL from environment or use default
@@ -115,18 +113,144 @@ def check_and_run_migrations():
         engine = create_engine(db_url)
         inspector = inspect(engine)
 
+        # Check for arc_type constraint migration
+        needs_arc_type_migration = False
+        if "arc_type" in inspector.get_table_names():
+            # Check if old unique constraint exists using raw SQL
+            conn = sqlite3.connect(db_url.replace("sqlite:///", ""))
+            cursor = conn.cursor()
+            cursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='arc_type'")
+            result = cursor.fetchone()
+            if result:
+                create_statement = result[0]
+                # Check for old constraint (UNIQUE without composite constraint name)
+                if (
+                    "UNIQUE" in create_statement
+                    and "uq_arc_type_name_setting" not in create_statement
+                ):
+                    needs_arc_type_migration = True
+            conn.close()
+
+        if needs_arc_type_migration:
+            print("🔄 Database needs arc_type constraint migration...")
+            print("   (Fixing constraint to allow same arc type in different settings)")
+
+            # Import and run arc_type migration
+            migration_script = (
+                Path(__file__).parent.parent / "scripts" / "migrate_arc_type_constraint.py"
+            )
+            if migration_script.exists():
+                # Run migration script
+                import subprocess
+
+                result = subprocess.run(
+                    [sys.executable, str(migration_script)],
+                    capture_output=True,
+                    text=True,
+                )
+
+                if result.returncode == 0:
+                    print("✅ Arc type migration completed successfully!")
+                else:
+                    print(f"❌ Arc type migration failed: {result.stderr}")
+
+        # Check for note_type case migration
+        needs_note_type_migration = False
+        if "litography_notes" in inspector.get_table_names():
+            # Check if there are uppercase note_type values using raw SQL
+            conn = sqlite3.connect(db_url.replace("sqlite:///", ""))
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                SELECT COUNT(*) FROM litography_notes
+                WHERE note_type != LOWER(note_type)
+            """
+            )
+            uppercase_count = cursor.fetchone()[0]
+            conn.close()
+            if uppercase_count > 0:
+                needs_note_type_migration = True
+
+        if needs_note_type_migration:
+            print("🔄 Database needs note_type case migration...")
+            print("   (Fixing uppercase note_type values to match enum)")
+
+            # Import and run note_type migration
+            migration_script = (
+                Path(__file__).parent.parent / "scripts" / "migrate_note_type_case.py"
+            )
+            if migration_script.exists():
+                # Run migration script
+                import subprocess
+
+                result = subprocess.run(
+                    [sys.executable, str(migration_script)],
+                    capture_output=True,
+                    text=True,
+                )
+
+                if result.returncode == 0:
+                    print("✅ Note type migration completed successfully!")
+                else:
+                    print(f"❌ Note type migration failed: {result.stderr}")
+
+        # Check for plot_section_type capitalization migration
+        needs_plot_section_migration = False
+        if "litography_plot_section" in inspector.get_table_names():
+            # Check if there are old capitalization values using raw SQL
+            conn = sqlite3.connect(db_url.replace("sqlite:///", ""))
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                SELECT COUNT(*) FROM litography_plot_section
+                WHERE plot_section_type IN (
+                    'Tension lowers',
+                    'Tension sustains',
+                    'Increases tension',
+                    'Singular moment'
+                )
+            """
+            )
+            old_values_count = cursor.fetchone()[0]
+            conn.close()
+            if old_values_count > 0:
+                needs_plot_section_migration = True
+
+        if needs_plot_section_migration:
+            print("🔄 Database needs plot_section_type capitalization migration...")
+            print("   (Updating plot section types to match PlotSectionType enum)")
+
+            # Import and run plot_section_type migration
+            migration_script = (
+                Path(__file__).parent.parent / "scripts" / "migrate_plot_section_type.py"
+            )
+            if migration_script.exists():
+                # Run migration script
+                import subprocess
+
+                result = subprocess.run(
+                    [sys.executable, str(migration_script)],
+                    capture_output=True,
+                    text=True,
+                )
+
+                if result.returncode == 0:
+                    print("✅ Plot section type migration completed successfully!")
+                else:
+                    print(f"❌ Plot section type migration failed: {result.stderr}")
+
         # Check if migration is needed by looking for new fields in faction_members
-        needs_migration = False
+        needs_relationship_migration = False
         if "faction_members" in inspector.get_table_names():
             columns = [col["name"] for col in inspector.get_columns("faction_members")]
             if "description" not in columns:
-                needs_migration = True
+                needs_relationship_migration = True
 
-        if needs_migration:
+        if needs_relationship_migration:
             print("🔄 Database needs relationship migration...")
 
             # Import and run migration
-            migration_script = Path(__file__).parent.parent / "migrate_relationships.py"
+            migration_script = Path(__file__).parent.parent / "scripts" / "migrate_relationships.py"
             if migration_script.exists():
                 # Run migration script
                 import subprocess
@@ -139,9 +263,7 @@ def check_and_run_migrations():
 
                 if result.returncode == 0:
                     print("✅ Migration completed successfully!")
-                    print(
-                        "🔄 Please restart the application to use the new relationship fields."
-                    )
+                    print("🔄 Please restart the application to use the new relationship fields.")
                     sys.exit(0)  # Force restart to reload schema
                 else:
                     print(f"❌ Migration failed: {result.stderr}")

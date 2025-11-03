@@ -2,7 +2,17 @@
 
 import enum
 
-from sqlalchemy import Boolean, Column, Enum, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Enum,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -13,9 +23,7 @@ class BaseTable(DeclarativeBase):
         """
         Converts the instance into a dictionary. Used for display only.
         """
-        return {
-            column.name: getattr(self, column.name) for column in self.__table__.columns
-        }
+        return {column.name: getattr(self, column.name) for column in self.__table__.columns}
 
 
 class User(BaseTable):
@@ -23,9 +31,7 @@ class User(BaseTable):
 
     __tablename__ = "user"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True, name="id"
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, name="id")
     username: Mapped[str] = mapped_column(String(150), nullable=False, name="username")
 
     storylines: Mapped[list["Storyline"]] = relationship(back_populates="user")
@@ -37,13 +43,9 @@ class Storyline(BaseTable):
 
     __tablename__ = "storyline"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True, name="id"
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, name="id")
     name: Mapped[str | None] = mapped_column(String(120), nullable=True, name="name")
-    description: Mapped[str | None] = mapped_column(
-        Text, nullable=True, name="description"
-    )
+    description: Mapped[str | None] = mapped_column(Text, nullable=True, name="description")
     user_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("user.id"), nullable=False, name="user_id"
     )
@@ -52,18 +54,10 @@ class Storyline(BaseTable):
     storyline_to_settings: Mapped[list["StorylineToSetting"]] = relationship(
         back_populates="storyline"
     )
-    litography_nodes: Mapped[list["LitographyNode"]] = relationship(
-        back_populates="storyline"
-    )
-    litography_notes: Mapped[list["LitographyNotes"]] = relationship(
-        back_populates="storyline"
-    )
-    litography_plots: Mapped[list["LitographyPlot"]] = relationship(
-        back_populates="storyline"
-    )
-    litography_arcs: Mapped[list["LitographyArc"]] = relationship(
-        back_populates="storyline"
-    )
+    litography_nodes: Mapped[list["LitographyNode"]] = relationship(back_populates="storyline")
+    litography_notes: Mapped[list["LitographyNotes"]] = relationship(back_populates="storyline")
+    litography_plots: Mapped[list["LitographyPlot"]] = relationship(back_populates="storyline")
+    litography_arcs: Mapped[list["LitographyArc"]] = relationship(back_populates="storyline")
 
 
 class Setting(BaseTable):
@@ -71,13 +65,9 @@ class Setting(BaseTable):
 
     __tablename__ = "setting"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True, name="id"
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, name="id")
     name: Mapped[str | None] = mapped_column(String(120), nullable=True, name="name")
-    description: Mapped[str | None] = mapped_column(
-        Text, nullable=True, name="description"
-    )
+    description: Mapped[str | None] = mapped_column(Text, nullable=True, name="description")
     user_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("user.id"), nullable=False, name="user_id"
     )
@@ -91,37 +81,21 @@ class Setting(BaseTable):
     races: Mapped[list["Race"]] = relationship(back_populates="setting")
     sub_races: Mapped[list["SubRace"]] = relationship(back_populates="setting")
     actors: Mapped[list["Actor"]] = relationship(back_populates="setting")
-    actor_relations: Mapped[list["ActorAOnBRelations"]] = relationship(
-        back_populates="setting"
-    )
+    actor_relations: Mapped[list["ActorAOnBRelations"]] = relationship(back_populates="setting")
     skills: Mapped[list["Skills"]] = relationship(back_populates="setting")
-    actor_to_skills: Mapped[list["ActorToSkills"]] = relationship(
-        back_populates="setting"
-    )
+    actor_to_skills: Mapped[list["ActorToSkills"]] = relationship(back_populates="setting")
     alignments: Mapped[list["Alignment"]] = relationship(back_populates="setting")
     stats: Mapped[list["Stat"]] = relationship(back_populates="setting")
     actor_to_races: Mapped[list["ActorToRace"]] = relationship(back_populates="setting")
-    actor_to_classes: Mapped[list["ActorToClass"]] = relationship(
-        back_populates="setting"
-    )
+    actor_to_classes: Mapped[list["ActorToClass"]] = relationship(back_populates="setting")
     actor_to_stats: Mapped[list["ActorToStat"]] = relationship(back_populates="setting")
     factions: Mapped[list["Faction"]] = relationship(back_populates="setting")
-    faction_relations: Mapped[list["FactionAOnBRelations"]] = relationship(
-        back_populates="setting"
-    )
-    faction_members: Mapped[list["FactionMembers"]] = relationship(
-        back_populates="setting"
-    )
+    faction_relations: Mapped[list["FactionAOnBRelations"]] = relationship(back_populates="setting")
+    faction_members: Mapped[list["FactionMembers"]] = relationship(back_populates="setting")
     locations: Mapped[list["Location"]] = relationship(back_populates="setting")
-    location_to_factions: Mapped[list["LocationToFaction"]] = relationship(
-        back_populates="setting"
-    )
-    location_dungeons: Mapped[list["LocationDungeon"]] = relationship(
-        back_populates="setting"
-    )
-    location_cities: Mapped[list["LocationCity"]] = relationship(
-        back_populates="setting"
-    )
+    location_to_factions: Mapped[list["LocationToFaction"]] = relationship(back_populates="setting")
+    location_dungeons: Mapped[list["LocationDungeon"]] = relationship(back_populates="setting")
+    location_cities: Mapped[list["LocationCity"]] = relationship(back_populates="setting")
     location_city_districts: Mapped[list["LocationCityDistricts"]] = relationship(
         back_populates="setting"
     )
@@ -130,44 +104,30 @@ class Setting(BaseTable):
         back_populates="setting"
     )
     histories: Mapped[list["History"]] = relationship(back_populates="setting")
-    history_actors: Mapped[list["HistoryActor"]] = relationship(
-        back_populates="setting"
-    )
-    history_locations: Mapped[list["HistoryLocation"]] = relationship(
-        back_populates="setting"
-    )
-    history_factions: Mapped[list["HistoryFaction"]] = relationship(
-        back_populates="setting"
-    )
+    history_actors: Mapped[list["HistoryActor"]] = relationship(back_populates="setting")
+    history_locations: Mapped[list["HistoryLocation"]] = relationship(back_populates="setting")
+    history_factions: Mapped[list["HistoryFaction"]] = relationship(back_populates="setting")
     objects: Mapped[list["Object_"]] = relationship(back_populates="setting")
-    history_objects: Mapped[list["HistoryObject"]] = relationship(
-        back_populates="setting"
-    )
-    object_owners: Mapped[list["ObjectToOwner"]] = relationship(
-        back_populates="setting"
-    )
+    history_objects: Mapped[list["HistoryObject"]] = relationship(back_populates="setting")
+    object_owners: Mapped[list["ObjectToOwner"]] = relationship(back_populates="setting")
     world_data: Mapped[list["WorldData"]] = relationship(back_populates="setting")
-    history_world_data: Mapped[list["HistoryWorldData"]] = relationship(
-        back_populates="setting"
-    )
+    history_world_data: Mapped[list["HistoryWorldData"]] = relationship(back_populates="setting")
     arc_types: Mapped[list["ArcType"]] = relationship(back_populates="setting")
 
     # Location relationship mappings
     location_relations: Mapped[list["LocationAOnBRelations"]] = relationship(
         back_populates="setting"
     )
-    location_geographic_relations: Mapped[list["LocationGeographicRelations"]] = (
-        relationship(back_populates="setting")
-    )
-    location_political_relations: Mapped[list["LocationPoliticalRelations"]] = (
-        relationship(back_populates="setting")
-    )
-    location_economic_relations: Mapped[list["LocationEconomicRelations"]] = (
-        relationship(back_populates="setting")
-    )
-    location_hierarchies: Mapped[list["LocationHierarchy"]] = relationship(
+    location_geographic_relations: Mapped[list["LocationGeographicRelations"]] = relationship(
         back_populates="setting"
     )
+    location_political_relations: Mapped[list["LocationPoliticalRelations"]] = relationship(
+        back_populates="setting"
+    )
+    location_economic_relations: Mapped[list["LocationEconomicRelations"]] = relationship(
+        back_populates="setting"
+    )
+    location_hierarchies: Mapped[list["LocationHierarchy"]] = relationship(back_populates="setting")
 
 
 class StorylineToSetting(BaseTable):
@@ -175,9 +135,7 @@ class StorylineToSetting(BaseTable):
 
     __tablename__ = "storyline_to_setting"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True, name="id"
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, name="id")
     storyline_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("storyline.id"), nullable=False, name="storyline_id"
     )
@@ -185,17 +143,15 @@ class StorylineToSetting(BaseTable):
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
-    storyline: Mapped["Storyline"] = relationship(
-        back_populates="storyline_to_settings"
-    )
+    storyline: Mapped["Storyline"] = relationship(back_populates="storyline_to_settings")
     setting: Mapped["Setting"] = relationship(back_populates="storyline_to_setting")
 
 
 class PlotSectionType(enum.Enum):
-    LOWER = "Tension lowers"
-    FLAT = "Tension sustains"
-    RISING = "Increases tension"
-    POINT = "Singular moment"
+    LOWER = "Tension Lowers"
+    FLAT = "Tension Sustains"
+    RISING = "Tension Increases"
+    POINT = "Singular Moment"
 
 
 class NodeType(enum.Enum):
@@ -221,35 +177,25 @@ class LitographyNode(BaseTable):
 
     __tablename__ = "litography_node"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True, name="id"
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, name="id")
     name: Mapped[str] = mapped_column(
         String(250), nullable=False, name="name", default="Untitled Node"
     )
-    description: Mapped[str | None] = mapped_column(
-        Text, nullable=True, name="description"
-    )
+    description: Mapped[str | None] = mapped_column(Text, nullable=True, name="description")
     node_type: Mapped[NodeType] = mapped_column(
         Enum(NodeType, values_callable=lambda obj: [e.value for e in obj]),
         nullable=False,
         name="node_type",
     )
-    x_position: Mapped[float] = mapped_column(
-        Float, nullable=False, name="x_position", default=0.0
-    )
-    y_position: Mapped[float] = mapped_column(
-        Float, nullable=False, name="y_position", default=0.0
-    )
+    x_position: Mapped[float] = mapped_column(Float, nullable=False, name="x_position", default=0.0)
+    y_position: Mapped[float] = mapped_column(Float, nullable=False, name="y_position", default=0.0)
     storyline_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("storyline.id"), nullable=False, name="storyline_id"
     )
 
     storyline: Mapped["Storyline"] = relationship(back_populates="litography_nodes")
     notes: Mapped[list["LitographyNotes"]] = relationship(back_populates="linked_node")
-    plot_sections: Mapped[list["LitographyNodeToPlotSection"]] = relationship(
-        back_populates="node"
-    )
+    plot_sections: Mapped[list["LitographyNodeToPlotSection"]] = relationship(back_populates="node")
     arcs: Mapped[list["ArcToNode"]] = relationship(back_populates="node")
     arc_points: Mapped[list["ArcPoint"]] = relationship(back_populates="node")
     output_connections: Mapped[list["NodeConnection"]] = relationship(
@@ -265,9 +211,7 @@ class NodeConnection(BaseTable):
 
     __tablename__ = "node_connection"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True, name="id"
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, name="id")
     output_node_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("litography_node.id"), nullable=False, name="output_node_id"
     )
@@ -288,13 +232,9 @@ class LitographyNotes(BaseTable):
 
     __tablename__ = "litography_notes"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True, name="id"
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, name="id")
     title: Mapped[str] = mapped_column(String(250), nullable=False, name="title")
-    description: Mapped[str | None] = mapped_column(
-        Text, nullable=True, name="description"
-    )
+    description: Mapped[str | None] = mapped_column(Text, nullable=True, name="description")
     note_type: Mapped[NoteType] = mapped_column(
         Enum(NoteType, values_callable=lambda obj: [e.value for e in obj]),
         nullable=False,
@@ -310,29 +250,15 @@ class LitographyNotes(BaseTable):
     linked_node: Mapped["LitographyNode"] = relationship(back_populates="notes")
     storyline: Mapped["Storyline"] = relationship(back_populates="litography_notes")
     actors: Mapped[list["LitographyNoteToActor"]] = relationship(back_populates="note")
-    backgrounds: Mapped[list["LitographyNoteToBackground"]] = relationship(
-        back_populates="note"
-    )
-    factions: Mapped[list["LitographyNoteToFaction"]] = relationship(
-        back_populates="note"
-    )
-    locations: Mapped[list["LitographyNoteToLocation"]] = relationship(
-        back_populates="note"
-    )
-    histories: Mapped[list["LitographyNoteToHistory"]] = relationship(
-        back_populates="note"
-    )
-    objects: Mapped[list["LitographyNoteToObject"]] = relationship(
-        back_populates="note"
-    )
-    world_data: Mapped[list["LitographyNoteToWorldData"]] = relationship(
-        back_populates="note"
-    )
+    backgrounds: Mapped[list["LitographyNoteToBackground"]] = relationship(back_populates="note")
+    factions: Mapped[list["LitographyNoteToFaction"]] = relationship(back_populates="note")
+    locations: Mapped[list["LitographyNoteToLocation"]] = relationship(back_populates="note")
+    histories: Mapped[list["LitographyNoteToHistory"]] = relationship(back_populates="note")
+    objects: Mapped[list["LitographyNoteToObject"]] = relationship(back_populates="note")
+    world_data: Mapped[list["LitographyNoteToWorldData"]] = relationship(back_populates="note")
     classes: Mapped[list["LitographyNoteToClass"]] = relationship(back_populates="note")
     races: Mapped[list["LitographyNoteToRace"]] = relationship(back_populates="note")
-    sub_races: Mapped[list["LitographyNoteToSubRace"]] = relationship(
-        back_populates="note"
-    )
+    sub_races: Mapped[list["LitographyNoteToSubRace"]] = relationship(back_populates="note")
     skills: Mapped[list["LitographyNoteToSkills"]] = relationship(back_populates="note")
 
 
@@ -341,13 +267,9 @@ class LitographyPlot(BaseTable):
 
     __tablename__ = "litography_plot"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True, name="id"
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, name="id")
     title: Mapped[str] = mapped_column(String(250), nullable=False, name="title")
-    description: Mapped[str | None] = mapped_column(
-        Text, nullable=True, name="description"
-    )
+    description: Mapped[str | None] = mapped_column(Text, nullable=True, name="description")
     storyline_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("storyline.id"), nullable=False, name="storyline_id"
     )
@@ -363,9 +285,7 @@ class LitographyPlotSection(BaseTable):
 
     __tablename__ = "litography_plot_section"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True, name="id"
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, name="id")
     plot_section_type: Mapped[PlotSectionType] = mapped_column(
         Enum(PlotSectionType, values_callable=lambda obj: [e.value for e in obj]),
         nullable=False,
@@ -375,12 +295,8 @@ class LitographyPlotSection(BaseTable):
         Integer, ForeignKey("litography_plot.id"), nullable=False, name="plot_id"
     )
 
-    section_plot: Mapped["LitographyPlot"] = relationship(
-        back_populates="plot_sections"
-    )
-    nodes: Mapped[list["LitographyNodeToPlotSection"]] = relationship(
-        back_populates="plot_section"
-    )
+    section_plot: Mapped["LitographyPlot"] = relationship(back_populates="plot_sections")
+    nodes: Mapped[list["LitographyNodeToPlotSection"]] = relationship(back_populates="plot_section")
 
 
 class LitographyNodeToPlotSection(BaseTable):
@@ -388,9 +304,7 @@ class LitographyNodeToPlotSection(BaseTable):
 
     __tablename__ = "litography_node_to_plot_section"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True, name="id"
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, name="id")
     node_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("litography_node.id"), name="node_id"
     )
@@ -408,16 +322,11 @@ class ArcType(BaseTable):
     """Represents character arc types (Growth, Fall, Flat, etc.)"""
 
     __tablename__ = "arc_type"
+    __table_args__ = (UniqueConstraint("name", "setting_id", name="uq_arc_type_name_setting"),)
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True, name="id"
-    )
-    name: Mapped[str] = mapped_column(
-        String(100), nullable=False, unique=True, name="name"
-    )
-    description: Mapped[str | None] = mapped_column(
-        Text, nullable=True, name="description"
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, name="id")
+    name: Mapped[str] = mapped_column(String(100), nullable=False, name="name")
+    description: Mapped[str | None] = mapped_column(Text, nullable=True, name="description")
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
@@ -431,13 +340,9 @@ class LitographyArc(BaseTable):
 
     __tablename__ = "litography_arc"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True, name="id"
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, name="id")
     title: Mapped[str] = mapped_column(String(250), nullable=False, name="title")
-    description: Mapped[str | None] = mapped_column(
-        Text, nullable=True, name="description"
-    )
+    description: Mapped[str | None] = mapped_column(Text, nullable=True, name="description")
     arc_type_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("arc_type.id"), nullable=False, name="arc_type_id"
     )
@@ -457,22 +362,16 @@ class ArcPoint(BaseTable):
 
     __tablename__ = "arc_point"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True, name="id"
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, name="id")
     arc_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("litography_arc.id"), nullable=False, name="arc_id"
     )
     node_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("litography_node.id"), nullable=True, name="node_id"
     )
-    order_index: Mapped[int] = mapped_column(
-        Integer, nullable=False, name="order_index", default=0
-    )
+    order_index: Mapped[int] = mapped_column(Integer, nullable=False, name="order_index", default=0)
     title: Mapped[str] = mapped_column(String(250), nullable=False, name="title")
-    description: Mapped[str | None] = mapped_column(
-        Text, nullable=True, name="description"
-    )
+    description: Mapped[str | None] = mapped_column(Text, nullable=True, name="description")
     emotional_state: Mapped[str | None] = mapped_column(
         String(500), nullable=True, name="emotional_state"
     )
@@ -491,9 +390,7 @@ class ArcPoint(BaseTable):
 class Class_(BaseTable):
     __tablename__ = "class"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True, name="id"
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, name="id")
     name: Mapped[str | None] = mapped_column(String(255), name="name")
     description: Mapped[str | None] = mapped_column(Text, name="description")
     setting_id: Mapped[int] = mapped_column(
@@ -502,9 +399,7 @@ class Class_(BaseTable):
 
     setting: Mapped["Setting"] = relationship(back_populates="classes")
     actors: Mapped[list["ActorToClass"]] = relationship(back_populates="class_")
-    notes_to: Mapped[list["LitographyNoteToClass"]] = relationship(
-        back_populates="class_"
-    )
+    notes_to: Mapped[list["LitographyNoteToClass"]] = relationship(back_populates="class_")
 
 
 class Background(BaseTable):
@@ -519,9 +414,7 @@ class Background(BaseTable):
 
     setting: Mapped["Setting"] = relationship(back_populates="backgrounds")
     actors: Mapped[list["Actor"]] = relationship(back_populates="background")
-    notes_to: Mapped[list["LitographyNoteToBackground"]] = relationship(
-        back_populates="background"
-    )
+    notes_to: Mapped[list["LitographyNoteToBackground"]] = relationship(back_populates="background")
 
 
 class Race(BaseTable):
@@ -554,9 +447,7 @@ class SubRace(BaseTable):
     setting: Mapped["Setting"] = relationship(back_populates="sub_races")
     race: Mapped["Race"] = relationship(back_populates="sub_races")
     actors: Mapped[list["ActorToRace"]] = relationship(back_populates="sub_race")
-    notes_to: Mapped[list["LitographyNoteToSubRace"]] = relationship(
-        back_populates="sub_race"
-    )
+    notes_to: Mapped[list["LitographyNoteToSubRace"]] = relationship(back_populates="sub_race")
 
 
 class Alignment(BaseTable):
@@ -590,40 +481,26 @@ class Stat(BaseTable):
 class Actor(BaseTable):
     __tablename__ = "actor"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True, name="id"
-    )
-    first_name: Mapped[str | None] = mapped_column(
-        Text, nullable=True, name="first_name"
-    )
-    middle_name: Mapped[str | None] = mapped_column(
-        Text, nullable=True, name="middle_name"
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, name="id")
+    first_name: Mapped[str | None] = mapped_column(Text, nullable=True, name="first_name")
+    middle_name: Mapped[str | None] = mapped_column(Text, nullable=True, name="middle_name")
     last_name: Mapped[str | None] = mapped_column(Text, nullable=True, name="last_name")
     title: Mapped[str | None] = mapped_column(Text, nullable=True, name="title")
-    actor_age: Mapped[int | None] = mapped_column(
-        Integer, nullable=True, name="actor_age"
-    )
+    actor_age: Mapped[int | None] = mapped_column(Integer, nullable=True, name="actor_age")
     background_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("background.id"), nullable=True, name="background_id"
     )
     job: Mapped[str | None] = mapped_column(Text, nullable=True, name="job")
-    actor_role: Mapped[str | None] = mapped_column(
-        Text, nullable=True, name="actor_role"
-    )
+    actor_role: Mapped[str | None] = mapped_column(Text, nullable=True, name="actor_role")
     alignment_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("alignment.id"), nullable=True, name="alignment_id"
     )
     ideal: Mapped[str | None] = mapped_column(Text, nullable=True, name="ideal")
     bond: Mapped[str | None] = mapped_column(Text, nullable=True, name="bond")
     flaw: Mapped[str | None] = mapped_column(Text, nullable=True, name="flaw")
-    appearance: Mapped[str | None] = mapped_column(
-        Text, nullable=True, name="appearance"
-    )
+    appearance: Mapped[str | None] = mapped_column(Text, nullable=True, name="appearance")
     strengths: Mapped[str | None] = mapped_column(Text, nullable=True, name="strengths")
-    weaknesses: Mapped[str | None] = mapped_column(
-        Text, nullable=True, name="weaknesses"
-    )
+    weaknesses: Mapped[str | None] = mapped_column(Text, nullable=True, name="weaknesses")
     notes: Mapped[str | None] = mapped_column(Text, nullable=True, name="notes")
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
@@ -639,15 +516,11 @@ class Actor(BaseTable):
         foreign_keys="ActorAOnBRelations.actor_b_id", back_populates="actor_b"
     )
     skills: Mapped[list["ActorToSkills"]] = relationship(back_populates="actor")
-    faction_memberships: Mapped[list["FactionMembers"]] = relationship(
-        back_populates="actor"
-    )
+    faction_memberships: Mapped[list["FactionMembers"]] = relationship(back_populates="actor")
     residences: Mapped[list["Resident"]] = relationship(back_populates="actor")
     history: Mapped[list["HistoryActor"]] = relationship(back_populates="actor")
     objects: Mapped[list["ObjectToOwner"]] = relationship(back_populates="actor")
-    notes_to: Mapped[list["LitographyNoteToActor"]] = relationship(
-        back_populates="actor"
-    )
+    notes_to: Mapped[list["LitographyNoteToActor"]] = relationship(back_populates="actor")
     arcs: Mapped[list["ArcToActor"]] = relationship(back_populates="actor")
     races: Mapped[list["ActorToRace"]] = relationship(back_populates="actor")
     classes: Mapped[list["ActorToClass"]] = relationship(back_populates="actor")
@@ -706,9 +579,7 @@ class Skills(BaseTable):
 
     setting: Mapped["Setting"] = relationship(back_populates="skills")
     actors: Mapped[list["ActorToSkills"]] = relationship(back_populates="skill")
-    notes_to: Mapped[list["LitographyNoteToSkills"]] = relationship(
-        back_populates="skill"
-    )
+    notes_to: Mapped[list["LitographyNoteToSkills"]] = relationship(back_populates="skill")
 
 
 class ActorToSkills(BaseTable):
@@ -723,9 +594,7 @@ class ActorToSkills(BaseTable):
 
     # New structured skill fields
     proficiency_level: Mapped[int | None] = mapped_column(Integer)  # 1-10 scale
-    how_learned: Mapped[str | None] = mapped_column(
-        Text
-    )  # How they acquired this skill
+    how_learned: Mapped[str | None] = mapped_column(Text)  # How they acquired this skill
     experience_years: Mapped[int | None] = mapped_column(Integer)  # Years of experience
     specialty: Mapped[str | None] = mapped_column(
         String(255)
@@ -739,15 +608,9 @@ class ActorToSkills(BaseTable):
     is_public: Mapped[bool | None] = mapped_column(Boolean, default=True)
 
     # Skill-specific additional fields
-    practice_frequency: Mapped[str | None] = mapped_column(
-        String(100)
-    )  # How often practiced
-    skill_applications: Mapped[str | None] = mapped_column(
-        Text
-    )  # How they use this skill
-    learning_goals: Mapped[str | None] = mapped_column(
-        Text
-    )  # What they want to achieve
+    practice_frequency: Mapped[str | None] = mapped_column(String(100))  # How often practiced
+    skill_applications: Mapped[str | None] = mapped_column(Text)  # How they use this skill
+    learning_goals: Mapped[str | None] = mapped_column(Text)  # What they want to achieve
 
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
@@ -776,9 +639,7 @@ class ActorToRace(BaseTable):
     community_standing: Mapped[str | None] = mapped_column(
         String(100)
     )  # Standing in racial community
-    heritage_secrets: Mapped[str | None] = mapped_column(
-        Text
-    )  # Hidden aspects of heritage
+    heritage_secrets: Mapped[str | None] = mapped_column(Text)  # Hidden aspects of heritage
     notes: Mapped[str | None] = mapped_column(Text)
 
     setting_id: Mapped[int] = mapped_column(
@@ -804,16 +665,10 @@ class ActorToClass(BaseTable):
     # New structured class fields
     current_level: Mapped[int | None] = mapped_column(Integer)
     experience_points: Mapped[int | None] = mapped_column(Integer)
-    specialization: Mapped[str | None] = mapped_column(
-        String(255)
-    )  # Their focus within the class
-    training_location: Mapped[str | None] = mapped_column(
-        String(255)
-    )  # Where they trained
+    specialization: Mapped[str | None] = mapped_column(String(255))  # Their focus within the class
+    training_location: Mapped[str | None] = mapped_column(String(255))  # Where they trained
     mentor: Mapped[str | None] = mapped_column(String(255))  # Who taught them
-    status: Mapped[str | None] = mapped_column(
-        String(50)
-    )  # Active, Former, Trainee, etc.
+    status: Mapped[str | None] = mapped_column(String(50))  # Active, Former, Trainee, etc.
     notes: Mapped[str | None] = mapped_column(Text)
 
     setting_id: Mapped[int] = mapped_column(
@@ -837,9 +692,7 @@ class ActorToStat(BaseTable):
 
     # New structured stat fields
     base_value: Mapped[int | None] = mapped_column(Integer)  # Base stat value
-    modifier: Mapped[int | None] = mapped_column(
-        Integer
-    )  # Modifier from equipment/effects
+    modifier: Mapped[int | None] = mapped_column(Integer)  # Modifier from equipment/effects
     temporary_modifier: Mapped[int | None] = mapped_column(Integer)  # Temporary effects
     notes: Mapped[str | None] = mapped_column(Text)  # How they got this stat value
 
@@ -874,13 +727,9 @@ class Faction(BaseTable):
         foreign_keys="FactionAOnBRelations.faction_b_id", back_populates="faction_b"
     )
     members: Mapped[list["FactionMembers"]] = relationship(back_populates="faction")
-    locations: Mapped[list["LocationToFaction"]] = relationship(
-        back_populates="faction"
-    )
+    locations: Mapped[list["LocationToFaction"]] = relationship(back_populates="faction")
     history: Mapped[list["HistoryFaction"]] = relationship(back_populates="faction")
-    notes_to: Mapped[list["LitographyNoteToFaction"]] = relationship(
-        back_populates="faction"
-    )
+    notes_to: Mapped[list["LitographyNoteToFaction"]] = relationship(back_populates="faction")
 
 
 class FactionAOnBRelations(BaseTable):
@@ -992,9 +841,7 @@ class Location(BaseTable):
         back_populates="location_"
     )
     setting: Mapped["Setting"] = relationship(back_populates="locations")
-    factions: Mapped[list["LocationToFaction"]] = relationship(
-        back_populates="location"
-    )
+    factions: Mapped[list["LocationToFaction"]] = relationship(back_populates="location")
     dungeons: Mapped[list["LocationDungeon"]] = relationship(back_populates="location")
     cities: Mapped[list["LocationCity"]] = relationship(back_populates="location")
     city_districts: Mapped[list["LocationCityDistricts"]] = relationship(
@@ -1005,9 +852,7 @@ class Location(BaseTable):
     )
     residents: Mapped[list["Resident"]] = relationship(back_populates="location")
     history: Mapped[list["HistoryLocation"]] = relationship(back_populates="location")
-    notes_to: Mapped[list["LitographyNoteToLocation"]] = relationship(
-        back_populates="location"
-    )
+    notes_to: Mapped[list["LitographyNoteToLocation"]] = relationship(back_populates="location")
 
     # Location relationship mappings
     location_a_relations: Mapped[list["LocationAOnBRelations"]] = relationship(
@@ -1067,33 +912,21 @@ class LocationToFaction(BaseTable):
         String(100)
     )  # Full Control, Influence, Claims, etc.
     control_strength: Mapped[int | None] = mapped_column(Integer)  # 1-10 scale
-    control_method: Mapped[str | None] = mapped_column(
-        Text
-    )  # How control was established
+    control_method: Mapped[str | None] = mapped_column(Text)  # How control was established
     resources_benefits: Mapped[str | None] = mapped_column(Text)  # What they gain
     challenges: Mapped[str | None] = mapped_column(Text)  # What challenges they face
     established_date: Mapped[str | None] = mapped_column(String(50))
-    status: Mapped[str | None] = mapped_column(
-        String(50)
-    )  # Active, Disputed, Lost, etc.
+    status: Mapped[str | None] = mapped_column(String(50))  # Active, Disputed, Lost, etc.
 
     # Additional basic relationship fields
     description: Mapped[str | None] = mapped_column(Text)
-    strength: Mapped[int | None] = mapped_column(
-        Integer
-    )  # 1-10 scale (overall control strength)
+    strength: Mapped[int | None] = mapped_column(Integer)  # 1-10 scale (overall control strength)
     is_public: Mapped[bool | None] = mapped_column(Boolean, default=True)
 
     # Territory-specific additional fields
-    local_opposition: Mapped[str | None] = mapped_column(
-        Text
-    )  # Local resistance or opposition
-    key_supporters: Mapped[str | None] = mapped_column(
-        Text
-    )  # Key local supporters or allies
-    control_mechanisms: Mapped[str | None] = mapped_column(
-        Text
-    )  # How they maintain control
+    local_opposition: Mapped[str | None] = mapped_column(Text)  # Local resistance or opposition
+    key_supporters: Mapped[str | None] = mapped_column(Text)  # Key local supporters or allies
+    control_mechanisms: Mapped[str | None] = mapped_column(Text)  # How they maintain control
 
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
@@ -1164,13 +997,9 @@ class Resident(BaseTable):
     residency_type: Mapped[str | None] = mapped_column(
         String(100)
     )  # Permanent, Temporary, Visitor, etc.
-    residency_status: Mapped[str | None] = mapped_column(
-        String(50)
-    )  # Current, Former, Exile, etc.
+    residency_status: Mapped[str | None] = mapped_column(String(50))  # Current, Former, Exile, etc.
     move_in_date: Mapped[str | None] = mapped_column(String(50))
-    housing_type: Mapped[str | None] = mapped_column(
-        String(100)
-    )  # House, Apartment, Inn, etc.
+    housing_type: Mapped[str | None] = mapped_column(String(100))  # House, Apartment, Inn, etc.
     notes: Mapped[str | None] = mapped_column(Text)
     is_public_knowledge: Mapped[bool | None] = mapped_column(Boolean, default=True)
 
@@ -1181,9 +1010,7 @@ class Resident(BaseTable):
 
     # Residency-specific additional fields
     reason_for_living: Mapped[str | None] = mapped_column(Text)  # Why they live here
-    living_conditions: Mapped[str | None] = mapped_column(
-        Text
-    )  # Quality of life, conditions
+    living_conditions: Mapped[str | None] = mapped_column(Text)  # Quality of life, conditions
     relationships_neighbors: Mapped[str | None] = mapped_column(
         Text
     )  # Relationships with neighbors
@@ -1230,12 +1057,8 @@ class History(BaseTable):
     locations: Mapped[list["HistoryLocation"]] = relationship(back_populates="history")
     factions: Mapped[list["HistoryFaction"]] = relationship(back_populates="history")
     objects: Mapped[list["HistoryObject"]] = relationship(back_populates="history")
-    world_data: Mapped[list["HistoryWorldData"]] = relationship(
-        back_populates="history"
-    )
-    notes_to: Mapped[list["LitographyNoteToHistory"]] = relationship(
-        back_populates="history"
-    )
+    world_data: Mapped[list["HistoryWorldData"]] = relationship(back_populates="history")
+    notes_to: Mapped[list["LitographyNoteToHistory"]] = relationship(back_populates="history")
 
 
 class HistoryActor(BaseTable):
@@ -1246,21 +1069,13 @@ class HistoryActor(BaseTable):
     actor_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
 
     # New structured historical involvement fields
-    role_in_event: Mapped[str | None] = mapped_column(
-        String(255)
-    )  # What role they played
+    role_in_event: Mapped[str | None] = mapped_column(String(255))  # What role they played
     involvement_level: Mapped[str | None] = mapped_column(
         String(100)
     )  # Central, Major, Minor, etc.
-    impact_on_character: Mapped[str | None] = mapped_column(
-        Text
-    )  # How event affected them
-    character_perspective: Mapped[str | None] = mapped_column(
-        Text
-    )  # Their view of the event
-    consequences: Mapped[str | None] = mapped_column(
-        Text
-    )  # What happened to them after
+    impact_on_character: Mapped[str | None] = mapped_column(Text)  # How event affected them
+    character_perspective: Mapped[str | None] = mapped_column(Text)  # Their view of the event
+    consequences: Mapped[str | None] = mapped_column(Text)  # What happened to them after
     notes: Mapped[str | None] = mapped_column(Text)
 
     setting_id: Mapped[int] = mapped_column(
@@ -1293,12 +1108,8 @@ class LocationAOnBRelations(BaseTable):
     __tablename__ = "location_a_on_b_relations"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    location_a_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("location_.id")
-    )
-    location_b_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("location_.id")
-    )
+    location_a_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
+    location_b_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
 
     # Relationship details
     description: Mapped[str | None] = mapped_column(Text)
@@ -1306,9 +1117,7 @@ class LocationAOnBRelations(BaseTable):
     relationship_type: Mapped[str | None] = mapped_column(
         String(100)
     )  # Political, Economic, Cultural, etc.
-    status: Mapped[str | None] = mapped_column(
-        String(50)
-    )  # Active, Historical, Disputed, etc.
+    status: Mapped[str | None] = mapped_column(String(50))  # Active, Historical, Disputed, etc.
     strength: Mapped[int | None] = mapped_column(Integer)  # 1-10 scale
     is_mutual: Mapped[bool | None] = mapped_column(Boolean, default=True)
     is_public: Mapped[bool | None] = mapped_column(Boolean, default=True)
@@ -1334,20 +1143,14 @@ class LocationGeographicRelations(BaseTable):
     __tablename__ = "location_geographic_relations"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    location_a_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("location_.id")
-    )
-    location_b_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("location_.id")
-    )
+    location_a_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
+    location_b_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
 
     # Geographic relationship details
     geographic_type: Mapped[str | None] = mapped_column(
         String(100)
     )  # borders, contains, part_of, connected_to, near, distant
-    distance: Mapped[str | None] = mapped_column(
-        String(100)
-    )  # "50 miles", "3 days travel", etc.
+    distance: Mapped[str | None] = mapped_column(String(100))  # "50 miles", "3 days travel", etc.
     travel_time: Mapped[str | None] = mapped_column(String(100))
     travel_difficulty: Mapped[str | None] = mapped_column(
         String(50)
@@ -1362,9 +1165,7 @@ class LocationGeographicRelations(BaseTable):
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
-    setting: Mapped["Setting"] = relationship(
-        back_populates="location_geographic_relations"
-    )
+    setting: Mapped["Setting"] = relationship(back_populates="location_geographic_relations")
     location_a: Mapped["Location"] = relationship(
         foreign_keys=[location_a_id], back_populates="geographic_a_relations"
     )
@@ -1379,12 +1180,8 @@ class LocationPoliticalRelations(BaseTable):
     __tablename__ = "location_political_relations"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    location_a_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("location_.id")
-    )
-    location_b_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("location_.id")
-    )
+    location_a_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
+    location_b_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
 
     # Political relationship details
     political_type: Mapped[str | None] = mapped_column(
@@ -1402,9 +1199,7 @@ class LocationPoliticalRelations(BaseTable):
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
-    setting: Mapped["Setting"] = relationship(
-        back_populates="location_political_relations"
-    )
+    setting: Mapped["Setting"] = relationship(back_populates="location_political_relations")
     location_a: Mapped["Location"] = relationship(
         foreign_keys=[location_a_id], back_populates="political_a_relations"
     )
@@ -1419,12 +1214,8 @@ class LocationEconomicRelations(BaseTable):
     __tablename__ = "location_economic_relations"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    location_a_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("location_.id")
-    )
-    location_b_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("location_.id")
-    )
+    location_a_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
+    location_b_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
 
     # Economic relationship details
     economic_type: Mapped[str | None] = mapped_column(
@@ -1443,9 +1234,7 @@ class LocationEconomicRelations(BaseTable):
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
 
-    setting: Mapped["Setting"] = relationship(
-        back_populates="location_economic_relations"
-    )
+    setting: Mapped["Setting"] = relationship(back_populates="location_economic_relations")
     location_a: Mapped["Location"] = relationship(
         foreign_keys=[location_a_id], back_populates="economic_a_relations"
     )
@@ -1460,12 +1249,8 @@ class LocationHierarchy(BaseTable):
     __tablename__ = "location_hierarchy"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    parent_location_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("location_.id")
-    )
-    child_location_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("location_.id")
-    )
+    parent_location_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
+    child_location_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("location_.id"))
 
     # Hierarchy details
     hierarchy_type: Mapped[str | None] = mapped_column(
@@ -1537,9 +1322,7 @@ class Object_(BaseTable):
     setting: Mapped["Setting"] = relationship(back_populates="objects")
     history: Mapped[list["HistoryObject"]] = relationship(back_populates="object")
     owners: Mapped[list["ObjectToOwner"]] = relationship(back_populates="object")
-    notes_to: Mapped[list["LitographyNoteToObject"]] = relationship(
-        back_populates="object"
-    )
+    notes_to: Mapped[list["LitographyNoteToObject"]] = relationship(back_populates="object")
 
 
 class HistoryObject(BaseTable):
@@ -1565,14 +1348,10 @@ class ObjectToOwner(BaseTable):
     actor_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"))
 
     # Ownership details
-    ownership_type: Mapped[str | None] = mapped_column(
-        String(100)
-    )  # Owned, Borrowed, Stolen, etc.
+    ownership_type: Mapped[str | None] = mapped_column(String(100))  # Owned, Borrowed, Stolen, etc.
     acquisition_method: Mapped[str | None] = mapped_column(Text)  # How they got it
     acquisition_date: Mapped[str | None] = mapped_column(String(50))
-    ownership_status: Mapped[str | None] = mapped_column(
-        String(50)
-    )  # Current, Lost, Hidden, etc.
+    ownership_status: Mapped[str | None] = mapped_column(String(50))  # Current, Lost, Hidden, etc.
     notes: Mapped[str | None] = mapped_column(Text)
     is_public_knowledge: Mapped[bool | None] = mapped_column(Boolean, default=True)
 
@@ -1582,14 +1361,10 @@ class ObjectToOwner(BaseTable):
     strength: Mapped[int | None] = mapped_column(Integer)  # 1-10 attachment/importance
 
     # Ownership-specific additional fields
-    item_condition: Mapped[str | None] = mapped_column(
-        String(100)
-    )  # Condition of the item
+    item_condition: Mapped[str | None] = mapped_column(String(100))  # Condition of the item
     usage_frequency: Mapped[str | None] = mapped_column(String(100))  # How often used
     storage_location: Mapped[str | None] = mapped_column(Text)  # Where it's kept
-    acquisition_story: Mapped[str | None] = mapped_column(
-        Text
-    )  # Story of how they got it
+    acquisition_story: Mapped[str | None] = mapped_column(Text)  # Story of how they got it
 
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
@@ -1611,12 +1386,8 @@ class WorldData(BaseTable):
     )
 
     setting: Mapped["Setting"] = relationship(back_populates="world_data")
-    history: Mapped[list["HistoryWorldData"]] = relationship(
-        back_populates="world_data"
-    )
-    notes_to: Mapped[list["LitographyNoteToWorldData"]] = relationship(
-        back_populates="world_data"
-    )
+    history: Mapped[list["HistoryWorldData"]] = relationship(back_populates="world_data")
+    notes_to: Mapped[list["LitographyNoteToWorldData"]] = relationship(back_populates="world_data")
 
 
 class HistoryWorldData(BaseTable):
@@ -1624,9 +1395,7 @@ class HistoryWorldData(BaseTable):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     history_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("history.id"))
-    world_data_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("world_data.id")
-    )
+    world_data_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("world_data.id"))
     setting_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("setting.id"), nullable=False, name="setting_id"
     )
@@ -1641,15 +1410,11 @@ class LitographyNoteToActor(BaseTable):
 
     __tablename__ = "litography_note_to_actor"
 
-    id: Mapped[int] = mapped_column(
-        Integer, nullable=False, primary_key=True, name="id"
-    )
+    id: Mapped[int] = mapped_column(Integer, nullable=False, primary_key=True, name="id")
     note_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("litography_notes.id"), name="note_id"
     )
-    actor_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("actor.id"), name="actor_id"
-    )
+    actor_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("actor.id"), name="actor_id")
 
     note: Mapped["LitographyNotes"] = relationship()
     actor: Mapped["Actor"] = relationship(back_populates="notes_to")
@@ -1660,9 +1425,7 @@ class LitographyNoteToBackground(BaseTable):
 
     __tablename__ = "litography_note_to_background"
 
-    id: Mapped[int] = mapped_column(
-        Integer, nullable=False, primary_key=True, name="id"
-    )
+    id: Mapped[int] = mapped_column(Integer, nullable=False, primary_key=True, name="id")
     note_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("litography_notes.id"), name="note_id"
     )
@@ -1679,9 +1442,7 @@ class LitographyNoteToFaction(BaseTable):
 
     __tablename__ = "litography_note_to_faction"
 
-    id: Mapped[int] = mapped_column(
-        Integer, nullable=False, primary_key=True, name="id"
-    )
+    id: Mapped[int] = mapped_column(Integer, nullable=False, primary_key=True, name="id")
     note_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("litography_notes.id"), name="note_id"
     )
@@ -1698,9 +1459,7 @@ class LitographyNoteToLocation(BaseTable):
 
     __tablename__ = "litography_note_to_location"
 
-    id: Mapped[int] = mapped_column(
-        Integer, nullable=False, primary_key=True, name="id"
-    )
+    id: Mapped[int] = mapped_column(Integer, nullable=False, primary_key=True, name="id")
     note_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("litography_notes.id"), name="note_id"
     )
@@ -1717,9 +1476,7 @@ class LitographyNoteToHistory(BaseTable):
 
     __tablename__ = "litography_note_to_history"
 
-    id: Mapped[int] = mapped_column(
-        Integer, nullable=False, primary_key=True, name="id"
-    )
+    id: Mapped[int] = mapped_column(Integer, nullable=False, primary_key=True, name="id")
     note_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("litography_notes.id"), name="note_id"
     )
@@ -1736,9 +1493,7 @@ class LitographyNoteToObject(BaseTable):
 
     __tablename__ = "litography_note_to_object"
 
-    id: Mapped[int] = mapped_column(
-        Integer, nullable=False, primary_key=True, name="id"
-    )
+    id: Mapped[int] = mapped_column(Integer, nullable=False, primary_key=True, name="id")
     note_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("litography_notes.id"), name="note_id"
     )
@@ -1755,9 +1510,7 @@ class LitographyNoteToWorldData(BaseTable):
 
     __tablename__ = "litography_note_to_world_data"
 
-    id: Mapped[int] = mapped_column(
-        Integer, nullable=False, primary_key=True, name="id"
-    )
+    id: Mapped[int] = mapped_column(Integer, nullable=False, primary_key=True, name="id")
     note_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("litography_notes.id"), name="note_id"
     )
@@ -1774,15 +1527,11 @@ class LitographyNoteToClass(BaseTable):
 
     __tablename__ = "litography_note_to_class"
 
-    id: Mapped[int] = mapped_column(
-        Integer, nullable=False, primary_key=True, name="id"
-    )
+    id: Mapped[int] = mapped_column(Integer, nullable=False, primary_key=True, name="id")
     note_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("litography_notes.id"), name="note_id"
     )
-    class_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("class.id"), name="class_id"
-    )
+    class_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("class.id"), name="class_id")
 
     note: Mapped["LitographyNotes"] = relationship()
     class_: Mapped["Class_"] = relationship(back_populates="notes_to")
@@ -1793,15 +1542,11 @@ class LitographyNoteToRace(BaseTable):
 
     __tablename__ = "litography_note_to_race"
 
-    id: Mapped[int] = mapped_column(
-        Integer, nullable=False, primary_key=True, name="id"
-    )
+    id: Mapped[int] = mapped_column(Integer, nullable=False, primary_key=True, name="id")
     note_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("litography_notes.id"), name="note_id"
     )
-    race_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("race.id"), name="race_id"
-    )
+    race_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("race.id"), name="race_id")
 
     note: Mapped["LitographyNotes"] = relationship()
     race: Mapped["Race"] = relationship(back_populates="notes_to")
@@ -1812,9 +1557,7 @@ class LitographyNoteToSubRace(BaseTable):
 
     __tablename__ = "litography_note_to_sub_race"
 
-    id: Mapped[int] = mapped_column(
-        Integer, nullable=False, primary_key=True, name="id"
-    )
+    id: Mapped[int] = mapped_column(Integer, nullable=False, primary_key=True, name="id")
     note_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("litography_notes.id"), name="note_id"
     )
@@ -1831,15 +1574,11 @@ class LitographyNoteToSkills(BaseTable):
 
     __tablename__ = "litography_note_to_skills"
 
-    id: Mapped[int] = mapped_column(
-        Integer, nullable=False, primary_key=True, name="id"
-    )
+    id: Mapped[int] = mapped_column(Integer, nullable=False, primary_key=True, name="id")
     note_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("litography_notes.id"), name="note_id"
     )
-    skill_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("skills.id"), name="skill_id"
-    )
+    skill_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("skills.id"), name="skill_id")
 
     note: Mapped["LitographyNotes"] = relationship()
     skill: Mapped["Skills"] = relationship(back_populates="notes_to")
@@ -1850,9 +1589,7 @@ class ArcToNode(BaseTable):
 
     __tablename__ = "arc_to_node"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True, name="id"
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, name="id")
     node_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("litography_node.id"), name="node_id"
     )
@@ -1869,9 +1606,7 @@ class ArcToActor(BaseTable):
 
     __tablename__ = "arc_to_actor"
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True, name="id"
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, name="id")
     actor_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("actor.id"), nullable=False, name="actor_id"
     )

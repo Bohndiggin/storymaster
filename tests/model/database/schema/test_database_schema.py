@@ -49,10 +49,10 @@ class TestDatabaseSchemaBasics:
         assert NodeType.OTHER.value == "other"
 
         # Test PlotSectionType enum
-        assert PlotSectionType.LOWER.value == "Tension lowers"
-        assert PlotSectionType.FLAT.value == "Tension sustains"
-        assert PlotSectionType.RISING.value == "Increases tension"
-        assert PlotSectionType.POINT.value == "Singular moment"
+        assert PlotSectionType.LOWER.value == "Tension Lowers"
+        assert PlotSectionType.FLAT.value == "Tension Sustains"
+        assert PlotSectionType.RISING.value == "Tension Increases"
+        assert PlotSectionType.POINT.value == "Singular Moment"
 
         # Test NoteType enum
         assert NoteType.WHAT.value == "what"

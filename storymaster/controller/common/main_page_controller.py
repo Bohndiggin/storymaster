@@ -7,7 +7,10 @@ All rights reserved.
 
 import json
 
-from PySide6.QtCore import QPointF, Qt, Signal
+# Import export functionality
+import os
+
+from PySide6.QtCore import QPointF, Qt, QTimer, Signal
 from PySide6.QtGui import (
     QBrush,
     QColor,
@@ -32,6 +35,7 @@ from PySide6.QtWidgets import (
     QGraphicsTextItem,
     QGroupBox,
     QHBoxLayout,
+    QInputDialog,
     QLabel,
     QLineEdit,
     QListWidget,
@@ -50,6 +54,7 @@ from sqlalchemy.orm import Session
 
 from storymaster.model.common.backup_manager import BackupManager
 from storymaster.model.common.common_model import BaseModel
+from storymaster.model.database.export_to_json import export_setting_to_json
 from storymaster.model.database.schema.base import (
     Actor,
     Background,
@@ -83,37 +88,33 @@ from storymaster.model.database.schema.base import (
     SubRace,
     WorldData,
 )
+from storymaster.view.character_arcs.new_character_arcs_page import NewCharacterArcsPage
 from storymaster.view.common.common_view import MainView
 from storymaster.view.common.database_manager_dialog import DatabaseManagerDialog
+from storymaster.view.common.import_lore_packages_dialog import ImportLorePackagesDialog
 from storymaster.view.common.new_setting_dialog import NewSettingDialog
 from storymaster.view.common.new_storyline_dialog import NewStorylineDialog
 from storymaster.view.common.new_user_dialog import NewUserDialog
 from storymaster.view.common.open_storyline_dialog import OpenStorylineDialog
 from storymaster.view.common.plot_manager_dialog import PlotManagerDialog
 from storymaster.view.common.setting_switcher_dialog import SettingSwitcherDialog
-from storymaster.view.common.import_lore_packages_dialog import ImportLorePackagesDialog
 from storymaster.view.common.storyline_switcher_dialog import StorylineSwitcherDialog
+from storymaster.view.common.theme import (
+    COLORS,
+    FONTS,
+    get_button_style,
+    get_group_box_style,
+    get_input_style,
+    get_label_style,
+)
+from storymaster.view.common.tooltips import apply_general_tooltips
 from storymaster.view.common.user_manager_dialog import UserManagerDialog
 from storymaster.view.common.user_switcher_dialog import UserSwitcherDialog
-
-# Import export functionality
-import os
-from storymaster.model.database.export_to_json import export_setting_to_json
 
 # Import the dialogs
 from storymaster.view.litographer.add_node_dialog import AddNodeDialog
 from storymaster.view.litographer.node_notes_dialog import NodeNotesDialog
-from storymaster.view.character_arcs.new_character_arcs_page import NewCharacterArcsPage
 from storymaster.view.lorekeeper.new_lorekeeper_page import NewLorekeeperPage
-from storymaster.view.common.theme import (
-    get_button_style,
-    get_input_style,
-    get_group_box_style,
-    get_label_style,
-    COLORS,
-    FONTS,
-)
-from storymaster.view.common.tooltips import apply_general_tooltips
 
 
 class ConnectionPoint(QGraphicsEllipseItem):
@@ -143,9 +144,7 @@ class ConnectionPoint(QGraphicsEllipseItem):
         """Get the absolute center position of this connection point"""
         # Since connection point is a child of the node, use its scene position
         scene_pos = self.scenePos()
-        return QPointF(
-            scene_pos.x() + 5, scene_pos.y() + 5
-        )  # Center of the 10x10 circle
+        return QPointF(scene_pos.x() + 5, scene_pos.y() + 5)  # Center of the 10x10 circle
 
     def mousePressEvent(self, event):
         """Start connection dragging from output points"""
@@ -172,9 +171,7 @@ class ConnectionPoint(QGraphicsEllipseItem):
             start_pos = self.get_absolute_center()
             end_pos = event.scenePos()
 
-            self.temp_line.setLine(
-                start_pos.x(), start_pos.y(), end_pos.x(), end_pos.y()
-            )
+            self.temp_line.setLine(start_pos.x(), start_pos.y(), end_pos.x(), end_pos.y())
 
             event.accept()
         else:
@@ -539,9 +536,7 @@ class TriangleNodeItem(QGraphicsPolygonItem, NodeMixin):
         """Get absolute position of input connection point for triangle"""
         node_pos = self.pos()
         # Left side of triangle (approximate)
-        return QPointF(
-            node_pos.x() - 5, node_pos.y() + self.height * 0.75
-        )  # Lower left
+        return QPointF(node_pos.x() - 5, node_pos.y() + self.height * 0.75)  # Lower left
 
     def get_output_connection_pos(self):
         """Get absolute position of output connection point for triangle"""
@@ -648,11 +643,7 @@ class SectionEditDialog(QDialog):
 
             # Get current section type and set it
             with Session(self.model.engine) as session:
-                section = (
-                    session.query(LitographyPlotSection)
-                    .filter_by(id=self.section_id)
-                    .first()
-                )
+                section = session.query(LitographyPlotSection).filter_by(id=self.section_id).first()
                 if section:
                     for i in range(self.type_combo.count()):
                         if hasattr(self.type_combo, "itemData"):
@@ -682,11 +673,7 @@ class SectionEditDialog(QDialog):
                 new_type = list(PlotSectionType)[type_index]
 
             with Session(self.model.engine) as session:
-                section = (
-                    session.query(LitographyPlotSection)
-                    .filter_by(id=self.section_id)
-                    .first()
-                )
+                section = session.query(LitographyPlotSection).filter_by(id=self.section_id).first()
                 if section:
                     section.plot_section_type = new_type
                     session.commit()
@@ -720,9 +707,7 @@ class AddNodeButton(QGraphicsPathItem):
 
     def mousePressEvent(self, event):
         super().mousePressEvent(event)
-        self.controller.on_add_node_button_clicked(
-            self.position_type, self.reference_node_id
-        )
+        self.controller.on_add_node_button_clicked(self.position_type, self.reference_node_id)
 
     def hoverEnterEvent(self, event):
         self.setBrush(QBrush(QColor("#66BB6A")))
@@ -796,9 +781,7 @@ class MainWindowController:
         self.view.ui.nodeGraphView.setScene(self.node_scene)
 
         # Enable context menu on graphics view
-        self.view.ui.nodeGraphView.setContextMenuPolicy(
-            Qt.ContextMenuPolicy.CustomContextMenu
-        )
+        self.view.ui.nodeGraphView.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.view.ui.nodeGraphView.customContextMenuRequested.connect(
             self.on_litographer_context_menu
         )
@@ -860,9 +843,7 @@ class MainWindowController:
     def _get_current_storyline_nodes(self):
         """Safely get litography nodes for the current storyline."""
         if self.current_storyline_id is not None:
-            return self.model.get_litography_nodes(
-                storyline_id=self.current_storyline_id
-            )
+            return self.model.get_litography_nodes(storyline_id=self.current_storyline_id)
         return []
 
     def validate_ui_database_sync(self):
@@ -973,14 +954,11 @@ class MainWindowController:
             notes_controls_layout.addWidget(self.delete_note_btn)
             notes_layout.addLayout(notes_controls_layout)
 
-            # Buttons
+            # Buttons (only delete, save is now automatic)
             button_layout = QHBoxLayout()
-            self.save_node_btn = QPushButton("Save Changes")
-            self.save_node_btn.setStyleSheet(get_button_style("primary"))
             self.delete_node_btn = QPushButton("Delete Node")
             self.delete_node_btn.setStyleSheet(get_button_style("danger"))
 
-            button_layout.addWidget(self.save_node_btn)
             button_layout.addWidget(self.delete_node_btn)
 
             # Add to panel
@@ -998,9 +976,20 @@ class MainWindowController:
             # Add the splitter to the existing layout
             current_layout.addWidget(splitter)
 
-            # Connect signals
-            self.save_node_btn.clicked.connect(self.on_save_node_changes)
+            # Connect signals for autosave
+            self.node_name_edit.editingFinished.connect(self.on_save_node_changes)
+            self.node_description_edit.textChanged.connect(self._schedule_autosave)
+            self.node_type_combo.currentIndexChanged.connect(self.on_save_node_changes)
+            self.section_combo.currentIndexChanged.connect(self.on_save_node_changes)
+
+            # Connect delete button
             self.delete_node_btn.clicked.connect(self.on_delete_node)
+
+            # Initialize autosave timer for description field
+            self._autosave_timer = QTimer()
+            self._autosave_timer.setSingleShot(True)
+            self._autosave_timer.timeout.connect(self.on_save_node_changes)
+            self._autosave_timer.setInterval(1000)  # 1 second delay
 
             # Initially hide the panel
             self.node_panel.hide()
@@ -1022,9 +1011,7 @@ class MainWindowController:
 
         # Label
         section_label = QLabel("Plot Sections:")
-        section_label.setStyleSheet(
-            f"color: {COLORS['text_secondary']}; font-weight: bold;"
-        )
+        section_label.setStyleSheet(f"color: {COLORS['text_secondary']}; font-weight: bold;")
         section_layout.addWidget(section_label)
 
         # Tab widget for sections
@@ -1055,9 +1042,7 @@ class MainWindowController:
 
         # Enable context menu on tabs
         self.section_tabs.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        self.section_tabs.customContextMenuRequested.connect(
-            self.on_section_context_menu
-        )
+        self.section_tabs.customContextMenuRequested.connect(self.on_section_context_menu)
 
         section_layout.addWidget(self.section_tabs)
 
@@ -1097,9 +1082,7 @@ class MainWindowController:
                 session.commit()
                 session.refresh(new_section)
 
-                self.view.ui.statusbar.showMessage(
-                    f"Added new plot section {new_section.id}", 3000
-                )
+                self.view.ui.statusbar.showMessage(f"Added new plot section {new_section.id}", 3000)
                 self.load_plot_sections()
                 # Switch to the new section
                 self.current_plot_section_id = new_section.id
@@ -1131,9 +1114,7 @@ class MainWindowController:
         """Open dialog to edit section type"""
         if tab_index < len(self.section_tab_ids):
             section_id = self.section_tab_ids[tab_index]
-            dialog = SectionEditDialog(
-                self.view, section_id, self.model, self.current_plot_id
-            )
+            dialog = SectionEditDialog(self.view, section_id, self.model, self.current_plot_id)
             if dialog.exec():
                 # Refresh sections after edit
                 self.load_plot_sections()
@@ -1154,11 +1135,7 @@ class MainWindowController:
             try:
 
                 with Session(self.model.engine) as session:
-                    section = (
-                        session.query(LitographyPlotSection)
-                        .filter_by(id=section_id)
-                        .first()
-                    )
+                    section = session.query(LitographyPlotSection).filter_by(id=section_id).first()
                     if section:
                         session.delete(section)
                         session.commit()
@@ -1177,47 +1154,48 @@ class MainWindowController:
 
     def populate_node_panel(self, node_data):
         """Populate the editing panel with node data"""
-        # Populate node type combo
-        self.node_type_combo.clear()
-        for node_type in NodeType:
-            self.node_type_combo.addItem(node_type.value, node_type)
+        # Temporarily disconnect autosave signals to prevent triggering during population
+        self._disconnect_autosave_signals()
 
-        # Set current values
-        self.node_name_edit.setText(node_data.name or "Untitled Node")
-        self.node_description_edit.setPlainText(node_data.description or "")
-        self.node_type_combo.setCurrentText(node_data.node_type.value)
+        try:
+            # Populate node type combo
+            self.node_type_combo.clear()
+            for node_type in NodeType:
+                self.node_type_combo.addItem(node_type.value, node_type)
 
-        # Populate connection combos (hidden, for save logic compatibility)
-        self.populate_connection_combos(node_data)
+            # Set current values
+            self.node_name_edit.setText(node_data.name or "Untitled Node")
+            self.node_description_edit.setPlainText(node_data.description or "")
+            self.node_type_combo.setCurrentText(node_data.node_type.value)
 
-        # Populate section combo
-        self.populate_section_combo(node_data)
+            # Populate connection combos (hidden, for save logic compatibility)
+            self.populate_connection_combos(node_data)
 
-        # Load notes for this node
-        self.load_notes_for_node(node_data.id)
+            # Populate section combo
+            self.populate_section_combo(node_data)
+
+            # Load notes for this node
+            self.load_notes_for_node(node_data.id)
+        finally:
+            # Reconnect autosave signals
+            self._connect_autosave_signals()
 
     def populate_connection_combos(self, current_node):
         """Update hidden connection combos for backward compatibility with save logic"""
         # Get all nodes for reference
-        all_nodes = self.model.get_litography_nodes(
-            storyline_id=self.current_storyline_id
-        )
+        all_nodes = self.model.get_litography_nodes(storyline_id=self.current_storyline_id)
         nodes_dict = {node.id: node for node in all_nodes}
 
         # Get current connections from database
         with Session(self.model.engine) as session:
             # Get input connections (where this node is the input)
             input_connections = (
-                session.query(NodeConnection)
-                .filter_by(input_node_id=current_node.id)
-                .all()
+                session.query(NodeConnection).filter_by(input_node_id=current_node.id).all()
             )
 
             # Get output connections (where this node is the output)
             output_connections = (
-                session.query(NodeConnection)
-                .filter_by(output_node_id=current_node.id)
-                .all()
+                session.query(NodeConnection).filter_by(output_node_id=current_node.id).all()
             )
 
             # Update hidden combos for backward compatibility with save logic
@@ -1267,9 +1245,7 @@ class MainWindowController:
                 # Add sections to combo (store section objects for easy access)
                 self.section_combo_sections = sections
                 for section in sections:
-                    display_text = (
-                        f"Section {section.id} ({section.plot_section_type.value})"
-                    )
+                    display_text = f"Section {section.id} ({section.plot_section_type.value})"
                     self.section_combo.addItem(display_text)
 
                 # Find current section for this node
@@ -1300,8 +1276,34 @@ class MainWindowController:
             self.selected_node, "y_position", 200
         )
 
+    def _disconnect_autosave_signals(self):
+        """Temporarily disconnect autosave signals (used during panel population)"""
+        try:
+            self.node_name_edit.editingFinished.disconnect(self.on_save_node_changes)
+            self.node_description_edit.textChanged.disconnect(self._schedule_autosave)
+            self.node_type_combo.currentIndexChanged.disconnect(self.on_save_node_changes)
+            self.section_combo.currentIndexChanged.disconnect(self.on_save_node_changes)
+        except:
+            pass  # Ignore if already disconnected
+
+    def _connect_autosave_signals(self):
+        """Reconnect autosave signals after panel population"""
+        try:
+            self.node_name_edit.editingFinished.connect(self.on_save_node_changes)
+            self.node_description_edit.textChanged.connect(self._schedule_autosave)
+            self.node_type_combo.currentIndexChanged.connect(self.on_save_node_changes)
+            self.section_combo.currentIndexChanged.connect(self.on_save_node_changes)
+        except:
+            pass  # Ignore if already connected
+
+    def _schedule_autosave(self):
+        """Schedule an autosave after a short delay (for text fields)"""
+        if hasattr(self, "_autosave_timer"):
+            self._autosave_timer.stop()
+            self._autosave_timer.start()
+
     def on_save_node_changes(self):
-        """Save changes to the selected node"""
+        """Save changes to the selected node (autosave)"""
         if not self.selected_node:
             return
 
@@ -1310,8 +1312,13 @@ class MainWindowController:
             new_name = self.node_name_edit.text().strip() or "Untitled Node"
             new_description = self.node_description_edit.toPlainText().strip() or None
             new_type = self.node_type_combo.currentData()
-            new_previous = self.previous_node_combo.currentData()
-            new_next = self.next_node_combo.currentData()
+
+            # Track if node type changed (requires full redraw)
+            node_type_changed = new_type and (
+                not hasattr(self.selected_node, "node_type")
+                or new_type.value != self.selected_node.node_type.value
+            )
+
             # Get section ID from combo index
             section_index = self.section_combo.currentIndex()
             new_section = (
@@ -1330,51 +1337,52 @@ class MainWindowController:
                 "id": self.selected_node.id,
                 "name": new_name,
                 "description": new_description,
-                "node_type": new_type.value if new_type else None,
                 "x_position": current_x,
                 "y_position": current_y,
                 "storyline_id": self.current_storyline_id,
             }
 
+            # Only update node_type if we have a valid value (it's required/NOT NULL)
+            if new_type:
+                update_data["node_type"] = new_type.value
+
             self.model.update_row("litography_node", update_data)
 
-            # Handle connections separately using the new system
-            with Session(self.model.engine) as session:
-                current_node_id = self.selected_node.id
-
-                # Clear existing connections for this node
-                session.query(NodeConnection).filter(
-                    (NodeConnection.output_node_id == current_node_id)
-                    | (NodeConnection.input_node_id == current_node_id)
-                ).delete()
-
-                # Add new connections based on combo box selection
-                if new_previous:
-                    new_conn = NodeConnection(
-                        output_node_id=new_previous, input_node_id=current_node_id
-                    )
-                    session.add(new_conn)
-
-                if new_next:
-                    new_conn = NodeConnection(
-                        output_node_id=current_node_id, input_node_id=new_next
-                    )
-                    session.add(new_conn)
-
-                session.commit()
+            # NOTE: We don't modify connections during autosave - connections are
+            # managed through the graph UI (drag-and-drop connections between nodes)
+            # The old previous_node_combo and next_node_combo are hidden and not used
 
             # Handle section change if needed
             if new_section:
                 self.move_node_to_section(self.selected_node.id, new_section)
 
-            self.view.ui.statusbar.showMessage("Node updated successfully", 3000)
+            self.view.ui.statusbar.showMessage("Node autosaved", 2000)
 
-            # Refresh the graph
-            self.load_and_draw_nodes()
+            # Only refresh graph if node type changed (affects visual appearance)
+            # For name/description changes, just update the text label in place
+            if node_type_changed:
+                self.load_and_draw_nodes()
+            else:
+                # Update just the node label without full redraw
+                self._update_node_label(self.selected_node.id, new_name)
 
         except Exception as e:
-            print(f"Error updating node: {e}")
-            self.view.ui.statusbar.showMessage(f"Error updating node: {e}", 5000)
+            print(f"Error autosaving node: {e}")
+            self.view.ui.statusbar.showMessage(f"Error autosaving node: {e}", 5000)
+
+    def _update_node_label(self, node_id, new_name):
+        """Update a node's label text without redrawing the entire graph"""
+        try:
+            for item in self.node_scene.items():
+                if hasattr(item, "node_id") and item.node_id == node_id:
+                    # Find the text child item and update it
+                    for child in item.childItems():
+                        if isinstance(child, QGraphicsTextItem):
+                            child.setPlainText(new_name)
+                            break
+                    break
+        except Exception as e:
+            print(f"Error updating node label: {e}")
 
     def on_delete_node(self):
         """Delete the selected node"""
@@ -1444,12 +1452,8 @@ class MainWindowController:
 
             if reference_node_id:
                 # Find the reference node to position near it
-                all_nodes = self.model.get_litography_nodes(
-                    storyline_id=self.current_storyline_id
-                )
-                reference_node = next(
-                    (n for n in all_nodes if n.id == reference_node_id), None
-                )
+                all_nodes = self.model.get_litography_nodes(storyline_id=self.current_storyline_id)
+                reference_node = next((n for n in all_nodes if n.id == reference_node_id), None)
 
                 if reference_node:
                     ref_x = getattr(reference_node, "x_position", 100)
@@ -1510,9 +1514,7 @@ class MainWindowController:
         edit_action.triggered.connect(lambda: self.on_node_clicked(node_data))
 
         delete_action = menu.addAction("Delete Node")
-        delete_action.triggered.connect(
-            lambda: self.on_delete_node_button_clicked(node_data.id)
-        )
+        delete_action.triggered.connect(lambda: self.on_delete_node_button_clicked(node_data.id))
 
         # Show menu
         menu.exec(position)
@@ -1568,7 +1570,9 @@ class MainWindowController:
                 )
 
             # Update status bar with user info
-            status_text = f"User: {user_name} | Storyline: {storyline_name} | Setting: {setting_name}"
+            status_text = (
+                f"User: {user_name} | Storyline: {storyline_name} | Setting: {setting_name}"
+            )
             self.view.ui.statusbar.showMessage(status_text)
 
         except Exception as e:
@@ -1588,9 +1592,7 @@ class MainWindowController:
             with Session(self.model.engine) as session:
                 notes = (
                     session.query(LitographyNotes)
-                    .filter_by(
-                        linked_node_id=node_id, storyline_id=self.current_storyline_id
-                    )
+                    .filter_by(linked_node_id=node_id, storyline_id=self.current_storyline_id)
                     .all()
                 )
                 return notes
@@ -1631,9 +1633,7 @@ class MainWindowController:
                     note.description = description
                     note.note_type = note_type
                     session.commit()
-                    self.view.ui.statusbar.showMessage(
-                        "Note updated successfully", 3000
-                    )
+                    self.view.ui.statusbar.showMessage("Note updated successfully", 3000)
                 else:
                     raise Exception("Note not found")
         except Exception as e:
@@ -1653,9 +1653,7 @@ class MainWindowController:
                 if note:
                     session.delete(note)
                     session.commit()
-                    self.view.ui.statusbar.showMessage(
-                        "Note deleted successfully", 3000
-                    )
+                    self.view.ui.statusbar.showMessage("Note deleted successfully", 3000)
                 else:
                     raise Exception("Note not found")
         except Exception as e:
@@ -1668,9 +1666,7 @@ class MainWindowController:
             with Session(self.model.engine) as session:
                 count = (
                     session.query(LitographyNotes)
-                    .filter_by(
-                        linked_node_id=node_id, storyline_id=self.current_storyline_id
-                    )
+                    .filter_by(linked_node_id=node_id, storyline_id=self.current_storyline_id)
                     .count()
                 )
                 return count > 0
@@ -1768,26 +1764,16 @@ class MainWindowController:
         try:
             with Session(self.model.engine) as session:
                 actors = session.query(Actor).filter_by(setting_id=setting_id).all()
-                backgrounds = (
-                    session.query(Background).filter_by(setting_id=setting_id).all()
-                )
+                backgrounds = session.query(Background).filter_by(setting_id=setting_id).all()
                 classes = session.query(Class_).filter_by(setting_id=setting_id).all()
                 factions = session.query(Faction).filter_by(setting_id=setting_id).all()
-                histories = (
-                    session.query(History).filter_by(setting_id=setting_id).all()
-                )
-                locations = (
-                    session.query(Location).filter_by(setting_id=setting_id).all()
-                )
+                histories = session.query(History).filter_by(setting_id=setting_id).all()
+                locations = session.query(Location).filter_by(setting_id=setting_id).all()
                 objects = session.query(Object_).filter_by(setting_id=setting_id).all()
                 races = session.query(Race).filter_by(setting_id=setting_id).all()
                 skills = session.query(Skills).filter_by(setting_id=setting_id).all()
-                sub_races = (
-                    session.query(SubRace).filter_by(setting_id=setting_id).all()
-                )
-                world_data = (
-                    session.query(WorldData).filter_by(setting_id=setting_id).all()
-                )
+                sub_races = session.query(SubRace).filter_by(setting_id=setting_id).all()
+                world_data = session.query(WorldData).filter_by(setting_id=setting_id).all()
 
                 return {
                     "actors": actors,
@@ -1812,57 +1798,37 @@ class MainWindowController:
         try:
             with Session(self.model.engine) as session:
                 associations["actors"] = (
-                    session.query(LitographyNoteToActor)
-                    .filter_by(note_id=note_id)
-                    .all()
+                    session.query(LitographyNoteToActor).filter_by(note_id=note_id).all()
                 )
                 associations["backgrounds"] = (
-                    session.query(LitographyNoteToBackground)
-                    .filter_by(note_id=note_id)
-                    .all()
+                    session.query(LitographyNoteToBackground).filter_by(note_id=note_id).all()
                 )
                 associations["classes"] = (
-                    session.query(LitographyNoteToClass)
-                    .filter_by(note_id=note_id)
-                    .all()
+                    session.query(LitographyNoteToClass).filter_by(note_id=note_id).all()
                 )
                 associations["factions"] = (
-                    session.query(LitographyNoteToFaction)
-                    .filter_by(note_id=note_id)
-                    .all()
+                    session.query(LitographyNoteToFaction).filter_by(note_id=note_id).all()
                 )
                 associations["histories"] = (
-                    session.query(LitographyNoteToHistory)
-                    .filter_by(note_id=note_id)
-                    .all()
+                    session.query(LitographyNoteToHistory).filter_by(note_id=note_id).all()
                 )
                 associations["locations"] = (
-                    session.query(LitographyNoteToLocation)
-                    .filter_by(note_id=note_id)
-                    .all()
+                    session.query(LitographyNoteToLocation).filter_by(note_id=note_id).all()
                 )
                 associations["objects"] = (
-                    session.query(LitographyNoteToObject)
-                    .filter_by(note_id=note_id)
-                    .all()
+                    session.query(LitographyNoteToObject).filter_by(note_id=note_id).all()
                 )
                 associations["races"] = (
                     session.query(LitographyNoteToRace).filter_by(note_id=note_id).all()
                 )
                 associations["skills"] = (
-                    session.query(LitographyNoteToSkills)
-                    .filter_by(note_id=note_id)
-                    .all()
+                    session.query(LitographyNoteToSkills).filter_by(note_id=note_id).all()
                 )
                 associations["sub_races"] = (
-                    session.query(LitographyNoteToSubRace)
-                    .filter_by(note_id=note_id)
-                    .all()
+                    session.query(LitographyNoteToSubRace).filter_by(note_id=note_id).all()
                 )
                 associations["world_data"] = (
-                    session.query(LitographyNoteToWorldData)
-                    .filter_by(note_id=note_id)
-                    .all()
+                    session.query(LitographyNoteToWorldData).filter_by(note_id=note_id).all()
                 )
         except Exception as e:
             print(f"Error getting note associations: {e}")
@@ -1874,45 +1840,27 @@ class MainWindowController:
             with Session(self.model.engine) as session:
                 association = None
                 if entity_type == "actor":
-                    association = LitographyNoteToActor(
-                        note_id=note_id, actor_id=entity_id
-                    )
+                    association = LitographyNoteToActor(note_id=note_id, actor_id=entity_id)
                 elif entity_type == "background":
                     association = LitographyNoteToBackground(
                         note_id=note_id, background_id=entity_id
                     )
                 elif entity_type == "class":
-                    association = LitographyNoteToClass(
-                        note_id=note_id, class_id=entity_id
-                    )
+                    association = LitographyNoteToClass(note_id=note_id, class_id=entity_id)
                 elif entity_type == "faction":
-                    association = LitographyNoteToFaction(
-                        note_id=note_id, faction_id=entity_id
-                    )
+                    association = LitographyNoteToFaction(note_id=note_id, faction_id=entity_id)
                 elif entity_type == "history":
-                    association = LitographyNoteToHistory(
-                        note_id=note_id, history_id=entity_id
-                    )
+                    association = LitographyNoteToHistory(note_id=note_id, history_id=entity_id)
                 elif entity_type == "location":
-                    association = LitographyNoteToLocation(
-                        note_id=note_id, location_id=entity_id
-                    )
+                    association = LitographyNoteToLocation(note_id=note_id, location_id=entity_id)
                 elif entity_type == "object":
-                    association = LitographyNoteToObject(
-                        note_id=note_id, object_id=entity_id
-                    )
+                    association = LitographyNoteToObject(note_id=note_id, object_id=entity_id)
                 elif entity_type == "race":
-                    association = LitographyNoteToRace(
-                        note_id=note_id, race_id=entity_id
-                    )
+                    association = LitographyNoteToRace(note_id=note_id, race_id=entity_id)
                 elif entity_type == "skill":
-                    association = LitographyNoteToSkills(
-                        note_id=note_id, skill_id=entity_id
-                    )
+                    association = LitographyNoteToSkills(note_id=note_id, skill_id=entity_id)
                 elif entity_type == "sub_race":
-                    association = LitographyNoteToSubRace(
-                        note_id=note_id, sub_race_id=entity_id
-                    )
+                    association = LitographyNoteToSubRace(note_id=note_id, sub_race_id=entity_id)
                 elif entity_type == "world_data":
                     association = LitographyNoteToWorldData(
                         note_id=note_id, world_data_id=entity_id
@@ -2013,9 +1961,7 @@ class MainWindowController:
             self.validate_ui_database_sync()
 
             # Debug: Check what nodes actually exist in database
-            all_db_nodes = self.model.get_litography_nodes(
-                storyline_id=self.current_storyline_id
-            )
+            all_db_nodes = self.model.get_litography_nodes(storyline_id=self.current_storyline_id)
             existing_ids = [n.id for n in all_db_nodes]
 
             # First verify the node exists in the database directly
@@ -2036,15 +1982,11 @@ class MainWindowController:
                     return
 
             # Get fresh node data to understand its connections
-            all_nodes = self.model.get_litography_nodes(
-                storyline_id=self.current_storyline_id
-            )
+            all_nodes = self.model.get_litography_nodes(storyline_id=self.current_storyline_id)
             node_to_delete = next((n for n in all_nodes if n.id == node_id), None)
 
             if not node_to_delete:
-                self.view.ui.statusbar.showMessage(
-                    "Node not found in current data", 3000
-                )
+                self.view.ui.statusbar.showMessage("Node not found in current data", 3000)
                 self.load_and_draw_nodes()
                 return
 
@@ -2063,9 +2005,7 @@ class MainWindowController:
                 # Delete all notes associated with this node
                 notes_to_delete = (
                     session.query(LitographyNotes)
-                    .filter_by(
-                        linked_node_id=node_id, storyline_id=self.current_storyline_id
-                    )
+                    .filter_by(linked_node_id=node_id, storyline_id=self.current_storyline_id)
                     .all()
                 )
 
@@ -2087,9 +2027,7 @@ class MainWindowController:
                         3000,
                     )
                 else:
-                    self.view.ui.statusbar.showMessage(
-                        "Node not found in database", 3000
-                    )
+                    self.view.ui.statusbar.showMessage("Node not found in database", 3000)
                     return
 
             # Hide the panel if this node was selected
@@ -2113,45 +2051,32 @@ class MainWindowController:
         self.view.ui.lorekeeperNavButton.released.connect(self.on_lorekeeper_selected)
         apply_general_tooltips(self.view.ui.lorekeeperNavButton, "lorekeeper_tab")
 
-        self.view.ui.characterArcsNavButton.released.connect(
-            self.on_character_arcs_selected
-        )
-        apply_general_tooltips(
-            self.view.ui.characterArcsNavButton, "character_arcs_tab"
-        )
+        self.view.ui.characterArcsNavButton.released.connect(self.on_character_arcs_selected)
+        apply_general_tooltips(self.view.ui.characterArcsNavButton, "character_arcs_tab")
 
         # --- File Menu ---
         self.view.ui.actionOpen.triggered.connect(self.on_open_storyline_clicked)
-        self.view.ui.actionImportFromJSON.triggered.connect(
-            self.on_import_from_json_clicked
-        )
+        self.view.ui.actionImportFromJSON.triggered.connect(self.on_import_from_json_clicked)
         # self.view.ui.actionExportSettingToJSON.triggered.connect(
         #     self.on_export_setting_to_json_clicked
         # )
         # Database and backup actions
-        self.view.ui.actionDatabaseManager.triggered.connect(
-            self.on_database_manager_clicked
-        )
+        self.view.ui.actionDatabaseManager.triggered.connect(self.on_database_manager_clicked)
         self.view.ui.actionCreateBackup.triggered.connect(self.on_create_backup_clicked)
 
         # --- Storyline Menu ---
         self.view.ui.actionNewStoryline.triggered.connect(self.on_new_storyline_clicked)
-        self.view.ui.actionSwitchStoryline.triggered.connect(
-            self.on_switch_storyline_clicked
-        )
+        self.view.ui.actionSwitchStoryline.triggered.connect(self.on_switch_storyline_clicked)
 
         # --- Setting Menu ---
         self.view.ui.actionNewSetting.triggered.connect(self.on_new_setting_clicked)
-        self.view.ui.actionSwitchSetting.triggered.connect(
-            self.on_switch_setting_clicked
-        )
-        self.view.ui.actionManageSetting.triggered.connect(
-            self.on_manage_setting_clicked
-        )
+        self.view.ui.actionSwitchSetting.triggered.connect(self.on_switch_setting_clicked)
+        self.view.ui.actionManageSetting.triggered.connect(self.on_manage_setting_clicked)
 
         # Add storyline settings management action programmatically if it doesn't exist
         if not hasattr(self.view.ui, "actionManageStorylineSettings"):
             from PySide6.QtGui import QAction
+
             self.view.ui.actionManageStorylineSettings = QAction(
                 "Manage Storyline-Setting Links", self.view
             )
@@ -2194,22 +2119,26 @@ class MainWindowController:
             # Update setting to match the storyline's associated setting
             with Session(self.model.engine) as session:
                 storyline_setting = (
-                    session.query(StorylineToSetting)
-                    .filter_by(storyline_id=storyline_id)
-                    .first()
+                    session.query(StorylineToSetting).filter_by(storyline_id=storyline_id).first()
                 )
                 if storyline_setting:
                     self.current_setting_id = storyline_setting.setting_id
-                    print(f"DEBUG: Updated setting to ID {self.current_setting_id} for storyline {storyline_id}")
+                    print(
+                        f"DEBUG: Updated setting to ID {self.current_setting_id} for storyline {storyline_id}"
+                    )
                 else:
                     # No setting linked - keep current setting or use first available
-                    print(f"DEBUG: No setting found for storyline {storyline_id}, keeping current setting")
+                    print(
+                        f"DEBUG: No setting found for storyline {storyline_id}, keeping current setting"
+                    )
                     if self.current_setting_id is None:
                         # If we don't have any setting, try to get the first available one
                         settings = self.model.get_all_settings()
                         if settings:
                             self.current_setting_id = settings[0].id
-                            print(f"DEBUG: Using first available setting ID {self.current_setting_id}")
+                            print(
+                                f"DEBUG: Using first available setting ID {self.current_setting_id}"
+                            )
 
             # Reset to first plot of opened storyline
             self._switch_to_first_plot_of_storyline()
@@ -2285,9 +2214,7 @@ class MainWindowController:
                 if "story_data" in json_data:
                     # New format: extract story_data subsection
                     json_data = json_data["story_data"]
-                    self.view.ui.statusbar.showMessage(
-                        "Detected nested story_data format", 3000
-                    )
+                    self.view.ui.statusbar.showMessage("Detected nested story_data format", 3000)
 
             except (json.JSONDecodeError, IOError) as e:
                 QMessageBox.critical(
@@ -2314,9 +2241,7 @@ class MainWindowController:
             success = self._import_json_data(json_data, choice)
 
             if success:
-                self.view.ui.statusbar.showMessage(
-                    "JSON import completed successfully", 5000
-                )
+                self.view.ui.statusbar.showMessage("JSON import completed successfully", 5000)
                 # Refresh current view
                 if self.view.ui.pageStack.currentIndex() == 0:
                     self.load_and_draw_nodes()
@@ -2356,9 +2281,7 @@ class MainWindowController:
                 if current_setting and current_setting.name:
                     # Clean filename - remove invalid characters
                     setting_name = "".join(
-                        c
-                        for c in current_setting.name
-                        if c.isalnum() or c in (" ", "-", "_")
+                        c for c in current_setting.name if c.isalnum() or c in (" ", "-", "_")
                     ).rstrip()
                     setting_name = setting_name.replace(" ", "_")
             except:
@@ -2441,11 +2364,11 @@ class MainWindowController:
         """Get user choice for import destination."""
         from PySide6.QtWidgets import (
             QDialog,
-            QVBoxLayout,
             QHBoxLayout,
-            QRadioButton,
-            QPushButton,
             QLabel,
+            QPushButton,
+            QRadioButton,
+            QVBoxLayout,
         )
 
         dialog = QDialog(self.view)
@@ -2491,9 +2414,7 @@ class MainWindowController:
                 storyline_name = json_data.get("storyline", [{}])[0].get(
                     "name", "Imported Storyline"
                 )
-                setting_name = json_data.get("setting", [{}])[0].get(
-                    "name", "Imported Setting"
-                )
+                setting_name = json_data.get("setting", [{}])[0].get("name", "Imported Setting")
 
                 if not storyline_name:
                     storyline_name = "Imported Storyline"
@@ -2503,9 +2424,7 @@ class MainWindowController:
                 # Create new setting using add_row method
                 setting_data = {
                     "name": setting_name,
-                    "description": json_data.get("setting", [{}])[0].get(
-                        "description", ""
-                    ),
+                    "description": json_data.get("setting", [{}])[0].get("description", ""),
                     "user_id": self.model.user_id,
                 }
                 self.model.add_row("setting", setting_data)
@@ -2514,10 +2433,7 @@ class MainWindowController:
                 all_settings = self.model.get_all_settings()
                 new_setting = None
                 for setting in all_settings:
-                    if (
-                        setting.name == setting_name
-                        and setting.user_id == self.model.user_id
-                    ):
+                    if setting.name == setting_name and setting.user_id == self.model.user_id:
                         new_setting = setting
                         break
 
@@ -2527,9 +2443,7 @@ class MainWindowController:
                 # Create new storyline using add_row method
                 storyline_data = {
                     "name": storyline_name,
-                    "description": json_data.get("storyline", [{}])[0].get(
-                        "description", ""
-                    ),
+                    "description": json_data.get("storyline", [{}])[0].get("description", ""),
                     "user_id": self.model.user_id,
                 }
                 self.model.add_row("storyline", storyline_data)
@@ -2538,10 +2452,7 @@ class MainWindowController:
                 all_storylines = self.model.get_all_storylines()
                 new_storyline = None
                 for storyline in all_storylines:
-                    if (
-                        storyline.name == storyline_name
-                        and storyline.user_id == self.model.user_id
-                    ):
+                    if storyline.name == storyline_name and storyline.user_id == self.model.user_id:
                         new_storyline = storyline
                         break
 
@@ -2561,9 +2472,7 @@ class MainWindowController:
             else:
                 # Use current storyline and setting
                 new_setting = self.model.get_setting_by_id(self.current_setting_id)
-                new_storyline = self.model.get_storyline_by_id(
-                    self.current_storyline_id
-                )
+                new_storyline = self.model.get_storyline_by_id(self.current_storyline_id)
 
             # Import all data types
             self._import_data_by_type(json_data, new_setting.id, new_storyline.id)
@@ -2602,9 +2511,7 @@ class MainWindowController:
                 updated_record = record_data.copy()
 
                 # Remove keys that start with _ (metadata fields like _consensus_models)
-                keys_to_remove = [
-                    key for key in updated_record.keys() if key.startswith("_")
-                ]
+                keys_to_remove = [key for key in updated_record.keys() if key.startswith("_")]
                 for key in keys_to_remove:
                     del updated_record[key]
 
@@ -2659,7 +2566,9 @@ class MainWindowController:
                             if success:
                                 # Update current setting to the linked one
                                 self.current_setting_id = selected_setting_id
-                                print(f"DEBUG: Linked new storyline {new_storyline.id} to setting {selected_setting_id}")
+                                print(
+                                    f"DEBUG: Linked new storyline {new_storyline.id} to setting {selected_setting_id}"
+                                )
                         except Exception as e:
                             print(f"Error linking storyline to setting: {e}")
 
@@ -2706,13 +2615,27 @@ class MainWindowController:
 
                 if new_setting and selected_packages:
                     # Import world building packages for the new setting
-                    dialog.import_packages_for_setting(
-                        selected_packages, new_setting["id"]
-                    )
+                    dialog.import_packages_for_setting(selected_packages, new_setting["id"])
 
                 self.view.ui.statusbar.showMessage(
                     f"Created new setting: {setting_data['name']}", 5000
                 )
+
+                # Prompt user to create a new storyline for this setting
+                if new_setting:
+                    reply = QMessageBox.question(
+                        self.view,
+                        "Create Storyline?",
+                        f"Would you like to create a new storyline for the setting '{setting_data['name']}'?",
+                        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                        QMessageBox.StandardButton.Yes,
+                    )
+
+                    if reply == QMessageBox.StandardButton.Yes:
+                        self._create_and_switch_to_new_storyline(
+                            new_setting["id"], setting_data["user_id"]
+                        )
+
             except Exception as e:
                 QMessageBox.critical(
                     self.view,
@@ -2720,11 +2643,82 @@ class MainWindowController:
                     f"Failed to create setting: {str(e)}",
                 )
 
+    def _create_and_switch_to_new_storyline(self, setting_id: int, user_id: int):
+        """
+        Create a new storyline linked to the given setting and switch to it.
+
+        Args:
+            setting_id: The ID of the setting to link to
+            user_id: The user ID for the new storyline
+        """
+        try:
+            # Prompt user for storyline name
+            storyline_name, ok = QInputDialog.getText(
+                self.view,
+                "New Storyline",
+                "Enter a name for the new storyline:",
+                QLineEdit.EchoMode.Normal,
+                "",
+            )
+
+            if not ok or not storyline_name.strip():
+                return
+
+            # Create the storyline
+            storyline_data = {
+                "name": storyline_name.strip(),
+                "description": "",
+                "user_id": user_id,
+            }
+            self.model.add_row("storyline", storyline_data)
+
+            # Get the newly created storyline
+            storylines = self.model.get_all_storylines()
+            new_storyline = next(
+                (
+                    s
+                    for s in storylines
+                    if s.name == storyline_data["name"] and s.user_id == storyline_data["user_id"]
+                ),
+                None,
+            )
+
+            if new_storyline:
+                # Link to the setting
+                success = self.model.link_storyline_to_setting(new_storyline.id, setting_id)
+                if success:
+                    self.current_setting_id = setting_id
+                    print(f"DEBUG: Linked new storyline {new_storyline.id} to setting {setting_id}")
+
+                # Switch to the new storyline
+                self.current_storyline_id = new_storyline.id
+
+                # Switch to first plot (creates default if needed)
+                self._switch_to_first_plot_of_storyline()
+
+                # Refresh views
+                self.load_and_draw_nodes()
+                self.load_plot_sections()
+                self.update_status_indicators()
+
+                self.view.ui.statusbar.showMessage(
+                    f"Created and switched to storyline: {storyline_name}", 5000
+                )
+            else:
+                QMessageBox.warning(
+                    self.view, "Error", "Failed to retrieve the newly created storyline."
+                )
+
+        except Exception as e:
+            QMessageBox.critical(
+                self.view,
+                "Error Creating Storyline",
+                f"Failed to create storyline: {str(e)}",
+            )
+
     def on_switch_storyline_clicked(self):
         """Opens a dialog to switch between storylines."""
-        dialog = StorylineSwitcherDialog(
-            self.model, self.current_storyline_id, self.view
-        )
+        dialog = StorylineSwitcherDialog(self.model, self.current_storyline_id, self.view)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             new_storyline_id = dialog.get_selected_storyline_id()
             if new_storyline_id:
@@ -2803,9 +2797,7 @@ class MainWindowController:
                         (s.name for s in settings if s.id == new_setting_id), "Unknown"
                     )
 
-                    self.view.ui.statusbar.showMessage(
-                        f"Switched to setting: {setting_name}", 5000
-                    )
+                    self.view.ui.statusbar.showMessage(f"Switched to setting: {setting_name}", 5000)
                     # Refresh lorekeeper views to show new setting data
                     # Note: db_tree_model is deprecated, using new Lorekeeper interface
 
@@ -2870,9 +2862,7 @@ class MainWindowController:
         if user_data is not None:
             try:
                 new_user = self.model.create_user(user_data["username"])
-                self.view.ui.statusbar.showMessage(
-                    f"Created new user: {new_user.username}", 5000
-                )
+                self.view.ui.statusbar.showMessage(f"Created new user: {new_user.username}", 5000)
             except Exception as e:
                 QMessageBox.critical(
                     self.view,
@@ -2895,9 +2885,7 @@ class MainWindowController:
                         # Refresh all UI components for the new user
                         self.refresh_after_user_switch()
 
-                        self.view.ui.statusbar.showMessage(
-                            f"Switched to user: {user_name}", 5000
-                        )
+                        self.view.ui.statusbar.showMessage(f"Switched to user: {user_name}", 5000)
                     else:
                         QMessageBox.warning(
                             self.view,
@@ -2933,9 +2921,7 @@ class MainWindowController:
                         # Refresh all UI components for the new user
                         self.refresh_after_user_switch()
 
-                        self.view.ui.statusbar.showMessage(
-                            f"Switched to user: {user_name}", 5000
-                        )
+                        self.view.ui.statusbar.showMessage(f"Switched to user: {user_name}", 5000)
                     else:
                         QMessageBox.warning(
                             self.view,
@@ -2947,9 +2933,7 @@ class MainWindowController:
                     user = self.model.get_user_by_id(dialog.selected_user_id)
                     if user:
                         self.model.delete_user(dialog.selected_user_id)
-                        self.view.ui.statusbar.showMessage(
-                            f"Deleted user: {user.username}", 5000
-                        )
+                        self.view.ui.statusbar.showMessage(f"Deleted user: {user.username}", 5000)
 
             except Exception as e:
                 QMessageBox.critical(
@@ -3031,9 +3015,7 @@ class MainWindowController:
                 dialog.new_plot_input.setText("")
                 dialog.new_plot_input.setFocus()
 
-                if dialog.exec() == QDialog.DialogCode.Accepted and hasattr(
-                    dialog, "action"
-                ):
+                if dialog.exec() == QDialog.DialogCode.Accepted and hasattr(dialog, "action"):
                     if dialog.action == "add":
                         new_plot = LitographyPlot(
                             title=dialog.new_plot_name,
@@ -3069,21 +3051,17 @@ class MainWindowController:
                 dialog = PlotManagerDialog(self.view)
                 dialog.populate_plots(plots, self.current_plot_id)
 
-                if dialog.exec() == QDialog.DialogCode.Accepted and hasattr(
-                    dialog, "action"
-                ):
+                if dialog.exec() == QDialog.DialogCode.Accepted and hasattr(dialog, "action"):
                     if dialog.action == "switch" and dialog.selected_plot_id:
                         self.current_plot_id = dialog.selected_plot_id
-                        self.current_plot_section_id = None  # Reset section to avoid loading old sections
+                        self.current_plot_section_id = (
+                            None  # Reset section to avoid loading old sections
+                        )
 
                         plot = session.query(LitographyPlot).get(self.current_plot_id)
-                        plot_name = (
-                            plot.title if plot else f"Plot {self.current_plot_id}"
-                        )
+                        plot_name = plot.title if plot else f"Plot {self.current_plot_id}"
 
-                        self.view.ui.statusbar.showMessage(
-                            f"Switched to plot: {plot_name}", 5000
-                        )
+                        self.view.ui.statusbar.showMessage(f"Switched to plot: {plot_name}", 5000)
 
                         # Refresh the litographer view if currently active
                         if self.view.ui.pageStack.currentIndex() == 0:
@@ -3113,13 +3091,9 @@ class MainWindowController:
                 dialog = PlotManagerDialog(self.view)
                 dialog.populate_plots(plots, self.current_plot_id)
 
-                if dialog.exec() == QDialog.DialogCode.Accepted and hasattr(
-                    dialog, "action"
-                ):
+                if dialog.exec() == QDialog.DialogCode.Accepted and hasattr(dialog, "action"):
                     if dialog.action == "delete" and dialog.selected_plot_id:
-                        plot_to_delete = session.query(LitographyPlot).get(
-                            dialog.selected_plot_id
-                        )
+                        plot_to_delete = session.query(LitographyPlot).get(dialog.selected_plot_id)
                         plot_name = (
                             plot_to_delete.title
                             if plot_to_delete
@@ -3174,9 +3148,7 @@ class MainWindowController:
                                     self.load_plot_sections()
                                     self.load_and_draw_nodes()
 
-                        self.view.ui.statusbar.showMessage(
-                            f"Deleted plot: {plot_name}", 5000
-                        )
+                        self.view.ui.statusbar.showMessage(f"Deleted plot: {plot_name}", 5000)
 
         except Exception as e:
             print(f"Error deleting plot: {e}")
@@ -3219,13 +3191,9 @@ class MainWindowController:
 
                 # Add tabs for each section
                 for section in sections:
-                    section_name = (
-                        f"Section {section.id} ({section.plot_section_type.value})"
-                    )
+                    section_name = f"Section {section.id} ({section.plot_section_type.value})"
                     tab_index = self.section_tabs.addTab(QWidget(), section_name)
-                    self.section_tab_ids.append(
-                        section.id
-                    )  # Store section ID at tab index
+                    self.section_tab_ids.append(section.id)  # Store section ID at tab index
 
                 # Select first section by default
                 if sections and self.current_plot_section_id is None:
@@ -3234,9 +3202,7 @@ class MainWindowController:
                 elif self.current_plot_section_id:
                     # Find and select the current section
                     try:
-                        section_index = self.section_tab_ids.index(
-                            self.current_plot_section_id
-                        )
+                        section_index = self.section_tab_ids.index(self.current_plot_section_id)
                         self.section_tabs.setCurrentIndex(section_index)
                     except ValueError:
                         # Section not found, default to first
@@ -3293,8 +3259,7 @@ class MainWindowController:
                         LitographyNode.id == LitographyNodeToPlotSection.node_id,
                     )
                     .filter(
-                        LitographyNodeToPlotSection.litography_plot_section_id
-                        == section_id,
+                        LitographyNodeToPlotSection.litography_plot_section_id == section_id,
                         LitographyNode.storyline_id == self.current_storyline_id,
                     )
                     .all()
@@ -3352,9 +3317,7 @@ class MainWindowController:
             with Session(self.model.engine) as session:
                 # Remove existing section relationships for this node
                 existing_links = (
-                    session.query(LitographyNodeToPlotSection)
-                    .filter_by(node_id=node_id)
-                    .all()
+                    session.query(LitographyNodeToPlotSection).filter_by(node_id=node_id).all()
                 )
 
                 for link in existing_links:
@@ -3430,9 +3393,7 @@ class MainWindowController:
         if self.current_plot_section_id:
             all_nodes = self.get_nodes_in_section(self.current_plot_section_id)
         else:
-            all_nodes = self.model.get_litography_nodes(
-                storyline_id=self.current_storyline_id
-            )
+            all_nodes = self.model.get_litography_nodes(storyline_id=self.current_storyline_id)
 
         if not all_nodes:
             return
@@ -3492,9 +3453,7 @@ class MainWindowController:
                 # Find node items in the scene
                 node_items = {}
                 for item in self.node_scene.items():
-                    if hasattr(item, "node_data") and hasattr(
-                        item, "get_output_connection_pos"
-                    ):
+                    if hasattr(item, "node_data") and hasattr(item, "get_output_connection_pos"):
                         node_items[item.node_data.id] = item
 
                 for connection in connections:
@@ -3527,15 +3486,11 @@ class MainWindowController:
         """Update all connection line positions"""
         try:
             for line_item in getattr(self, "connection_lines", []):
-                if hasattr(line_item, "output_item") and hasattr(
-                    line_item, "input_item"
-                ):
+                if hasattr(line_item, "output_item") and hasattr(line_item, "input_item"):
                     start_pos = line_item.output_item.get_output_connection_pos()
                     end_pos = line_item.input_item.get_input_connection_pos()
 
-                    line_item.setLine(
-                        start_pos.x(), start_pos.y(), end_pos.x(), end_pos.y()
-                    )
+                    line_item.setLine(start_pos.x(), start_pos.y(), end_pos.x(), end_pos.y())
         except Exception as e:
             print(f"Error updating connections: {e}")
 
@@ -3769,9 +3724,7 @@ class MainWindowController:
         """Handle switching to the Lorekeeper page."""
         # Initialize the new Lorekeeper widget if not already done
         if self.new_lorekeeper_widget is None and self.current_setting_id is not None:
-            self.new_lorekeeper_widget = NewLorekeeperPage(
-                self.model, self.current_setting_id
-            )
+            self.new_lorekeeper_widget = NewLorekeeperPage(self.model, self.current_setting_id)
 
             # Add the widget to the new Lorekeeper page
             if self.view.ui.newLorekeeperPage.layout() is None:
@@ -3857,11 +3810,7 @@ class MainWindowController:
             config_file = config_dir / "table_visibility.json"
 
             # Prepare data to save
-            data = {
-                "visible_tables": (
-                    list(self.visible_tables) if self.visible_tables else None
-                )
-            }
+            data = {"visible_tables": (list(self.visible_tables) if self.visible_tables else None)}
 
             with open(config_file, "w") as f:
                 json.dump(data, f, indent=2)
@@ -3875,13 +3824,7 @@ class MainWindowController:
             import json
             from pathlib import Path
 
-            config_file = (
-                Path.home()
-                / ".local"
-                / "share"
-                / "storymaster"
-                / "table_visibility.json"
-            )
+            config_file = Path.home() / ".local" / "share" / "storymaster" / "table_visibility.json"
 
             if config_file.exists():
                 with open(config_file, "r") as f:
@@ -3898,6 +3841,6 @@ class MainWindowController:
     def on_about_clicked(self):
         """Handle showing the About dialog."""
         from storymaster.view.common.about_dialog import AboutDialog
-        
+
         dialog = AboutDialog(self.view)
         dialog.exec()

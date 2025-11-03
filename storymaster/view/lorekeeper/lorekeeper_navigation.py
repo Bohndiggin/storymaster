@@ -204,9 +204,9 @@ class LorekeeperNavigation(QWidget):
         layout.addWidget(categories_splitter)
         self.setLayout(layout)
 
-        # Select first category by default
-        if MAIN_CATEGORIES:
-            self.select_category(MAIN_CATEGORIES[0])
+        # Don't select automatically - let parent handle initial selection after signal connection
+        # if MAIN_CATEGORIES:
+        #     self.select_category(MAIN_CATEGORIES[0])
 
     def create_category_section(self, title: str, categories: list) -> QWidget:
         """Create a section of category list"""

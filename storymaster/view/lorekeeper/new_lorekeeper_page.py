@@ -13,7 +13,10 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from storymaster.model.lorekeeper.entity_mappings import get_entity_mapping
+from storymaster.model.lorekeeper.entity_mappings import (
+    get_entity_mapping,
+    MAIN_CATEGORIES,
+)
 from storymaster.view.common.custom_widgets import enable_smart_tab_navigation
 from storymaster.view.common.theme import (
     COLORS,
@@ -77,6 +80,10 @@ class NewLorekeeperPage(QWidget):
 
         # Set up enhanced tab navigation
         enable_smart_tab_navigation(self)
+
+        # Trigger initial category selection after all UI components are created
+        if MAIN_CATEGORIES:
+            self.navigation.select_category(MAIN_CATEGORIES[0])
 
     def create_left_panel(self) -> QWidget:
         """Create the left navigation and browser panel"""
