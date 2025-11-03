@@ -342,7 +342,7 @@ def run_extended_test_suite():
 
         # Test enum values
         assert NodeType.EXPOSITION.value == "exposition"
-        assert PlotSectionType.RISING.value == "Increases tension"
+        assert PlotSectionType.RISING.value == "Tension Increases"
 
         # Test model creation
         user = User(username="testuser")
