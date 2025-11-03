@@ -19,7 +19,7 @@
 5. [Character Arc Page](#character-arc-page)
 6. [Tips & Best Practices](#tips--best-practices)
 
----
+<div style="page-break-after: always;"></div>
 
 ## Core Concepts
 
@@ -42,7 +42,7 @@ User
 
 **Storyline**: A specific plot within a setting. Composed of Sections containing Nodes that represent your story's structure.
 
----
+<div style="page-break-after: always;"></div>
 
 ## Litographer - Story Structure
 
@@ -80,7 +80,7 @@ Exposition  Rising Action  Climax  Falling Action  Resolution
 - Visual connections showing story flow
 - Support for branching narratives (many-to-many connections)
 
----
+<div style="page-break-after: always;"></div>
 
 ## Lorekeeper - World Building
 
@@ -126,7 +126,7 @@ These help you quickly build consistent characters and worlds:
 - **Professions**: Available occupations in your world
 - **Skills**: Abilities characters might possess
 
----
+<div style="page-break-after: always;"></div>
 
 ## Getting Started
 
@@ -154,7 +154,7 @@ Setup is one-time only. After this, you can create unlimited settings and storyl
 **New Storyline**: Within a setting, create multiple storylines
 **Switch Projects**: Use the menu to navigate between settings and storylines
 
----
+<div style="page-break-after: always;"></div>
 
 ## Litographer - Story Mapper
 
@@ -192,7 +192,7 @@ Setup is one-time only. After this, you can create unlimited settings and storyl
 - **Zoom**: Mouse wheel
 - **Pan**: Click and drag on empty space
 
----
+<div style="page-break-after: always;"></div>
 
 ## Lorekeeper - Lore Manager
 
@@ -230,7 +230,7 @@ Manage connections between lore entries:
 4. **Delete Entry**: Select entry → Delete button (with confirmation)
 5. **Cross-reference**: Click linked items to jump to them
 
----
+<div style="page-break-after: always;"></div>
 
 ## Character Arc Page
 
@@ -238,7 +238,7 @@ Manage connections between lore entries:
 
 The Character Arc page helps you track character development throughout your story. Plan how characters change, grow, and evolve from beginning to end.
 
----
+<div style="page-break-after: always;"></div>
 
 ## Tips & Best Practices
 
