@@ -84,6 +84,7 @@ from storymaster.model.database.schema.base import (
     PlotSectionType,
     Race,
     Skills,
+    Storyline,
     StorylineToSetting,
     SubRace,
     WorldData,
@@ -2797,7 +2798,39 @@ class MainWindowController:
                         (s.name for s in settings if s.id == new_setting_id), "Unknown"
                     )
 
+                    # Switch to the first storyline in this setting
+                    with Session(self.model.engine) as session:
+                        first_storyline_link = (
+                            session.query(StorylineToSetting)
+                            .filter_by(setting_id=new_setting_id)
+                            .first()
+                        )
+
+                        if first_storyline_link:
+                            self.current_storyline_id = first_storyline_link.storyline_id
+                            # Switch to the first plot of this storyline
+                            self._switch_to_first_plot_of_storyline()
+                        else:
+                            # No storylines linked to this setting yet
+                            self.current_storyline_id = None
+                            self.current_plot_id = None
+                            self.current_plot_section_id = None
+
                     self.view.ui.statusbar.showMessage(f"Switched to setting: {setting_name}", 5000)
+
+                    # Refresh the current view with the new setting's data
+                    current_page_index = self.view.ui.pageStack.currentIndex()
+                    if current_page_index == 0:
+                        # Litographer view - reload plot sections and nodes
+                        self.load_plot_sections()
+                        self.load_and_draw_nodes()
+                    elif current_page_index == 1:
+                        # Lorekeeper view - refresh table view
+                        self._refresh_current_table_view()
+                    elif current_page_index == 2:
+                        # Character Arcs view - refresh arcs for current storyline (even if None)
+                        self.character_arc_page.refresh_arcs(self.current_storyline_id)
+
                     # Refresh lorekeeper views to show new setting data
                     # Note: db_tree_model is deprecated, using new Lorekeeper interface
 
@@ -2809,6 +2842,17 @@ class MainWindowController:
                         )
                         self.new_lorekeeper_widget.deleteLater()
                         self.new_lorekeeper_widget = None
+
+                    # Recreate the Lorekeeper widget with the new setting
+                    if new_setting_id is not None:
+                        self.new_lorekeeper_widget = NewLorekeeperPage(self.model, new_setting_id)
+                        # Add the widget to the new Lorekeeper page
+                        if self.view.ui.newLorekeeperPage.layout() is None:
+                            new_lorekeeper_layout = QVBoxLayout(self.view.ui.newLorekeeperPage)
+                            new_lorekeeper_layout.setContentsMargins(0, 0, 0, 0)
+                        else:
+                            new_lorekeeper_layout = self.view.ui.newLorekeeperPage.layout()
+                        new_lorekeeper_layout.addWidget(self.new_lorekeeper_widget)
 
                     self.update_status_indicators()
                 except Exception as e:

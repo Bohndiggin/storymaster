@@ -416,13 +416,13 @@ class CharacterArcDetailPage(QWidget):
             return
 
         try:
-            # Get current setting ID
-            settings = self.model.get_all_settings()
+            # Get setting ID from the current storyline
+            settings = self.model.get_settings_for_storyline(self.current_storyline_id)
             if not settings:
                 QMessageBox.warning(
                     self,
                     "No Settings",
-                    "No settings found. Please create a setting first.",
+                    "No setting linked to this storyline. Please link a setting first.",
                 )
                 return
 
@@ -468,12 +468,21 @@ class CharacterArcDetailPage(QWidget):
     def manage_arc_types(self):
         """Open arc type manager"""
         try:
-            settings = self.model.get_all_settings()
+            # Get setting ID from the current storyline
+            if not self.current_storyline_id:
+                QMessageBox.warning(
+                    self,
+                    "No Storyline",
+                    "Please select a storyline first.",
+                )
+                return
+
+            settings = self.model.get_settings_for_storyline(self.current_storyline_id)
             if not settings:
                 QMessageBox.warning(
                     self,
                     "No Settings",
-                    "No settings found. Please create a setting first.",
+                    "No setting linked to this storyline. Please link a setting first.",
                 )
                 return
 
@@ -685,13 +694,13 @@ class NewCharacterArcsPage(QWidget):
             return
 
         try:
-            # Get current setting ID
-            settings = self.model.get_all_settings()
+            # Get setting ID from the current storyline
+            settings = self.model.get_settings_for_storyline(self.current_storyline_id)
             if not settings:
                 QMessageBox.warning(
                     self,
                     "No Settings",
-                    "No settings found. Please create a setting first.",
+                    "No setting linked to this storyline. Please link a setting first.",
                 )
                 return
 
@@ -721,13 +730,21 @@ class NewCharacterArcsPage(QWidget):
     def on_add_arc_type_requested(self):
         """Handle add arc type request"""
         try:
-            # Get current setting ID
-            settings = self.model.get_all_settings()
+            # Get setting ID from the current storyline
+            if not self.current_storyline_id:
+                QMessageBox.warning(
+                    self,
+                    "No Storyline",
+                    "Please select a storyline first.",
+                )
+                return
+
+            settings = self.model.get_settings_for_storyline(self.current_storyline_id)
             if not settings:
                 QMessageBox.warning(
                     self,
                     "No Settings",
-                    "No settings found. Please create a setting first.",
+                    "No setting linked to this storyline. Please link a setting first.",
                 )
                 return
 
