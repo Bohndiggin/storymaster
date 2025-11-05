@@ -53,12 +53,7 @@ class ArcPointDialog(QDialog):
             self.ui.goalsEdit.setPlainText(self.arc_point.goals or "")
             self.ui.conflictEdit.setPlainText(self.arc_point.internal_conflict or "")
 
-            # Set node selection
-            if self.arc_point.node_id:
-                for i in range(self.ui.nodeComboBox.count()):
-                    if self.ui.nodeComboBox.itemData(i) == self.arc_point.node_id:
-                        self.ui.nodeComboBox.setCurrentIndex(i)
-                        break
+            # Note: Node selection will be set in load_nodes() after nodes are loaded
         else:
             # Add mode
             self.ui.titleLabel.setText("Add Arc Point")
@@ -134,6 +129,13 @@ class ArcPointDialog(QDialog):
                 # Use the new format: "name (node_type)"
                 display_text = f"{node.name} ({node.node_type.value})"
                 self.ui.nodeComboBox.addItem(display_text, node.id)
+
+            # Set node selection if editing an existing arc point
+            if self.arc_point and self.arc_point.node_id:
+                for i in range(self.ui.nodeComboBox.count()):
+                    if self.ui.nodeComboBox.itemData(i) == self.arc_point.node_id:
+                        self.ui.nodeComboBox.setCurrentIndex(i)
+                        break
 
         except Exception as e:
             print(f"Warning: Could not load nodes: {e}")

@@ -54,10 +54,11 @@ class SectionWidget(QGroupBox):
     # Signal emitted when a checkbox changes (field_name, checked)
     checkbox_changed = Signal(str, bool)
 
-    def __init__(self, section: FieldSection, model_adapter=None, parent=None):
+    def __init__(self, section: FieldSection, model_adapter=None, table_name=None, parent=None):
         super().__init__(section.display_name, parent)
         self.section = section
         self.model_adapter = model_adapter
+        self.table_name = table_name
         self.field_widgets = {}
         self.setStyleSheet(get_group_box_style())
         self.setup_ui()
@@ -89,6 +90,16 @@ class SectionWidget(QGroupBox):
 
     def create_field_widget(self, field_name: str) -> QWidget:
         """Create appropriate widget based on field type"""
+        # Check if field is an enum type
+        enum_class = self.get_enum_class_for_field(field_name)
+        if enum_class:
+            widget = TabNavigationComboBox()
+            widget.setStyleSheet(get_input_style())
+            # Populate with enum values
+            for enum_value in enum_class:
+                widget.addItem(enum_value.value.title(), enum_value.value)
+            return widget
+
         # Text fields that should be multi-line
         multiline_fields = [
             "description",
@@ -175,6 +186,41 @@ class SectionWidget(QGroupBox):
         self.apply_field_tooltip(widget, field_name)
 
         return widget
+
+    def get_enum_class_for_field(self, field_name: str):
+        """Get the enum class for a field if it's an enum type"""
+        if not self.table_name or not self.model_adapter:
+            return None
+
+        try:
+            from sqlalchemy import inspect as sqla_inspect
+            from sqlalchemy.sql.sqltypes import Enum as SQLAlchemyEnum
+            import enum
+
+            table_class = self.model_adapter.table_classes.get(self.table_name)
+            if not table_class:
+                return None
+
+            mapper = sqla_inspect(table_class)
+
+            # Get the column - need to check if it exists first
+            if field_name not in mapper.columns:
+                return None
+
+            column = mapper.columns[field_name]
+            column_type = column.type
+
+            # Check if it's a SQLAlchemy Enum type
+            if isinstance(column_type, SQLAlchemyEnum):
+                # The enum_class attribute contains the Python enum
+                if hasattr(column_type, 'enum_class') and column_type.enum_class is not None:
+                    return column_type.enum_class
+
+        except Exception as e:
+            # Silently ignore errors - field is not an enum
+            pass
+
+        return None
 
     def get_field_display_name(self, field_name: str) -> str:
         """Convert database field names to user-friendly labels"""
@@ -472,7 +518,7 @@ class EntityDetailPage(QWidget):
         # Create section widgets
         if self.entity_mapping:
             for section in self.entity_mapping.sections:
-                section_widget = SectionWidget(section, self.model_adapter)
+                section_widget = SectionWidget(section, self.model_adapter, self.table_name)
                 self.section_widgets[section.name] = section_widget
 
                 # Connect checkbox signals for conditional sections

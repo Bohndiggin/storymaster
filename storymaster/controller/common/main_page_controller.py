@@ -2756,9 +2756,39 @@ class MainWindowController:
                     # Reset to first plot of new storyline
                     self._switch_to_first_plot_of_storyline()
 
-                    # Refresh views to show new storyline data
-                    self.load_and_draw_nodes()
-                    self.load_plot_sections()
+                    # Refresh the current view with the new storyline's data
+                    current_page_index = self.view.ui.pageStack.currentIndex()
+                    if current_page_index == 0:
+                        # Litographer view - reload plot sections and nodes
+                        self.load_plot_sections()
+                        self.load_and_draw_nodes()
+                    elif current_page_index == 1:
+                        # Lorekeeper view - refresh table view
+                        self._refresh_current_table_view()
+                    elif current_page_index == 2:
+                        # Character Arcs view - refresh arcs for current storyline (even if None)
+                        self.character_arc_page.refresh_arcs(self.current_storyline_id)
+
+                    # Reinitialize Lorekeeper widget with potentially new setting
+                    if self.new_lorekeeper_widget is not None:
+                        # Remove old widget
+                        self.view.ui.newLorekeeperPage.layout().removeWidget(
+                            self.new_lorekeeper_widget
+                        )
+                        self.new_lorekeeper_widget.deleteLater()
+                        self.new_lorekeeper_widget = None
+
+                    # Recreate the Lorekeeper widget with the current setting
+                    if self.current_setting_id is not None:
+                        self.new_lorekeeper_widget = NewLorekeeperPage(self.model, self.current_setting_id)
+                        # Add the widget to the new Lorekeeper page
+                        if self.view.ui.newLorekeeperPage.layout() is None:
+                            new_lorekeeper_layout = QVBoxLayout(self.view.ui.newLorekeeperPage)
+                            new_lorekeeper_layout.setContentsMargins(0, 0, 0, 0)
+                        else:
+                            new_lorekeeper_layout = self.view.ui.newLorekeeperPage.layout()
+                        new_lorekeeper_layout.addWidget(self.new_lorekeeper_widget)
+
                     self.update_status_indicators()
                 except Exception as e:
                     QMessageBox.critical(

@@ -172,8 +172,14 @@ class LorekeeperModelAdapter:
             return None
 
         try:
-            # Add setting_id to the kwargs
-            kwargs["setting_id"] = self.setting_id
+            # Add setting_id to kwargs only if the table has a setting_id column
+            # Litography tables (nodes, notes, plots, arcs) use storyline_id instead
+            from sqlalchemy import inspect as sqla_inspect
+            mapper = sqla_inspect(table_class)
+            column_names = [col.key for col in mapper.columns]
+
+            if "setting_id" in column_names:
+                kwargs["setting_id"] = self.setting_id
 
             with Session(self.model.engine) as session:
                 entity = table_class(**kwargs)

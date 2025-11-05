@@ -312,6 +312,9 @@ class CharacterArcDetailPage(QWidget):
         self.arc_points_tree.itemSelectionChanged.connect(
             self.on_arc_point_selection_changed
         )
+        self.arc_points_tree.itemDoubleClicked.connect(
+            lambda: self.edit_arc_point()
+        )
 
         # Apply theming to tree widget
         tree_style = f"""

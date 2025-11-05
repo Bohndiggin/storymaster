@@ -384,7 +384,7 @@ class ArcPoint(BaseTable):
     )
 
     arc: Mapped["LitographyArc"] = relationship(back_populates="arc_points")
-    node: Mapped["LitographyNode"] = relationship(back_populates="arc_points")
+    node: Mapped["LitographyNode | None"] = relationship(back_populates="arc_points")
 
 
 class Class_(BaseTable):
