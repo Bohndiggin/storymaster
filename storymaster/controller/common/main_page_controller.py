@@ -3497,13 +3497,6 @@ class MainWindowController:
             self.node_scene.addItem(node_item)
             node_item.setPos(x_pos, y_pos)  # Position after adding to scene
 
-            # Add note indicator if node has notes
-            if self.node_has_notes(node.id):
-                note_indicator = QGraphicsTextItem("📝")
-                note_indicator.setPos(x_pos + 45, y_pos - 5)
-                note_indicator.setFont(QFont("Arial", 12))
-                self.node_scene.addItem(note_indicator)
-
         # Draw connections using new system
         self.draw_connections(all_nodes)
 
