@@ -12,14 +12,14 @@ from pathlib import Path
 # Initialize Qt plugin paths for bundled executable
 if getattr(sys, "frozen", False):
     # Running in bundled mode
-    bundle_dir = Path(sys._MEIPASS)
+    bundle_dir = Path(sys._MEIPASS) # type: ignore
 
     # Windows-specific DLL loading fix
     if sys.platform.startswith("win"):
         # Add bundle directory to DLL search path for Windows
         if hasattr(os, "add_dll_directory"):
             try:
-                os.add_dll_directory(str(bundle_dir))
+                os.add_dll_directory(str(bundle_dir)) # type: ignore
             except (OSError, AttributeError):
                 pass
 
@@ -28,7 +28,7 @@ if getattr(sys, "frozen", False):
         os.environ["PATH"] = f"{bundle_dir}{os.pathsep}{current_path}"
 
     # Set Qt plugin paths
-    qt_plugin_paths = [bundle_dir / "PyQt6" / "Qt6" / "plugins", bundle_dir / "plugins"]
+    qt_plugin_paths = [bundle_dir / "PySide6" / "Qt6" / "plugins", bundle_dir / "plugins"]
 
     for plugin_path in qt_plugin_paths:
         if plugin_path.exists():
@@ -39,7 +39,7 @@ if getattr(sys, "frozen", False):
                 os.environ["QT_PLUGIN_PATH"] = str(plugin_path)
 
     # Set platform plugin path specifically
-    platform_path = bundle_dir / "PyQt6" / "Qt6" / "plugins" / "platforms"
+    platform_path = bundle_dir / "PySide6" / "Qt6" / "plugins" / "platforms"
     if platform_path.exists():
         os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = str(platform_path)
 
@@ -65,8 +65,8 @@ def debug_environment():
 
     if getattr(sys, "frozen", False):
         if hasattr(sys, "_MEIPASS"):
-            print(f"PyInstaller bundle dir: {sys._MEIPASS}")
-            bundle_dir = Path(sys._MEIPASS)
+            print(f"PyInstaller bundle dir: {sys._MEIPASS}") # type: ignore
+            bundle_dir = Path(sys._MEIPASS) # type: ignore
             wb_path = bundle_dir / "world_building_packages"
             print(f"Bundle world_building_packages exists: {wb_path.exists()}")
             if wb_path.exists():
