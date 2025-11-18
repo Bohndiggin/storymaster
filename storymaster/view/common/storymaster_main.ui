@@ -75,6 +75,7 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="storyweaverPage"/>
      </widget>
     </item>
     <item>
@@ -160,6 +161,22 @@
         <widget class="QPushButton" name="characterArcsNavButton">
          <property name="text">
           <string>Character Arcs</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="autoExclusive">
+          <bool>true</bool>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">navButtonGroup</string>
+         </attribute>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="storyweaverNavButton">
+         <property name="text">
+          <string>Storyweaver</string>
          </property>
          <property name="checkable">
           <bool>true</bool>

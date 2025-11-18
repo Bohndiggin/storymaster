@@ -12,14 +12,14 @@ from pathlib import Path
 # Initialize Qt plugin paths for bundled executable
 if getattr(sys, "frozen", False):
     # Running in bundled mode
-    bundle_dir = Path(sys._MEIPASS) # type: ignore
+    bundle_dir = Path(sys._MEIPASS)  # type: ignore
 
     # Windows-specific DLL loading fix
     if sys.platform.startswith("win"):
         # Add bundle directory to DLL search path for Windows
         if hasattr(os, "add_dll_directory"):
             try:
-                os.add_dll_directory(str(bundle_dir)) # type: ignore
+                os.add_dll_directory(str(bundle_dir))  # type: ignore
             except (OSError, AttributeError):
                 pass
 
@@ -65,8 +65,8 @@ def debug_environment():
 
     if getattr(sys, "frozen", False):
         if hasattr(sys, "_MEIPASS"):
-            print(f"PyInstaller bundle dir: {sys._MEIPASS}") # type: ignore
-            bundle_dir = Path(sys._MEIPASS) # type: ignore
+            print(f"PyInstaller bundle dir: {sys._MEIPASS}")  # type: ignore
+            bundle_dir = Path(sys._MEIPASS)  # type: ignore
             wb_path = bundle_dir / "world_building_packages"
             print(f"Bundle world_building_packages exists: {wb_path.exists()}")
             if wb_path.exists():
@@ -304,6 +304,7 @@ def main():
     view = MainView()
     model = BaseModel(user_id)
     controller = MainWindowController(view, model)
+    view.controller = controller  # Set controller reference for cleanup
     view.show()
 
     sys.exit(app.exec())

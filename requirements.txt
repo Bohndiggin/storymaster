@@ -1,6 +1,7 @@
 # Core dependencies for Storymaster
 PySide6
 SQLAlchemy==2.0.41
+intervaltree>=3.1.0  # For Storyweaver entity tracking
 
 # Spell checking support (optional - falls back to basic word list if not available)
 pyenchant==3.2.2

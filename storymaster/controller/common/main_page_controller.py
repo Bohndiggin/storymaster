@@ -116,6 +116,7 @@ from storymaster.view.common.user_switcher_dialog import UserSwitcherDialog
 from storymaster.view.litographer.add_node_dialog import AddNodeDialog
 from storymaster.view.litographer.node_notes_dialog import NodeNotesDialog
 from storymaster.view.lorekeeper.new_lorekeeper_page import NewLorekeeperPage
+from storymaster.view.storyweaver.storyweaver_widget import StoryweaverWidget
 
 
 class ConnectionPoint(QGraphicsEllipseItem):
@@ -820,6 +821,22 @@ class MainWindowController:
 
         # Initialize new Lorekeeper page
         self.new_lorekeeper_widget = None  # Will be initialized when needed
+
+        # Initialize Storyweaver page
+        self.storyweaver_widget = StoryweaverWidget(
+            model=self.model,
+            current_storyline_id=self.current_storyline_id or 1,
+            current_setting_id=self.current_setting_id or 1,
+            parent=self.view
+        )
+
+        # Add the Storyweaver widget to the storyweaver page
+        storyweaver_layout = QVBoxLayout(self.view.ui.storyweaverPage)
+        storyweaver_layout.setContentsMargins(0, 0, 0, 0)
+        storyweaver_layout.addWidget(self.storyweaver_widget)
+
+        # Connect Storyweaver signals
+        self.storyweaver_widget.entity_search_requested.connect(self._on_storyweaver_entity_search)
 
         self.connect_signals()
         self.on_litographer_selected()  # Start on the litographer page
@@ -2055,6 +2072,9 @@ class MainWindowController:
         self.view.ui.characterArcsNavButton.released.connect(self.on_character_arcs_selected)
         apply_general_tooltips(self.view.ui.characterArcsNavButton, "character_arcs_tab")
 
+        self.view.ui.storyweaverNavButton.released.connect(self.on_storyweaver_selected)
+        apply_general_tooltips(self.view.ui.storyweaverNavButton, "storyweaver_tab")
+
         # --- File Menu ---
         self.view.ui.actionOpen.triggered.connect(self.on_open_storyline_clicked)
         self.view.ui.actionImportFromJSON.triggered.connect(self.on_import_from_json_clicked)
@@ -2780,7 +2800,9 @@ class MainWindowController:
 
                     # Recreate the Lorekeeper widget with the current setting
                     if self.current_setting_id is not None:
-                        self.new_lorekeeper_widget = NewLorekeeperPage(self.model, self.current_setting_id)
+                        self.new_lorekeeper_widget = NewLorekeeperPage(
+                            self.model, self.current_setting_id
+                        )
                         # Add the widget to the new Lorekeeper page
                         if self.view.ui.newLorekeeperPage.layout() is None:
                             new_lorekeeper_layout = QVBoxLayout(self.view.ui.newLorekeeperPage)
@@ -3821,6 +3843,86 @@ class MainWindowController:
             # No storyline selected - show empty state
             pass
 
+    def on_storyweaver_selected(self):
+        """Handle switching to the Storyweaver page."""
+        self.view.ui.pageStack.setCurrentIndex(3)  # Storyweaver is the 4th tab (index 3)
+
+        # Update project context if storyline/setting changed
+        if self.current_storyline_id is not None and self.current_setting_id is not None:
+            self.storyweaver_widget.update_project_context(
+                self.current_storyline_id,
+                self.current_setting_id
+            )
+
+    def _on_storyweaver_entity_search(self, query: str, storyline_id: int, setting_id: int):
+        """
+        Handle entity search request from Storyweaver widget.
+
+        Args:
+            query: Search query string (empty string for all entities)
+            storyline_id: Current storyline ID for filtering
+            setting_id: Current setting ID for filtering
+        """
+        try:
+            with Session(self.model.engine) as session:
+                entities = []
+
+                # Query Actors (characters)
+                actors = session.query(Actor).filter(
+                    Actor.setting_id == setting_id
+                )
+                if query:
+                    actors = actors.filter(Actor.name.ilike(f"%{query}%"))
+                actors = actors.all()
+
+                for actor in actors:
+                    entities.append({
+                        "id": f"actor_{actor.id}",
+                        "name": actor.name,
+                        "type": "character"
+                    })
+
+                # Query Locations
+                from storymaster.model.database.schema.base import Location
+                locations = session.query(Location).filter(
+                    Location.setting_id == setting_id
+                )
+                if query:
+                    locations = locations.filter(Location.name.ilike(f"%{query}%"))
+                locations = locations.all()
+
+                for location in locations:
+                    entities.append({
+                        "id": f"location_{location.id}",
+                        "name": location.name,
+                        "type": "location"
+                    })
+
+                # Query Factions
+                factions = session.query(Faction).filter(
+                    Faction.setting_id == setting_id
+                )
+                if query:
+                    factions = factions.filter(Faction.name.ilike(f"%{query}%"))
+                factions = factions.all()
+
+                for faction in factions:
+                    entities.append({
+                        "id": f"faction_{faction.id}",
+                        "name": faction.name,
+                        "type": "faction"
+                    })
+
+                # Sort by name
+                entities.sort(key=lambda x: x["name"])
+
+                # Update the Storyweaver widget with the entity list
+                self.storyweaver_widget.set_entity_list(entities)
+
+        except Exception as e:
+            print(f"[Storyweaver] Error searching entities: {e}")
+            self.storyweaver_widget.set_entity_list([])
+
     def load_database_structure(self):
         """Fetches table names from the model and populates the tree view."""
         # DEPRECATED: This method is no longer used with the new Lorekeeper interface
@@ -3911,3 +4013,11 @@ class MainWindowController:
 
         dialog = AboutDialog(self.view)
         dialog.exec()
+
+    def cleanup(self):
+        """Clean up resources before shutdown."""
+        if hasattr(self, "backup_manager") and self.backup_manager:
+            self.backup_manager.stop_automatic_backups()
+
+        if hasattr(self, "storyweaver_widget") and self.storyweaver_widget:
+            self.storyweaver_widget.cleanup()

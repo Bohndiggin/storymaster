@@ -104,6 +104,9 @@ class Ui_StorymasterMainWindow(object):
         self.characterArcsLayout.addWidget(self.characterArcsContainer)
 
         self.pageStack.addWidget(self.characterArcsPage)
+        self.storyweaverPage = QWidget()
+        self.storyweaverPage.setObjectName(u"storyweaverPage")
+        self.pageStack.addWidget(self.storyweaverPage)
 
         self.verticalLayout.addWidget(self.pageStack)
 
@@ -145,6 +148,14 @@ class Ui_StorymasterMainWindow(object):
         self.characterArcsNavButton.setAutoExclusive(True)
 
         self.horizontalLayout.addWidget(self.characterArcsNavButton)
+
+        self.storyweaverNavButton = QPushButton(self.bottomNavBar)
+        self.navButtonGroup.addButton(self.storyweaverNavButton)
+        self.storyweaverNavButton.setObjectName(u"storyweaverNavButton")
+        self.storyweaverNavButton.setCheckable(True)
+        self.storyweaverNavButton.setAutoExclusive(True)
+
+        self.horizontalLayout.addWidget(self.storyweaverNavButton)
 
         self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
@@ -284,6 +295,7 @@ class Ui_StorymasterMainWindow(object):
         self.litographerNavButton.setText(QCoreApplication.translate("StorymasterMainWindow", u"Litographer", None))
         self.lorekeeperNavButton.setText(QCoreApplication.translate("StorymasterMainWindow", u"Lorekeeper", None))
         self.characterArcsNavButton.setText(QCoreApplication.translate("StorymasterMainWindow", u"Character Arcs", None))
+        self.storyweaverNavButton.setText(QCoreApplication.translate("StorymasterMainWindow", u"Storyweaver", None))
         self.menuFile.setTitle(QCoreApplication.translate("StorymasterMainWindow", u"File", None))
         self.menuStoryline.setTitle(QCoreApplication.translate("StorymasterMainWindow", u"Storyline", None))
         self.menuSetting.setTitle(QCoreApplication.translate("StorymasterMainWindow", u"Setting", None))
