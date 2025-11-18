@@ -100,8 +100,8 @@ class EntityInfoCard(QFrame):
         self.raise_()
 
 
-class EntityLinkHighlighter(QSyntaxHighlighter):
-    """Syntax highlighter that makes entity link syntax invisible and shows only the name."""
+class MarkdownHighlighter(QSyntaxHighlighter):
+    """Syntax highlighter for markdown with entity links."""
 
     def __init__(self, parent: QTextDocument, editor):
         super().__init__(parent)
@@ -113,27 +113,103 @@ class EntityLinkHighlighter(QSyntaxHighlighter):
         self.entity_format.setUnderlineColor(QColor("#4A9EFF"))
         self.entity_format.setForeground(QColor("#4A9EFF"))
 
-        # Format for invisible syntax (using font feature to hide)
+        # Format for invisible syntax
         self.hidden_format = QTextCharFormat()
         self.hidden_format.setForeground(QColor(0, 0, 0, 0))  # Fully transparent
-        self.hidden_format.setFontPointSize(0.1)  # Smallest possible
+        self.hidden_format.setFontPointSize(0.1)
+
+        # Markdown formats
+        self.heading1_format = QTextCharFormat()
+        self.heading1_format.setFontWeight(QFont.Bold)
+        self.heading1_format.setFontPointSize(18)
+        self.heading1_format.setForeground(QColor("#FFFFFF"))
+
+        self.heading2_format = QTextCharFormat()
+        self.heading2_format.setFontWeight(QFont.Bold)
+        self.heading2_format.setFontPointSize(16)
+        self.heading2_format.setForeground(QColor("#CCCCCC"))
+
+        self.heading3_format = QTextCharFormat()
+        self.heading3_format.setFontWeight(QFont.Bold)
+        self.heading3_format.setFontPointSize(14)
+        self.heading3_format.setForeground(QColor("#AAAAAA"))
+
+        self.bold_format = QTextCharFormat()
+        self.bold_format.setFontWeight(QFont.Bold)
+
+        self.italic_format = QTextCharFormat()
+        self.italic_format.setFontItalic(True)
+
+        self.code_format = QTextCharFormat()
+        self.code_format.setFontFamily("Monospace")
+        self.code_format.setBackground(QColor("#3C3C3C"))
+        self.code_format.setForeground(QColor("#00FF00"))
 
     def highlightBlock(self, text: str):
-        """Apply highlighting to entity links in the text block."""
-        # Pattern to match [[EntityName|entity_id]]
-        pattern = re.compile(r'(\[\[)([^\|]+?)(\|)([^\]]+?)(\]\])')
+        """Apply highlighting to markdown and entity links."""
+        # Check if cursor is in this block to show/hide markdown syntax
+        cursor_block = self.editor.textCursor().block()
+        show_syntax = (cursor_block == self.currentBlock())
 
-        for match in pattern.finditer(text):
-            # Hide opening brackets [[
-            self.setFormat(match.start(1), len(match.group(1)), self.hidden_format)
+        # Handle entity links first
+        entity_pattern = re.compile(r'(\[\[)([^\|]+?)(\|)([^\]]+?)(\]\])')
+        for match in entity_pattern.finditer(text):
+            if not show_syntax:
+                # Hide brackets and ID
+                self.setFormat(match.start(1), len(match.group(1)), self.hidden_format)
 
-            # Format entity name (visible and underlined)
+            # Format entity name
             self.setFormat(match.start(2), len(match.group(2)), self.entity_format)
 
-            # Hide |entity_id]]
-            hidden_start = match.start(3)
-            hidden_length = match.end() - hidden_start
-            self.setFormat(hidden_start, hidden_length, self.hidden_format)
+            if not show_syntax:
+                # Hide |entity_id]]
+                hidden_start = match.start(3)
+                hidden_length = match.end() - hidden_start
+                self.setFormat(hidden_start, hidden_length, self.hidden_format)
+
+        # Headings
+        if text.startswith('# '):
+            if not show_syntax:
+                self.setFormat(0, 2, self.hidden_format)
+            self.setFormat(2, len(text) - 2, self.heading1_format)
+        elif text.startswith('## '):
+            if not show_syntax:
+                self.setFormat(0, 3, self.hidden_format)
+            self.setFormat(3, len(text) - 3, self.heading2_format)
+        elif text.startswith('### '):
+            if not show_syntax:
+                self.setFormat(0, 4, self.hidden_format)
+            self.setFormat(4, len(text) - 4, self.heading3_format)
+
+        # Bold **text**
+        bold_pattern = re.compile(r'(\*\*)(.+?)(\*\*)')
+        for match in bold_pattern.finditer(text):
+            if not show_syntax:
+                # Hide asterisks
+                self.setFormat(match.start(1), 2, self.hidden_format)
+                self.setFormat(match.start(3), 2, self.hidden_format)
+            # Bold the content
+            self.setFormat(match.start(2), len(match.group(2)), self.bold_format)
+
+        # Italic *text*
+        italic_pattern = re.compile(r'(?<!\*)(\*)(?!\*)(.+?)(?<!\*)(\*)(?!\*)')
+        for match in italic_pattern.finditer(text):
+            if not show_syntax:
+                # Hide asterisks
+                self.setFormat(match.start(1), 1, self.hidden_format)
+                self.setFormat(match.start(3), 1, self.hidden_format)
+            # Italicize the content
+            self.setFormat(match.start(2), len(match.group(2)), self.italic_format)
+
+        # Inline code `text`
+        code_pattern = re.compile(r'(`)(.+?)(`)')
+        for match in code_pattern.finditer(text):
+            if not show_syntax:
+                # Hide backticks
+                self.setFormat(match.start(1), 1, self.hidden_format)
+                self.setFormat(match.start(3), 1, self.hidden_format)
+            # Format as code
+            self.setFormat(match.start(2), len(match.group(2)), self.code_format)
 
 
 class EntityTextEditor(QTextEdit):
@@ -166,8 +242,8 @@ class EntityTextEditor(QTextEdit):
         self._last_clicked_entity: Optional[str] = None
         self._click_pos: Optional[QPoint] = None
 
-        # Install syntax highlighter for entity links
-        self._highlighter = EntityLinkHighlighter(self.document(), self)
+        # Install markdown syntax highlighter
+        self._highlighter = MarkdownHighlighter(self.document(), self)
 
         # Timer for updating display after text changes
         self._update_timer = QTimer(self)
@@ -176,6 +252,9 @@ class EntityTextEditor(QTextEdit):
 
         # Connect to text changes
         self.textChanged.connect(self._on_text_changed)
+
+        # Connect cursor position changes to trigger rehighlighting
+        self.cursorPositionChanged.connect(self._on_cursor_position_changed)
 
         self._setup_completer()
 
@@ -320,17 +399,26 @@ class EntityTextEditor(QTextEdit):
         cursor = self.textCursor()
         current_pos = cursor.position()
 
-        if current_pos < self._trigger_pos:
-            # Cursor moved before trigger, cancel completion
+        # Validate trigger position is still valid
+        doc_length = self.document().characterCount()
+        if self._trigger_pos >= doc_length or current_pos < self._trigger_pos:
+            # Trigger position is invalid or cursor moved before trigger, cancel completion
             self._completion_active = False
             self._inline_mode = False
             self._completer.popup().hide()
             return
 
         # Get text between trigger position and cursor
-        cursor.setPosition(self._trigger_pos)
-        cursor.setPosition(current_pos, QTextCursor.KeepAnchor)
-        search_text = cursor.selectedText()
+        try:
+            cursor.setPosition(self._trigger_pos)
+            cursor.setPosition(current_pos, QTextCursor.KeepAnchor)
+            search_text = cursor.selectedText()
+        except:
+            # If setting position fails, cancel completion
+            self._completion_active = False
+            self._inline_mode = False
+            self._completer.popup().hide()
+            return
 
         # Check exit conditions based on mode
         if self._inline_mode:
@@ -547,6 +635,21 @@ class EntityTextEditor(QTextEdit):
         self._info_card.hide()
         # Debounce the update to avoid excessive processing
         self._update_timer.start(100)
+
+    def _on_cursor_position_changed(self):
+        """Handle cursor position changes to show/hide markdown syntax."""
+        # Rehighlight the current block and previous block to update visibility
+        cursor = self.textCursor()
+        current_block = cursor.block()
+
+        # Rehighlight current block
+        self._highlighter.rehighlightBlock(current_block)
+
+        # Also rehighlight previous block in case we moved away from it
+        if hasattr(self, '_last_cursor_block') and self._last_cursor_block != current_block:
+            self._highlighter.rehighlightBlock(self._last_cursor_block)
+
+        self._last_cursor_block = current_block
 
     def _update_entity_display(self):
         """Update the display to show entity names without link syntax."""

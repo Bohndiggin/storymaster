@@ -9,12 +9,13 @@ from PySide6.QtWidgets import (
     QListWidgetItem, QDialog
 )
 from PySide6.QtCore import Qt, Signal, QTimer, QThread, QObject, QPoint
-from PySide6.QtGui import QAction, QIcon
+from PySide6.QtGui import QAction, QIcon, QTextCursor
 
 from storymaster.view.storyweaver.text_editor import EntityTextEditor
 from storymaster.view.storyweaver.entity_tracker import EntityTracker
 from storymaster.view.storyweaver.auto_tag_dialog import AutoTagDialog
 from storymaster.view.storyweaver.loading_dialog import LoadingDialog
+from storymaster.view.storyweaver.heading_navigator import HeadingNavigator
 from storymaster.models.document import StoryDocument
 
 if TYPE_CHECKING:
@@ -61,6 +62,12 @@ class StoryweaverWidget(QWidget):
         self.autosave_timer.timeout.connect(self._autosave)
         self.autosave_timer.start(30000)
 
+        # Heading update timer (debounced to avoid excessive updates)
+        self.heading_update_timer = QTimer(self)
+        self.heading_update_timer.setSingleShot(True)
+        self.heading_update_timer.timeout.connect(self._do_update_heading_navigation)
+        self.heading_update_timer.setInterval(500)  # 500ms debounce
+
     def _setup_ui(self):
         """Initialize the user interface."""
         layout = QVBoxLayout(self)
@@ -70,7 +77,16 @@ class StoryweaverWidget(QWidget):
         self.toolbar = self._create_toolbar()
         layout.addWidget(self.toolbar)
 
-        # Text editor (no sidebar)
+        # Main content: splitter with navigation on left, editor on right
+        splitter = QSplitter(Qt.Horizontal)
+
+        # Left side: Heading navigator
+        self.heading_navigator = HeadingNavigator()
+        self.heading_navigator.setMinimumWidth(200)
+        self.heading_navigator.setMaximumWidth(400)
+        splitter.addWidget(self.heading_navigator)
+
+        # Right side: Text editor
         editor_widget = QWidget()
         editor_layout = QVBoxLayout(editor_widget)
         editor_layout.setContentsMargins(5, 5, 5, 5)
@@ -82,7 +98,12 @@ class StoryweaverWidget(QWidget):
         self.word_count_label = QLabel("Words: 0")
         editor_layout.addWidget(self.word_count_label)
 
-        layout.addWidget(editor_widget)
+        splitter.addWidget(editor_widget)
+
+        # Set initial splitter sizes (200 for nav, rest for editor)
+        splitter.setSizes([200, 800])
+
+        layout.addWidget(splitter)
 
     def _create_toolbar(self) -> QToolBar:
         """Create the document management toolbar."""
@@ -154,6 +175,9 @@ class StoryweaverWidget(QWidget):
         self.editor.entity_hover.connect(self._on_entity_hover)
         self.editor.textChanged.connect(self._on_text_changed)
 
+        # Heading navigator signals
+        self.heading_navigator.heading_clicked.connect(self._on_heading_clicked)
+
     def _on_entity_requested(self, query: str):
         """Handle entity search request from editor."""
         # Emit signal to controller to fetch entities
@@ -183,12 +207,40 @@ class StoryweaverWidget(QWidget):
             self.current_document.set_content(self.editor.get_text())
             self.document_modified.emit(True)
             self._update_word_count()
+            # Update heading navigation
+            self._update_heading_navigation()
+
+    def _on_heading_clicked(self, line_number: int):
+        """
+        Handle heading click from navigator - scroll to that line.
+
+        Args:
+            line_number: Line number to scroll to
+        """
+        # Move cursor to the specified line
+        cursor = self.editor.textCursor()
+        cursor.movePosition(QTextCursor.Start)
+        for _ in range(line_number):
+            cursor.movePosition(QTextCursor.Down)
+        self.editor.setTextCursor(cursor)
+        # Ensure the cursor is visible
+        self.editor.ensureCursorVisible()
 
     def _update_word_count(self):
         """Update the word count label."""
         text = self.editor.get_text()
         words = len(text.split())
         self.word_count_label.setText(f"Words: {words}")
+
+    def _update_heading_navigation(self):
+        """Debounced update for heading navigation."""
+        # Restart the timer - if called again before timeout, it will reset
+        self.heading_update_timer.start()
+
+    def _do_update_heading_navigation(self):
+        """Actually update the heading navigation (called after debounce)."""
+        text = self.editor.get_text()
+        self.heading_navigator.update_headings(text)
 
     def _autosave(self):
         """Auto-save the current document if modified."""
@@ -302,6 +354,7 @@ class StoryweaverWidget(QWidget):
         # Update UI
         self.document_label.setText(f"Document: {file_path.split('/')[-1]}")
         self._update_word_count()
+        self._do_update_heading_navigation()  # Update headings immediately
         self.document_modified.emit(False)
 
     def open_document(self):
@@ -388,6 +441,7 @@ class StoryweaverWidget(QWidget):
             # Update UI
             self.document_label.setText(f"Document: {file_path.split('/')[-1]}")
             self._update_word_count()
+            self._do_update_heading_navigation()  # Update headings immediately
             self.document_modified.emit(False)
 
             # Close loading dialog
@@ -631,3 +685,4 @@ class StoryweaverWidget(QWidget):
 
         # Stop timers
         self.autosave_timer.stop()
+        self.heading_update_timer.stop()
