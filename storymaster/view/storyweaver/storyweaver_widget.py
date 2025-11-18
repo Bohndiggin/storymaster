@@ -2,20 +2,25 @@
 Main Storyweaver widget - integrated writing interface for Storymaster.
 """
 from typing import Optional, List, Dict, Any, TYPE_CHECKING
+import re
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QSplitter, QListWidget,
     QLabel, QToolBar, QPushButton, QFileDialog, QMessageBox,
-    QListWidgetItem
+    QListWidgetItem, QDialog
 )
-from PySide6.QtCore import Qt, Signal, QTimer
+from PySide6.QtCore import Qt, Signal, QTimer, QThread, QObject, QPoint
 from PySide6.QtGui import QAction, QIcon
 
 from storymaster.view.storyweaver.text_editor import EntityTextEditor
 from storymaster.view.storyweaver.entity_tracker import EntityTracker
+from storymaster.view.storyweaver.auto_tag_dialog import AutoTagDialog
+from storymaster.view.storyweaver.loading_dialog import LoadingDialog
 from storymaster.models.document import StoryDocument
 
 if TYPE_CHECKING:
     from storymaster.model.database.database_model import Model
+
+
 
 
 class StoryweaverWidget(QWidget):
@@ -24,10 +29,12 @@ class StoryweaverWidget(QWidget):
 
     Signals:
         entity_search_requested: Emitted when editor needs entity search (query, storyline_id, setting_id)
+        entity_hover_requested: Emitted when user hovers over entity (entity_id, entity_type, storyline_id, setting_id)
         document_modified: Emitted when document content changes
     """
 
     entity_search_requested = Signal(str, int, int)  # (query, storyline_id, setting_id)
+    entity_hover_requested = Signal(str, str, int, int)  # (entity_id, entity_type, storyline_id, setting_id)
     document_modified = Signal(bool)  # is_modified
 
     def __init__(self, model: "Model", current_storyline_id: int, current_setting_id: int, parent=None):
@@ -41,6 +48,9 @@ class StoryweaverWidget(QWidget):
 
         # Entity cache for sidebar
         self._entity_list: List[Dict[str, Any]] = []
+
+        # Popup position tracking (for sidebar clicks)
+        self._sidebar_popup_pos: Optional[QPoint] = None
 
         # Setup UI
         self._setup_ui()
@@ -60,10 +70,7 @@ class StoryweaverWidget(QWidget):
         self.toolbar = self._create_toolbar()
         layout.addWidget(self.toolbar)
 
-        # Main splitter (editor | sidebar)
-        splitter = QSplitter(Qt.Horizontal)
-
-        # Left: Text editor
+        # Text editor (no sidebar)
         editor_widget = QWidget()
         editor_layout = QVBoxLayout(editor_widget)
         editor_layout.setContentsMargins(5, 5, 5, 5)
@@ -75,16 +82,7 @@ class StoryweaverWidget(QWidget):
         self.word_count_label = QLabel("Words: 0")
         editor_layout.addWidget(self.word_count_label)
 
-        splitter.addWidget(editor_widget)
-
-        # Right: Entity sidebar
-        sidebar = self._create_sidebar()
-        splitter.addWidget(sidebar)
-
-        # Set initial sizes (75% editor, 25% sidebar)
-        splitter.setSizes([750, 250])
-
-        layout.addWidget(splitter)
+        layout.addWidget(editor_widget)
 
     def _create_toolbar(self) -> QToolBar:
         """Create the document management toolbar."""
@@ -108,6 +106,14 @@ class StoryweaverWidget(QWidget):
         save_action.setShortcut("Ctrl+S")
         save_action.triggered.connect(self.save_document)
         toolbar.addAction(save_action)
+
+        toolbar.addSeparator()
+
+        # Auto-tag entities
+        auto_tag_action = QAction("Auto-Tag Entities", self)
+        auto_tag_action.setToolTip("Automatically find and tag entities in the document")
+        auto_tag_action.triggered.connect(self.auto_tag_entities)
+        toolbar.addAction(auto_tag_action)
 
         toolbar.addSeparator()
 
@@ -145,15 +151,18 @@ class StoryweaverWidget(QWidget):
         # Editor signals
         self.editor.entity_requested.connect(self._on_entity_requested)
         self.editor.entity_selected.connect(self._on_entity_selected)
+        self.editor.entity_hover.connect(self._on_entity_hover)
         self.editor.textChanged.connect(self._on_text_changed)
-
-        # Sidebar double-click to insert entity
-        self.entity_list_widget.itemDoubleClicked.connect(self._on_entity_double_clicked)
 
     def _on_entity_requested(self, query: str):
         """Handle entity search request from editor."""
         # Emit signal to controller to fetch entities
         self.entity_search_requested.emit(query, self.current_storyline_id, self.current_setting_id)
+
+    def _on_entity_hover(self, entity_id: str, entity_type: str):
+        """Handle entity hover event from editor."""
+        # Emit signal to controller to fetch entity details
+        self.entity_hover_requested.emit(entity_id, entity_type, self.current_storyline_id, self.current_setting_id)
 
     def _on_entity_selected(self, entity_id: str, entity_name: str):
         """Handle entity selection from autocomplete."""
@@ -175,18 +184,6 @@ class StoryweaverWidget(QWidget):
             self.document_modified.emit(True)
             self._update_word_count()
 
-    def _on_entity_double_clicked(self, item: QListWidgetItem):
-        """Handle double-click on entity in sidebar."""
-        # Parse item text: "EntityName (type) [id]"
-        import re
-        text = item.text()
-        match = re.match(r"^(.+?)\s+\((.+?)\)\s+\[(.+?)\]$", text)
-        if match:
-            entity_name = match.group(1)
-            entity_id = match.group(3)
-            self.editor.insert_entity_link(entity_name, entity_id)
-            self._on_entity_selected(entity_id, entity_name)
-
     def _update_word_count(self):
         """Update the word count label."""
         text = self.editor.get_text()
@@ -207,7 +204,7 @@ class StoryweaverWidget(QWidget):
 
     def set_entity_list(self, entities: List[Dict[str, Any]]):
         """
-        Update the entity list for autocomplete and sidebar.
+        Update the entity list for autocomplete.
 
         Args:
             entities: List of dicts with keys: id, name, type
@@ -217,14 +214,34 @@ class StoryweaverWidget(QWidget):
         # Update editor autocomplete
         self.editor.set_entity_list(entities)
 
-        # Update sidebar
-        self.entity_list_widget.clear()
-        for entity in entities:
-            name = entity.get("name", "")
-            entity_type = entity.get("type", "")
-            entity_id = entity.get("id", "")
-            item_text = f"{name} ({entity_type}) [{entity_id}]"
-            self.entity_list_widget.addItem(item_text)
+    def show_entity_details(self, name: str, entity_type: str, details: str, entity_id: str = None):
+        """
+        Show entity details in the hover card.
+
+        Args:
+            name: Entity name
+            entity_type: Entity type
+            details: Formatted details string
+            entity_id: Entity ID (optional, for navigation to Lorekeeper)
+        """
+        # If we have a sidebar popup position, use that; otherwise use editor's stored position
+        if self._sidebar_popup_pos:
+            # Show at sidebar position
+            self.editor._info_card.set_entity_info(name, entity_type, details, entity_id)
+            self.editor._info_card.show_at_position(self._sidebar_popup_pos)
+            # Clear the position after use
+            self._sidebar_popup_pos = None
+        else:
+            # Show at editor position (from clicking entity link in text)
+            self.editor.show_entity_info(name, entity_type, details)
+
+    def hide_info_cards(self):
+        """Hide any visible info cards."""
+        self.editor.hide_info_card()
+
+    def preload_entities(self):
+        """Preload entity list for faster autocomplete."""
+        self._refresh_entity_list()
 
     def update_project_context(self, storyline_id: int, setting_id: int):
         """
@@ -253,12 +270,12 @@ class StoryweaverWidget(QWidget):
             elif reply == QMessageBox.Cancel:
                 return
 
-        # Get save location
-        file_path, _ = QFileDialog.getSaveFileName(
+        # Get save location (directory name)
+        file_path = QFileDialog.getSaveFileName(
             self, "Create New Document",
             "",
             "Storyweaver Documents (*.storyweaver)"
-        )
+        )[0]
 
         if not file_path:
             return
@@ -266,6 +283,9 @@ class StoryweaverWidget(QWidget):
         # Ensure .storyweaver extension
         if not file_path.endswith(".storyweaver"):
             file_path += ".storyweaver"
+
+        # Note: .storyweaver is actually a directory bundle, not a file
+        # The save dialog will create the directory structure
 
         # Create new document
         self.current_document = StoryDocument()
@@ -299,35 +319,86 @@ class StoryweaverWidget(QWidget):
             elif reply == QMessageBox.Cancel:
                 return
 
-        # Get file to open
-        file_path, _ = QFileDialog.getOpenFileName(
-            self, "Open Document",
+        # Get directory to open (.storyweaver is a directory bundle)
+        file_path = QFileDialog.getExistingDirectory(
+            self, "Open Storyweaver Document",
             "",
-            "Storyweaver Documents (*.storyweaver)"
+            QFileDialog.ShowDirsOnly
         )
 
         if not file_path:
             return
 
-        # Load document
-        self.current_document = StoryDocument(file_path)
-        if not self.current_document.load():
-            QMessageBox.warning(self, "Error", "Failed to load document")
-            self.current_document = None
+        # Validate it's a .storyweaver directory
+        if not file_path.endswith(".storyweaver"):
+            QMessageBox.warning(
+                self, "Invalid Document",
+                "Please select a .storyweaver document directory"
+            )
             return
 
-        # Set editor content
-        self.editor.set_text(self.current_document.content)
+        # Store file path for loading
+        self._pending_file_path = file_path
 
-        # Setup entity tracker
-        if self.entity_tracker:
-            self.entity_tracker.deleteLater()
-        self.entity_tracker = EntityTracker(self.editor.document(), self)
+        # Show loading dialog
+        self.loading_dialog = LoadingDialog("Loading document...", self)
+        self.loading_dialog.show()
 
-        # Update UI
-        self.document_label.setText(f"Document: {file_path.split('/')[-1]}")
-        self._update_word_count()
-        self.document_modified.emit(False)
+        # Force process events to show dialog
+        from PySide6.QtWidgets import QApplication
+        QApplication.processEvents()
+
+        # Use QTimer to load after dialog is visible
+        QTimer.singleShot(50, self._do_load_document)
+
+    def _do_load_document(self):
+        """Actually load the document (called via QTimer)."""
+        from PySide6.QtWidgets import QApplication
+
+        try:
+            file_path = self._pending_file_path
+
+            # Update message
+            self.loading_dialog.set_message("Opening document...")
+            QApplication.processEvents()
+
+            # Load document
+            self.current_document = StoryDocument(file_path)
+
+            self.loading_dialog.set_message("Loading content...")
+            QApplication.processEvents()
+
+            if not self.current_document.load():
+                self.loading_dialog.close()
+                QMessageBox.warning(self, "Error", "Failed to load document")
+                self.current_document = None
+                return
+
+            # Set editor content
+            self.loading_dialog.set_message("Rendering content...")
+            QApplication.processEvents()
+
+            self.editor.set_text(self.current_document.content)
+
+            # Setup entity tracker
+            if self.entity_tracker:
+                self.entity_tracker.deleteLater()
+            self.entity_tracker = EntityTracker(self.editor.document(), self)
+
+            # Update UI
+            self.document_label.setText(f"Document: {file_path.split('/')[-1]}")
+            self._update_word_count()
+            self.document_modified.emit(False)
+
+            # Close loading dialog
+            self.loading_dialog.close()
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            self.loading_dialog.close()
+            QMessageBox.warning(self, "Error", f"Failed to load document: {e}")
+            self.current_document = None
 
     def save_document(self):
         """Save the current document."""
@@ -361,6 +432,196 @@ class StoryweaverWidget(QWidget):
     def get_current_document(self) -> Optional[StoryDocument]:
         """Get the currently open document."""
         return self.current_document
+
+    def auto_tag_entities(self):
+        """Automatically detect and tag entities in the current document."""
+        if not self.current_document:
+            QMessageBox.warning(self, "No Document", "No document is currently open")
+            return
+
+        if not self._entity_list:
+            QMessageBox.warning(
+                self, "No Entities",
+                "No entities available. Make sure you're in a project with entities."
+            )
+            return
+
+        # Get current document text
+        text = self.editor.get_text()
+
+        if not text.strip():
+            QMessageBox.information(self, "Empty Document", "The document is empty")
+            return
+
+        # Find all entity mentions in the text
+        matches = self._find_entity_matches(text)
+
+        if not matches:
+            QMessageBox.information(
+                self, "No Matches",
+                "No entity names found in the document"
+            )
+            return
+
+        # Show dialog for user to select which entities to tag
+        dialog = AutoTagDialog(matches, self)
+        if dialog.exec() == QDialog.Accepted:
+            selected_entities = dialog.get_selected_entities()
+            if selected_entities:
+                self._apply_entity_tags(text, matches, selected_entities)
+
+    def _find_entity_matches(self, text: str) -> List[Dict[str, Any]]:
+        """
+        Find all entity name occurrences in the text, including aliases.
+
+        Args:
+            text: Document text to search
+
+        Returns:
+            List of match dictionaries with entity info and positions
+        """
+        matches = []
+
+        for entity in self._entity_list:
+            entity_name = entity.get("name", "")
+            entity_id = entity.get("id", "")
+            entity_type = entity.get("type", "")
+            aliases = entity.get("aliases", [])
+
+            if not entity_name or len(entity_name) < 3:  # Skip very short names
+                continue
+
+            # Collect all names to search for (canonical + aliases)
+            names_to_search = [entity_name] + [a for a in aliases if len(a) >= 3]
+
+            # Track all matches for this entity (canonical + aliases)
+            all_found_matches = []
+            match_texts = {}  # Store what text was found at each position
+
+            for name in names_to_search:
+                # Find all occurrences (case-insensitive, word boundaries)
+                pattern = r'\b' + re.escape(name) + r'\b'
+                found = list(re.finditer(pattern, text, re.IGNORECASE))
+
+                for match in found:
+                    # Store the actual text found (preserves case and alias used)
+                    match_texts[match.start()] = text[match.start():match.end()]
+                    all_found_matches.append(match)
+
+            if all_found_matches:
+                # Check if any occurrence is already tagged
+                already_tagged = any(
+                    self._is_already_tagged(text, match.start(), match_texts.get(match.start(), entity_name))
+                    for match in all_found_matches
+                )
+
+                if not already_tagged:
+                    matches.append({
+                        "entity_name": entity_name,
+                        "entity_id": entity_id,
+                        "entity_type": entity_type,
+                        "count": len(all_found_matches),
+                        "positions": [(m.start(), m.end()) for m in all_found_matches],
+                        "match_texts": match_texts  # Store which text was found at each position
+                    })
+
+        # Sort by occurrence count (most common first)
+        matches.sort(key=lambda x: x["count"], reverse=True)
+
+        return matches
+
+    def _is_already_tagged(self, text: str, position: int, entity_name: str) -> bool:
+        """
+        Check if an entity mention is already tagged.
+
+        Args:
+            text: Full document text
+            position: Start position of the entity name
+            entity_name: Name of the entity
+
+        Returns:
+            True if already tagged, False otherwise
+        """
+        # Look backwards for [[ before the entity name
+        search_start = max(0, position - 10)
+        prefix = text[search_start:position]
+
+        return '[[' in prefix
+
+    def _apply_entity_tags(self, original_text: str, matches: List[Dict[str, Any]], selected_entities: set):
+        """
+        Apply entity tags to the document, preserving aliases.
+
+        Args:
+            original_text: Original document text
+            matches: List of all entity matches
+            selected_entities: Set of entity IDs to tag
+        """
+        # Filter matches to only selected entities
+        selected_matches = [m for m in matches if m["entity_id"] in selected_entities]
+
+        if not selected_matches:
+            return
+
+        # Sort all positions in reverse order to avoid offset issues
+        replacements = []
+        for match in selected_matches:
+            match_texts = match.get("match_texts", {})
+            for start, end in match["positions"]:
+                # Get the actual text found at this position (alias or canonical name)
+                actual_text = match_texts.get(start, original_text[start:end])
+                replacements.append({
+                    "start": start,
+                    "end": end,
+                    "entity_name": match["entity_name"],
+                    "entity_id": match["entity_id"],
+                    "actual_text": actual_text
+                })
+
+        # Sort by position (reverse) to replace from end to start
+        replacements.sort(key=lambda x: x["start"], reverse=True)
+
+        # Track unique aliases found for each entity
+        aliases_to_add = {}  # entity_id -> set of aliases
+
+        # Apply replacements
+        new_text = original_text
+        for repl in replacements:
+            actual_text = repl["actual_text"]
+            entity_name = repl["entity_name"]
+            entity_id = repl["entity_id"]
+
+            # If the actual text differs from canonical name, it's an alias
+            if actual_text.lower() != entity_name.lower():
+                if entity_id not in aliases_to_add:
+                    aliases_to_add[entity_id] = set()
+                aliases_to_add[entity_id].add(actual_text)
+
+            tagged_text = f"[[{actual_text}|{entity_id}]]"
+
+            # Replace in the text
+            new_text = new_text[:repl["start"]] + tagged_text + new_text[repl["end"]:]
+
+        # Update the editor
+        self.editor.set_text(new_text)
+
+        # Mark document as modified and add discovered aliases to document
+        self.current_document.set_content(new_text)
+
+        # Add all discovered aliases to the document metadata
+        for entity_id, aliases in aliases_to_add.items():
+            for alias in aliases:
+                self.current_document.add_alias(entity_id, alias)
+
+        self.document_modified.emit(True)
+
+        # Show success message
+        total_tags = sum(len(m["positions"]) for m in selected_matches)
+        alias_count = sum(len(aliases) for aliases in aliases_to_add.values())
+        message = f"Successfully tagged {total_tags} entity mentions"
+        if alias_count > 0:
+            message += f"\nDiscovered and saved {alias_count} alias(es)"
+        QMessageBox.information(self, "Tagging Complete", message)
 
     def cleanup(self):
         """Cleanup resources."""

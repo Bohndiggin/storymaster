@@ -830,6 +830,9 @@ class MainWindowController:
             parent=self.view
         )
 
+        # Entity cache for Storyweaver (key: setting_id, value: entity list)
+        self._entity_cache = {}
+
         # Add the Storyweaver widget to the storyweaver page
         storyweaver_layout = QVBoxLayout(self.view.ui.storyweaverPage)
         storyweaver_layout.setContentsMargins(0, 0, 0, 0)
@@ -837,6 +840,9 @@ class MainWindowController:
 
         # Connect Storyweaver signals
         self.storyweaver_widget.entity_search_requested.connect(self._on_storyweaver_entity_search)
+        self.storyweaver_widget.entity_hover_requested.connect(self._on_storyweaver_entity_hover)
+        self.storyweaver_widget.editor.alias_add_requested.connect(self._on_alias_add_requested)
+        self.storyweaver_widget.editor._info_card.entity_clicked.connect(self._on_entity_card_clicked)
 
         self.connect_signals()
         self.on_litographer_selected()  # Start on the litographer page
@@ -3257,6 +3263,9 @@ class MainWindowController:
         self.view.ui.pageStack.setCurrentIndex(0)
         self.load_plot_sections()
         self.load_and_draw_nodes()
+        # Hide Storyweaver info cards when leaving
+        if hasattr(self, 'storyweaver_widget') and self.storyweaver_widget:
+            self.storyweaver_widget.hide_info_cards()
 
     def load_plot_sections(self):
         """Load plot sections and populate the tabs"""
@@ -3811,6 +3820,10 @@ class MainWindowController:
 
     def on_lorekeeper_selected(self):
         """Handle switching to the Lorekeeper page."""
+        # Hide Storyweaver info cards when leaving
+        if hasattr(self, 'storyweaver_widget') and self.storyweaver_widget:
+            self.storyweaver_widget.hide_info_cards()
+
         # Initialize the new Lorekeeper widget if not already done
         if self.new_lorekeeper_widget is None and self.current_setting_id is not None:
             self.new_lorekeeper_widget = NewLorekeeperPage(self.model, self.current_setting_id)
@@ -3830,11 +3843,19 @@ class MainWindowController:
             # Fallback: if no widget is initialized, still switch to the lorekeeper page
             self.view.ui.pageStack.setCurrentIndex(1)
 
+        # Update bottom navigation button state
+        if hasattr(self.view.ui, 'lorekeeperNavButton') and hasattr(self.view.ui.lorekeeperNavButton, 'setChecked'):
+            self.view.ui.lorekeeperNavButton.setChecked(True)
+
     def on_character_arcs_selected(self):
         """Handle switching to the Character Arcs page."""
         self.view.ui.pageStack.setCurrentIndex(
             2
         )  # Updated index for character arcs page (after removing old lorekeeper)
+
+        # Hide Storyweaver info cards when leaving
+        if hasattr(self, 'storyweaver_widget') and self.storyweaver_widget:
+            self.storyweaver_widget.hide_info_cards()
 
         # Only refresh if we have a storyline selected
         if self.current_storyline_id is not None:
@@ -3853,6 +3874,8 @@ class MainWindowController:
                 self.current_storyline_id,
                 self.current_setting_id
             )
+            # Preload entities for faster autocomplete
+            self.storyweaver_widget.preload_entities()
 
     def _on_storyweaver_entity_search(self, query: str, storyline_id: int, setting_id: int):
         """
@@ -3864,6 +3887,12 @@ class MainWindowController:
             setting_id: Current setting ID for filtering
         """
         try:
+            # Check cache for this setting if no query (full list)
+            if not query and setting_id in self._entity_cache:
+                # Use cached entities and return immediately
+                self.storyweaver_widget.set_entity_list(self._entity_cache[setting_id])
+                return
+
             with Session(self.model.engine) as session:
                 entities = []
 
@@ -3872,13 +3901,29 @@ class MainWindowController:
                     Actor.setting_id == setting_id
                 )
                 if query:
-                    actors = actors.filter(Actor.name.ilike(f"%{query}%"))
+                    # Search across first_name, middle_name, and last_name
+                    actors = actors.filter(
+                        (Actor.first_name.ilike(f"%{query}%")) |
+                        (Actor.middle_name.ilike(f"%{query}%")) |
+                        (Actor.last_name.ilike(f"%{query}%"))
+                    )
                 actors = actors.all()
 
                 for actor in actors:
+                    # Construct full name from name components
+                    name_parts = []
+                    if actor.first_name:
+                        name_parts.append(actor.first_name)
+                    if actor.middle_name:
+                        name_parts.append(actor.middle_name)
+                    if actor.last_name:
+                        name_parts.append(actor.last_name)
+
+                    full_name = " ".join(name_parts) if name_parts else f"Actor {actor.id}"
+
                     entities.append({
                         "id": f"actor_{actor.id}",
-                        "name": actor.name,
+                        "name": full_name,
                         "type": "character"
                     })
 
@@ -3916,12 +3961,196 @@ class MainWindowController:
                 # Sort by name
                 entities.sort(key=lambda x: x["name"])
 
+                # Add aliases from the current document if available
+                current_doc = self.storyweaver_widget.get_current_document()
+                if current_doc:
+                    for entity in entities:
+                        entity_id = entity["id"]
+                        aliases = current_doc.get_aliases(entity_id)
+                        if aliases:
+                            entity["aliases"] = aliases
+
+                # Cache full entity list (no query) for this setting
+                if not query:
+                    self._entity_cache[setting_id] = entities
+
                 # Update the Storyweaver widget with the entity list
                 self.storyweaver_widget.set_entity_list(entities)
 
         except Exception as e:
             print(f"[Storyweaver] Error searching entities: {e}")
             self.storyweaver_widget.set_entity_list([])
+
+    def _on_alias_add_requested(self, entity_id: str, entity_name: str, alias: str):
+        """
+        Handle request to add an alias for an entity.
+
+        Args:
+            entity_id: The entity ID
+            entity_name: The entity's canonical name
+            alias: The alias to add
+        """
+        try:
+            current_doc = self.storyweaver_widget.get_current_document()
+            if not current_doc:
+                from PySide6.QtWidgets import QMessageBox
+                QMessageBox.warning(
+                    self.view, "No Document",
+                    "No document is currently open. Aliases are stored per-document."
+                )
+                return
+
+            # Add the alias to the document
+            if current_doc.add_alias(entity_id, alias):
+                from PySide6.QtWidgets import QMessageBox
+                QMessageBox.information(
+                    self.view, "Alias Added",
+                    f"Added alias '{alias}' for {entity_name}"
+                )
+
+                # Refresh the entity list to show the new alias
+                self._on_storyweaver_entity_search(
+                    "",
+                    self.storyweaver_widget.current_storyline_id,
+                    self.storyweaver_widget.current_setting_id
+                )
+            else:
+                from PySide6.QtWidgets import QMessageBox
+                QMessageBox.information(
+                    self.view, "Alias Not Added",
+                    f"Alias '{alias}' already exists or is the same as the canonical name."
+                )
+
+        except Exception as e:
+            print(f"[Storyweaver] Error adding alias: {e}")
+            import traceback
+            traceback.print_exc()
+
+    def _on_entity_card_clicked(self, entity_id: str, entity_type: str):
+        """
+        Handle click on entity name in info card - navigate to Lorekeeper.
+
+        Args:
+            entity_id: The entity ID (e.g., "actor_13")
+            entity_type: The entity type ("character", "location", "faction")
+        """
+        try:
+            # Extract numeric ID from entity_id
+            numeric_id = int(entity_id.split('_')[1]) if '_' in entity_id else None
+            if not numeric_id:
+                return
+
+            # Switch to Lorekeeper page
+            self.on_lorekeeper_selected()
+
+            # Map entity type to table name for Lorekeeper
+            table_map = {
+                "character": "actor",
+                "location": "location_",
+                "faction": "faction"
+            }
+            table_name = table_map.get(entity_type, entity_type)
+
+            # Navigate to the specific entity in Lorekeeper
+            if self.new_lorekeeper_widget:
+                self.new_lorekeeper_widget.navigate_to_entity(table_name, numeric_id)
+                self.view.ui.statusbar.showMessage(f"Viewing {entity_type}: {entity_id}", 3000)
+            else:
+                self.view.ui.statusbar.showMessage(f"Lorekeeper not initialized", 3000)
+
+        except Exception as e:
+            print(f"[Storyweaver] Error navigating to entity: {e}")
+            import traceback
+            traceback.print_exc()
+
+    def _on_storyweaver_entity_hover(self, entity_id: str, entity_type: str, storyline_id: int, setting_id: int):
+        """
+        Handle entity hover request from Storyweaver widget.
+
+        Args:
+            entity_id: Entity ID in format "type_id" (e.g., "actor_13")
+            entity_type: Entity type (character, location, faction)
+            storyline_id: Current storyline ID
+            setting_id: Current setting ID
+        """
+        try:
+            with Session(self.model.engine) as session:
+                # Extract numeric ID from entity_id
+                numeric_id = int(entity_id.split('_')[1]) if '_' in entity_id else None
+                if not numeric_id:
+                    return
+
+                entity_name = ""
+                details = ""
+
+                if entity_type == "character":
+                    # Fetch Actor details
+                    actor = session.query(Actor).filter(Actor.id == numeric_id).first()
+                    if actor:
+                        # Construct full name
+                        name_parts = []
+                        if actor.first_name:
+                            name_parts.append(actor.first_name)
+                        if actor.middle_name:
+                            name_parts.append(actor.middle_name)
+                        if actor.last_name:
+                            name_parts.append(actor.last_name)
+                        entity_name = " ".join(name_parts) if name_parts else f"Actor {actor.id}"
+
+                        # Build details string
+                        detail_parts = []
+                        if actor.title:
+                            detail_parts.append(f"Title: {actor.title}")
+                        if actor.actor_role:
+                            detail_parts.append(f"Role: {actor.actor_role}")
+                        if actor.actor_age:
+                            detail_parts.append(f"Age: {actor.actor_age}")
+                        if actor.job:
+                            detail_parts.append(f"Occupation: {actor.job}")
+                        if actor.appearance:
+                            detail_parts.append(f"\n{actor.appearance[:150]}..." if len(actor.appearance) > 150 else f"\n{actor.appearance}")
+
+                        details = "\n".join(detail_parts) if detail_parts else "No additional details available."
+
+                elif entity_type == "location":
+                    # Fetch Location details
+                    from storymaster.model.database.schema.base import Location
+                    location = session.query(Location).filter(Location.id == numeric_id).first()
+                    if location:
+                        entity_name = location.name or f"Location {location.id}"
+
+                        # Build details string
+                        detail_parts = []
+                        if location.location_type:
+                            detail_parts.append(f"Type: {location.location_type}")
+                        if location.description:
+                            detail_parts.append(f"\n{location.description[:150]}..." if len(location.description) > 150 else f"\n{location.description}")
+
+                        details = "\n".join(detail_parts) if detail_parts else "No additional details available."
+
+                elif entity_type == "faction":
+                    # Fetch Faction details
+                    faction = session.query(Faction).filter(Faction.id == numeric_id).first()
+                    if faction:
+                        entity_name = faction.name or f"Faction {faction.id}"
+
+                        # Build details string
+                        detail_parts = []
+                        if faction.description:
+                            detail_parts.append(f"{faction.description[:150]}..." if len(faction.description) > 150 else faction.description)
+                        if faction.goals:
+                            detail_parts.append(f"Goals: {faction.goals[:100]}..." if len(faction.goals) > 100 else f"Goals: {faction.goals}")
+
+                        details = "\n".join(detail_parts) if detail_parts else "No additional details available."
+
+                # Show the info card
+                if entity_name:
+                    self.storyweaver_widget.show_entity_details(entity_name, entity_type, details, entity_id)
+
+        except Exception as e:
+            print(f"[Storyweaver] Error fetching entity details: {e}")
+            import traceback
+            traceback.print_exc()
 
     def load_database_structure(self):
         """Fetches table names from the model and populates the tree view."""

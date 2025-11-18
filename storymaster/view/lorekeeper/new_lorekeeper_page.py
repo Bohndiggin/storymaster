@@ -493,3 +493,47 @@ class NewLorekeeperPage(QWidget):
                 self.current_entity = entity
                 if self.current_table_name in self.detail_pages:
                     self.detail_pages[self.current_table_name].set_entity(entity)
+
+    def navigate_to_entity(self, table_name: str, entity_id: int):
+        """
+        Navigate to and display a specific entity.
+
+        Args:
+            table_name: The database table name (e.g., "actor", "location_", "faction")
+            entity_id: The numeric entity ID
+        """
+        try:
+            # Switch to the correct category
+            self.on_category_changed(table_name)
+
+            # Load entities for this table
+            entities = self.get_entities_from_model(table_name)
+
+            # Find the entity with the matching ID
+            target_entity = None
+            for entity in entities:
+                if hasattr(entity, 'id') and entity.id == entity_id:
+                    target_entity = entity
+                    break
+
+            if target_entity:
+                # Select the entity
+                self.on_entity_selected(target_entity)
+
+                # Also select it in the browser if available
+                if hasattr(self, 'browser'):
+                    self.browser.select_entity_by_id(entity_id)
+
+            else:
+                QMessageBox.warning(
+                    self,
+                    "Entity Not Found",
+                    f"Could not find entity with ID {entity_id} in {table_name}"
+                )
+
+        except Exception as e:
+            QMessageBox.warning(
+                self,
+                "Navigation Error",
+                f"Failed to navigate to entity: {str(e)}"
+            )

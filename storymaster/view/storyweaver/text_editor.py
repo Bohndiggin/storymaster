@@ -3,27 +3,179 @@ Custom text editor with entity linking support.
 Integrated version for Storymaster - uses direct database access instead of IPC.
 """
 from typing import Optional, List, Dict, Any
-from PySide6.QtWidgets import QPlainTextEdit, QCompleter, QTextEdit
-from PySide6.QtCore import Qt, Signal, QStringListModel, QRect
-from PySide6.QtGui import QTextCursor, QKeyEvent, QTextCharFormat, QColor, QFont
+import re
+from PySide6.QtWidgets import QPlainTextEdit, QCompleter, QTextEdit, QLabel, QVBoxLayout, QFrame, QMenu, QInputDialog, QMessageBox
+from PySide6.QtCore import Qt, Signal, QStringListModel, QRect, QTimer, QPoint, QEvent
+from PySide6.QtGui import (
+    QTextCursor, QKeyEvent, QTextCharFormat, QColor, QFont,
+    QSyntaxHighlighter, QTextDocument, QPainter, QAbstractTextDocumentLayout,
+    QMouseEvent, QAction, QContextMenuEvent, QCursor
+)
 
 
-class EntityTextEditor(QPlainTextEdit):
+class ClickableLabel(QLabel):
+    """Label that emits a signal when clicked."""
+    clicked = Signal()
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setCursor(QCursor(Qt.PointingHandCursor))
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.clicked.emit()
+        super().mousePressEvent(event)
+
+
+class EntityInfoCard(QFrame):
+    """Popup card that displays entity information on hover."""
+
+    entity_clicked = Signal(str, str)  # (entity_id, entity_type)
+
+    def __init__(self, parent=None):
+        super().__init__(parent, Qt.ToolTip | Qt.FramelessWindowHint)
+        self.setFrameStyle(QFrame.StyledPanel | QFrame.Raised)
+        self.setLineWidth(1)
+
+        self._current_entity_id = None
+        self._current_entity_type = None
+
+        # Layout
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setSpacing(5)
+
+        # Title label (entity name) - now clickable
+        self.title_label = ClickableLabel()
+        self.title_label.setStyleSheet("font-weight: bold; font-size: 12pt; color: #4A9EFF; text-decoration: underline;")
+        self.title_label.setToolTip("Click to view in Lorekeeper")
+        self.title_label.clicked.connect(self._on_title_clicked)
+        layout.addWidget(self.title_label)
+
+        # Type label
+        self.type_label = QLabel()
+        self.type_label.setStyleSheet("font-style: italic; color: #888;")
+        layout.addWidget(self.type_label)
+
+        # Details label
+        self.details_label = QLabel()
+        self.details_label.setWordWrap(True)
+        self.details_label.setMaximumWidth(300)
+        layout.addWidget(self.details_label)
+
+        # Style the card
+        self.setStyleSheet("""
+            EntityInfoCard {
+                background-color: #2C2C2C;
+                border: 1px solid #4A9EFF;
+                border-radius: 4px;
+            }
+        """)
+
+        self.hide()
+
+    def set_entity_info(self, name: str, entity_type: str, details: str, entity_id: str = None):
+        """Set the entity information to display."""
+        self.title_label.setText(name)
+        self.type_label.setText(f"Type: {entity_type.capitalize()}")
+        self.details_label.setText(details)
+
+        # Store entity info for click handling
+        self._current_entity_id = entity_id
+        self._current_entity_type = entity_type
+
+        # Adjust size to content
+        self.adjustSize()
+
+    def _on_title_clicked(self):
+        """Handle click on entity title."""
+        if self._current_entity_id and self._current_entity_type:
+            self.entity_clicked.emit(self._current_entity_id, self._current_entity_type)
+            self.hide()
+
+    def show_at_position(self, pos: QPoint):
+        """Show the card at a specific position."""
+        self.move(pos)
+        self.show()
+        self.raise_()
+
+
+class EntityLinkHighlighter(QSyntaxHighlighter):
+    """Syntax highlighter that makes entity link syntax invisible and shows only the name."""
+
+    def __init__(self, parent: QTextDocument, editor):
+        super().__init__(parent)
+        self.editor = editor
+
+        # Format for entity name (underlined and colored)
+        self.entity_format = QTextCharFormat()
+        self.entity_format.setFontUnderline(True)
+        self.entity_format.setUnderlineColor(QColor("#4A9EFF"))
+        self.entity_format.setForeground(QColor("#4A9EFF"))
+
+        # Format for invisible syntax (using font feature to hide)
+        self.hidden_format = QTextCharFormat()
+        self.hidden_format.setForeground(QColor(0, 0, 0, 0))  # Fully transparent
+        self.hidden_format.setFontPointSize(0.1)  # Smallest possible
+
+    def highlightBlock(self, text: str):
+        """Apply highlighting to entity links in the text block."""
+        # Pattern to match [[EntityName|entity_id]]
+        pattern = re.compile(r'(\[\[)([^\|]+?)(\|)([^\]]+?)(\]\])')
+
+        for match in pattern.finditer(text):
+            # Hide opening brackets [[
+            self.setFormat(match.start(1), len(match.group(1)), self.hidden_format)
+
+            # Format entity name (visible and underlined)
+            self.setFormat(match.start(2), len(match.group(2)), self.entity_format)
+
+            # Hide |entity_id]]
+            hidden_start = match.start(3)
+            hidden_length = match.end() - hidden_start
+            self.setFormat(hidden_start, hidden_length, self.hidden_format)
+
+
+class EntityTextEditor(QTextEdit):
     """Text editor with support for [[Entity|ID]] syntax and autocomplete."""
 
     entity_requested = Signal(str)  # Emitted when user wants to search for entities (search query)
     entity_selected = Signal(str, str)  # (entity_id, entity_name) - emitted when entity inserted
+    entity_hover = Signal(str, str)  # (entity_id, entity_type) - emitted when hovering over entity
+    alias_add_requested = Signal(str, str, str)  # (entity_id, entity_name, current_display_text) - request to add alias
+    alias_use_requested = Signal(str)  # (alias) - request to replace current entity link with alias
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setFont(QFont("Monospace", 11))
         self.setTabStopDistance(40)
+        self.setAcceptRichText(False)  # We handle formatting ourselves
+
+        # Enable mouse tracking for hover cursor changes
+        self.setMouseTracking(True)
 
         # Entity autocomplete
         self._completer: Optional[QCompleter] = None
         self._entity_list: List[Dict[str, Any]] = []
         self._completion_active = False
         self._trigger_pos = -1
+        self._inline_mode = False  # True when completing without [[
+
+        # Click-based info card
+        self._info_card = EntityInfoCard(self)
+        self._last_clicked_entity: Optional[str] = None
+        self._click_pos: Optional[QPoint] = None
+
+        # Install syntax highlighter for entity links
+        self._highlighter = EntityLinkHighlighter(self.document(), self)
+
+        # Timer for updating display after text changes
+        self._update_timer = QTimer(self)
+        self._update_timer.setSingleShot(True)
+        self._update_timer.timeout.connect(self._update_entity_display)
+
+        # Connect to text changes
+        self.textChanged.connect(self._on_text_changed)
 
         self._setup_completer()
 
@@ -35,6 +187,13 @@ class EntityTextEditor(QPlainTextEdit):
         self._completer.setCaseSensitivity(Qt.CaseInsensitive)
         self._completer.activated.connect(self._insert_completion)
 
+        # Configure popup to show more items and size appropriately
+        popup = self._completer.popup()
+        popup.setMinimumWidth(400)
+        popup.setMinimumHeight(250)
+        # Let it size based on content, but cap max visible items
+        self._completer.setMaxVisibleItems(15)
+
         # Start with empty model
         model = QStringListModel([], self)
         self._completer.setModel(model)
@@ -44,7 +203,7 @@ class EntityTextEditor(QPlainTextEdit):
         Update the list of available entities for autocomplete.
 
         Args:
-            entities: List of entity dicts with keys: id, name, type
+            entities: List of entity dicts with keys: id, name, type, aliases (optional)
         """
         self._entity_list = entities
 
@@ -53,10 +212,26 @@ class EntityTextEditor(QPlainTextEdit):
         for entity in entities:
             name = entity.get("name", "")
             entity_type = entity.get("type", "")
-            display_list.append(f"{name} ({entity_type})")
+            aliases = entity.get("aliases", [])
+
+            # Format: "EntityName (type) [alias1, alias2]" or "EntityName (type)"
+            if aliases:
+                alias_str = ", ".join(aliases)
+                display_list.append(f"{name} ({entity_type}) [{alias_str}]")
+            else:
+                display_list.append(f"{name} ({entity_type})")
+
+            # Also add entries for each alias to make them searchable
+            for alias in aliases:
+                display_list.append(f"{alias} → {name} ({entity_type})")
 
         model = QStringListModel(display_list, self)
         self._completer.setModel(model)
+
+        # Force the popup to recalculate its size based on the new model
+        popup = self._completer.popup()
+        popup.setUpdatesEnabled(True)
+        popup.updateGeometry()
 
     def keyPressEvent(self, event: QKeyEvent):
         """Handle key press events for entity autocomplete."""
@@ -89,12 +264,47 @@ class EntityTextEditor(QPlainTextEdit):
         # Update completer if active
         if self._completion_active:
             self._update_completer()
+        else:
+            # Check for inline entity autocomplete (without [[)
+            self._check_inline_autocomplete()
+
+    def _check_inline_autocomplete(self):
+        """Check if we should show inline autocomplete for entity names."""
+        cursor = self.textCursor()
+
+        # Get the word being typed (go back to last word boundary)
+        word_start = cursor.position()
+        cursor.movePosition(QTextCursor.StartOfWord, QTextCursor.KeepAnchor)
+        current_word = cursor.selectedText()
+
+        # Only trigger if word is at least 2 characters and starts with uppercase
+        if len(current_word) >= 2 and current_word[0].isupper():
+            # Check if this matches any entity names
+            matching_entities = [
+                entity for entity in self._entity_list
+                if entity.get("name", "").lower().startswith(current_word.lower())
+            ]
+
+            if matching_entities:
+                # Set trigger position to start of current word
+                self._trigger_pos = self.textCursor().position() - len(current_word)
+                self._completion_active = True
+                self._inline_mode = True  # Flag to indicate inline completion
+
+                # Update completer with matching entities
+                self._completer.setCompletionPrefix(current_word)
+
+                # Show completer at cursor
+                rect = self.cursorRect()
+                # Don't set width - let the popup use its minimum width
+                self._completer.complete(rect)
 
     def _trigger_entity_autocomplete(self):
         """Trigger entity autocomplete."""
         cursor = self.textCursor()
         self._trigger_pos = cursor.position()
         self._completion_active = True
+        self._inline_mode = False  # Not inline mode, using [[ syntax
 
         # Request entity list (signal will be handled by controller)
         self.entity_requested.emit("")
@@ -102,8 +312,7 @@ class EntityTextEditor(QPlainTextEdit):
         # Show completer
         if self._completer:
             rect = self.cursorRect()
-            rect.setWidth(self._completer.popup().sizeHintForColumn(0)
-                          + self._completer.popup().verticalScrollBar().sizeHint().width())
+            # Don't set width - let the popup use its minimum width
             self._completer.complete(rect)
 
     def _update_completer(self):
@@ -114,19 +323,29 @@ class EntityTextEditor(QPlainTextEdit):
         if current_pos < self._trigger_pos:
             # Cursor moved before trigger, cancel completion
             self._completion_active = False
+            self._inline_mode = False
             self._completer.popup().hide()
             return
 
-        # Get text between [[ and cursor
+        # Get text between trigger position and cursor
         cursor.setPosition(self._trigger_pos)
         cursor.setPosition(current_pos, QTextCursor.KeepAnchor)
         search_text = cursor.selectedText()
 
-        # Check if we've closed the entity link
-        if ']]' in search_text or '\n' in search_text:
-            self._completion_active = False
-            self._completer.popup().hide()
-            return
+        # Check exit conditions based on mode
+        if self._inline_mode:
+            # In inline mode, exit on space or newline
+            if ' ' in search_text or '\n' in search_text:
+                self._completion_active = False
+                self._inline_mode = False
+                self._completer.popup().hide()
+                return
+        else:
+            # In [[ mode, exit on ]] or newline
+            if ']]' in search_text or '\n' in search_text:
+                self._completion_active = False
+                self._completer.popup().hide()
+                return
 
         # Request filtered results if search text changed
         if search_text:
@@ -143,17 +362,35 @@ class EntityTextEditor(QPlainTextEdit):
             return
 
         # Parse completion to get entity name and type
-        # Format: "EntityName (type)"
+        # Three possible formats:
+        # 1. "EntityName (type)"
+        # 2. "EntityName (type) [alias1, alias2]"
+        # 3. "alias → EntityName (type)"
         import re
-        match = re.match(r"^(.+?)\s+\((.+?)\)$", completion)
-        if not match:
+
+        display_text = None
+        entity_name = None
+        entity_type = None
+        entity_id = None
+
+        # Check for alias format: "alias → EntityName (type)"
+        alias_match = re.match(r"^(.+?)\s+→\s+(.+?)\s+\((.+?)\)$", completion)
+        if alias_match:
+            display_text = alias_match.group(1)  # The alias
+            entity_name = alias_match.group(2)   # The canonical name
+            entity_type = alias_match.group(3)
+        else:
+            # Standard format: "EntityName (type)" or "EntityName (type) [aliases]"
+            match = re.match(r"^(.+?)\s+\((.+?)\)(?:\s+\[.+?\])?$", completion)
+            if match:
+                entity_name = match.group(1)
+                entity_type = match.group(2)
+                display_text = entity_name  # Use canonical name as display
+
+        if not entity_name or not entity_type:
             return
 
-        entity_name = match.group(1)
-        entity_type = match.group(2)
-
         # Find the entity in our list
-        entity_id = None
         for entity in self._entity_list:
             if entity.get("name") == entity_name and entity.get("type") == entity_type:
                 entity_id = entity.get("id")
@@ -168,23 +405,352 @@ class EntityTextEditor(QPlainTextEdit):
         cursor.setPosition(self.textCursor().position(), QTextCursor.KeepAnchor)
         cursor.removeSelectedText()
 
-        # Insert entity link
-        entity_link = f"{entity_name}|{entity_id}]]"
+        # Insert entity link based on mode
+        if self._inline_mode:
+            # Inline mode: insert full tagged entity with display text
+            entity_link = f"[[{display_text}|{entity_id}]]"
+        else:
+            # [[ mode: just complete the entity (user already typed [[)
+            entity_link = f"{display_text}|{entity_id}]]"
+
         cursor.insertText(entity_link)
 
         self._completion_active = False
+        self._inline_mode = False
         self.entity_selected.emit(entity_id, entity_name)
 
+        # Refresh entity list to show all entities again
+        self.entity_requested.emit("")
+
+    def mousePressEvent(self, event: QMouseEvent):
+        """Handle mouse press events to detect clicks on entity links."""
+        # Let right-clicks through for context menu
+        if event.button() == Qt.RightButton:
+            super().mousePressEvent(event)
+            return
+
+        # Check if left-clicking on an entity link
+        if event.button() == Qt.LeftButton:
+            cursor = self.cursorForPosition(event.pos())
+            cursor.select(QTextCursor.LineUnderCursor)
+            line_text = cursor.selectedText()
+
+            # Get position in the line
+            cursor = self.cursorForPosition(event.pos())
+            line_start_cursor = self.cursorForPosition(event.pos())
+            line_start_cursor.movePosition(QTextCursor.StartOfLine)
+            pos_in_line = cursor.position() - line_start_cursor.position()
+
+            # Check if cursor is over an entity link
+            pattern = re.compile(r'\[\[([^\|]+?)\|([^\]]+?)\]\]')
+
+            for match in pattern.finditer(line_text):
+                # Check if mouse is over this entity (just the name part)
+                name_start = match.start() + 2  # After [[
+                name_end = name_start + len(match.group(1))
+
+                if name_start <= pos_in_line <= name_end:
+                    entity_name = match.group(1)
+                    entity_id = match.group(2)
+
+                    # Extract entity type from ID (format: "type_id")
+                    # Map database table names to entity types
+                    id_prefix = entity_id.split('_')[0] if '_' in entity_id else "unknown"
+                    entity_type_map = {
+                        "actor": "character",
+                        "location": "location",
+                        "faction": "faction"
+                    }
+                    entity_type = entity_type_map.get(id_prefix, id_prefix)
+
+                    # Toggle info card if clicking same entity, or show new one
+                    if entity_id == self._last_clicked_entity and self._info_card.isVisible():
+                        # Hide if clicking the same entity again
+                        self._info_card.hide()
+                        self._last_clicked_entity = None
+                    else:
+                        # Show info for this entity
+                        self._last_clicked_entity = entity_id
+                        click_pos = event.globalPos() + QPoint(10, 10)
+                        # Request entity details from controller
+                        self.entity_hover.emit(entity_id, entity_type)
+                        # Store position and ID for when data arrives
+                        self._click_pos = click_pos
+                        self._pending_entity_id = entity_id
+                        self._pending_entity_type = entity_type
+
+                    # Don't propagate the click to avoid placing cursor
+                    event.accept()
+                    return
+
+        # Not clicking on entity, hide card and handle normally
+        self._info_card.hide()
+        self._last_clicked_entity = None
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event: QMouseEvent):
+        """Handle mouse move events to change cursor over entity links."""
+        super().mouseMoveEvent(event)
+
+        # Get cursor at mouse position
+        cursor = self.cursorForPosition(event.pos())
+        cursor.select(QTextCursor.LineUnderCursor)
+        line_text = cursor.selectedText()
+
+        # Get position in the line
+        cursor = self.cursorForPosition(event.pos())
+        line_start_cursor = self.cursorForPosition(event.pos())
+        line_start_cursor.movePosition(QTextCursor.StartOfLine)
+        pos_in_line = cursor.position() - line_start_cursor.position()
+
+        # Check if cursor is over an entity link
+        pattern = re.compile(r'\[\[([^\|]+?)\|([^\]]+?)\]\]')
+        entity_found = False
+
+        for match in pattern.finditer(line_text):
+            # Check if mouse is over this entity (just the name part)
+            name_start = match.start() + 2  # After [[
+            name_end = name_start + len(match.group(1))
+
+            if name_start <= pos_in_line <= name_end:
+                entity_found = True
+                self.viewport().setCursor(Qt.PointingHandCursor)
+                break
+
+        if not entity_found:
+            # Not over an entity, reset cursor
+            self.viewport().setCursor(Qt.IBeamCursor)
+
+    def show_entity_info(self, name: str, entity_type: str, details: str):
+        """
+        Display entity info card. Called by controller with entity details.
+
+        Args:
+            name: Entity name
+            entity_type: Entity type (character, location, faction)
+            details: Details text to display
+        """
+        if hasattr(self, '_click_pos') and self._click_pos:
+            # Pass the entity_id if we have it from the pending click
+            entity_id = getattr(self, '_pending_entity_id', None)
+            self._info_card.set_entity_info(name, entity_type, details, entity_id)
+            self._info_card.show_at_position(self._click_pos)
+
+    def hide_info_card(self):
+        """Hide the info card if visible."""
+        self._info_card.hide()
+        self._last_clicked_entity = None
+
+    def _on_text_changed(self):
+        """Handle text changes to update display."""
+        # Hide info card when text changes
+        self._info_card.hide()
+        # Debounce the update to avoid excessive processing
+        self._update_timer.start(100)
+
+    def _update_entity_display(self):
+        """Update the display to show entity names without link syntax."""
+        # This method is called after text changes to refresh the highlighter
+        # The highlighter will automatically apply formatting
+        pass
+
     def get_text(self) -> str:
-        """Get the plain text content."""
+        """Get the plain text content (with entity link syntax intact)."""
         return self.toPlainText()
 
     def set_text(self, text: str):
         """Set the text content."""
+        # Block signals to avoid triggering text changed while setting
+        self.blockSignals(True)
         self.setPlainText(text)
+        self.blockSignals(False)
 
     def insert_entity_link(self, entity_name: str, entity_id: str):
         """Insert an entity link at the cursor position."""
         cursor = self.textCursor()
         link = f"[[{entity_name}|{entity_id}]]"
         cursor.insertText(link)
+
+    def _get_entity_at_cursor(self, cursor: QTextCursor) -> Optional[tuple]:
+        """
+        Get entity information at the cursor position.
+
+        Returns:
+            Tuple of (entity_id, entity_name, display_text, line_start_pos, match_start, match_end) or None
+        """
+        # Get the line at cursor
+        line_cursor = QTextCursor(cursor)
+        line_cursor.select(QTextCursor.LineUnderCursor)
+        line_text = line_cursor.selectedText()
+
+        # Get position in the line
+        line_start_cursor = QTextCursor(cursor)
+        line_start_cursor.movePosition(QTextCursor.StartOfLine)
+        pos_in_line = cursor.position() - line_start_cursor.position()
+
+        # Find entity links in the line
+        pattern = re.compile(r'\[\[([^\|]+?)\|([^\]]+?)\]\]')
+
+        for match in pattern.finditer(line_text):
+            # Check if cursor is within this entity link
+            if match.start() <= pos_in_line <= match.end():
+                display_text = match.group(1)
+                entity_id = match.group(2)
+
+                # Extract entity name from ID if possible
+                entity_name = display_text  # Default to display text
+
+                return (entity_id, entity_name, display_text,
+                        line_start_cursor.position(), match.start(), match.end())
+
+        return None
+
+    def contextMenuEvent(self, event: QContextMenuEvent):
+        """Enhanced context menu with alias management for entity links."""
+        # Create standard context menu
+        menu = self.createStandardContextMenu()
+
+        # Check if there's selected text
+        cursor = self.textCursor()
+        selected_text = cursor.selectedText().strip()
+
+        # Check if cursor is over an entity link
+        click_cursor = self.cursorForPosition(event.pos())
+        entity_info = self._get_entity_at_cursor(click_cursor)
+
+        if entity_info:
+            # Context menu for existing entity link
+            entity_id, entity_name_display, display_text, line_start, match_start, match_end = entity_info
+
+            # Look up the canonical name from entity list
+            canonical_name = entity_name_display  # Default
+            for entity in self._entity_list:
+                if entity.get("id") == entity_id:
+                    canonical_name = entity.get("name", entity_name_display)
+                    break
+
+            menu.addSeparator()
+            # Show both canonical name and current display if different
+            if display_text.lower() != canonical_name.lower():
+                info_action = QAction(f"Entity: {canonical_name} (shown as '{display_text}')", self)
+                info_action.setEnabled(False)
+                menu.addAction(info_action)
+            else:
+                info_action = QAction(f"Entity: {canonical_name}", self)
+                info_action.setEnabled(False)
+                menu.addAction(info_action)
+            menu.addSeparator()
+
+            # Add "Add alias" action
+            add_alias_action = QAction(f"Add alias for '{canonical_name}'...", self)
+            add_alias_action.triggered.connect(
+                lambda: self._show_add_alias_dialog(entity_id, canonical_name, display_text)
+            )
+            menu.addAction(add_alias_action)
+
+            # Store cursor position for later use
+            self._context_menu_cursor_pos = line_start + match_start
+            self._context_menu_match_length = match_end - match_start
+
+        elif selected_text:
+            # Context menu for selected text (not an entity link yet)
+            menu.addSeparator()
+
+            # Option 1: Tag selected text as an entity
+            tag_menu = menu.addMenu(f"Tag '{selected_text}' as entity...")
+
+            # Show entity list grouped by type
+            entities_by_type = {}
+            for entity in self._entity_list:
+                entity_type = entity.get("type", "unknown")
+                if entity_type not in entities_by_type:
+                    entities_by_type[entity_type] = []
+                entities_by_type[entity_type].append(entity)
+
+            # Add entities grouped by type
+            for entity_type in sorted(entities_by_type.keys()):
+                type_menu = tag_menu.addMenu(entity_type.capitalize())
+                for entity in sorted(entities_by_type[entity_type], key=lambda e: e.get("name", "")):
+                    entity_name = entity.get("name", "")
+                    entity_id = entity.get("id", "")
+
+                    action = QAction(entity_name, self)
+                    action.triggered.connect(
+                        lambda checked, eid=entity_id, ename=entity_name, text=selected_text:
+                        self._tag_selected_text_as_entity(eid, ename, text)
+                    )
+                    type_menu.addAction(action)
+
+        # Show menu
+        menu.exec(event.globalPos())
+
+    def _tag_selected_text_as_entity(self, entity_id: str, entity_name: str, selected_text: str):
+        """
+        Tag the selected text as an entity link and optionally add as alias.
+
+        Args:
+            entity_id: The entity ID to tag with
+            entity_name: The canonical entity name
+            selected_text: The text that was selected
+        """
+        # Get the current selection
+        cursor = self.textCursor()
+        if not cursor.hasSelection():
+            return
+
+        # Replace selected text with entity link
+        entity_link = f"[[{selected_text}|{entity_id}]]"
+        cursor.insertText(entity_link)
+
+        # If the selected text differs from canonical name, ask if it should be added as an alias
+        if selected_text.lower() != entity_name.lower():
+            reply = QMessageBox.question(
+                self,
+                "Add as Alias?",
+                f"'{selected_text}' differs from the canonical name '{entity_name}'.\n\n"
+                f"Would you like to add '{selected_text}' as an alias?",
+                QMessageBox.Yes | QMessageBox.No
+            )
+
+            if reply == QMessageBox.Yes:
+                # Emit signal to add the alias
+                self.alias_add_requested.emit(entity_id, entity_name, selected_text)
+
+        # Emit entity selected signal
+        self.entity_selected.emit(entity_id, entity_name)
+
+    def _show_add_alias_dialog(self, entity_id: str, entity_name: str, current_display: str):
+        """Show dialog to add an alias for an entity."""
+        alias, ok = QInputDialog.getText(
+            self,
+            "Add Alias",
+            f"Add alias for '{entity_name}':\n(Current display: '{current_display}')",
+            text=current_display
+        )
+
+        if ok and alias and alias.strip():
+            alias = alias.strip()
+            # Emit signal to parent to handle adding the alias
+            self.alias_add_requested.emit(entity_id, entity_name, alias)
+
+    def replace_entity_at_cursor(self, new_display_text: str):
+        """
+        Replace the entity link at the stored cursor position with new display text.
+
+        Args:
+            new_display_text: New text to display for the entity
+        """
+        if not hasattr(self, '_context_menu_cursor_pos'):
+            return
+
+        cursor = self.textCursor()
+        cursor.setPosition(self._context_menu_cursor_pos)
+        cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor, self._context_menu_match_length)
+
+        # Get the entity ID from the selected text
+        selected = cursor.selectedText()
+        match = re.match(r'\[\[([^\|]+?)\|([^\]]+?)\]\]', selected)
+        if match:
+            entity_id = match.group(2)
+            new_link = f"[[{new_display_text}|{entity_id}]]"
+            cursor.insertText(new_link)
