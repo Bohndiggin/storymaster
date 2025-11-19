@@ -140,10 +140,63 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         self.italic_format = QTextCharFormat()
         self.italic_format.setFontItalic(True)
 
+        self.strikethrough_format = QTextCharFormat()
+        self.strikethrough_format.setFontStrikeOut(True)
+        self.strikethrough_format.setForeground(QColor("#888888"))
+
+        self.underline_format = QTextCharFormat()
+        self.underline_format.setFontUnderline(True)
+
         self.code_format = QTextCharFormat()
         self.code_format.setFontFamily("Monospace")
         self.code_format.setBackground(QColor("#3C3C3C"))
         self.code_format.setForeground(QColor("#00FF00"))
+
+        self.code_block_format = QTextCharFormat()
+        self.code_block_format.setFontFamily("Monospace")
+        self.code_block_format.setBackground(QColor("#2C2C2C"))
+        self.code_block_format.setForeground(QColor("#00FF00"))
+
+        self.heading4_format = QTextCharFormat()
+        self.heading4_format.setFontWeight(QFont.Bold)
+        self.heading4_format.setFontPointSize(13)
+        self.heading4_format.setForeground(QColor("#999999"))
+
+        self.heading5_format = QTextCharFormat()
+        self.heading5_format.setFontWeight(QFont.Bold)
+        self.heading5_format.setFontPointSize(12)
+        self.heading5_format.setForeground(QColor("#888888"))
+
+        self.heading6_format = QTextCharFormat()
+        self.heading6_format.setFontWeight(QFont.Bold)
+        self.heading6_format.setFontPointSize(11)
+        self.heading6_format.setForeground(QColor("#777777"))
+
+        self.blockquote_format = QTextCharFormat()
+        self.blockquote_format.setForeground(QColor("#AAAAAA"))
+        self.blockquote_format.setFontItalic(True)
+
+        self.link_format = QTextCharFormat()
+        self.link_format.setForeground(QColor("#5DADE2"))
+        self.link_format.setFontUnderline(True)
+
+        self.list_format = QTextCharFormat()
+        self.list_format.setForeground(QColor("#FFA500"))
+
+        self.task_checkbox_format = QTextCharFormat()
+        self.task_checkbox_format.setForeground(QColor("#00AA00"))
+
+        self.hr_format = QTextCharFormat()
+        self.hr_format.setForeground(QColor("#555555"))
+        self.hr_format.setFontWeight(QFont.Bold)
+
+    def _is_inside_entity_link(self, start: int, end: int, entity_ranges: list) -> bool:
+        """Check if a range overlaps with any entity link."""
+        for entity_start, entity_end in entity_ranges:
+            # Check if there's any overlap
+            if not (end <= entity_start or start >= entity_end):
+                return True
+        return False
 
     def highlightBlock(self, text: str):
         """Apply highlighting to markdown and entity links."""
@@ -151,9 +204,15 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         cursor_block = self.editor.textCursor().block()
         show_syntax = (cursor_block == self.currentBlock())
 
+        # Track entity link positions to avoid formatting inside them
+        entity_ranges = []
+
         # Handle entity links first
         entity_pattern = re.compile(r'(\[\[)([^\|]+?)(\|)([^\]]+?)(\]\])')
         for match in entity_pattern.finditer(text):
+            # Store this range so we don't apply other formatting inside it
+            entity_ranges.append((match.start(), match.end()))
+
             if not show_syntax:
                 # Hide brackets and ID
                 self.setFormat(match.start(1), len(match.group(1)), self.hidden_format)
@@ -167,23 +226,100 @@ class MarkdownHighlighter(QSyntaxHighlighter):
                 hidden_length = match.end() - hidden_start
                 self.setFormat(hidden_start, hidden_length, self.hidden_format)
 
-        # Headings
-        if text.startswith('# '):
+        # Code blocks (```...```) - must be checked before other patterns
+        if text.strip().startswith('```'):
+            self.setFormat(0, len(text), self.code_block_format)
+            return  # Don't apply other formatting inside code blocks
+
+        # Horizontal rules (---, ***, ___)
+        hr_patterns = [r'^---+$', r'^\*\*\*+$', r'^___+$']
+        for pattern in hr_patterns:
+            if re.match(pattern, text.strip()):
+                self.setFormat(0, len(text), self.hr_format)
+                return  # Don't apply other formatting to horizontal rules
+
+        # Headings (must be checked before other patterns to avoid conflicts)
+        if text.startswith('###### '):
             if not show_syntax:
-                self.setFormat(0, 2, self.hidden_format)
-            self.setFormat(2, len(text) - 2, self.heading1_format)
-        elif text.startswith('## '):
+                self.setFormat(0, 7, self.hidden_format)
+            self.setFormat(7, len(text) - 7, self.heading6_format)
+            return
+        elif text.startswith('##### '):
             if not show_syntax:
-                self.setFormat(0, 3, self.hidden_format)
-            self.setFormat(3, len(text) - 3, self.heading2_format)
+                self.setFormat(0, 6, self.hidden_format)
+            self.setFormat(6, len(text) - 6, self.heading5_format)
+            return
+        elif text.startswith('#### '):
+            if not show_syntax:
+                self.setFormat(0, 5, self.hidden_format)
+            self.setFormat(5, len(text) - 5, self.heading4_format)
+            return
         elif text.startswith('### '):
             if not show_syntax:
                 self.setFormat(0, 4, self.hidden_format)
             self.setFormat(4, len(text) - 4, self.heading3_format)
+            return
+        elif text.startswith('## '):
+            if not show_syntax:
+                self.setFormat(0, 3, self.hidden_format)
+            self.setFormat(3, len(text) - 3, self.heading2_format)
+            return
+        elif text.startswith('# '):
+            if not show_syntax:
+                self.setFormat(0, 2, self.hidden_format)
+            self.setFormat(2, len(text) - 2, self.heading1_format)
+            return
 
-        # Bold **text**
-        bold_pattern = re.compile(r'(\*\*)(.+?)(\*\*)')
+        # Blockquote
+        if text.startswith('> '):
+            if not show_syntax:
+                self.setFormat(0, 2, self.hidden_format)
+            self.setFormat(2, len(text) - 2, self.blockquote_format)
+            return
+
+        # Task lists (- [ ] or - [x])
+        task_unchecked = re.match(r'^(\s*-\s+\[\s\])\s+(.*)$', text)
+        task_checked = re.match(r'^(\s*-\s+\[x\])\s+(.*)$', text, re.IGNORECASE)
+        if task_unchecked:
+            self.setFormat(0, len(task_unchecked.group(1)), self.task_checkbox_format)
+            return
+        elif task_checked:
+            self.setFormat(0, len(task_checked.group(1)), self.task_checkbox_format)
+            # Strike through the task text
+            self.setFormat(len(task_checked.group(1)) + 1, len(task_checked.group(2)), self.strikethrough_format)
+            return
+
+        # Unordered lists (-, *, +)
+        list_match = re.match(r'^(\s*[-*+]\s+)', text)
+        if list_match:
+            self.setFormat(0, len(list_match.group(1)), self.list_format)
+
+        # Ordered lists (1., 2., etc.)
+        ordered_list_match = re.match(r'^(\s*\d+\.\s+)', text)
+        if ordered_list_match:
+            self.setFormat(0, len(ordered_list_match.group(1)), self.list_format)
+
+        # Now apply inline formatting (bold, italic, etc.)
+        # These need to be applied in the right order to avoid conflicts
+        # Skip formatting inside entity links
+
+        # Inline code `text` (must be before other inline formatting)
+        code_pattern = re.compile(r'(`)([^`]+?)(`)')
+        for match in code_pattern.finditer(text):
+            if self._is_inside_entity_link(match.start(), match.end(), entity_ranges):
+                continue
+            if not show_syntax:
+                # Hide backticks
+                self.setFormat(match.start(1), 1, self.hidden_format)
+                self.setFormat(match.start(3), 1, self.hidden_format)
+            # Format as code
+            self.setFormat(match.start(2), len(match.group(2)), self.code_format)
+
+        # Bold **text** (must be before italic to avoid conflicts)
+        bold_pattern = re.compile(r'(\*\*)([^*]+?)(\*\*)')
         for match in bold_pattern.finditer(text):
+            if self._is_inside_entity_link(match.start(), match.end(), entity_ranges):
+                continue
             if not show_syntax:
                 # Hide asterisks
                 self.setFormat(match.start(1), 2, self.hidden_format)
@@ -191,9 +327,35 @@ class MarkdownHighlighter(QSyntaxHighlighter):
             # Bold the content
             self.setFormat(match.start(2), len(match.group(2)), self.bold_format)
 
-        # Italic *text*
-        italic_pattern = re.compile(r'(?<!\*)(\*)(?!\*)(.+?)(?<!\*)(\*)(?!\*)')
+        # Underline __text__
+        underline_pattern = re.compile(r'(__)([^_]+?)(__)')
+        for match in underline_pattern.finditer(text):
+            if self._is_inside_entity_link(match.start(), match.end(), entity_ranges):
+                continue
+            if not show_syntax:
+                # Hide underscores
+                self.setFormat(match.start(1), 2, self.hidden_format)
+                self.setFormat(match.start(3), 2, self.hidden_format)
+            # Underline the content
+            self.setFormat(match.start(2), len(match.group(2)), self.underline_format)
+
+        # Strikethrough ~~text~~
+        strikethrough_pattern = re.compile(r'(~~)([^~]+?)(~~)')
+        for match in strikethrough_pattern.finditer(text):
+            if self._is_inside_entity_link(match.start(), match.end(), entity_ranges):
+                continue
+            if not show_syntax:
+                # Hide tildes
+                self.setFormat(match.start(1), 2, self.hidden_format)
+                self.setFormat(match.start(3), 2, self.hidden_format)
+            # Strike through the content
+            self.setFormat(match.start(2), len(match.group(2)), self.strikethrough_format)
+
+        # Italic *text* or _text_ (must be after bold/underline to avoid conflicts)
+        italic_pattern = re.compile(r'(?<!\*)(\*)(?!\*)([^*]+?)(?<!\*)(\*)(?!\*)')
         for match in italic_pattern.finditer(text):
+            if self._is_inside_entity_link(match.start(), match.end(), entity_ranges):
+                continue
             if not show_syntax:
                 # Hide asterisks
                 self.setFormat(match.start(1), 1, self.hidden_format)
@@ -201,15 +363,45 @@ class MarkdownHighlighter(QSyntaxHighlighter):
             # Italicize the content
             self.setFormat(match.start(2), len(match.group(2)), self.italic_format)
 
-        # Inline code `text`
-        code_pattern = re.compile(r'(`)(.+?)(`)')
-        for match in code_pattern.finditer(text):
+        # Italic with underscores _text_
+        italic_underscore_pattern = re.compile(r'(?<!_)(_)(?!_)([^_]+?)(?<!_)(_)(?!_)')
+        for match in italic_underscore_pattern.finditer(text):
+            if self._is_inside_entity_link(match.start(), match.end(), entity_ranges):
+                continue
             if not show_syntax:
-                # Hide backticks
+                # Hide underscores
                 self.setFormat(match.start(1), 1, self.hidden_format)
                 self.setFormat(match.start(3), 1, self.hidden_format)
-            # Format as code
-            self.setFormat(match.start(2), len(match.group(2)), self.code_format)
+            # Italicize the content
+            self.setFormat(match.start(2), len(match.group(2)), self.italic_format)
+
+        # Links [text](url)
+        link_pattern = re.compile(r'(\[)([^\]]+?)(\]\()([^\)]+?)(\))')
+        for match in link_pattern.finditer(text):
+            if self._is_inside_entity_link(match.start(), match.end(), entity_ranges):
+                continue
+            if not show_syntax:
+                # Hide markdown syntax, show only link text
+                self.setFormat(match.start(1), 1, self.hidden_format)
+                self.setFormat(match.start(3), 2, self.hidden_format)
+                self.setFormat(match.start(4), len(match.group(4)), self.hidden_format)
+                self.setFormat(match.start(5), 1, self.hidden_format)
+            # Format link text
+            self.setFormat(match.start(2), len(match.group(2)), self.link_format)
+
+        # Images ![alt](url)
+        image_pattern = re.compile(r'(!\[)([^\]]*?)(\]\()([^\)]+?)(\))')
+        for match in image_pattern.finditer(text):
+            if self._is_inside_entity_link(match.start(), match.end(), entity_ranges):
+                continue
+            if not show_syntax:
+                # Hide markdown syntax
+                self.setFormat(match.start(1), 2, self.hidden_format)
+                self.setFormat(match.start(3), 2, self.hidden_format)
+                self.setFormat(match.start(4), len(match.group(4)), self.hidden_format)
+                self.setFormat(match.start(5), 1, self.hidden_format)
+            # Format alt text with link format
+            self.setFormat(match.start(2), len(match.group(2)), self.link_format)
 
 
 class EntityTextEditor(QTextEdit):
