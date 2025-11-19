@@ -5,12 +5,111 @@ Monitors QTextDocument changes and maintains a real-time index of all entity
 references using incremental parsing strategies to handle large documents.
 """
 
-from PySide6.QtCore import QObject, Signal, QTimer
-from PySide6.QtGui import QTextDocument, QTextCursor
+from PySide6.QtCore import QObject, Signal, QTimer, QThread
+from PySide6.QtGui import QTextDocument, QTextCursor, QTextBlock
 import re
 from typing import Set, Optional, List
 
 from .entity_index import EntityIndex, EntityReference
+
+
+class ParseWorker(QObject):
+    """
+    Background worker for parsing entities in a document.
+
+    Runs in a separate thread to avoid blocking the UI during initial parse.
+    """
+
+    # Signals
+    progress = Signal(int, int)  # (current_block, total_blocks)
+    finished = Signal(list)  # List[tuple[EntityReference, list[EntityReference]]]
+    error = Signal(str)
+
+    def __init__(self, document: QTextDocument, entity_pattern, entity_marker):
+        super().__init__()
+        self.document = document
+        self.entity_pattern = entity_pattern
+        self.entity_marker = entity_marker
+        self._cancelled = False
+
+    def cancel(self):
+        """Cancel the parsing operation."""
+        self._cancelled = True
+
+    def parse(self):
+        """
+        Parse all blocks in the document and collect entities.
+
+        Returns results as a list of (block_number, entities) tuples.
+        """
+        import datetime
+        try:
+            print(f"[{datetime.datetime.now()}]     ParseWorker: Starting parse in background thread...")
+            results = []  # List of (block_number, [EntityReference])
+
+            # Count total blocks
+            total_blocks = self.document.blockCount()
+            print(f"[{datetime.datetime.now()}]     ParseWorker: Total blocks to parse: {total_blocks}")
+
+            # Parse each block
+            block = self.document.firstBlock()
+            parsed_count = 0
+
+            while block.isValid() and not self._cancelled:
+                block_number = block.blockNumber()
+                entities = self._parse_block_content(block, block_number)
+
+                if entities:
+                    results.append((block_number, entities))
+
+                parsed_count += 1
+
+                # Emit progress every 50 blocks to avoid signal spam
+                if parsed_count % 50 == 0:
+                    self.progress.emit(parsed_count, total_blocks)
+
+                block = block.next()
+
+            # Emit final progress
+            if not self._cancelled:
+                print(f"[{datetime.datetime.now()}]     ParseWorker: Parse complete. Found {sum(len(entities) for _, entities in results)} entities")
+                self.progress.emit(total_blocks, total_blocks)
+                self.finished.emit(results)
+
+        except Exception as e:
+            print(f"[{datetime.datetime.now()}]     ParseWorker: ERROR: {e}")
+            self.error.emit(str(e))
+
+    def _parse_block_content(self, block: QTextBlock, block_number: int) -> List[EntityReference]:
+        """Parse a single block and return entities found."""
+        text = block.text()
+        start_pos = block.position()
+
+        # Quick check: does this block even have entity markers?
+        if not self.entity_marker.search(text):
+            return []
+
+        entities = []
+
+        # Find entities
+        for match in self.entity_pattern.finditer(text):
+            display_name = match.group(1).strip()
+            entity_id = match.group(2).strip() if match.group(2) else None
+
+            # Generate temporary ID if none provided
+            if not entity_id:
+                entity_id = f"temp_{display_name}"
+
+            ref = EntityReference(
+                entity_id=entity_id,
+                display_name=display_name,
+                start_pos=start_pos + match.start(),
+                end_pos=start_pos + match.end(),
+                block_number=block_number
+            )
+            entities.append(ref)
+
+        return entities
 
 
 class EntityTracker(QObject):
@@ -24,6 +123,8 @@ class EntityTracker(QObject):
         entities_updated: Emitted when entities are found/updated
         entity_added: Emitted when a new entity is detected
         entity_removed: Emitted when an entity is deleted
+        parse_progress: Emitted during initial parse (current, total)
+        parse_complete: Emitted when initial parse finishes
     """
 
     # Emitted with list of all current entities
@@ -33,6 +134,10 @@ class EntityTracker(QObject):
     entity_added = Signal(object)  # EntityReference
     entity_removed = Signal(object)  # EntityReference
 
+    # Emitted during async parsing
+    parse_progress = Signal(int, int)  # (current_block, total_blocks)
+    parse_complete = Signal()  # Emitted when async parse finishes
+
     # Pattern for [[Display Name|entity_id]] or [[Display Name]]
     # Group 1: Display name
     # Group 2: Entity ID (optional)
@@ -41,13 +146,14 @@ class EntityTracker(QObject):
     # Quick check pattern - only look for opening brackets
     ENTITY_MARKER = re.compile(r'\[\[')
 
-    def __init__(self, text_document: QTextDocument, parent=None):
+    def __init__(self, text_document: QTextDocument, parent=None, async_parse: bool = True):
         """
         Initialize entity tracker for a document.
 
         Args:
             text_document: QTextDocument to monitor
             parent: Optional parent QObject
+            async_parse: If True, perform initial parse asynchronously (default: True)
         """
         super().__init__(parent)
 
@@ -65,11 +171,18 @@ class EntityTracker(QObject):
         # Track whether we're in a bulk operation
         self.bulk_operation = False
 
+        # Thread for async parsing
+        self.parse_thread: Optional[QThread] = None
+        self.parse_worker: Optional[ParseWorker] = None
+
         # Connect to document changes
         self.document.contentsChange.connect(self._on_content_change)
 
-        # Do initial full parse
-        self._full_reparse()
+        # Do initial parse (async or sync)
+        if async_parse:
+            self._async_full_reparse()
+        else:
+            self._full_reparse()
 
     def _on_content_change(self, position: int, removed: int, added: int) -> None:
         """
@@ -319,15 +432,97 @@ class EntityTracker(QObject):
             )
 
             self.entity_index.add_entity(ref)
-            self.entity_added.emit(ref)
+            # Only emit individual signals if not in bulk operation
+            if not self.bulk_operation:
+                self.entity_added.emit(ref)
+
+    def _async_full_reparse(self) -> None:
+        """
+        Perform full document parse asynchronously in a background thread.
+
+        This prevents UI blocking for large documents.
+        """
+        # Cancel any existing parse
+        if self.parse_thread and self.parse_thread.isRunning():
+            if self.parse_worker:
+                self.parse_worker.cancel()
+            self.parse_thread.quit()
+            self.parse_thread.wait()
+
+        # Create worker and thread
+        self.parse_worker = ParseWorker(self.document, self.ENTITY_PATTERN, self.ENTITY_MARKER)
+        self.parse_thread = QThread()
+
+        # Move worker to thread
+        self.parse_worker.moveToThread(self.parse_thread)
+
+        # Connect signals
+        self.parse_worker.progress.connect(self._on_parse_progress)
+        self.parse_worker.finished.connect(self._on_parse_finished)
+        self.parse_worker.error.connect(self._on_parse_error)
+        self.parse_thread.started.connect(self.parse_worker.parse)
+
+        # Clean up when done
+        self.parse_worker.finished.connect(self.parse_thread.quit)
+        self.parse_thread.finished.connect(self._cleanup_parse_thread)
+
+        # Start parsing
+        self.parse_thread.start()
+
+    def _on_parse_progress(self, current: int, total: int) -> None:
+        """Handle progress updates from async parser."""
+        self.parse_progress.emit(current, total)
+
+    def _on_parse_finished(self, results: List[tuple]) -> None:
+        """
+        Handle completion of async parse.
+
+        Args:
+            results: List of (block_number, [EntityReference]) tuples
+        """
+        # Enable bulk operation mode to suppress individual signals
+        self.bulk_operation = True
+
+        # Clear existing index
+        self.entity_index.clear()
+
+        # Add all entities from results
+        for block_number, entities in results:
+            for entity in entities:
+                self.entity_index.add_entity(entity)
+
+        # Disable bulk operation mode
+        self.bulk_operation = False
+
+        # Emit single update with all entities
+        self.entities_updated.emit(self.entity_index.get_all_entities())
+        self.parse_complete.emit()
+
+    def _on_parse_error(self, error_msg: str) -> None:
+        """Handle errors from async parser."""
+        print(f"Entity parse error: {error_msg}")
+        self.parse_complete.emit()
+
+    def _cleanup_parse_thread(self) -> None:
+        """Clean up the parse thread after it finishes."""
+        if self.parse_worker:
+            self.parse_worker.deleteLater()
+            self.parse_worker = None
+        if self.parse_thread:
+            self.parse_thread.deleteLater()
+            self.parse_thread = None
 
     def _full_reparse(self) -> None:
         """
-        Full document reparse.
+        Full document reparse (synchronous).
 
         Use sparingly - only on initialization or major document structure changes.
         For incremental edits, rely on block-based reparsing.
+        For large documents, prefer _async_full_reparse() to avoid blocking UI.
         """
+        # Enable bulk operation mode to suppress individual signals
+        self.bulk_operation = True
+
         # Clear existing index
         self.entity_index.clear()
 
@@ -336,6 +531,9 @@ class EntityTracker(QObject):
         while block.isValid():
             self._parse_block(block.blockNumber())
             block = block.next()
+
+        # Disable bulk operation mode
+        self.bulk_operation = False
 
         # Emit full entity list
         self.entities_updated.emit(self.entity_index.get_all_entities())

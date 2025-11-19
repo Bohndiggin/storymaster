@@ -1,6 +1,7 @@
 """
 Main Storyweaver widget - integrated writing interface for Storymaster.
 """
+import datetime
 from typing import Optional, List, Dict, Any, TYPE_CHECKING
 import re
 from PySide6.QtWidgets import (
@@ -226,6 +227,24 @@ class StoryweaverWidget(QWidget):
         # Ensure the cursor is visible
         self.editor.ensureCursorVisible()
 
+    def _on_entity_parse_progress(self, current: int, total: int):
+        """Handle entity parsing progress updates."""
+        if self.loading_dialog and self.loading_dialog.isVisible():
+            percent = int((current / total) * 100) if total > 0 else 0
+            self.loading_dialog.set_message(f"Parsing entities... {percent}% ({current}/{total} blocks)")
+
+    def _on_entity_parse_complete(self):
+        """Handle entity parsing completion."""
+        print(f"[{datetime.datetime.now()}] Parse complete signal received. Closing loading dialog.")
+        if self.loading_dialog and self.loading_dialog.isVisible():
+            self.loading_dialog.close()
+
+        # Now that everything is loaded, trigger the deferred syntax highlighting
+        print(f"[{datetime.datetime.now()}] Triggering deferred syntax highlighting...")
+        self.editor.trigger_deferred_highlight()
+
+        print(f"[{datetime.datetime.now()}] COMPLETE: Document fully loaded and ready!")
+
     def _update_word_count(self):
         """Update the word count label."""
         text = self.editor.get_text()
@@ -410,42 +429,57 @@ class StoryweaverWidget(QWidget):
 
         try:
             file_path = self._pending_file_path
+            print(f"[{datetime.datetime.now()}] START: Loading document from {file_path}")
 
             # Update message
             self.loading_dialog.set_message("Opening document...")
             QApplication.processEvents()
 
             # Load document
+            print(f"[{datetime.datetime.now()}] Creating StoryDocument object...")
             self.current_document = StoryDocument(file_path)
 
             self.loading_dialog.set_message("Loading content...")
             QApplication.processEvents()
 
+            print(f"[{datetime.datetime.now()}] Loading document content from disk...")
             if not self.current_document.load():
                 self.loading_dialog.close()
                 QMessageBox.warning(self, "Error", "Failed to load document")
                 self.current_document = None
                 return
+            print(f"[{datetime.datetime.now()}] Document loaded. Size: {len(self.current_document.content)} chars")
 
             # Set editor content
             self.loading_dialog.set_message("Rendering content...")
             QApplication.processEvents()
 
+            print(f"[{datetime.datetime.now()}] BEFORE set_text()")
             self.editor.set_text(self.current_document.content)
+            print(f"[{datetime.datetime.now()}] AFTER set_text()")
 
-            # Setup entity tracker
+            # Setup entity tracker with async parsing
+            self.loading_dialog.set_message("Parsing entities...")
+            QApplication.processEvents()
+
+            print(f"[{datetime.datetime.now()}] Creating EntityTracker (async)...")
             if self.entity_tracker:
                 self.entity_tracker.deleteLater()
-            self.entity_tracker = EntityTracker(self.editor.document(), self)
+            self.entity_tracker = EntityTracker(self.editor.document(), self, async_parse=True)
+            print(f"[{datetime.datetime.now()}] EntityTracker created (parsing in background)...")
 
-            # Update UI
+            # Connect to parse signals
+            self.entity_tracker.parse_progress.connect(self._on_entity_parse_progress)
+            self.entity_tracker.parse_complete.connect(self._on_entity_parse_complete)
+
+            # Update UI (except closing dialog - wait for parse to complete)
             self.document_label.setText(f"Document: {file_path.split('/')[-1]}")
             self._update_word_count()
             self._do_update_heading_navigation()  # Update headings immediately
             self.document_modified.emit(False)
 
-            # Close loading dialog
-            self.loading_dialog.close()
+            # Don't close dialog yet - wait for entity parsing to complete
+            # The dialog will be closed in _on_entity_parse_complete()
 
         except Exception as e:
             import traceback

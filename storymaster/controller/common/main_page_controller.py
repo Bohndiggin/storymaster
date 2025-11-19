@@ -833,6 +833,9 @@ class MainWindowController:
         # Entity cache for Storyweaver (key: setting_id, value: entity list)
         self._entity_cache = {}
 
+        # Entity details cache (key: (entity_type, entity_id), value: (name, details))
+        self._entity_details_cache = {}
+
         # Add the Storyweaver widget to the storyweaver page
         storyweaver_layout = QVBoxLayout(self.view.ui.storyweaverPage)
         storyweaver_layout.setContentsMargins(0, 0, 0, 0)
@@ -3798,6 +3801,11 @@ class MainWindowController:
             if is_update:
                 # The ID is already in the form_data for updates
                 self.model.update_row(self.current_table_name, form_data)
+
+                # Invalidate cache for this entity
+                if 'id' in form_data:
+                    self.invalidate_entity_cache(self.current_table_name, form_data['id'])
+
                 self.view.ui.statusbar.showMessage(
                     f"Successfully saved changes to '{self.current_table_name}'.", 5000
                 )
@@ -4063,6 +4071,31 @@ class MainWindowController:
             import traceback
             traceback.print_exc()
 
+    def invalidate_entity_cache(self, table_name: str, entity_id: int):
+        """
+        Invalidate cached entity details for a specific entity.
+
+        Args:
+            table_name: Database table name (e.g., 'actor', 'location', 'faction')
+            entity_id: Numeric ID of the entity
+        """
+        # Map table names to entity types
+        table_to_type = {
+            'actor': 'character',
+            'location': 'location',
+            'faction': 'faction'
+        }
+
+        entity_type = table_to_type.get(table_name.lower())
+        if entity_type:
+            cache_key = (entity_type, entity_id)
+            if cache_key in self._entity_details_cache:
+                del self._entity_details_cache[cache_key]
+
+    def clear_entity_cache(self):
+        """Clear all cached entity details."""
+        self._entity_details_cache.clear()
+
     def _on_storyweaver_entity_hover(self, entity_id: str, entity_type: str, storyline_id: int, setting_id: int):
         """
         Handle entity hover request from Storyweaver widget.
@@ -4074,12 +4107,21 @@ class MainWindowController:
             setting_id: Current setting ID
         """
         try:
-            with Session(self.model.engine) as session:
-                # Extract numeric ID from entity_id
-                numeric_id = int(entity_id.split('_')[1]) if '_' in entity_id else None
-                if not numeric_id:
-                    return
+            # Extract numeric ID from entity_id
+            numeric_id = int(entity_id.split('_')[1]) if '_' in entity_id else None
+            if not numeric_id:
+                return
 
+            # Check cache first
+            cache_key = (entity_type, numeric_id)
+            if cache_key in self._entity_details_cache:
+                entity_name, details = self._entity_details_cache[cache_key]
+                if entity_name:
+                    self.storyweaver_widget.show_entity_details(entity_name, entity_type, details, entity_id)
+                return
+
+            # Cache miss - query database
+            with Session(self.model.engine) as session:
                 entity_name = ""
                 details = ""
 
@@ -4142,6 +4184,10 @@ class MainWindowController:
                             detail_parts.append(f"Goals: {faction.goals[:100]}..." if len(faction.goals) > 100 else f"Goals: {faction.goals}")
 
                         details = "\n".join(detail_parts) if detail_parts else "No additional details available."
+
+                # Cache the results
+                if entity_name:
+                    self._entity_details_cache[cache_key] = (entity_name, details)
 
                 # Show the info card
                 if entity_name:
