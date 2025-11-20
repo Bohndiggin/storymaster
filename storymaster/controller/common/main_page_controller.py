@@ -844,8 +844,8 @@ class MainWindowController:
         # Connect Storyweaver signals
         self.storyweaver_widget.entity_search_requested.connect(self._on_storyweaver_entity_search)
         self.storyweaver_widget.entity_hover_requested.connect(self._on_storyweaver_entity_hover)
+        self.storyweaver_widget.entity_navigation_requested.connect(self._on_entity_card_clicked)
         self.storyweaver_widget.editor.alias_add_requested.connect(self._on_alias_add_requested)
-        self.storyweaver_widget.editor._info_card.entity_clicked.connect(self._on_entity_card_clicked)
 
         self.connect_signals()
         self.on_litographer_selected()  # Start on the litographer page
@@ -4034,13 +4034,15 @@ class MainWindowController:
             import traceback
             traceback.print_exc()
 
-    def _on_entity_card_clicked(self, entity_id: str, entity_type: str):
+    def _on_entity_card_clicked(self, entity_id: str, entity_type: str, storyline_id: int = None, setting_id: int = None):
         """
         Handle click on entity name in info card - navigate to Lorekeeper.
 
         Args:
             entity_id: The entity ID (e.g., "actor_13")
             entity_type: The entity type ("character", "location", "faction")
+            storyline_id: The storyline ID (optional, not used)
+            setting_id: The setting ID (optional, not used)
         """
         try:
             # Extract numeric ID from entity_id

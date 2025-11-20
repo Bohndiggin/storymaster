@@ -32,11 +32,13 @@ class StoryweaverWidget(QWidget):
     Signals:
         entity_search_requested: Emitted when editor needs entity search (query, storyline_id, setting_id)
         entity_hover_requested: Emitted when user hovers over entity (entity_id, entity_type, storyline_id, setting_id)
+        entity_navigation_requested: Emitted when user clicks to navigate to entity in Lorekeeper
         document_modified: Emitted when document content changes
     """
 
     entity_search_requested = Signal(str, int, int)  # (query, storyline_id, setting_id)
     entity_hover_requested = Signal(str, str, int, int)  # (entity_id, entity_type, storyline_id, setting_id)
+    entity_navigation_requested = Signal(str, str, int, int)  # (entity_id, entity_type, storyline_id, setting_id)
     document_modified = Signal(bool)  # is_modified
 
     def __init__(self, model: "Model", current_storyline_id: int, current_setting_id: int, parent=None):
@@ -174,20 +176,38 @@ class StoryweaverWidget(QWidget):
         self.editor.entity_requested.connect(self._on_entity_requested)
         self.editor.entity_selected.connect(self._on_entity_selected)
         self.editor.entity_hover.connect(self._on_entity_hover)
+        self.editor.entity_navigation_requested.connect(self._on_entity_navigation_requested)
         self.editor.textChanged.connect(self._on_text_changed)
+        self.editor.alias_add_requested.connect(self._on_alias_add_requested)
 
         # Heading navigator signals
         self.heading_navigator.heading_clicked.connect(self._on_heading_clicked)
 
     def _on_entity_requested(self, query: str):
         """Handle entity search request from editor."""
+        # Store the query so we know if results should update highlighting
+        self._last_entity_search_query = query
         # Emit signal to controller to fetch entities
         self.entity_search_requested.emit(query, self.current_storyline_id, self.current_setting_id)
+
+    def _on_alias_add_requested(self, entity_id: str, entity_name: str, alias: str):
+        """Handle request to add an alias for an entity."""
+        if self.current_document:
+            # Add the alias to the document metadata
+            success = self.current_document.add_alias(entity_id, alias)
+            if success:
+                # Mark document as modified
+                self.document_modified.emit(True)
 
     def _on_entity_hover(self, entity_id: str, entity_type: str):
         """Handle entity hover event from editor."""
         # Emit signal to controller to fetch entity details
         self.entity_hover_requested.emit(entity_id, entity_type, self.current_storyline_id, self.current_setting_id)
+
+    def _on_entity_navigation_requested(self, entity_id: str, entity_type: str):
+        """Handle entity navigation request from editor (user clicked on entity in info card)."""
+        # Emit signal to controller to navigate to entity in Lorekeeper
+        self.entity_navigation_requested.emit(entity_id, entity_type, self.current_storyline_id, self.current_setting_id)
 
     def _on_entity_selected(self, entity_id: str, entity_name: str):
         """Handle entity selection from autocomplete."""
@@ -243,6 +263,10 @@ class StoryweaverWidget(QWidget):
         print(f"[{datetime.datetime.now()}] Triggering deferred syntax highlighting...")
         self.editor.trigger_deferred_highlight()
 
+        # Load entity list for highlighting
+        print(f"[{datetime.datetime.now()}] Loading entity list for highlighting...")
+        self.editor.entity_requested.emit("")
+
         print(f"[{datetime.datetime.now()}] COMPLETE: Document fully loaded and ready!")
 
     def _update_word_count(self):
@@ -280,10 +304,29 @@ class StoryweaverWidget(QWidget):
         Args:
             entities: List of dicts with keys: id, name, type
         """
-        self._entity_list = entities
+        # Determine if this is a full list (for highlighting) or filtered list (for autocomplete only)
+        # Only update highlighting when we have a full list (empty search query)
+        update_highlighting = getattr(self, '_last_entity_search_query', '') == ''
 
-        # Update editor autocomplete
-        self.editor.set_entity_list(entities)
+        # Merge in aliases from document metadata
+        if self.current_document:
+            entities_with_aliases = []
+            for entity in entities:
+                entity_copy = entity.copy()
+                entity_id = entity.get("id")
+                if entity_id:
+                    # Get aliases from document metadata
+                    doc_aliases = self.current_document.get_aliases(entity_id)
+                    # Merge with any existing aliases from database
+                    existing_aliases = entity.get("aliases", [])
+                    all_aliases = list(set(existing_aliases + doc_aliases))  # Remove duplicates
+                    entity_copy["aliases"] = all_aliases
+                entities_with_aliases.append(entity_copy)
+            self._entity_list = entities_with_aliases
+            self.editor.set_entity_list(entities_with_aliases, update_highlighting=update_highlighting)
+        else:
+            self._entity_list = entities
+            self.editor.set_entity_list(entities, update_highlighting=update_highlighting)
 
     def show_entity_details(self, name: str, entity_type: str, details: str, entity_id: str = None):
         """
@@ -304,7 +347,7 @@ class StoryweaverWidget(QWidget):
             self._sidebar_popup_pos = None
         else:
             # Show at editor position (from clicking entity link in text)
-            self.editor.show_entity_info(name, entity_type, details)
+            self.editor.show_entity_info(name, entity_type, details, entity_id)
 
     def hide_info_cards(self):
         """Hide any visible info cards."""

@@ -18,8 +18,6 @@ from dataclasses import dataclass
 
 
 # Compiled regex patterns (compile once at module load for performance)
-ENTITY_LINK_PATTERN = re.compile(r'(\[\[)([^\|]+?)(\|)([^\]]+?)(\]\])')
-ENTITY_LINK_SIMPLE_PATTERN = re.compile(r'\[\[([^\|]+?)\|([^\]]+?)\]\]')
 CODE_PATTERN = re.compile(r'(`)([^`]+?)(`)')
 BOLD_PATTERN = re.compile(r'(\*\*)([^*]+?)(\*\*)')
 UNDERLINE_PATTERN = re.compile(r'(__)([^_]+?)(__)')
@@ -139,7 +137,9 @@ class MarkdownHighlighter(QSyntaxHighlighter):
     def __init__(self, parent: QTextDocument, editor):
         super().__init__(parent)
         self.editor = editor
-        self._initial_load = False  # Flag to skip highlighting during initial load
+
+        # Track first slow setFormat call for debugging
+        self._first_slow_format_logged = False
 
         # Progressive highlighting state
         self._progressive_timer = QTimer()
@@ -152,6 +152,28 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         # Store format instructions for each block (block_number -> list of FormatInstructions)
         self._format_cache: Dict[int, List[FormatInstruction]] = {}
 
+        # Performance profiling counters for FORMATTING (not regex)
+        self._format_perf = {
+            'entity': 0.0,
+            'entity_hidden': 0.0,
+            'code': 0.0,
+            'code_block': 0.0,
+            'bold': 0.0,
+            'italic': 0.0,
+            'underline': 0.0,
+            'strikethrough': 0.0,
+            'links': 0.0,
+            'headings': 0.0,
+            'lists': 0.0,
+            'blockquote': 0.0,
+            'other': 0.0,
+            'total_blocks': 0,
+            'total_setformat_calls': 0
+        }
+
+        # Counter for highlightBlock() calls
+        self._highlight_block_call_count = 0
+
         # Format for entity name (underlined and colored)
         self.entity_format = QTextCharFormat()
         self.entity_format.setFontUnderline(True)
@@ -159,9 +181,13 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         self.entity_format.setForeground(QColor("#4A9EFF"))
 
         # Format for invisible syntax
+        # Use ONLY transparency (fast - no layout recalculation)
+        # NOTE: setFontPointSize(0.1) causes 12s delay - DO NOT USE!
+        # NOTE: setFontLetterSpacing() also causes issues
         self.hidden_format = QTextCharFormat()
         self.hidden_format.setForeground(QColor(0, 0, 0, 0))  # Fully transparent
-        self.hidden_format.setFontPointSize(0.1)
+        # Trade-off: Characters are invisible but still take up space
+        # For true "dual representation" (visual vs actual text), we'd need a more complex approach
 
         # Markdown formats
         self.heading1_format = QTextCharFormat()
@@ -235,6 +261,28 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         self.hr_format.setForeground(QColor("#555555"))
         self.hr_format.setFontWeight(QFont.Bold)
 
+        # Entity highlighting for plain text approach (multipass)
+        self._entity_names: List[str] = []
+        self._entity_patterns: List[re.Pattern] = []  # One pattern per entity
+
+    def set_entity_names(self, entity_names: List[str]):
+        """Set the list of entity names to highlight and compile individual patterns."""
+        self._entity_names = entity_names
+        if entity_names:
+            # Multipass approach: compile one simple pattern per entity
+            # Much faster than one huge pattern with all entities
+            self._entity_patterns = []
+            for name in entity_names:
+                # Escape special regex characters
+                escaped_name = re.escape(name)
+                # Pattern: \bEntityName('s)?\b (with optional possessive)
+                pattern_str = r'\b' + escaped_name + r"(?:'s)?\b"
+                pattern = re.compile(pattern_str, re.IGNORECASE)
+                self._entity_patterns.append(pattern)
+        else:
+            self._entity_patterns = []
+
+
     def _is_inside_entity_link(self, start: int, end: int, entity_ranges: list) -> bool:
         """Check if a range overlaps with any entity link."""
         for entity_start, entity_end in entity_ranges:
@@ -243,8 +291,90 @@ class MarkdownHighlighter(QSyntaxHighlighter):
                 return True
         return False
 
+    def _print_performance_summary(self):
+        """Print a summary of formatting performance."""
+        total_blocks = self._format_perf['total_blocks']
+        total_calls = self._format_perf['total_setformat_calls']
+        if total_blocks == 0:
+            return
+
+        print(f"\n{'='*70}")
+        print(f"FORMATTING PERFORMANCE SUMMARY")
+        print(f"  highlightBlock() calls: {self._highlight_block_call_count}")
+        print(f"  Blocks formatted: {total_blocks}")
+        print(f"  setFormat() calls: {total_calls}")
+        print(f"{'='*70}")
+
+        # Calculate total time spent in formatting
+        total_time = sum(v for k, v in self._format_perf.items()
+                        if k not in ['total_blocks', 'total_setformat_calls'])
+
+        # Sort by time spent (descending)
+        sorted_counters = sorted(
+            [(k, v) for k, v in self._format_perf.items()
+             if k not in ['total_blocks', 'total_setformat_calls']],
+            key=lambda x: x[1],
+            reverse=True
+        )
+
+        for format_type, time_ms in sorted_counters:
+            if time_ms > 0:
+                pct = (time_ms / total_time * 100) if total_time > 0 else 0
+                avg_per_block = time_ms / total_blocks
+                print(f"  {format_type:20s}: {time_ms:8.1f}ms total | {avg_per_block:6.3f}ms/block | {pct:5.1f}%")
+
+        print(f"{'-'*70}")
+        print(f"  {'TOTAL':20s}: {total_time:8.1f}ms")
+        print(f"  {'Avg per block':20s}: {total_time/total_blocks:8.3f}ms")
+        if total_calls > 0:
+            print(f"  {'Avg per setFormat()':20s}: {total_time/total_calls:8.3f}ms")
+        print(f"{'='*70}\n")
+
+    def _populate_cache(self, document: QTextDocument):
+        """
+        Populate the format cache by processing all blocks in parallel.
+        This is a synchronous operation that prepares the cache before highlighting.
+        """
+        print(f"[{datetime.datetime.now()}]     Populating cache for {document.blockCount()} blocks...")
+
+        # Reset performance counters
+        for key in self._format_perf:
+            self._format_perf[key] = 0
+        self._highlight_block_call_count = 0
+
+        # Clear format cache
+        self._format_cache.clear()
+
+        # Extract all block data
+        block_data = []
+        block = document.firstBlock()
+        while block.isValid():
+            block_data.append(BlockData(
+                block_number=block.blockNumber(),
+                text=block.text(),
+                position=block.position()
+            ))
+            block = block.next()
+
+        # Process blocks in parallel
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            futures = [executor.submit(self._process_block_in_thread, bd) for bd in block_data]
+            for future in as_completed(futures):
+                block_number, instructions = future.result()
+                self._format_cache[block_number] = instructions
+
+        # Store block data for cache validation
+        self._block_data = block_data
+
+        print(f"[{datetime.datetime.now()}]     Cache populated with {len(self._format_cache)} blocks")
+
     def start_progressive_rehighlight(self):
         """Start progressive multithreaded rehighlighting (non-blocking)."""
+        # Reset performance counters
+        for key in self._format_perf:
+            self._format_perf[key] = 0
+        self._highlight_block_call_count = 0
+
         print(f"[{datetime.datetime.now()}]     MarkdownHighlighter: Starting multithreaded progressive rehighlight...")
 
         # Cancel any existing progressive highlighting
@@ -340,21 +470,22 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         if self._progressive_current_block >= self._progressive_total_blocks:
             self._progressive_active = False
 
-            # Cache is fully populated! Now use lazy formatting instead of applying everything
-            print(f"[{datetime.datetime.now()}]     Cache fully populated. Using lazy formatting...")
+            # Cache is fully populated! Now format the entire document
+            print(f"[{datetime.datetime.now()}]     Cache fully populated. Formatting entire document...")
+
+            # Format the entire document to get full performance data
+            format_start = datetime.datetime.now()
+            self.rehighlight()
+            format_duration = (datetime.datetime.now() - format_start).total_seconds() * 1000
 
             # Re-enable editor updates
             self.editor.setUpdatesEnabled(True)
 
-            # Format only the first visible screen for immediate visual feedback
-            # (Rest will be formatted lazily as user scrolls)
-            print(f"[{datetime.datetime.now()}]     Formatting first visible screen...")
-            format_start = datetime.datetime.now()
-            self.editor._highlight_visible_blocks()
-            format_duration = (datetime.datetime.now() - format_start).total_seconds() * 1000
+            print(f"[{datetime.datetime.now()}]     Document formatted in {format_duration:.1f}ms")
+            print(f"[{datetime.datetime.now()}]     Document ready!")
 
-            print(f"[{datetime.datetime.now()}]     First screen formatted in {format_duration:.1f}ms")
-            print(f"[{datetime.datetime.now()}]     Document ready! (Lazy formatting enabled)")
+            # Print performance summary AFTER we've formatted all blocks
+            self._print_performance_summary()
         else:
             # Schedule next chunk immediately - no delay needed
             self._progressive_timer.start(0)
@@ -415,8 +546,7 @@ class MarkdownHighlighter(QSyntaxHighlighter):
             doc.setUndoRedoEnabled(True)
             doc.blockSignals(False)
 
-    @staticmethod
-    def _extract_format_instructions(text: str) -> List[FormatInstruction]:
+    def _extract_format_instructions(self, text: str) -> List[FormatInstruction]:
         """
         Extract all format instructions from text using regex (thread-safe, no GUI).
 
@@ -427,16 +557,6 @@ class MarkdownHighlighter(QSyntaxHighlighter):
 
         # Track entity link positions to avoid formatting inside them
         entity_ranges = []
-
-        # Handle entity links first
-        for match in ENTITY_LINK_PATTERN.finditer(text):
-            entity_ranges.append((match.start(), match.end()))
-            # Add instructions for entity link formatting
-            instructions.append(FormatInstruction(match.start(1), len(match.group(1)), 'entity_hidden'))
-            instructions.append(FormatInstruction(match.start(2), len(match.group(2)), 'entity'))
-            hidden_start = match.start(3)
-            hidden_length = match.end() - hidden_start
-            instructions.append(FormatInstruction(hidden_start, hidden_length, 'entity_hidden'))
 
         # Code blocks (```...```) - must be checked before other patterns
         if text.strip().startswith('```'):
@@ -580,8 +700,7 @@ class MarkdownHighlighter(QSyntaxHighlighter):
 
         return instructions
 
-    @staticmethod
-    def _process_block_in_thread(block_data: BlockData) -> Tuple[int, List[FormatInstruction]]:
+    def _process_block_in_thread(self, block_data: BlockData) -> Tuple[int, List[FormatInstruction]]:
         """
         Process a block's text in a worker thread (thread-safe, no GUI access).
 
@@ -591,7 +710,7 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         Returns:
             Tuple of (block_number, list of FormatInstructions)
         """
-        instructions = MarkdownHighlighter._extract_format_instructions(block_data.text)
+        instructions = self._extract_format_instructions(block_data.text)
         return (block_data.block_number, instructions)
 
     def _get_format_for_type(self, format_type: str, show_syntax: bool) -> Optional[QTextCharFormat]:
@@ -638,17 +757,68 @@ class MarkdownHighlighter(QSyntaxHighlighter):
 
         return format_map.get(format_type)
 
+    def setFormat(self, start: int, length: int, fmt: QTextCharFormat):
+        """Override setFormat to add timing debug."""
+        t_start = datetime.datetime.now()
+        super().setFormat(start, length, fmt)
+        duration_ms = (datetime.datetime.now() - t_start).total_seconds() * 1000
+
+        # Debug: Log first slow setFormat call (likely the bottleneck)
+        if duration_ms > 100 and not self._first_slow_format_logged:
+            self._first_slow_format_logged = True
+            print(f"[{datetime.datetime.now()}] ⚠️ FIRST SLOW setFormat: took {duration_ms:.1f}ms")
+            print(f"    Block: {self.currentBlock().blockNumber()}")
+            print(f"    Text: {self.currentBlock().text()[:100]}")
+            print(f"    Format: {fmt}")
+
+    def _timed_setFormat(self, start: int, length: int, fmt: QTextCharFormat, format_type: str):
+        """Wrapper around setFormat() to track performance (for cache path)."""
+        t_start = datetime.datetime.now()
+        self.setFormat(start, length, fmt)
+        duration_ms = (datetime.datetime.now() - t_start).total_seconds() * 1000
+
+        # Track by general category
+        category = format_type.replace('_syntax', '').replace('1', '').replace('2', '').replace('3', '').replace('4', '').replace('5', '').replace('6', '')
+        if category.startswith('heading'):
+            category = 'headings'
+        elif category in ['link', 'image']:
+            category = 'links'
+        elif category in ['list', 'task_checkbox', 'hr']:
+            category = 'lists'
+
+        if category in self._format_perf:
+            self._format_perf[category] += duration_ms
+        else:
+            self._format_perf['other'] += duration_ms
+
+        self._format_perf['total_setformat_calls'] += 1
+
     def highlightBlock(self, text: str):
         """Apply highlighting to markdown and entity links."""
-        # Skip highlighting during initial load for performance
-        if self._initial_load:
+        if not text:
             return
 
+        # Debug: Time this block's highlighting
+        block_start = datetime.datetime.now()
+
+        self._highlight_block_call_count += 1
+        self._format_perf['total_blocks'] += 1
         block_number = self.currentBlock().blockNumber()
 
         # Check if cursor is in this block to show/hide markdown syntax
         cursor_block = self.editor.textCursor().block()
         show_syntax = (cursor_block == self.currentBlock())
+
+        # Debug: track cache usage
+        use_cache = block_number in self._format_cache
+        if not hasattr(self, '_cache_hits'):
+            self._cache_hits = 0
+            self._cache_misses = 0
+
+        if use_cache:
+            self._cache_hits += 1
+        else:
+            self._cache_misses += 1
 
         # Check if we have cached format instructions for this block
         if block_number in self._format_cache:
@@ -667,7 +837,17 @@ class MarkdownHighlighter(QSyntaxHighlighter):
                 for instruction in instructions:
                     fmt = self._get_format_for_type(instruction.format_type, show_syntax)
                     if fmt:
-                        self.setFormat(instruction.position, instruction.length, fmt)
+                        self._timed_setFormat(instruction.position, instruction.length, fmt, instruction.format_type)
+
+                # Still need to apply entity highlighting (not cached because entity list loads after cache)
+                # Track entity ranges to avoid conflicts
+                entity_ranges = []
+                if self._entity_patterns:
+                    for pattern in self._entity_patterns:
+                        for match in pattern.finditer(text):
+                            if self._is_inside_entity_link(match.start(), match.end(), entity_ranges):
+                                continue
+                            self.setFormat(match.start(), len(match.group(0)), self.entity_format)
                 return
 
         # Fall back to original highlighting logic for real-time edits
@@ -675,24 +855,6 @@ class MarkdownHighlighter(QSyntaxHighlighter):
 
         # Track entity link positions to avoid formatting inside them
         entity_ranges = []
-
-        # Handle entity links first
-        for match in ENTITY_LINK_PATTERN.finditer(text):
-            # Store this range so we don't apply other formatting inside it
-            entity_ranges.append((match.start(), match.end()))
-
-            if not show_syntax:
-                # Hide brackets and ID
-                self.setFormat(match.start(1), len(match.group(1)), self.hidden_format)
-
-            # Format entity name
-            self.setFormat(match.start(2), len(match.group(2)), self.entity_format)
-
-            if not show_syntax:
-                # Hide |entity_id]]
-                hidden_start = match.start(3)
-                hidden_length = match.end() - hidden_start
-                self.setFormat(hidden_start, hidden_length, self.hidden_format)
 
         # Code blocks (```...```) - must be checked before other patterns
         if text.strip().startswith('```'):
@@ -863,6 +1025,22 @@ class MarkdownHighlighter(QSyntaxHighlighter):
             # Format alt text with link format
             self.setFormat(match.start(2), len(match.group(2)), self.link_format)
 
+        # Entity name highlighting (multipass approach - entire document)
+        if self._entity_patterns:
+            # Iterate through each entity pattern (multipass)
+            for pattern in self._entity_patterns:
+                for match in pattern.finditer(text):
+                    # Check if this position overlaps with any other formatted region
+                    if self._is_inside_entity_link(match.start(), match.end(), entity_ranges):
+                        continue
+                    # Highlight the entity name
+                    self.setFormat(match.start(), len(match.group(0)), self.entity_format)
+
+        # Debug: Log if this block took more than 100ms
+        block_duration = (datetime.datetime.now() - block_start).total_seconds() * 1000
+        if block_duration > 100:
+            print(f"[{datetime.datetime.now()}] ⚠️ SLOW highlightBlock: block {block_number} took {block_duration:.1f}ms")
+
 
 class EntityTextEditor(QTextEdit):
     """Text editor with support for [[Entity|ID]] syntax and autocomplete."""
@@ -870,6 +1048,7 @@ class EntityTextEditor(QTextEdit):
     entity_requested = Signal(str)  # Emitted when user wants to search for entities (search query)
     entity_selected = Signal(str, str)  # (entity_id, entity_name) - emitted when entity inserted
     entity_hover = Signal(str, str)  # (entity_id, entity_type) - emitted when hovering over entity
+    entity_navigation_requested = Signal(str, str)  # (entity_id, entity_type) - emitted when user clicks to navigate to entity
     alias_add_requested = Signal(str, str, str)  # (entity_id, entity_name, current_display_text) - request to add alias
     alias_use_requested = Signal(str)  # (alias) - request to replace current entity link with alias
 
@@ -891,6 +1070,7 @@ class EntityTextEditor(QTextEdit):
 
         # Click-based info card
         self._info_card = EntityInfoCard(self)
+        self._info_card.entity_clicked.connect(self.entity_navigation_requested.emit)
         self._last_clicked_entity: Optional[str] = None
         self._click_pos: Optional[QPoint] = None
 
@@ -899,25 +1079,19 @@ class EntityTextEditor(QTextEdit):
 
         # Flag for deferred highlighting
         self._pending_highlight = False
+        self._highlighter_ready = False
 
         # Timer for updating display after text changes
         self._update_timer = QTimer(self)
         self._update_timer.setSingleShot(True)
         self._update_timer.timeout.connect(self._update_entity_display)
 
-        # Timer for debouncing scroll-based highlighting
-        self._scroll_highlight_timer = QTimer(self)
-        self._scroll_highlight_timer.setSingleShot(True)
-        self._scroll_highlight_timer.timeout.connect(self._highlight_visible_blocks)
 
         # Connect to text changes
         self.textChanged.connect(self._on_text_changed)
 
         # Connect cursor position changes to trigger rehighlighting
         self.cursorPositionChanged.connect(self._on_cursor_position_changed)
-
-        # Connect to vertical scrollbar to highlight blocks as they become visible
-        self.verticalScrollBar().valueChanged.connect(self._on_scroll)
 
         self._setup_completer()
 
@@ -940,12 +1114,14 @@ class EntityTextEditor(QTextEdit):
         model = QStringListModel([], self)
         self._completer.setModel(model)
 
-    def set_entity_list(self, entities: List[Dict[str, Any]]):
+    def set_entity_list(self, entities: List[Dict[str, Any]], update_highlighting: bool = True):
         """
         Update the list of available entities for autocomplete.
 
         Args:
             entities: List of entity dicts with keys: id, name, type, aliases (optional)
+            update_highlighting: If True, also update the highlighting patterns (default: True)
+                                Set to False when this is just for autocomplete filtering
         """
         self._entity_list = entities
 
@@ -975,8 +1151,53 @@ class EntityTextEditor(QTextEdit):
         popup.setUpdatesEnabled(True)
         popup.updateGeometry()
 
+        # Only update highlighting if this is the full entity list, not filtered autocomplete results
+        if update_highlighting:
+            # Extract entity names for highlighting (including aliases)
+            entity_names = []
+            for entity in entities:
+                name = entity.get("name", "")
+                if name:
+                    entity_names.append(name)
+                aliases = entity.get("aliases", [])
+                entity_names.extend(aliases)
+
+            # Pass entity names to highlighter for plain-text matching
+            self._highlighter.set_entity_names(entity_names)
+
+            # If highlighter is ready but not yet activated, activate it now
+            if self._highlighter_ready:
+                print(f"[{datetime.datetime.now()}]   Entity list loaded - activating highlighter...")
+                self._activate_highlighter_if_ready()
+            # Otherwise, trigger rehighlight if highlighter is already active
+            elif self._highlighter and self._highlighter.document():
+                self._highlighter.rehighlight()
+
+
+    def _activate_highlighter_if_ready(self):
+        """Activate highlighter on first user interaction if cache is ready."""
+        if self._highlighter_ready and self._highlighter:
+            print(f"[{datetime.datetime.now()}]   First user interaction - activating highlighter...")
+            activate_start = datetime.datetime.now()
+            self._highlighter.setDocument(self.document())
+            # Explicitly trigger rehighlight to apply cached formatting
+            self._highlighter.rehighlight()
+            activate_duration = (datetime.datetime.now() - activate_start).total_seconds() * 1000
+            print(f"[{datetime.datetime.now()}]   Highlighter activated in {activate_duration:.1f}ms")
+            self._highlighter_ready = False
+
     def keyPressEvent(self, event: QKeyEvent):
         """Handle key press events for entity autocomplete."""
+        # Activate highlighter on first keystroke if ready
+        self._activate_highlighter_if_ready()
+
+        if event.text() == "\r":
+            pass
+        # Debug: Print timestamp when 'P' is pressed
+        if event.text().upper() == 'P':
+            import datetime
+            print(f"[{datetime.datetime.now()}] *** USER PRESSED 'P' - UI IS RESPONSIVE ***")
+
         # Handle completer popup
         if self._completer and self._completer.popup().isVisible():
             # Let completer handle these keys
@@ -1108,7 +1329,7 @@ class EntityTextEditor(QTextEdit):
             self._completer.popup().show()
 
     def _insert_completion(self, completion: str):
-        """Insert the selected entity."""
+        """Insert the selected entity (plain text, no syntax)."""
         if not self._completer:
             return
 
@@ -1155,15 +1376,8 @@ class EntityTextEditor(QTextEdit):
         cursor.setPosition(self.textCursor().position(), QTextCursor.KeepAnchor)
         cursor.removeSelectedText()
 
-        # Insert entity link based on mode
-        if self._inline_mode:
-            # Inline mode: insert full tagged entity with display text
-            entity_link = f"[[{display_text}|{entity_id}]]"
-        else:
-            # [[ mode: just complete the entity (user already typed [[)
-            entity_link = f"{display_text}|{entity_id}]]"
-
-        cursor.insertText(entity_link)
+        # Insert just the entity name as plain text
+        cursor.insertText(display_text)
 
         self._completion_active = False
         self._inline_mode = False
@@ -1173,102 +1387,98 @@ class EntityTextEditor(QTextEdit):
         self.entity_requested.emit("")
 
     def mousePressEvent(self, event: QMouseEvent):
-        """Handle mouse press events to detect clicks on entity links."""
-        # Let right-clicks through for context menu
-        if event.button() == Qt.RightButton:
-            super().mousePressEvent(event)
-            return
+        """Handle mouse press events to detect clicks on entity names."""
+        # Activate highlighter on first click if ready
+        self._activate_highlighter_if_ready()
 
-        # Check if left-clicking on an entity link
+        # Check if left-clicking on text that matches an entity name
         if event.button() == Qt.LeftButton:
             cursor = self.cursorForPosition(event.pos())
-            cursor.select(QTextCursor.LineUnderCursor)
-            line_text = cursor.selectedText()
 
-            # Get position in the line
-            cursor = self.cursorForPosition(event.pos())
-            line_start_cursor = self.cursorForPosition(event.pos())
-            line_start_cursor.movePosition(QTextCursor.StartOfLine)
-            pos_in_line = cursor.position() - line_start_cursor.position()
+            # Get the word at cursor position
+            cursor.select(QTextCursor.WordUnderCursor)
+            clicked_word = cursor.selectedText().strip()
 
-            # Check if cursor is over an entity link
-            for match in ENTITY_LINK_SIMPLE_PATTERN.finditer(line_text):
-                # Check if mouse is over this entity (just the name part)
-                name_start = match.start() + 2  # After [[
-                name_end = name_start + len(match.group(1))
+            if clicked_word and self._entity_list:
+                # Find all entities matching this word (case-insensitive)
+                matching_entities = []
+                for entity in self._entity_list:
+                    name = entity.get("name", "")
+                    aliases = entity.get("aliases", [])
 
-                if name_start <= pos_in_line <= name_end:
-                    entity_name = match.group(1)
-                    entity_id = match.group(2)
+                    # Check if clicked word matches entity name or any alias
+                    if (name.lower() == clicked_word.lower() or
+                        any(alias.lower() == clicked_word.lower() for alias in aliases)):
+                        matching_entities.append(entity)
 
-                    # Extract entity type from ID (format: "type_id")
-                    # Map database table names to entity types
-                    id_prefix = entity_id.split('_')[0] if '_' in entity_id else "unknown"
-                    entity_type_map = {
-                        "actor": "character",
-                        "location": "location",
-                        "faction": "faction"
-                    }
-                    entity_type = entity_type_map.get(id_prefix, id_prefix)
+                if matching_entities:
+                    if len(matching_entities) == 1:
+                        # Single match - show info popup directly
+                        entity = matching_entities[0]
+                        entity_id = entity.get("id", "")
+                        entity_type = entity.get("type", "")
+                        entity_name = entity.get("name", "")
 
-                    # Toggle info card if clicking same entity, or show new one
-                    if entity_id == self._last_clicked_entity and self._info_card.isVisible():
-                        # Hide if clicking the same entity again
-                        self._info_card.hide()
-                        self._last_clicked_entity = None
-                    else:
-                        # Show info for this entity
+                        # Register entity in document (so aliases can be added later)
+                        self.entity_selected.emit(entity_id, entity_name)
+
+                        # Show info card
                         self._last_clicked_entity = entity_id
-                        click_pos = event.globalPos() + QPoint(10, 10)
-                        # Request entity details from controller
+                        self._click_pos = event.globalPos() + QPoint(10, 10)
                         self.entity_hover.emit(entity_id, entity_type)
-                        # Store position and ID for when data arrives
-                        self._click_pos = click_pos
-                        self._pending_entity_id = entity_id
-                        self._pending_entity_type = entity_type
 
-                    # Don't propagate the click to avoid placing cursor
-                    event.accept()
-                    return
+                        event.accept()
+                        return
+                    else:
+                        # Multiple matches - show menu to choose
+                        self._show_entity_selection_menu(matching_entities, event.globalPos())
+                        event.accept()
+                        return
 
-        # Not clicking on entity, hide card and handle normally
-        self._info_card.hide()
-        self._last_clicked_entity = None
+        # Not clicking on entity, handle normally
         super().mousePressEvent(event)
 
-    def mouseMoveEvent(self, event: QMouseEvent):
-        """Handle mouse move events to change cursor over entity links."""
-        super().mouseMoveEvent(event)
+    def _show_entity_selection_menu(self, entities: List[Dict[str, Any]], pos: QPoint):
+        """Show menu to select which entity when multiple matches exist."""
+        menu = QMenu(self)
+        menu.setTitle("Select Entity")
 
-        # Get cursor at mouse position
-        cursor = self.cursorForPosition(event.pos())
-        cursor.select(QTextCursor.LineUnderCursor)
-        line_text = cursor.selectedText()
+        for entity in entities:
+            name = entity.get("name", "")
+            entity_type = entity.get("type", "")
+            entity_id = entity.get("id", "")
 
-        # Get position in the line
-        cursor = self.cursorForPosition(event.pos())
-        line_start_cursor = self.cursorForPosition(event.pos())
-        line_start_cursor.movePosition(QTextCursor.StartOfLine)
-        pos_in_line = cursor.position() - line_start_cursor.position()
+            action = QAction(f"{name} ({entity_type})", self)
+            action.triggered.connect(
+                lambda checked=False, eid=entity_id, etype=entity_type, pos=pos:
+                self._show_entity_from_menu(eid, etype, pos)
+            )
+            menu.addAction(action)
 
-        # Check if cursor is over an entity link
-        entity_found = False
+        menu.exec(pos)
 
-        for match in ENTITY_LINK_SIMPLE_PATTERN.finditer(line_text):
-            # Check if mouse is over this entity (just the name part)
-            name_start = match.start() + 2  # After [[
-            name_end = name_start + len(match.group(1))
-
-            if name_start <= pos_in_line <= name_end:
-                entity_found = True
-                self.viewport().setCursor(Qt.PointingHandCursor)
+    def _show_entity_from_menu(self, entity_id: str, entity_type: str, pos: QPoint):
+        """Show entity info after selection from menu."""
+        # Find entity name from the list
+        entity_name = ""
+        for entity in self._entity_list:
+            if entity.get("id") == entity_id:
+                entity_name = entity.get("name", "")
                 break
 
-        if not entity_found:
-            # Not over an entity, reset cursor
-            self.viewport().setCursor(Qt.IBeamCursor)
+        # Register entity in document (so aliases can be added later)
+        if entity_name:
+            self.entity_selected.emit(entity_id, entity_name)
 
-    def show_entity_info(self, name: str, entity_type: str, details: str):
+        self._last_clicked_entity = entity_id
+        self._click_pos = pos + QPoint(10, 10)
+        self.entity_hover.emit(entity_id, entity_type)
+
+    def mouseMoveEvent(self, event: QMouseEvent):
+        """Handle mouse move events."""
+        super().mouseMoveEvent(event)
+
+    def show_entity_info(self, name: str, entity_type: str, details: str, entity_id: str = None):
         """
         Display entity info card. Called by controller with entity details.
 
@@ -1276,10 +1486,12 @@ class EntityTextEditor(QTextEdit):
             name: Entity name
             entity_type: Entity type (character, location, faction)
             details: Details text to display
+            entity_id: Entity ID (optional, defaults to last clicked entity)
         """
         if hasattr(self, '_click_pos') and self._click_pos:
-            # Pass the entity_id if we have it from the pending click
-            entity_id = getattr(self, '_pending_entity_id', None)
+            # Use provided entity_id or fall back to last clicked entity
+            if entity_id is None:
+                entity_id = getattr(self, '_last_clicked_entity', None)
             self._info_card.set_entity_info(name, entity_type, details, entity_id)
             self._info_card.show_at_position(self._click_pos)
 
@@ -1294,37 +1506,6 @@ class EntityTextEditor(QTextEdit):
         self._info_card.hide()
         # Debounce the update to avoid excessive processing
         self._update_timer.start(100)
-
-    def _on_scroll(self):
-        """Debounce scroll events to avoid excessive highlighting."""
-        # Restart timer on each scroll event
-        self._scroll_highlight_timer.start(50)  # 50ms debounce
-
-    def _highlight_visible_blocks(self):
-        """Highlight blocks that are currently visible in the viewport."""
-        if not self._highlighter:
-            return
-
-        # Get visible block range
-        doc = self.document()
-        viewport = self.viewport()
-
-        # Get first visible block by using cursor at top-left of viewport
-        top_left_cursor = self.cursorForPosition(QPoint(0, 0))
-        first_visible = top_left_cursor.block()
-        last_visible_y = viewport.height()
-
-        # Highlight visible blocks (will use cache if available)
-        block = first_visible
-        while block.isValid():
-            layout = doc.documentLayout()
-            block_rect = layout.blockBoundingRect(block)
-            if block_rect.top() > last_visible_y:
-                break
-
-            # Highlight this block
-            self._highlighter.rehighlightBlock(block)
-            block = block.next()
 
     def _on_cursor_position_changed(self):
         """Handle cursor position changes to show/hide markdown syntax."""
@@ -1356,8 +1537,19 @@ class EntityTextEditor(QTextEdit):
         if self._pending_highlight and self._highlighter:
             print(f"[{datetime.datetime.now()}]   Triggering deferred progressive highlight...")
             self._pending_highlight = False
-            # Use progressive highlighting to keep UI responsive
-            QTimer.singleShot(100, self._highlighter.start_progressive_rehighlight)
+
+            # Populate the format cache FIRST (before reattaching highlighter)
+            print(f"[{datetime.datetime.now()}]   Populating format cache...")
+            cache_start = datetime.datetime.now()
+            self._highlighter._populate_cache(self.document())
+            cache_duration = (datetime.datetime.now() - cache_start).total_seconds() * 1000
+            print(f"[{datetime.datetime.now()}]   Cache populated in {cache_duration:.1f}ms")
+
+            # DON'T reattach highlighter yet! This would trigger expensive rehighlight.
+            # Instead, mark as ready and reattach on first user interaction.
+            self._highlighter_ready = True
+            print(f"[{datetime.datetime.now()}]   Highlighter ready (will activate on first interaction)")
+            print(f"[{datetime.datetime.now()}] *** DOCUMENT IS NOW EDITABLE ***")
 
     def set_text(self, text: str, defer_highlight: bool = True):
         """
@@ -1369,10 +1561,11 @@ class EntityTextEditor(QTextEdit):
         """
         print(f"[{datetime.datetime.now()}]   set_text: START (text length: {len(text)})")
 
-        # Disable highlighting during initial text load for performance
+        # Temporarily detach highlighter to prevent it from running during setPlainText()
+        # (Qt calls highlightBlock() for each block during insertion, which is slow)
         if self._highlighter:
-            print(f"[{datetime.datetime.now()}]   set_text: Disabling highlighter")
-            self._highlighter._initial_load = True
+            print(f"[{datetime.datetime.now()}]   set_text: Detaching highlighter...")
+            self._highlighter.setDocument(None)
 
         # Block signals to avoid triggering text changed while setting
         print(f"[{datetime.datetime.now()}]   set_text: Calling setPlainText()...")
@@ -1381,60 +1574,39 @@ class EntityTextEditor(QTextEdit):
         print(f"[{datetime.datetime.now()}]   set_text: setPlainText() DONE")
         self.blockSignals(False)
 
-        # Re-enable highlighting with a deferred progressive rehighlight
+        # DON'T reattach highlighter yet! setDocument() triggers automatic rehighlight
+        # We'll reattach it later when we're ready to do progressive highlighting
+
+        # Schedule progressive rehighlight if requested
         if self._highlighter:
-            self._highlighter._initial_load = False
             if defer_highlight:
                 print(f"[{datetime.datetime.now()}]   set_text: Deferring rehighlight (will happen after document fully loads)")
                 # Store flag to rehighlight later - don't schedule it now
                 # This prevents QApplication.processEvents() from triggering it immediately
                 self._pending_highlight = True
             else:
-                print(f"[{datetime.datetime.now()}]   set_text: Scheduling immediate rehighlight")
+                print(f"[{datetime.datetime.now()}]   set_text: Reattaching highlighter and scheduling immediate rehighlight")
+                self._highlighter.setDocument(self.document())
                 QTimer.singleShot(0, self._highlighter.rehighlight)
 
         print(f"[{datetime.datetime.now()}]   set_text: END")
 
     def insert_entity_link(self, entity_name: str, entity_id: str):
-        """Insert an entity link at the cursor position."""
+        """Insert an entity name at the cursor position (plain text, no syntax)."""
         cursor = self.textCursor()
-        link = f"[[{entity_name}|{entity_id}]]"
-        cursor.insertText(link)
+        cursor.insertText(entity_name)
 
     def _get_entity_at_cursor(self, cursor: QTextCursor) -> Optional[tuple]:
         """
         Get entity information at the cursor position.
 
         Returns:
-            Tuple of (entity_id, entity_name, display_text, line_start_pos, match_start, match_end) or None
+            None (entity links no longer supported in new plain-text approach)
         """
-        # Get the line at cursor
-        line_cursor = QTextCursor(cursor)
-        line_cursor.select(QTextCursor.LineUnderCursor)
-        line_text = line_cursor.selectedText()
-
-        # Get position in the line
-        line_start_cursor = QTextCursor(cursor)
-        line_start_cursor.movePosition(QTextCursor.StartOfLine)
-        pos_in_line = cursor.position() - line_start_cursor.position()
-
-        # Find entity links in the line
-        for match in ENTITY_LINK_SIMPLE_PATTERN.finditer(line_text):
-            # Check if cursor is within this entity link
-            if match.start() <= pos_in_line <= match.end():
-                display_text = match.group(1)
-                entity_id = match.group(2)
-
-                # Extract entity name from ID if possible
-                entity_name = display_text  # Default to display text
-
-                return (entity_id, entity_name, display_text,
-                        line_start_cursor.position(), match.start(), match.end())
-
         return None
 
     def contextMenuEvent(self, event: QContextMenuEvent):
-        """Enhanced context menu with alias management for entity links."""
+        """Show context menu with alias management."""
         # Create standard context menu
         menu = self.createStandardContextMenu()
 
@@ -1442,75 +1614,57 @@ class EntityTextEditor(QTextEdit):
         cursor = self.textCursor()
         selected_text = cursor.selectedText().strip()
 
-        # Check if cursor is over an entity link
-        click_cursor = self.cursorForPosition(event.pos())
-        entity_info = self._get_entity_at_cursor(click_cursor)
-
-        if entity_info:
-            # Context menu for existing entity link
-            entity_id, entity_name_display, display_text, line_start, match_start, match_end = entity_info
-
-            # Look up the canonical name from entity list
-            canonical_name = entity_name_display  # Default
+        if selected_text and self._entity_list:
+            # Check if selected text is already an entity name or alias
+            is_entity_or_alias = False
             for entity in self._entity_list:
-                if entity.get("id") == entity_id:
-                    canonical_name = entity.get("name", entity_name_display)
+                name = entity.get("name", "")
+                aliases = entity.get("aliases", [])
+                if (name.lower() == selected_text.lower() or
+                    any(alias.lower() == selected_text.lower() for alias in aliases)):
+                    is_entity_or_alias = True
                     break
 
-            menu.addSeparator()
-            # Show both canonical name and current display if different
-            if display_text.lower() != canonical_name.lower():
-                info_action = QAction(f"Entity: {canonical_name} (shown as '{display_text}')", self)
-                info_action.setEnabled(False)
-                menu.addAction(info_action)
-            else:
-                info_action = QAction(f"Entity: {canonical_name}", self)
-                info_action.setEnabled(False)
-                menu.addAction(info_action)
-            menu.addSeparator()
+            # Only show "Add as alias" if the text is NOT already an entity/alias
+            if not is_entity_or_alias:
+                # Add option to create alias for selected text
+                menu.addSeparator()
 
-            # Add "Add alias" action
-            add_alias_action = QAction(f"Add alias for '{canonical_name}'...", self)
-            add_alias_action.triggered.connect(
-                lambda: self._show_add_alias_dialog(entity_id, canonical_name, display_text)
-            )
-            menu.addAction(add_alias_action)
+                # Create submenu for adding alias
+                alias_menu = menu.addMenu(f"Add '{selected_text}' as alias for...")
 
-            # Store cursor position for later use
-            self._context_menu_cursor_pos = line_start + match_start
-            self._context_menu_match_length = match_end - match_start
+                # Group entities by type
+                entities_by_type = {}
+                for entity in self._entity_list:
+                    entity_type = entity.get("type", "unknown")
+                    if entity_type not in entities_by_type:
+                        entities_by_type[entity_type] = []
+                    entities_by_type[entity_type].append(entity)
 
-        elif selected_text:
-            # Context menu for selected text (not an entity link yet)
-            menu.addSeparator()
+                # Add entities grouped by type
+                for entity_type in sorted(entities_by_type.keys()):
+                    type_menu = alias_menu.addMenu(entity_type.capitalize())
+                    for entity in sorted(entities_by_type[entity_type], key=lambda e: e.get("name", "")):
+                        entity_name = entity.get("name", "")
+                        entity_id = entity.get("id", "")
 
-            # Option 1: Tag selected text as an entity
-            tag_menu = menu.addMenu(f"Tag '{selected_text}' as entity...")
-
-            # Show entity list grouped by type
-            entities_by_type = {}
-            for entity in self._entity_list:
-                entity_type = entity.get("type", "unknown")
-                if entity_type not in entities_by_type:
-                    entities_by_type[entity_type] = []
-                entities_by_type[entity_type].append(entity)
-
-            # Add entities grouped by type
-            for entity_type in sorted(entities_by_type.keys()):
-                type_menu = tag_menu.addMenu(entity_type.capitalize())
-                for entity in sorted(entities_by_type[entity_type], key=lambda e: e.get("name", "")):
-                    entity_name = entity.get("name", "")
-                    entity_id = entity.get("id", "")
-
-                    action = QAction(entity_name, self)
-                    action.triggered.connect(
-                        lambda checked, eid=entity_id, ename=entity_name, text=selected_text:
-                        self._tag_selected_text_as_entity(eid, ename, text)
-                    )
-                    type_menu.addAction(action)
+                        action = QAction(entity_name, self)
+                        action.triggered.connect(
+                            lambda checked=False, eid=entity_id, ename=entity_name, alias=selected_text:
+                            self._add_alias_for_entity(eid, ename, alias)
+                        )
+                        type_menu.addAction(action)
 
         # Show menu
         menu.exec(event.globalPos())
+
+    def _add_alias_for_entity(self, entity_id: str, entity_name: str, alias: str):
+        """Add an alias for an entity and request entity list refresh."""
+        # Emit signal to request adding the alias
+        self.alias_add_requested.emit(entity_id, entity_name, alias)
+
+        # Request entity list refresh to pick up the new alias
+        self.entity_requested.emit("")
 
     def _tag_selected_text_as_entity(self, entity_id: str, entity_name: str, selected_text: str):
         """

@@ -44,6 +44,7 @@ if getattr(sys, "frozen", False):
         os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = str(platform_path)
 
 from PySide6.QtWidgets import QApplication
+import datetime
 
 current_dir = Path(__file__).parent.parent
 sys.path.append(str(current_dir.resolve()))
@@ -271,7 +272,6 @@ def check_and_run_migrations():
     except Exception as e:
         print(f"⚠️  Migration check failed: {e}")
         # Continue anyway - don't block startup
-
 
 def main():
     """Main entry point for Storymaster application"""
