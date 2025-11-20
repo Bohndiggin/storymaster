@@ -2797,6 +2797,13 @@ class MainWindowController:
                     elif current_page_index == 2:
                         # Character Arcs view - refresh arcs for current storyline (even if None)
                         self.character_arc_page.refresh_arcs(self.current_storyline_id)
+                    elif current_page_index == 3:
+                        # Storyweaver view - update project context and refresh entities
+                        if self.current_setting_id is not None:
+                            self.storyweaver_widget.update_project_context(
+                                self.current_storyline_id,
+                                self.current_setting_id
+                            )
 
                     # Reinitialize Lorekeeper widget with potentially new setting
                     if self.new_lorekeeper_widget is not None:
@@ -2891,6 +2898,13 @@ class MainWindowController:
                     elif current_page_index == 2:
                         # Character Arcs view - refresh arcs for current storyline (even if None)
                         self.character_arc_page.refresh_arcs(self.current_storyline_id)
+                    elif current_page_index == 3:
+                        # Storyweaver view - update project context and refresh entities
+                        if self.current_storyline_id is not None:
+                            self.storyweaver_widget.update_project_context(
+                                self.current_storyline_id,
+                                self.current_setting_id
+                            )
 
                     # Refresh lorekeeper views to show new setting data
                     # Note: db_tree_model is deprecated, using new Lorekeeper interface

@@ -1114,14 +1114,12 @@ class EntityTextEditor(QTextEdit):
         model = QStringListModel([], self)
         self._completer.setModel(model)
 
-    def set_entity_list(self, entities: List[Dict[str, Any]], update_highlighting: bool = True):
+    def set_entity_list(self, entities: List[Dict[str, Any]]):
         """
         Update the list of available entities for autocomplete.
 
         Args:
             entities: List of entity dicts with keys: id, name, type, aliases (optional)
-            update_highlighting: If True, also update the highlighting patterns (default: True)
-                                Set to False when this is just for autocomplete filtering
         """
         self._entity_list = entities
 
@@ -1151,27 +1149,26 @@ class EntityTextEditor(QTextEdit):
         popup.setUpdatesEnabled(True)
         popup.updateGeometry()
 
-        # Only update highlighting if this is the full entity list, not filtered autocomplete results
-        if update_highlighting:
-            # Extract entity names for highlighting (including aliases)
-            entity_names = []
-            for entity in entities:
-                name = entity.get("name", "")
-                if name:
-                    entity_names.append(name)
-                aliases = entity.get("aliases", [])
-                entity_names.extend(aliases)
+        # Extract entity names for highlighting (including aliases)
+        entity_names = []
+        for entity in entities:
+            name = entity.get("name", "")
+            if name:
+                entity_names.append(name)
+            aliases = entity.get("aliases", [])
+            entity_names.extend(aliases)
 
-            # Pass entity names to highlighter for plain-text matching
-            self._highlighter.set_entity_names(entity_names)
+        # Pass entity names to highlighter for plain-text matching
+        self._highlighter.set_entity_names(entity_names)
 
-            # If highlighter is ready but not yet activated, activate it now
-            if self._highlighter_ready:
-                print(f"[{datetime.datetime.now()}]   Entity list loaded - activating highlighter...")
-                self._activate_highlighter_if_ready()
-            # Otherwise, trigger rehighlight if highlighter is already active
-            elif self._highlighter and self._highlighter.document():
-                self._highlighter.rehighlight()
+        # If highlighter is ready but not yet activated, activate it now
+        if self._highlighter_ready:
+            print(f"[{datetime.datetime.now()}]   Entity list loaded - activating highlighter...")
+            self._activate_highlighter_if_ready()
+        # Otherwise, if highlighter is already active, trigger rehighlight
+        # (This ensures aliases show up immediately when added)
+        elif self._highlighter and self._highlighter.document():
+            self._highlighter.rehighlight()
 
 
     def _activate_highlighter_if_ready(self):
@@ -1607,6 +1604,11 @@ class EntityTextEditor(QTextEdit):
 
     def contextMenuEvent(self, event: QContextMenuEvent):
         """Show context menu with alias management."""
+        # Refresh entity list to ensure we have all entities (not just filtered ones from autocomplete)
+        self.entity_requested.emit("")
+        # Process events to allow the entity list to be updated before showing menu
+        QApplication.processEvents()
+
         # Create standard context menu
         menu = self.createStandardContextMenu()
 
@@ -1641,9 +1643,18 @@ class EntityTextEditor(QTextEdit):
                         entities_by_type[entity_type] = []
                     entities_by_type[entity_type].append(entity)
 
-                # Add entities grouped by type
+                # Add entities grouped by type (with plural labels for clarity)
+                type_labels = {
+                    "character": "Characters",
+                    "location": "Locations",
+                    "faction": "Factions",
+                    "object": "Objects",
+                    "worlddata": "World Data"
+                }
                 for entity_type in sorted(entities_by_type.keys()):
-                    type_menu = alias_menu.addMenu(entity_type.capitalize())
+                    # Use plural label if available, otherwise capitalize and add 's'
+                    label = type_labels.get(entity_type.lower(), f"{entity_type.capitalize()}s")
+                    type_menu = alias_menu.addMenu(label)
                     for entity in sorted(entities_by_type[entity_type], key=lambda e: e.get("name", "")):
                         entity_name = entity.get("name", "")
                         entity_id = entity.get("id", "")

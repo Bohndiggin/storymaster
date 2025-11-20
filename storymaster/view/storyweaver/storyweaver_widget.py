@@ -13,7 +13,6 @@ from PySide6.QtCore import Qt, Signal, QTimer, QThread, QObject, QPoint
 from PySide6.QtGui import QAction, QIcon, QTextCursor
 
 from storymaster.view.storyweaver.text_editor import EntityTextEditor
-from storymaster.view.storyweaver.entity_tracker import EntityTracker
 from storymaster.view.storyweaver.auto_tag_dialog import AutoTagDialog
 from storymaster.view.storyweaver.loading_dialog import LoadingDialog
 from storymaster.view.storyweaver.heading_navigator import HeadingNavigator
@@ -48,7 +47,6 @@ class StoryweaverWidget(QWidget):
         self.current_storyline_id = current_storyline_id
         self.current_setting_id = current_setting_id
         self.current_document: Optional[StoryDocument] = None
-        self.entity_tracker: Optional[EntityTracker] = None
 
         # Entity cache for sidebar
         self._entity_list: List[Dict[str, Any]] = []
@@ -185,8 +183,6 @@ class StoryweaverWidget(QWidget):
 
     def _on_entity_requested(self, query: str):
         """Handle entity search request from editor."""
-        # Store the query so we know if results should update highlighting
-        self._last_entity_search_query = query
         # Emit signal to controller to fetch entities
         self.entity_search_requested.emit(query, self.current_storyline_id, self.current_setting_id)
 
@@ -247,28 +243,6 @@ class StoryweaverWidget(QWidget):
         # Ensure the cursor is visible
         self.editor.ensureCursorVisible()
 
-    def _on_entity_parse_progress(self, current: int, total: int):
-        """Handle entity parsing progress updates."""
-        if self.loading_dialog and self.loading_dialog.isVisible():
-            percent = int((current / total) * 100) if total > 0 else 0
-            self.loading_dialog.set_message(f"Parsing entities... {percent}% ({current}/{total} blocks)")
-
-    def _on_entity_parse_complete(self):
-        """Handle entity parsing completion."""
-        print(f"[{datetime.datetime.now()}] Parse complete signal received. Closing loading dialog.")
-        if self.loading_dialog and self.loading_dialog.isVisible():
-            self.loading_dialog.close()
-
-        # Now that everything is loaded, trigger the deferred syntax highlighting
-        print(f"[{datetime.datetime.now()}] Triggering deferred syntax highlighting...")
-        self.editor.trigger_deferred_highlight()
-
-        # Load entity list for highlighting
-        print(f"[{datetime.datetime.now()}] Loading entity list for highlighting...")
-        self.editor.entity_requested.emit("")
-
-        print(f"[{datetime.datetime.now()}] COMPLETE: Document fully loaded and ready!")
-
     def _update_word_count(self):
         """Update the word count label."""
         text = self.editor.get_text()
@@ -304,10 +278,6 @@ class StoryweaverWidget(QWidget):
         Args:
             entities: List of dicts with keys: id, name, type
         """
-        # Determine if this is a full list (for highlighting) or filtered list (for autocomplete only)
-        # Only update highlighting when we have a full list (empty search query)
-        update_highlighting = getattr(self, '_last_entity_search_query', '') == ''
-
         # Merge in aliases from document metadata
         if self.current_document:
             entities_with_aliases = []
@@ -323,10 +293,10 @@ class StoryweaverWidget(QWidget):
                     entity_copy["aliases"] = all_aliases
                 entities_with_aliases.append(entity_copy)
             self._entity_list = entities_with_aliases
-            self.editor.set_entity_list(entities_with_aliases, update_highlighting=update_highlighting)
+            self.editor.set_entity_list(entities_with_aliases)
         else:
             self._entity_list = entities
-            self.editor.set_entity_list(entities, update_highlighting=update_highlighting)
+            self.editor.set_entity_list(entities)
 
     def show_entity_details(self, name: str, entity_type: str, details: str, entity_id: str = None):
         """
@@ -384,7 +354,7 @@ class StoryweaverWidget(QWidget):
             elif reply == QMessageBox.Cancel:
                 return
 
-        # Get save location (directory name)
+        # Get save location (file path)
         file_path = QFileDialog.getSaveFileName(
             self, "Create New Document",
             "",
@@ -398,20 +368,12 @@ class StoryweaverWidget(QWidget):
         if not file_path.endswith(".storyweaver"):
             file_path += ".storyweaver"
 
-        # Note: .storyweaver is actually a directory bundle, not a file
-        # The save dialog will create the directory structure
-
         # Create new document
         self.current_document = StoryDocument()
         self.current_document.create_new(file_path)
 
-        # Clear editor
-        self.editor.set_text("")
-
-        # Setup entity tracker
-        if self.entity_tracker:
-            self.entity_tracker.deleteLater()
-        self.entity_tracker = EntityTracker(self.editor.document(), self)
+        # Clear editor (defer_highlight=False for immediate reattachment)
+        self.editor.set_text("", defer_highlight=False)
 
         # Update UI
         self.document_label.setText(f"Document: {file_path.split('/')[-1]}")
@@ -434,21 +396,21 @@ class StoryweaverWidget(QWidget):
             elif reply == QMessageBox.Cancel:
                 return
 
-        # Get directory to open (.storyweaver is a directory bundle)
-        file_path = QFileDialog.getExistingDirectory(
+        # Get file to open (.storyweaver ZIP file)
+        file_path = QFileDialog.getOpenFileName(
             self, "Open Storyweaver Document",
             "",
-            QFileDialog.ShowDirsOnly
-        )
+            "Storyweaver Documents (*.storyweaver)"
+        )[0]
 
         if not file_path:
             return
 
-        # Validate it's a .storyweaver directory
+        # Validate it's a .storyweaver file
         if not file_path.endswith(".storyweaver"):
             QMessageBox.warning(
                 self, "Invalid Document",
-                "Please select a .storyweaver document directory"
+                "Please select a .storyweaver document file"
             )
             return
 
@@ -501,28 +463,26 @@ class StoryweaverWidget(QWidget):
             self.editor.set_text(self.current_document.content)
             print(f"[{datetime.datetime.now()}] AFTER set_text()")
 
-            # Setup entity tracker with async parsing
-            self.loading_dialog.set_message("Parsing entities...")
+            # Trigger syntax highlighting
+            self.loading_dialog.set_message("Applying syntax highlighting...")
             QApplication.processEvents()
 
-            print(f"[{datetime.datetime.now()}] Creating EntityTracker (async)...")
-            if self.entity_tracker:
-                self.entity_tracker.deleteLater()
-            self.entity_tracker = EntityTracker(self.editor.document(), self, async_parse=True)
-            print(f"[{datetime.datetime.now()}] EntityTracker created (parsing in background)...")
+            print(f"[{datetime.datetime.now()}] Triggering deferred syntax highlighting...")
+            self.editor.trigger_deferred_highlight()
 
-            # Connect to parse signals
-            self.entity_tracker.parse_progress.connect(self._on_entity_parse_progress)
-            self.entity_tracker.parse_complete.connect(self._on_entity_parse_complete)
+            # Load entity list for highlighting
+            print(f"[{datetime.datetime.now()}] Loading entity list for highlighting...")
+            self._refresh_entity_list()
 
-            # Update UI (except closing dialog - wait for parse to complete)
+            # Update UI
             self.document_label.setText(f"Document: {file_path.split('/')[-1]}")
             self._update_word_count()
             self._do_update_heading_navigation()  # Update headings immediately
             self.document_modified.emit(False)
 
-            # Don't close dialog yet - wait for entity parsing to complete
-            # The dialog will be closed in _on_entity_parse_complete()
+            # Close loading dialog
+            self.loading_dialog.close()
+            print(f"[{datetime.datetime.now()}] COMPLETE: Document fully loaded and ready!")
 
         except Exception as e:
             import traceback
@@ -733,8 +693,8 @@ class StoryweaverWidget(QWidget):
             # Replace in the text
             new_text = new_text[:repl["start"]] + tagged_text + new_text[repl["end"]:]
 
-        # Update the editor
-        self.editor.set_text(new_text)
+        # Update the editor (defer_highlight=False to immediately reattach highlighter)
+        self.editor.set_text(new_text, defer_highlight=False)
 
         # Mark document as modified and add discovered aliases to document
         self.current_document.set_content(new_text)

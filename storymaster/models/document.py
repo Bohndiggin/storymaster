@@ -3,13 +3,15 @@ Document model and file handling for .storyweaver format.
 """
 import json
 import os
+import zipfile
+import tempfile
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, Optional
 
 
 class StoryDocument:
-    """Represents a StoryWeaver document (.storyweaver bundle)."""
+    """Represents a StoryWeaver document (.storyweaver ZIP file)."""
 
     def __init__(self, path: Optional[str] = None):
         self.path = path
@@ -21,7 +23,7 @@ class StoryDocument:
         }
         self._is_modified = False
 
-        if path and os.path.exists(path):
+        if path and os.path.isfile(path):
             self.load()
 
     @property
@@ -36,24 +38,27 @@ class StoryDocument:
 
     @property
     def markdown_path(self) -> Optional[Path]:
-        """Get the path to the markdown file."""
-        if not self.path:
-            return None
-        return Path(self.path) / "document.md"
+        """
+        [Deprecated] Markdown is now stored inside the ZIP file.
+        Returns None as there is no direct file path.
+        """
+        return None
 
     @property
     def metadata_path(self) -> Optional[Path]:
-        """Get the path to the metadata file."""
-        if not self.path:
-            return None
-        return Path(self.path) / "metadata.json"
+        """
+        [Deprecated] Metadata is now stored inside the ZIP file.
+        Returns None as there is no direct file path.
+        """
+        return None
 
     @property
     def cache_db_path(self) -> Optional[Path]:
-        """Get the path to the cache database."""
-        if not self.path:
-            return None
-        return Path(self.path) / "cache.db"
+        """
+        [Deprecated] Cache DB would be stored inside the ZIP file.
+        Returns None as there is no direct file path.
+        """
+        return None
 
     def set_content(self, content: str) -> None:
         """Set the document content and mark as modified."""
@@ -185,56 +190,69 @@ class StoryDocument:
         self.save()
 
     def save(self) -> bool:
-        """Save the document to disk."""
+        """Save the document to disk as a ZIP file."""
         if not self.path:
             return False
 
         try:
-            # Create directory if it doesn't exist
-            doc_dir = Path(self.path)
-            doc_dir.mkdir(parents=True, exist_ok=True)
-
-            # Save markdown content
-            with open(self.markdown_path, 'w', encoding='utf-8') as f:
-                f.write(self.content)
-
             # Update last sync time
             self.metadata["last_sync"] = datetime.now().isoformat()
 
-            # Save metadata
-            with open(self.metadata_path, 'w', encoding='utf-8') as f:
-                json.dump(self.metadata, f, indent=2)
+            # Create a temporary file for atomic save
+            temp_fd, temp_path = tempfile.mkstemp(suffix='.storyweaver')
+            os.close(temp_fd)  # Close the file descriptor
 
-            self._is_modified = False
-            return True
+            try:
+                # Write to ZIP file
+                with zipfile.ZipFile(temp_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+                    # Write markdown content
+                    zf.writestr('document.md', self.content.encode('utf-8'))
+
+                    # Write metadata as JSON
+                    metadata_json = json.dumps(self.metadata, indent=2)
+                    zf.writestr('metadata.json', metadata_json.encode('utf-8'))
+
+                # Atomic move: replace old file with new one
+                import shutil
+                shutil.move(temp_path, self.path)
+
+                self._is_modified = False
+                return True
+
+            except Exception:
+                # Clean up temp file if something went wrong
+                if os.path.exists(temp_path):
+                    os.unlink(temp_path)
+                raise
 
         except Exception as e:
             print(f"Error saving document: {e}")
             return False
 
     def load(self) -> bool:
-        """Load the document from disk."""
-        if not self.path or not os.path.exists(self.path):
+        """Load the document from disk (ZIP file)."""
+        if not self.path or not os.path.isfile(self.path):
             return False
 
         try:
-            # Load markdown content
-            if self.markdown_path.exists():
-                with open(self.markdown_path, 'r', encoding='utf-8') as f:
-                    self.content = f.read()
-            else:
-                self.content = ""
+            with zipfile.ZipFile(self.path, 'r') as zf:
+                # Load markdown content
+                try:
+                    content_bytes = zf.read('document.md')
+                    self.content = content_bytes.decode('utf-8')
+                except KeyError:
+                    self.content = ""
 
-            # Load metadata
-            if self.metadata_path.exists():
-                with open(self.metadata_path, 'r', encoding='utf-8') as f:
-                    self.metadata = json.load(f)
-            else:
-                self.metadata = {
-                    "storymaster_db": "",
-                    "last_sync": datetime.now().isoformat(),
-                    "entity_map": {}
-                }
+                # Load metadata
+                try:
+                    metadata_bytes = zf.read('metadata.json')
+                    self.metadata = json.loads(metadata_bytes.decode('utf-8'))
+                except KeyError:
+                    self.metadata = {
+                        "storymaster_db": "",
+                        "last_sync": datetime.now().isoformat(),
+                        "entity_map": {}
+                    }
 
             self._is_modified = False
             return True

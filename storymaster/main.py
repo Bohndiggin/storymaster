@@ -1,8 +1,5 @@
 """
 Storymaster - Main Application Entry Point
-
-Copyright (c) 2025 Storymaster Development Team
-All rights reserved.
 """
 
 import os
