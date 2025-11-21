@@ -398,6 +398,7 @@ class LorekeeperPage(QWidget):
             detail_page = EntityDetailPage(self.current_table_name, self.model_adapter)
             detail_page.entity_saved.connect(self.on_entity_saved)
             detail_page.entity_deleted.connect(self.on_entity_deleted)
+            detail_page.autosave_requested.connect(self.auto_save_current_entity)
             self.detail_pages[self.current_table_name] = detail_page
             self.detail_stack.addWidget(detail_page)
 

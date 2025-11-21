@@ -3282,6 +3282,13 @@ class MainWindowController:
 
     def on_litographer_selected(self):
         """Handle switching to the Litographer page and loading nodes."""
+        # Trigger autosave if leaving Lorekeeper
+        if self.view.ui.pageStack.currentIndex() == 1 and self.new_lorekeeper_widget:
+            try:
+                self.new_lorekeeper_widget.auto_save_current_entity()
+            except Exception as e:
+                print(f"Error autosaving when leaving Lorekeeper: {e}")
+
         self.view.ui.pageStack.setCurrentIndex(0)
         self.load_plot_sections()
         self.load_and_draw_nodes()
@@ -3878,6 +3885,13 @@ class MainWindowController:
 
     def on_character_arcs_selected(self):
         """Handle switching to the Character Arcs page."""
+        # Trigger autosave if leaving Lorekeeper
+        if self.view.ui.pageStack.currentIndex() == 1 and self.new_lorekeeper_widget:
+            try:
+                self.new_lorekeeper_widget.auto_save_current_entity()
+            except Exception as e:
+                print(f"Error autosaving when leaving Lorekeeper: {e}")
+
         self.view.ui.pageStack.setCurrentIndex(
             2
         )  # Updated index for character arcs page (after removing old lorekeeper)
@@ -3895,6 +3909,13 @@ class MainWindowController:
 
     def on_storyweaver_selected(self):
         """Handle switching to the Storyweaver page."""
+        # Trigger autosave if leaving Lorekeeper
+        if self.view.ui.pageStack.currentIndex() == 1 and self.new_lorekeeper_widget:
+            try:
+                self.new_lorekeeper_widget.auto_save_current_entity()
+            except Exception as e:
+                print(f"Error autosaving when leaving Lorekeeper: {e}")
+
         self.view.ui.pageStack.setCurrentIndex(3)  # Storyweaver is the 4th tab (index 3)
 
         # Update project context if storyline/setting changed
@@ -4289,8 +4310,9 @@ class MainWindowController:
         self.clear_entity_cache()
 
     def clear_entity_cache(self):
-        """Clear all cached entity details."""
+        """Clear all cached entity data (both lists and details)."""
         self._entity_details_cache.clear()
+        self._entity_cache.clear()
 
     def _on_storyweaver_entity_hover(self, entity_id: str, entity_type: str, storyline_id: int, setting_id: int):
         """

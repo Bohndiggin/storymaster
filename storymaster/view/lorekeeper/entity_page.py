@@ -1,6 +1,6 @@
 """Entity detail page component for user-friendly Lorekeeper interface"""
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QTimer
 from PySide6.QtGui import QFont, QPalette
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -53,6 +53,8 @@ class SectionWidget(QGroupBox):
 
     # Signal emitted when a checkbox changes (field_name, checked)
     checkbox_changed = Signal(str, bool)
+    # Signal emitted when any field changes (for autosave)
+    field_changed = Signal()
 
     def __init__(self, section: FieldSection, model_adapter=None, table_name=None, parent=None):
         super().__init__(section.display_name, parent)
@@ -184,6 +186,16 @@ class SectionWidget(QGroupBox):
 
         # Apply tooltips based on field name
         self.apply_field_tooltip(widget, field_name)
+
+        # Connect widget changes to trigger autosave
+        if isinstance(widget, QLineEdit):
+            widget.textChanged.connect(self.field_changed.emit)
+        elif isinstance(widget, QTextEdit):
+            widget.textChanged.connect(self.field_changed.emit)
+        elif isinstance(widget, QComboBox):
+            widget.currentIndexChanged.connect(self.field_changed.emit)
+        elif isinstance(widget, QCheckBox):
+            widget.stateChanged.connect(self.field_changed.emit)
 
         return widget
 
@@ -462,6 +474,7 @@ class EntityDetailPage(QWidget):
 
     entity_saved = Signal(object)  # entity
     entity_deleted = Signal(object)  # entity
+    autosave_requested = Signal()  # Signal to trigger autosave
 
     def __init__(self, table_name: str, model_adapter=None, parent=None):
         super().__init__(parent)
@@ -471,6 +484,13 @@ class EntityDetailPage(QWidget):
         self.current_entity = None
         self.section_widgets = {}
         self.relationship_widgets = {}
+
+        # Set up autosave timer (triggers 2 seconds after last change)
+        self.autosave_timer = QTimer(self)
+        self.autosave_timer.setSingleShot(True)
+        self.autosave_timer.setInterval(2000)  # 2 second delay
+        self.autosave_timer.timeout.connect(self.on_autosave_timer)
+
         self.setup_ui()
 
     def setup_ui(self):
@@ -549,6 +569,9 @@ class EntityDetailPage(QWidget):
                 # Connect checkbox signals for conditional sections
                 if section.is_checkbox_section:
                     section_widget.checkbox_changed.connect(self.on_checkbox_changed)
+
+                # Connect field change signals for autosave
+                section_widget.field_changed.connect(self.on_field_changed)
 
                 # Hide conditional sections initially
                 if section.conditional_field:
@@ -700,6 +723,17 @@ class EntityDetailPage(QWidget):
         for section_widget in self.section_widgets.values():
             if hasattr(section_widget, 'refresh_foreign_key_dropdowns'):
                 section_widget.refresh_foreign_key_dropdowns()
+
+    def on_field_changed(self):
+        """Handle any field change - restart autosave timer"""
+        # Restart the timer - this debounces rapid typing
+        self.autosave_timer.stop()
+        self.autosave_timer.start()
+
+    def on_autosave_timer(self):
+        """Called when autosave timer expires"""
+        # Emit signal to parent to trigger autosave
+        self.autosave_requested.emit()
 
     def on_relationship_selected(self, relationship_type: str, related_entity):
         """Handle relationship selection"""
