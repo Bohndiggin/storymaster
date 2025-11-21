@@ -2820,6 +2820,8 @@ class MainWindowController:
                         self.new_lorekeeper_widget = NewLorekeeperPage(
                             self.model, self.current_setting_id
                         )
+                        # Connect signal to clear entity cache when entities are saved
+                        self.new_lorekeeper_widget.entity_saved_signal.connect(self._on_lorekeeper_entity_saved)
                         # Add the widget to the new Lorekeeper page
                         if self.view.ui.newLorekeeperPage.layout() is None:
                             new_lorekeeper_layout = QVBoxLayout(self.view.ui.newLorekeeperPage)
@@ -2922,6 +2924,8 @@ class MainWindowController:
                     # Recreate the Lorekeeper widget with the new setting
                     if new_setting_id is not None:
                         self.new_lorekeeper_widget = NewLorekeeperPage(self.model, new_setting_id)
+                        # Connect signal to clear entity cache when entities are saved
+                        self.new_lorekeeper_widget.entity_saved_signal.connect(self._on_lorekeeper_entity_saved)
                         # Add the widget to the new Lorekeeper page
                         if self.view.ui.newLorekeeperPage.layout() is None:
                             new_lorekeeper_layout = QVBoxLayout(self.view.ui.newLorekeeperPage)
@@ -3850,6 +3854,8 @@ class MainWindowController:
         # Initialize the new Lorekeeper widget if not already done
         if self.new_lorekeeper_widget is None and self.current_setting_id is not None:
             self.new_lorekeeper_widget = NewLorekeeperPage(self.model, self.current_setting_id)
+            # Connect signal to clear entity cache when entities are saved
+            self.new_lorekeeper_widget.entity_saved_signal.connect(self._on_lorekeeper_entity_saved)
 
             # Add the widget to the new Lorekeeper page
             if self.view.ui.newLorekeeperPage.layout() is None:
@@ -4269,6 +4275,18 @@ class MainWindowController:
             cache_key = (entity_type, entity_id)
             if cache_key in self._entity_details_cache:
                 del self._entity_details_cache[cache_key]
+
+    def _on_lorekeeper_entity_saved(self, entity, entity_type: str):
+        """
+        Handle entity saved signal from Lorekeeper to invalidate cache.
+
+        Args:
+            entity: The entity object that was saved
+            entity_type: The entity type (table name)
+        """
+        # Clear the entire cache to ensure updated details are shown
+        # We could be more selective, but clearing all is simpler and safe
+        self.clear_entity_cache()
 
     def clear_entity_cache(self):
         """Clear all cached entity details."""

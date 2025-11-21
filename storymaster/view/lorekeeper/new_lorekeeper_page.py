@@ -1,6 +1,6 @@
 """New user-friendly Lorekeeper main page"""
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
     QHBoxLayout,
@@ -31,6 +31,9 @@ from storymaster.view.lorekeeper.lorekeeper_navigation import LorekeeperNavigati
 
 class NewLorekeeperPage(QWidget):
     """Main page for the new user-friendly Lorekeeper interface"""
+
+    # Signal emitted when an entity is saved (entity, entity_type)
+    entity_saved_signal = Signal(object, str)
 
     def __init__(self, model, setting_id, parent=None):
         super().__init__(parent)
@@ -411,6 +414,9 @@ class NewLorekeeperPage(QWidget):
             # Refresh the entity list
             self.load_entities(self.current_table_name)
 
+            # Emit signal to notify controller that entity was saved
+            self.entity_saved_signal.emit(entity, self.current_table_name)
+
             # Success - no message needed, user can see the updated entity list
 
         except Exception as e:
@@ -441,6 +447,9 @@ class NewLorekeeperPage(QWidget):
                 # Show welcome page
                 self.detail_stack.setCurrentWidget(self.welcome_page)
                 self.current_entity = None
+
+                # Emit signal to notify controller that entity was deleted
+                self.entity_saved_signal.emit(entity, self.current_table_name)
 
                 # Success - no message needed, entity is removed from list
 
