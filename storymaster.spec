@@ -228,7 +228,19 @@ hiddenimports = [
     
     # Other minimal dependencies
     'pkg_resources.extern',
-    
+
+    # Setuptools vendored modules (required for pkg_resources runtime hook)
+    'setuptools._vendor.backports',
+    'setuptools._vendor.backports.tarfile',
+    'setuptools._vendor.jaraco',
+    'setuptools._vendor.jaraco.context',
+    'setuptools._vendor.jaraco.text',
+    'setuptools._vendor.jaraco.functools',
+    'setuptools._vendor.jaraco.collections',
+    'setuptools._vendor.more_itertools',
+    'setuptools._vendor.importlib_metadata',
+    'setuptools._vendor.packaging',
+
     # Spell checking dependencies (disabled for now)
     # 'enchant',
     # 'enchant.checker',

@@ -52,7 +52,7 @@ if world_building_path.exists():
 # Essential hidden imports for AppImage compatibility
 hiddenimports = [
     'PySide6.QtCore',
-    'PySide6.QtGui', 
+    'PySide6.QtGui',
     'PySide6.QtWidgets',
     'PySide6.QtSvg',  # Re-enable for icon support
     'PySide6.sip',
@@ -61,6 +61,18 @@ hiddenimports = [
     'sqlalchemy.orm',
     'sqlalchemy.sql',
     'sqlalchemy.engine',
+
+    # Setuptools vendored modules (required for pkg_resources runtime hook)
+    'setuptools._vendor.backports',
+    'setuptools._vendor.backports.tarfile',
+    'setuptools._vendor.jaraco',
+    'setuptools._vendor.jaraco.context',
+    'setuptools._vendor.jaraco.text',
+    'setuptools._vendor.jaraco.functools',
+    'setuptools._vendor.jaraco.collections',
+    'setuptools._vendor.more_itertools',
+    'setuptools._vendor.importlib_metadata',
+    'setuptools._vendor.packaging',
 ]
 
 # Include Python shared library for AppImage compatibility

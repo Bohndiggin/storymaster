@@ -83,22 +83,30 @@ if world_building_path.exists():
 hiddenimports = [
     # Core Qt6 modules (essential)
     'PySide6.QtCore',
-    'PySide6.QtGui', 
+    'PySide6.QtGui',
     'PySide6.QtWidgets',
     'PySide6.QtSvg',
     'PySide6.sip',
     'sip',
-    
+
     # SQLAlchemy
     'sqlalchemy',
     'sqlalchemy.dialects.sqlite',
     'sqlalchemy.orm',
     'sqlalchemy.engine',
-    
+
     # Essential encodings
     'encodings.utf_8',
     'encodings.ascii',
     'encodings.cp1252',
+
+    # Setuptools vendored modules (required for pkg_resources runtime hook)
+    'setuptools._vendor.backports',
+    'setuptools._vendor.backports.tarfile',
+    'setuptools._vendor.jaraco',
+    'setuptools._vendor.jaraco.context',
+    'setuptools._vendor.jaraco.text',
+    'setuptools._vendor.jaraco.functools',
 ]
 
 # Simplified binary collection
