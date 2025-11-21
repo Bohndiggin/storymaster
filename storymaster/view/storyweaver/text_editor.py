@@ -1051,6 +1051,7 @@ class EntityTextEditor(QTextEdit):
     entity_navigation_requested = Signal(str, str)  # (entity_id, entity_type) - emitted when user clicks to navigate to entity
     alias_add_requested = Signal(str, str, str)  # (entity_id, entity_name, current_display_text) - request to add alias
     alias_use_requested = Signal(str)  # (alias) - request to replace current entity link with alias
+    entity_create_requested = Signal(str, str)  # (entity_name, entity_type) - request to create new entity
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -1383,6 +1384,72 @@ class EntityTextEditor(QTextEdit):
         # Refresh entity list to show all entities again
         self.entity_requested.emit("")
 
+    def _get_entity_at_click(self, cursor: QTextCursor) -> Optional[str]:
+        """
+        Get entity name at click position, handling multi-word names.
+
+        Expands selection outward from clicked word to find matching entity names.
+
+        Args:
+            cursor: Cursor at click position
+
+        Returns:
+            Matched entity name/alias, or None if no match
+        """
+        if not self._entity_list:
+            return None
+
+        # Start with the clicked word
+        cursor.select(QTextCursor.WordUnderCursor)
+        clicked_word = cursor.selectedText().strip()
+
+        if not clicked_word:
+            return None
+
+        # Get the full text of the current block for context
+        block_text = cursor.block().text()
+        word_start = cursor.selectionStart() - cursor.block().position()
+        word_end = cursor.selectionEnd() - cursor.block().position()
+
+        # Try progressively larger selections (up to 5 words in each direction)
+        for expand_left in range(5):
+            for expand_right in range(5):
+                # Calculate start and end positions for expanded selection
+                # Move left by expand_left words
+                start_pos = word_start
+                for _ in range(expand_left):
+                    # Find previous word boundary
+                    while start_pos > 0 and block_text[start_pos - 1].isspace():
+                        start_pos -= 1
+                    while start_pos > 0 and not block_text[start_pos - 1].isspace():
+                        start_pos -= 1
+
+                # Move right by expand_right words
+                end_pos = word_end
+                for _ in range(expand_right):
+                    # Find next word boundary
+                    while end_pos < len(block_text) and block_text[end_pos].isspace():
+                        end_pos += 1
+                    while end_pos < len(block_text) and not block_text[end_pos].isspace():
+                        end_pos += 1
+
+                # Extract the candidate text
+                candidate = block_text[start_pos:end_pos].strip()
+
+                if not candidate:
+                    continue
+
+                # Check if this matches any entity name or alias (case-insensitive)
+                for entity in self._entity_list:
+                    name = entity.get("name", "")
+                    aliases = entity.get("aliases", [])
+
+                    if (name.lower() == candidate.lower() or
+                        any(alias.lower() == candidate.lower() for alias in aliases)):
+                        return candidate
+
+        return None
+
     def mousePressEvent(self, event: QMouseEvent):
         """Handle mouse press events to detect clicks on entity names."""
         # Activate highlighter on first click if ready
@@ -1392,20 +1459,19 @@ class EntityTextEditor(QTextEdit):
         if event.button() == Qt.LeftButton:
             cursor = self.cursorForPosition(event.pos())
 
-            # Get the word at cursor position
-            cursor.select(QTextCursor.WordUnderCursor)
-            clicked_word = cursor.selectedText().strip()
+            # Try to find multi-word entity names by expanding selection
+            clicked_text = self._get_entity_at_click(cursor)
 
-            if clicked_word and self._entity_list:
-                # Find all entities matching this word (case-insensitive)
+            if clicked_text and self._entity_list:
+                # Find all entities matching this text (case-insensitive)
                 matching_entities = []
                 for entity in self._entity_list:
                     name = entity.get("name", "")
                     aliases = entity.get("aliases", [])
 
-                    # Check if clicked word matches entity name or any alias
-                    if (name.lower() == clicked_word.lower() or
-                        any(alias.lower() == clicked_word.lower() for alias in aliases)):
+                    # Check if clicked text matches entity name or any alias
+                    if (name.lower() == clicked_text.lower() or
+                        any(alias.lower() == clicked_text.lower() for alias in aliases)):
                         matching_entities.append(entity)
 
                 if matching_entities:
@@ -1645,7 +1711,7 @@ class EntityTextEditor(QTextEdit):
 
                 # Add entities grouped by type (with plural labels for clarity)
                 type_labels = {
-                    "character": "Characters",
+                    "actor": "Actors",
                     "location": "Locations",
                     "faction": "Factions",
                     "object": "Objects",
@@ -1665,6 +1731,30 @@ class EntityTextEditor(QTextEdit):
                             self._add_alias_for_entity(eid, ename, alias)
                         )
                         type_menu.addAction(action)
+
+        # Add "Add to Lorekeeper" option for creating new entities
+        if selected_text:
+            menu.addSeparator()
+
+            # Create submenu for adding to Lorekeeper
+            lorekeeper_menu = menu.addMenu(f"Add '{selected_text}' to Lorekeeper as...")
+
+            # Add entity type options (matching database schema)
+            entity_types = [
+                ("Actor", "actor"),
+                ("Location", "location"),
+                ("Faction", "faction"),
+                ("Object", "object"),
+                ("World Data", "worlddata")
+            ]
+
+            for label, entity_type in entity_types:
+                action = QAction(label, self)
+                action.triggered.connect(
+                    lambda checked=False, name=selected_text, etype=entity_type:
+                    self.entity_create_requested.emit(name, etype)
+                )
+                lorekeeper_menu.addAction(action)
 
         # Show menu
         menu.exec(event.globalPos())

@@ -38,6 +38,7 @@ class StoryweaverWidget(QWidget):
     entity_search_requested = Signal(str, int, int)  # (query, storyline_id, setting_id)
     entity_hover_requested = Signal(str, str, int, int)  # (entity_id, entity_type, storyline_id, setting_id)
     entity_navigation_requested = Signal(str, str, int, int)  # (entity_id, entity_type, storyline_id, setting_id)
+    entity_create_requested = Signal(str, str, int, int)  # (entity_name, entity_type, storyline_id, setting_id)
     document_modified = Signal(bool)  # is_modified
 
     def __init__(self, model: "Model", current_storyline_id: int, current_setting_id: int, parent=None):
@@ -175,6 +176,7 @@ class StoryweaverWidget(QWidget):
         self.editor.entity_selected.connect(self._on_entity_selected)
         self.editor.entity_hover.connect(self._on_entity_hover)
         self.editor.entity_navigation_requested.connect(self._on_entity_navigation_requested)
+        self.editor.entity_create_requested.connect(self._on_entity_create_requested)
         self.editor.textChanged.connect(self._on_text_changed)
         self.editor.alias_add_requested.connect(self._on_alias_add_requested)
 
@@ -204,6 +206,11 @@ class StoryweaverWidget(QWidget):
         """Handle entity navigation request from editor (user clicked on entity in info card)."""
         # Emit signal to controller to navigate to entity in Lorekeeper
         self.entity_navigation_requested.emit(entity_id, entity_type, self.current_storyline_id, self.current_setting_id)
+
+    def _on_entity_create_requested(self, entity_name: str, entity_type: str):
+        """Handle entity creation request from editor (user wants to create new entity)."""
+        # Emit signal to controller to create entity in Lorekeeper
+        self.entity_create_requested.emit(entity_name, entity_type, self.current_storyline_id, self.current_setting_id)
 
     def _on_entity_selected(self, entity_id: str, entity_name: str):
         """Handle entity selection from autocomplete."""

@@ -96,20 +96,21 @@ class StoryDocument:
 
         Returns:
             True if added successfully, False if entity not found or alias already exists
+            None if entity not in entity_map (needs to be registered first)
         """
         if entity_id not in self.metadata["entity_map"]:
-            return False
+            return None  # Signal that entity needs to be registered first
 
         entity = self.metadata["entity_map"][entity_id]
         if "aliases" not in entity:
             entity["aliases"] = []
 
-        # Don't add duplicates
-        if alias in entity["aliases"]:
+        # Don't add duplicates (case-insensitive check)
+        if any(existing.lower() == alias.lower() for existing in entity["aliases"]):
             return False
 
-        # Don't add the canonical name as an alias
-        if alias == entity["name"]:
+        # Don't add the canonical name as an alias (case-insensitive check)
+        if alias.lower() == entity["name"].lower():
             return False
 
         entity["aliases"].append(alias)

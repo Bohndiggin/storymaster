@@ -845,6 +845,7 @@ class MainWindowController:
         self.storyweaver_widget.entity_search_requested.connect(self._on_storyweaver_entity_search)
         self.storyweaver_widget.entity_hover_requested.connect(self._on_storyweaver_entity_hover)
         self.storyweaver_widget.entity_navigation_requested.connect(self._on_entity_card_clicked)
+        self.storyweaver_widget.entity_create_requested.connect(self._on_storyweaver_entity_create)
         self.storyweaver_widget.editor.alias_add_requested.connect(self._on_alias_add_requested)
 
         self.connect_signals()
@@ -3892,11 +3893,15 @@ class MainWindowController:
 
         # Update project context if storyline/setting changed
         if self.current_storyline_id is not None and self.current_setting_id is not None:
+            # Clear entity cache to pick up any changes made in Lorekeeper
+            if self.current_setting_id in self._entity_cache:
+                del self._entity_cache[self.current_setting_id]
+
             self.storyweaver_widget.update_project_context(
                 self.current_storyline_id,
                 self.current_setting_id
             )
-            # Preload entities for faster autocomplete
+            # Preload entities for faster autocomplete (will fetch fresh data)
             self.storyweaver_widget.preload_entities()
 
     def _on_storyweaver_entity_search(self, query: str, storyline_id: int, setting_id: int):
@@ -3946,7 +3951,7 @@ class MainWindowController:
                     entities.append({
                         "id": f"actor_{actor.id}",
                         "name": full_name,
-                        "type": "character"
+                        "type": "actor"
                     })
 
                 # Query Locations
@@ -3979,6 +3984,40 @@ class MainWindowController:
                         "name": faction.name,
                         "type": "faction"
                     })
+
+                # Query Objects
+                from storymaster.model.database.schema.base import Object_
+                objects = session.query(Object_).filter(
+                    Object_.setting_id == setting_id
+                )
+                if query:
+                    objects = objects.filter(Object_.name.ilike(f"%{query}%"))
+                objects = objects.all()
+
+                for obj in objects:
+                    if obj.name:  # Only add if name is not None
+                        entities.append({
+                            "id": f"object_{obj.id}",
+                            "name": obj.name,
+                            "type": "object"
+                        })
+
+                # Query World Data
+                from storymaster.model.database.schema.base import WorldData
+                world_data_list = session.query(WorldData).filter(
+                    WorldData.setting_id == setting_id
+                )
+                if query:
+                    world_data_list = world_data_list.filter(WorldData.name.ilike(f"%{query}%"))
+                world_data_list = world_data_list.all()
+
+                for world_data in world_data_list:
+                    if world_data.name:  # Only add if name is not None
+                        entities.append({
+                            "id": f"worlddata_{world_data.id}",
+                            "name": world_data.name,
+                            "type": "worlddata"
+                        })
 
                 # Sort by name
                 entities.sort(key=lambda x: x["name"])
@@ -4023,40 +4062,149 @@ class MainWindowController:
                 return
 
             # Add the alias to the document
-            if current_doc.add_alias(entity_id, alias):
-                from PySide6.QtWidgets import QMessageBox
-                QMessageBox.information(
-                    self.view, "Alias Added",
-                    f"Added alias '{alias}' for {entity_name}"
-                )
+            result = current_doc.add_alias(entity_id, alias)
 
-                # Refresh the entity list to show the new alias
-                self._on_storyweaver_entity_search(
-                    "",
-                    self.storyweaver_widget.current_storyline_id,
-                    self.storyweaver_widget.current_setting_id
-                )
-            else:
-                from PySide6.QtWidgets import QMessageBox
-                QMessageBox.information(
-                    self.view, "Alias Not Added",
-                    f"Alias '{alias}' already exists or is the same as the canonical name."
-                )
+            if result is None:
+                # Entity not in document yet - register it first
+                # Find entity type from the entity list
+                entity_type = "unknown"
+                for entity in self._entity_cache.get(self.storyweaver_widget.current_setting_id, []):
+                    if entity.get("id") == entity_id:
+                        entity_type = entity.get("type", "unknown")
+                        break
+
+                # Register the entity
+                current_doc.update_entity(entity_id, entity_name, entity_type)
+
+                # Try adding the alias again
+                result = current_doc.add_alias(entity_id, alias)
+
+            # Refresh the entity list regardless of success/failure
+            # This ensures highlighting is always up to date
+            self._on_storyweaver_entity_search(
+                "",
+                self.storyweaver_widget.current_storyline_id,
+                self.storyweaver_widget.current_setting_id
+            )
 
         except Exception as e:
             print(f"[Storyweaver] Error adding alias: {e}")
             import traceback
             traceback.print_exc()
 
-    def _on_entity_card_clicked(self, entity_id: str, entity_type: str, storyline_id: int = None, setting_id: int = None):
+    def _on_storyweaver_entity_create(self, entity_name: str, entity_type: str, storyline_id: int, setting_id: int):
         """
-        Handle click on entity name in info card - navigate to Lorekeeper.
+        Handle entity creation request from Storyweaver widget.
+
+        Args:
+            entity_name: Name of the new entity
+            entity_type: Type of entity to create (actor, location, faction, etc.)
+            storyline_id: Current storyline ID
+            setting_id: Current setting ID
+        """
+        try:
+            from sqlalchemy.orm import Session
+            from PySide6.QtWidgets import QMessageBox
+
+            with Session(self.model.engine) as session:
+                new_entity_id = None
+
+                if entity_type == "actor":
+                    # Parse name into components (last word is last name, rest is first name)
+                    from storymaster.model.database.schema.base import Actor
+                    name_parts = entity_name.strip().split()
+
+                    if len(name_parts) == 1:
+                        # Single name - use as first name
+                        first_name = name_parts[0]
+                        last_name = ""
+                    else:
+                        # Multiple words - last word is last name, rest is first name
+                        first_name = " ".join(name_parts[:-1])
+                        last_name = name_parts[-1]
+
+                    actor = Actor(
+                        first_name=first_name,
+                        last_name=last_name,
+                        storyline_id=storyline_id
+                    )
+                    session.add(actor)
+                    session.commit()
+                    new_entity_id = f"actor_{actor.id}"
+
+                elif entity_type == "location":
+                    from storymaster.model.database.schema.base import Location
+                    location = Location(
+                        name=entity_name,
+                        setting_id=setting_id
+                    )
+                    session.add(location)
+                    session.commit()
+                    new_entity_id = f"location_{location.id}"
+
+                elif entity_type == "faction":
+                    from storymaster.model.database.schema.base import Faction
+                    faction = Faction(
+                        name=entity_name,
+                        setting_id=setting_id
+                    )
+                    session.add(faction)
+                    session.commit()
+                    new_entity_id = f"faction_{faction.id}"
+
+                elif entity_type == "object":
+                    from storymaster.model.database.schema.base import Object_
+                    obj = Object_(
+                        name=entity_name,
+                        setting_id=setting_id
+                    )
+                    session.add(obj)
+                    session.commit()
+                    new_entity_id = f"object_{obj.id}"
+
+                elif entity_type == "worlddata":
+                    from storymaster.model.database.schema.base import WorldData
+                    world_data = WorldData(
+                        name=entity_name,
+                        setting_id=setting_id
+                    )
+                    session.add(world_data)
+                    session.commit()
+                    new_entity_id = f"worlddata_{world_data.id}"
+
+                # Clear entity cache to force refresh
+                if setting_id in self._entity_cache:
+                    del self._entity_cache[setting_id]
+
+                # Refresh the entity list to show the new entity
+                self._on_storyweaver_entity_search("", storyline_id, setting_id)
+
+                # Register the new entity in the document
+                if new_entity_id:
+                    current_doc = self.storyweaver_widget.get_current_document()
+                    if current_doc:
+                        current_doc.update_entity(new_entity_id, entity_name, entity_type)
+
+                    # Switch to Lorekeeper tab and select the new entity
+                    self._navigate_to_entity_in_lorekeeper(new_entity_id, entity_type)
+
+        except Exception as e:
+            print(f"[Storyweaver] Error creating entity: {e}")
+            import traceback
+            traceback.print_exc()
+            from PySide6.QtWidgets import QMessageBox
+            QMessageBox.warning(
+                self.view, "Error",
+                f"Failed to create entity: {e}"
+            )
+
+    def _navigate_to_entity_in_lorekeeper(self, entity_id: str, entity_type: str):
+        """
+        Navigate to a specific entity in Lorekeeper.
 
         Args:
             entity_id: The entity ID (e.g., "actor_13")
-            entity_type: The entity type ("character", "location", "faction")
-            storyline_id: The storyline ID (optional, not used)
-            setting_id: The setting ID (optional, not used)
+            entity_type: The entity type ("actor", "location", "faction", "object", "worlddata")
         """
         try:
             # Extract numeric ID from entity_id
@@ -4069,9 +4217,11 @@ class MainWindowController:
 
             # Map entity type to table name for Lorekeeper
             table_map = {
-                "character": "actor",
+                "actor": "actor",
                 "location": "location_",
-                "faction": "faction"
+                "faction": "faction",
+                "object": "object_",
+                "worlddata": "world_data"
             }
             table_name = table_map.get(entity_type, entity_type)
 
@@ -4086,6 +4236,18 @@ class MainWindowController:
             print(f"[Storyweaver] Error navigating to entity: {e}")
             import traceback
             traceback.print_exc()
+
+    def _on_entity_card_clicked(self, entity_id: str, entity_type: str, storyline_id: int = None, setting_id: int = None):
+        """
+        Handle click on entity name in info card - navigate to Lorekeeper.
+
+        Args:
+            entity_id: The entity ID (e.g., "actor_13")
+            entity_type: The entity type ("actor", "location", "faction")
+            storyline_id: The storyline ID (optional, not used)
+            setting_id: The setting ID (optional, not used)
+        """
+        self._navigate_to_entity_in_lorekeeper(entity_id, entity_type)
 
     def invalidate_entity_cache(self, table_name: str, entity_id: int):
         """
@@ -4141,7 +4303,7 @@ class MainWindowController:
                 entity_name = ""
                 details = ""
 
-                if entity_type == "character":
+                if entity_type in ["character", "actor"]:  # Support both for backwards compatibility
                     # Fetch Actor details
                     actor = session.query(Actor).filter(Actor.id == numeric_id).first()
                     if actor:
@@ -4198,6 +4360,38 @@ class MainWindowController:
                             detail_parts.append(f"{faction.description[:150]}..." if len(faction.description) > 150 else faction.description)
                         if faction.goals:
                             detail_parts.append(f"Goals: {faction.goals[:100]}..." if len(faction.goals) > 100 else f"Goals: {faction.goals}")
+
+                        details = "\n".join(detail_parts) if detail_parts else "No additional details available."
+
+                elif entity_type == "object":
+                    # Fetch Object details
+                    from storymaster.model.database.schema.base import Object_
+                    obj = session.query(Object_).filter(Object_.id == numeric_id).first()
+                    if obj:
+                        entity_name = obj.name or f"Object {obj.id}"
+
+                        # Build details string
+                        detail_parts = []
+                        if obj.description:
+                            detail_parts.append(f"{obj.description[:150]}..." if len(obj.description) > 150 else obj.description)
+                        if obj.rarity:
+                            detail_parts.append(f"Rarity: {obj.rarity}")
+                        if obj.object_value:
+                            detail_parts.append(f"Value: {obj.object_value}")
+
+                        details = "\n".join(detail_parts) if detail_parts else "No additional details available."
+
+                elif entity_type == "worlddata":
+                    # Fetch WorldData details
+                    from storymaster.model.database.schema.base import WorldData
+                    world_data = session.query(WorldData).filter(WorldData.id == numeric_id).first()
+                    if world_data:
+                        entity_name = world_data.name or f"World Data {world_data.id}"
+
+                        # Build details string
+                        detail_parts = []
+                        if world_data.description:
+                            detail_parts.append(f"{world_data.description[:150]}..." if len(world_data.description) > 150 else world_data.description)
 
                         details = "\n".join(detail_parts) if detail_parts else "No additional details available."
 
