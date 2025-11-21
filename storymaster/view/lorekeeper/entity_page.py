@@ -266,6 +266,37 @@ class SectionWidget(QGroupBox):
         except Exception as e:
             print(f"Error populating dropdown for {field_name}: {e}")
 
+    def refresh_foreign_key_dropdowns(self):
+        """Refresh all foreign key dropdowns in this section"""
+        # List of foreign key fields that need dropdowns
+        foreign_key_fields = [
+            "background_id",
+            "alignment_id",
+            "race_id",
+            "class_id",
+            "faction_id",
+            "location_id",
+            "actor_id",
+            "skill_id",
+            "object_id",
+        ]
+
+        for field_name, widget in self.field_widgets.items():
+            if field_name in foreign_key_fields and isinstance(widget, QComboBox):
+                # Save current selection
+                current_value = widget.currentData()
+
+                # Clear and repopulate
+                widget.clear()
+                if self.model_adapter:
+                    self.populate_foreign_key_dropdown(widget, field_name)
+
+                    # Restore selection if still valid
+                    if current_value is not None:
+                        index = widget.findData(current_value)
+                        if index >= 0:
+                            widget.setCurrentIndex(index)
+
     def get_field_data(self) -> dict:
         """Get all field data from this section"""
         data = {}
@@ -489,18 +520,12 @@ class EntityDetailPage(QWidget):
 
         header_layout.addStretch()
 
-        self.save_button = QPushButton("Save")
-        self.save_button.setStyleSheet(get_button_style("primary"))
-        apply_general_tooltips(self.save_button, "save_button")
-
         self.delete_button = QPushButton("Delete")
         self.delete_button.setStyleSheet(get_button_style("danger"))
         apply_general_tooltips(self.delete_button, "delete_button")
 
-        self.save_button.clicked.connect(self.save_entity)
         self.delete_button.clicked.connect(self.delete_entity)
 
-        header_layout.addWidget(self.save_button)
         header_layout.addWidget(self.delete_button)
 
         layout.addLayout(header_layout)
@@ -669,6 +694,12 @@ class EntityDetailPage(QWidget):
         """Delete the current entity"""
         if self.current_entity:
             self.entity_deleted.emit(self.current_entity)
+
+    def refresh_foreign_key_dropdowns(self):
+        """Refresh all foreign key dropdowns in all sections"""
+        for section_widget in self.section_widgets.values():
+            if hasattr(section_widget, 'refresh_foreign_key_dropdowns'):
+                section_widget.refresh_foreign_key_dropdowns()
 
     def on_relationship_selected(self, relationship_type: str, related_entity):
         """Handle relationship selection"""

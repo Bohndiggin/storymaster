@@ -29,8 +29,8 @@ from storymaster.view.lorekeeper.lorekeeper_model_adapter import LorekeeperModel
 from storymaster.view.lorekeeper.lorekeeper_navigation import LorekeeperNavigation
 
 
-class NewLorekeeperPage(QWidget):
-    """Main page for the new user-friendly Lorekeeper interface"""
+class LorekeeperPage(QWidget):
+    """Main page for the user-friendly Lorekeeper interface"""
 
     # Signal emitted when an entity is saved (entity, entity_type)
     entity_saved_signal = Signal(object, str)
@@ -414,6 +414,13 @@ class NewLorekeeperPage(QWidget):
             # Refresh the entity list
             self.load_entities(self.current_table_name)
 
+            # Refresh foreign key dropdowns on all detail pages
+            # This ensures that if a new entity was created (like a new background),
+            # it will appear in dropdowns on other entity pages (like Actor)
+            for detail_page in self.detail_pages.values():
+                if hasattr(detail_page, 'refresh_foreign_key_dropdowns'):
+                    detail_page.refresh_foreign_key_dropdowns()
+
             # Emit signal to notify controller that entity was saved
             self.entity_saved_signal.emit(entity, self.current_table_name)
 
@@ -443,6 +450,12 @@ class NewLorekeeperPage(QWidget):
 
                 # Refresh the entity list
                 self.load_entities(self.current_table_name)
+
+                # Refresh foreign key dropdowns on all detail pages
+                # This ensures that deleted entities are removed from dropdowns
+                for detail_page in self.detail_pages.values():
+                    if hasattr(detail_page, 'refresh_foreign_key_dropdowns'):
+                        detail_page.refresh_foreign_key_dropdowns()
 
                 # Show welcome page
                 self.detail_stack.setCurrentWidget(self.welcome_page)
@@ -487,8 +500,21 @@ class NewLorekeeperPage(QWidget):
         if self.current_table_name == "location_" and self.model_adapter:
             self.model_adapter.save_location_details(self.current_entity, all_data)
 
-        # Save the entity
+        # Save the entity to the database
         self.save_entity_to_model(self.current_entity)
+
+        # Refresh the entity list to show updated names/values
+        self.load_entities(self.current_table_name)
+
+        # Refresh foreign key dropdowns on all detail pages
+        # This ensures that if a new entity was created or updated,
+        # it will appear correctly in dropdowns on other entity pages
+        for detail_page_instance in self.detail_pages.values():
+            if hasattr(detail_page_instance, 'refresh_foreign_key_dropdowns'):
+                detail_page_instance.refresh_foreign_key_dropdowns()
+
+        # Emit signal to notify controller that entity was saved
+        self.entity_saved_signal.emit(self.current_entity, self.current_table_name)
 
     def on_entity_changed(self, entity):
         """Handle entity change from model"""

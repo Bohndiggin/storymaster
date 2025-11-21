@@ -115,7 +115,7 @@ from storymaster.view.common.user_switcher_dialog import UserSwitcherDialog
 # Import the dialogs
 from storymaster.view.litographer.add_node_dialog import AddNodeDialog
 from storymaster.view.litographer.node_notes_dialog import NodeNotesDialog
-from storymaster.view.lorekeeper.new_lorekeeper_page import NewLorekeeperPage
+from storymaster.view.lorekeeper.lorekeeper_page import LorekeeperPage
 from storymaster.view.storyweaver.storyweaver_widget import StoryweaverWidget
 
 
@@ -2817,7 +2817,7 @@ class MainWindowController:
 
                     # Recreate the Lorekeeper widget with the current setting
                     if self.current_setting_id is not None:
-                        self.new_lorekeeper_widget = NewLorekeeperPage(
+                        self.new_lorekeeper_widget = LorekeeperPage(
                             self.model, self.current_setting_id
                         )
                         # Connect signal to clear entity cache when entities are saved
@@ -2923,7 +2923,7 @@ class MainWindowController:
 
                     # Recreate the Lorekeeper widget with the new setting
                     if new_setting_id is not None:
-                        self.new_lorekeeper_widget = NewLorekeeperPage(self.model, new_setting_id)
+                        self.new_lorekeeper_widget = LorekeeperPage(self.model, new_setting_id)
                         # Connect signal to clear entity cache when entities are saved
                         self.new_lorekeeper_widget.entity_saved_signal.connect(self._on_lorekeeper_entity_saved)
                         # Add the widget to the new Lorekeeper page
@@ -3621,7 +3621,7 @@ class MainWindowController:
 
     # --- Lorekeeper Methods (DEPRECATED - old database interface) ---
     # NOTE: These methods are deprecated and left for compatibility
-    # The new Lorekeeper interface uses NewLorekeeperPage instead
+    # The new Lorekeeper interface uses LorekeeperPage instead
 
     def populate_add_form(self):
         """Populates the 'Add New Row' tab with a blank form for the current table."""
@@ -3853,7 +3853,7 @@ class MainWindowController:
 
         # Initialize the new Lorekeeper widget if not already done
         if self.new_lorekeeper_widget is None and self.current_setting_id is not None:
-            self.new_lorekeeper_widget = NewLorekeeperPage(self.model, self.current_setting_id)
+            self.new_lorekeeper_widget = LorekeeperPage(self.model, self.current_setting_id)
             # Connect signal to clear entity cache when entities are saved
             self.new_lorekeeper_widget.entity_saved_signal.connect(self._on_lorekeeper_entity_saved)
 
