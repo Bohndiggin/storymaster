@@ -4126,7 +4126,7 @@ class MainWindowController:
                     actor = Actor(
                         first_name=first_name,
                         last_name=last_name,
-                        storyline_id=storyline_id
+                        setting_id=setting_id
                     )
                     session.add(actor)
                     session.commit()

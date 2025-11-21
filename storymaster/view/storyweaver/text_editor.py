@@ -833,6 +833,12 @@ class MarkdownHighlighter(QSyntaxHighlighter):
                 del self._format_cache[block_number]
             else:
                 # Use cached format instructions (from parallel processing)
+                # First apply default white text to entire block
+                default_format = QTextCharFormat()
+                default_format.setForeground(QColor("#FFFFFF"))  # White text
+                self.setFormat(0, len(text), default_format)
+
+                # Then apply cached formats on top
                 instructions = self._format_cache[block_number]
                 for instruction in instructions:
                     fmt = self._get_format_for_type(instruction.format_type, show_syntax)
@@ -852,6 +858,11 @@ class MarkdownHighlighter(QSyntaxHighlighter):
 
         # Fall back to original highlighting logic for real-time edits
         # (This path is used when user types, not during initial load)
+
+        # Apply default text format to entire block first (white text for dark theme)
+        default_format = QTextCharFormat()
+        default_format.setForeground(QColor("#FFFFFF"))  # White text
+        self.setFormat(0, len(text), default_format)
 
         # Track entity link positions to avoid formatting inside them
         entity_ranges = []
