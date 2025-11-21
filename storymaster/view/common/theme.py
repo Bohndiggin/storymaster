@@ -529,6 +529,38 @@ def get_main_window_style():
             background-color: {COLORS['bg_secondary']};
         }}
 
+        /* --- Context Info Bar --- */
+        #contextInfoBar {{
+            background-color: {COLORS['bg_secondary']};
+            border-top: 1px solid {COLORS['border_dark']};
+            border-bottom: 1px solid {COLORS['border_dark']};
+        }}
+
+        #contextInfoBar QPushButton {{
+            background-color: transparent;
+            color: {COLORS['text_secondary']};
+            font-size: {FONTS['size_small']};
+            font-weight: {FONTS['weight_normal']};
+            padding: {DIMENSIONS['padding_small']} {DIMENSIONS['padding_medium']};
+            border: none;
+            text-align: center;
+        }}
+
+        #contextInfoBar QPushButton:hover {{
+            background-color: {COLORS['bg_tertiary']};
+            color: {COLORS['text_primary']};
+        }}
+
+        #contextInfoBar QPushButton:pressed {{
+            background-color: {COLORS['border_main']};
+        }}
+
+        #contextInfoBar QLabel {{
+            color: {COLORS['text_muted']};
+            font-size: {FONTS['size_small']};
+            padding: 0 {DIMENSIONS['padding_small']};
+        }}
+
         /* --- Bottom Navigation Bar --- */
         #bottomNavBar {{
             background-color: {COLORS['bg_main']};

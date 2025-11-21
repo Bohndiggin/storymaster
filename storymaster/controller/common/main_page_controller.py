@@ -1603,6 +1603,10 @@ class MainWindowController:
             )
             self.view.ui.statusbar.showMessage(status_text)
 
+            # Update context info buttons (bottom center)
+            self.view.ui.storylineButton.setText(f"{storyline_name} ▼")
+            self.view.ui.settingButton.setText(f"{setting_name} ▼")
+
         except Exception as e:
             print(f"Error updating status indicators: {e}")
 
@@ -2084,6 +2088,10 @@ class MainWindowController:
 
         self.view.ui.storyweaverNavButton.released.connect(self.on_storyweaver_selected)
         apply_general_tooltips(self.view.ui.storyweaverNavButton, "storyweaver_tab")
+
+        # --- Context Info Bar ---
+        self.view.ui.storylineButton.clicked.connect(self.on_switch_storyline_clicked)
+        self.view.ui.settingButton.clicked.connect(self.on_switch_setting_clicked)
 
         # --- File Menu ---
         self.view.ui.actionOpen.triggered.connect(self.on_open_storyline_clicked)

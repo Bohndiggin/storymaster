@@ -17,9 +17,9 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
 from PySide6.QtWidgets import (QApplication, QButtonGroup, QGraphicsView, QHBoxLayout,
-    QMainWindow, QMenu, QMenuBar, QPushButton,
-    QSizePolicy, QSpacerItem, QStackedWidget, QStatusBar,
-    QToolBar, QVBoxLayout, QWidget)
+    QLabel, QMainWindow, QMenu, QMenuBar,
+    QPushButton, QSizePolicy, QSpacerItem, QStackedWidget,
+    QStatusBar, QToolBar, QVBoxLayout, QWidget)
 
 class Ui_StorymasterMainWindow(object):
     def setupUi(self, StorymasterMainWindow):
@@ -109,6 +109,42 @@ class Ui_StorymasterMainWindow(object):
         self.pageStack.addWidget(self.storyweaverPage)
 
         self.verticalLayout.addWidget(self.pageStack)
+
+        self.contextInfoBar = QWidget(self.centralWidget)
+        self.contextInfoBar.setObjectName(u"contextInfoBar")
+        self.contextInfoBar.setMinimumSize(QSize(0, 24))
+        self.contextInfoBar.setMaximumSize(QSize(16777215, 24))
+        self.contextInfoLayout = QHBoxLayout(self.contextInfoBar)
+        self.contextInfoLayout.setSpacing(0)
+        self.contextInfoLayout.setObjectName(u"contextInfoLayout")
+        self.contextInfoLayout.setContentsMargins(0, 0, 0, 0)
+        self.contextInfoSpacer1 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.contextInfoLayout.addItem(self.contextInfoSpacer1)
+
+        self.storylineButton = QPushButton(self.contextInfoBar)
+        self.storylineButton.setObjectName(u"storylineButton")
+        self.storylineButton.setFlat(True)
+
+        self.contextInfoLayout.addWidget(self.storylineButton)
+
+        self.contextSeparator = QLabel(self.contextInfoBar)
+        self.contextSeparator.setObjectName(u"contextSeparator")
+
+        self.contextInfoLayout.addWidget(self.contextSeparator)
+
+        self.settingButton = QPushButton(self.contextInfoBar)
+        self.settingButton.setObjectName(u"settingButton")
+        self.settingButton.setFlat(True)
+
+        self.contextInfoLayout.addWidget(self.settingButton)
+
+        self.contextInfoSpacer2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.contextInfoLayout.addItem(self.contextInfoSpacer2)
+
+
+        self.verticalLayout.addWidget(self.contextInfoBar)
 
         self.bottomNavBar = QWidget(self.centralWidget)
         self.bottomNavBar.setObjectName(u"bottomNavBar")
@@ -292,6 +328,9 @@ class Ui_StorymasterMainWindow(object):
         self.actionImportFromJSON.setToolTip(QCoreApplication.translate("StorymasterMainWindow", u"Import storyline data from JSON file", None))
 #endif // QT_CONFIG(tooltip)
         self.litographerToolbar.setWindowTitle(QCoreApplication.translate("StorymasterMainWindow", u"toolBar", None))
+        self.storylineButton.setText(QCoreApplication.translate("StorymasterMainWindow", u"Storyline \u25bc", None))
+        self.contextSeparator.setText(QCoreApplication.translate("StorymasterMainWindow", u"|", None))
+        self.settingButton.setText(QCoreApplication.translate("StorymasterMainWindow", u"Setting \u25bc", None))
         self.litographerNavButton.setText(QCoreApplication.translate("StorymasterMainWindow", u"Litographer", None))
         self.lorekeeperNavButton.setText(QCoreApplication.translate("StorymasterMainWindow", u"Lorekeeper", None))
         self.characterArcsNavButton.setText(QCoreApplication.translate("StorymasterMainWindow", u"Character Arcs", None))
