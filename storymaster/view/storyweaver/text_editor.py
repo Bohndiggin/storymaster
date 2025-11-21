@@ -1126,12 +1126,14 @@ class EntityTextEditor(QTextEdit):
         model = QStringListModel([], self)
         self._completer.setModel(model)
 
-    def set_entity_list(self, entities: List[Dict[str, Any]]):
+    def set_entity_list(self, entities: List[Dict[str, Any]], update_highlighting: bool = True):
         """
         Update the list of available entities for autocomplete.
 
         Args:
             entities: List of entity dicts with keys: id, name, type, aliases (optional)
+            update_highlighting: If True, update entity highlighting. Set to False when
+                                 filtering for search to avoid unnecessary rehighlighting.
         """
         self._entity_list = entities
 
@@ -1161,26 +1163,28 @@ class EntityTextEditor(QTextEdit):
         popup.setUpdatesEnabled(True)
         popup.updateGeometry()
 
-        # Extract entity names for highlighting (including aliases)
-        entity_names = []
-        for entity in entities:
-            name = entity.get("name", "")
-            if name:
-                entity_names.append(name)
-            aliases = entity.get("aliases", [])
-            entity_names.extend(aliases)
+        # Only update highlighting if requested (skip for search filtering)
+        if update_highlighting:
+            # Extract entity names for highlighting (including aliases)
+            entity_names = []
+            for entity in entities:
+                name = entity.get("name", "")
+                if name:
+                    entity_names.append(name)
+                aliases = entity.get("aliases", [])
+                entity_names.extend(aliases)
 
-        # Pass entity names to highlighter for plain-text matching
-        self._highlighter.set_entity_names(entity_names)
+            # Pass entity names to highlighter for plain-text matching
+            self._highlighter.set_entity_names(entity_names)
 
-        # If highlighter is ready but not yet activated, activate it now
-        if self._highlighter_ready:
-            print(f"[{datetime.datetime.now()}]   Entity list loaded - activating highlighter...")
-            self._activate_highlighter_if_ready()
-        # Otherwise, if highlighter is already active, trigger rehighlight
-        # (This ensures aliases show up immediately when added)
-        elif self._highlighter and self._highlighter.document():
-            self._highlighter.rehighlight()
+            # If highlighter is ready but not yet activated, activate it now
+            if self._highlighter_ready:
+                print(f"[{datetime.datetime.now()}]   Entity list loaded - activating highlighter...")
+                self._activate_highlighter_if_ready()
+            # Otherwise, if highlighter is already active, trigger rehighlight
+            # (This ensures aliases show up immediately when added)
+            elif self._highlighter and self._highlighter.document():
+                self._highlighter.rehighlight()
 
 
     def _activate_highlighter_if_ready(self):

@@ -4063,11 +4063,14 @@ class MainWindowController:
                     self._entity_cache[setting_id] = entities
 
                 # Update the Storyweaver widget with the entity list
-                self.storyweaver_widget.set_entity_list(entities)
+                # Only update highlighting if loading full list (no query)
+                # When filtering for search, skip highlighting update for performance
+                self.storyweaver_widget.set_entity_list(entities, update_highlighting=not bool(query))
 
         except Exception as e:
             print(f"[Storyweaver] Error searching entities: {e}")
-            self.storyweaver_widget.set_entity_list([])
+            # Don't update highlighting on error
+            self.storyweaver_widget.set_entity_list([], update_highlighting=False)
 
     def _on_alias_add_requested(self, entity_id: str, entity_name: str, alias: str):
         """

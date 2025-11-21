@@ -278,12 +278,14 @@ class StoryweaverWidget(QWidget):
 
     # Public API
 
-    def set_entity_list(self, entities: List[Dict[str, Any]]):
+    def set_entity_list(self, entities: List[Dict[str, Any]], update_highlighting: bool = True):
         """
         Update the entity list for autocomplete.
 
         Args:
             entities: List of dicts with keys: id, name, type
+            update_highlighting: If True, update entity highlighting. Set to False when
+                                 filtering for search to avoid unnecessary rehighlighting.
         """
         # Merge in aliases from document metadata
         if self.current_document:
@@ -300,10 +302,10 @@ class StoryweaverWidget(QWidget):
                     entity_copy["aliases"] = all_aliases
                 entities_with_aliases.append(entity_copy)
             self._entity_list = entities_with_aliases
-            self.editor.set_entity_list(entities_with_aliases)
+            self.editor.set_entity_list(entities_with_aliases, update_highlighting)
         else:
             self._entity_list = entities
-            self.editor.set_entity_list(entities)
+            self.editor.set_entity_list(entities, update_highlighting)
 
     def show_entity_details(self, name: str, entity_type: str, details: str, entity_id: str = None):
         """
