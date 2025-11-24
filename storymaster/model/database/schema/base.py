@@ -2,9 +2,12 @@
 
 import enum
 
+from datetime import datetime
+
 from sqlalchemy import (
     Boolean,
     Column,
+    DateTime,
     Enum,
     Float,
     ForeignKey,
@@ -13,17 +16,52 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
 )
+from sqlalchemy.sql import func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class BaseTable(DeclarativeBase):
     __abstract__ = True
 
+    # Sync tracking fields
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, default=None
+    )
+    version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
+
     def as_dict(self):
         """
-        Converts the instance into a dictionary. Used for display only.
+        Converts the instance into a dictionary with JSON-serializable values.
+        Handles datetime conversion to ISO format strings and Enum conversion to values.
         """
-        return {column.name: getattr(self, column.name) for column in self.__table__.columns}
+        result = {}
+        for column in self.__table__.columns:
+            value = getattr(self, column.name)
+
+            # Handle None values
+            if value is None:
+                result[column.name] = None
+            # Convert datetime objects to ISO format strings
+            elif isinstance(value, datetime):
+                result[column.name] = value.isoformat()
+            # Convert Enum objects to their string values
+            elif isinstance(value, enum.Enum):
+                result[column.name] = value.value
+            # Handle basic JSON-serializable types
+            elif isinstance(value, (str, int, float, bool)):
+                result[column.name] = value
+            # For any other types, attempt string conversion
+            else:
+                # This catches any edge cases - log warning in production
+                result[column.name] = str(value) if value is not None else None
+        return result
+    
 
 
 class User(BaseTable):
@@ -1616,3 +1654,39 @@ class ArcToActor(BaseTable):
 
     actor: Mapped["Actor"] = relationship(back_populates="arcs")
     arc: Mapped["LitographyArc"] = relationship(back_populates="actors")
+
+
+class SyncDevice(BaseTable):
+    """Represents a mobile device registered for sync"""
+
+    __tablename__ = "sync_device"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, name="id")
+    device_id: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, name="device_id")
+    device_name: Mapped[str] = mapped_column(String(255), nullable=False, name="device_name")
+    auth_token: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, name="auth_token")
+    last_sync_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, name="last_sync_at"
+    )
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False, name="is_active")
+
+    sync_logs: Mapped[list["SyncLog"]] = relationship(back_populates="device")
+
+
+class SyncLog(BaseTable):
+    """Tracks sync operations for conflict resolution"""
+
+    __tablename__ = "sync_log"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, name="id")
+    device_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("sync_device.id"), nullable=False, name="device_id"
+    )
+    entity_type: Mapped[str] = mapped_column(String(100), nullable=False, name="entity_type")
+    entity_id: Mapped[int] = mapped_column(Integer, nullable=False, name="entity_id")
+    operation: Mapped[str] = mapped_column(String(20), nullable=False, name="operation")  # create, update, delete
+    synced_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False, name="synced_at"
+    )
+
+    device: Mapped["SyncDevice"] = relationship(back_populates="sync_logs")

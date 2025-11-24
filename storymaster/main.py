@@ -50,6 +50,7 @@ from storymaster.controller.common.main_page_controller import MainWindowControl
 from storymaster.controller.common.user_startup import get_startup_user_id
 from storymaster.model.common.common_model import BaseModel
 from storymaster.view.common.common_view import MainView
+from storymaster.sync_server.server_manager import start_sync_server, stop_sync_server
 
 
 def debug_environment():
@@ -266,6 +267,34 @@ def check_and_run_migrations():
                 else:
                     print(f"❌ Migration failed: {result.stderr}")
 
+        # Check for sync fields migration
+        needs_sync_migration = False
+        if "user" in inspector.get_table_names():
+            columns = [col["name"] for col in inspector.get_columns("user")]
+            if "created_at" not in columns:
+                needs_sync_migration = True
+
+        if needs_sync_migration:
+            print("🔄 Database needs sync fields migration...")
+            print("   (Adding timestamp tracking for mobile sync)")
+
+            # Import and run sync migration
+            migration_script = Path(__file__).parent.parent / "scripts" / "migrate_sync_fields.py"
+            if migration_script.exists():
+                # Run migration script
+                import subprocess
+
+                result = subprocess.run(
+                    [sys.executable, str(migration_script)],
+                    capture_output=True,
+                    text=True,
+                )
+
+                if result.returncode == 0:
+                    print("✅ Sync migration completed successfully!")
+                else:
+                    print(f"❌ Sync migration failed: {result.stderr}")
+
     except Exception as e:
         print(f"⚠️  Migration check failed: {e}")
         # Continue anyway - don't block startup
@@ -295,6 +324,15 @@ def main():
     # Check and run database migrations if needed
     check_and_run_migrations()
 
+    # Start sync server in background
+    print("\n📱 Starting mobile sync server...")
+    sync_server_started = start_sync_server(host="0.0.0.0", port=8765)
+    if sync_server_started:
+        print("✅ Sync server is running!")
+        print("📲 Scan QR code at: http://localhost:8765/api/pair/qr-image")
+    else:
+        print("⚠️  Sync server failed to start (app will continue without sync)")
+
     # Get the user ID to use for startup (creates user if none exist)
     user_id = get_startup_user_id()
 
@@ -304,7 +342,14 @@ def main():
     view.controller = controller  # Set controller reference for cleanup
     view.show()
 
-    sys.exit(app.exec())
+    try:
+        exit_code = app.exec()
+    finally:
+        # Ensure sync server is stopped on exit
+        print("\n🛑 Shutting down sync server...")
+        stop_sync_server()
+
+    sys.exit(exit_code)
 
 
 if __name__ == "__main__":

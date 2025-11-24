@@ -3,6 +3,7 @@
 from typing import TYPE_CHECKING, Optional
 
 from PySide6.QtCore import QPoint, QPropertyAnimation
+from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
     QApplication,
     QLineEdit,
@@ -41,6 +42,28 @@ class MainView(BaseView):
 
         # Controller reference (set by controller after initialization)
         self.controller: Optional["MainWindowController"] = None
+
+        # Add Sync menu item
+        self._setup_sync_menu()
+
+    def _setup_sync_menu(self):
+        """Add Sync menu to menubar"""
+        # Create Tools menu (or add to existing File menu)
+        tools_menu = self.ui.menubar.addMenu("Tools")
+
+        # Create Sync Settings action
+        sync_action = QAction("📱 Mobile Sync Settings", self)
+        sync_action.setStatusTip("Manage mobile device synchronization")
+        sync_action.triggered.connect(self.show_sync_dialog)
+
+        tools_menu.addAction(sync_action)
+
+    def show_sync_dialog(self):
+        """Show the sync management dialog"""
+        from storymaster.view.common.sync_dialog import SyncDialog
+
+        dialog = SyncDialog(self)
+        dialog.exec()
 
     def closeEvent(self, event):
         """Handle window close event to cleanup resources."""
