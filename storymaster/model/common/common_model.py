@@ -911,10 +911,112 @@ class BaseModel:
         with Session(self.engine) as session:
             return session.query(schema.Setting).filter_by(id=setting_id).first()
 
+    def update_setting(self, setting_id: int, name: str = None, description: str = None) -> bool:
+        """Updates a setting's name and/or description.
+
+        Args:
+            setting_id: The ID of the setting to update
+            name: New name for the setting (optional)
+            description: New description for the setting (optional)
+
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            with Session(self.engine) as session:
+                setting = session.query(schema.Setting).filter_by(id=setting_id).first()
+                if not setting:
+                    return False
+
+                if name is not None:
+                    setting.name = name
+                if description is not None:
+                    setting.description = description
+
+                session.commit()
+                return True
+        except Exception as e:
+            print(f"Error updating setting: {e}")
+            return False
+
+    def delete_setting(self, setting_id: int) -> bool:
+        """Deletes a setting and all related world-building data.
+
+        Args:
+            setting_id: The ID of the setting to delete
+
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            with Session(self.engine) as session:
+                setting = session.query(schema.Setting).filter_by(id=setting_id).first()
+                if not setting:
+                    return False
+
+                # SQLAlchemy will handle cascading deletes based on relationships
+                session.delete(setting)
+                session.commit()
+                return True
+        except Exception as e:
+            print(f"Error deleting setting: {e}")
+            return False
+
     def get_storyline_by_id(self, storyline_id: int) -> schema.Storyline | None:
         """Gets a storyline by ID."""
         with Session(self.engine) as session:
             return session.query(schema.Storyline).filter_by(id=storyline_id).first()
+
+    def update_storyline(self, storyline_id: int, name: str = None, description: str = None) -> bool:
+        """Updates a storyline's name and/or description.
+
+        Args:
+            storyline_id: The ID of the storyline to update
+            name: New name for the storyline (optional)
+            description: New description for the storyline (optional)
+
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            with Session(self.engine) as session:
+                storyline = session.query(schema.Storyline).filter_by(id=storyline_id).first()
+                if not storyline:
+                    return False
+
+                if name is not None:
+                    storyline.name = name
+                if description is not None:
+                    storyline.description = description
+
+                session.commit()
+                return True
+        except Exception as e:
+            print(f"Error updating storyline: {e}")
+            return False
+
+    def delete_storyline(self, storyline_id: int) -> bool:
+        """Deletes a storyline and all related data.
+
+        Args:
+            storyline_id: The ID of the storyline to delete
+
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            with Session(self.engine) as session:
+                storyline = session.query(schema.Storyline).filter_by(id=storyline_id).first()
+                if not storyline:
+                    return False
+
+                # SQLAlchemy will handle cascading deletes based on relationships
+                session.delete(storyline)
+                session.commit()
+                return True
+        except Exception as e:
+            print(f"Error deleting storyline: {e}")
+            return False
 
     def get_table_class(self, table_name: str):
         """Gets the SQLAlchemy ORM class for a given table name."""

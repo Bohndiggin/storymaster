@@ -98,7 +98,9 @@ from storymaster.view.common.new_storyline_dialog import NewStorylineDialog
 from storymaster.view.common.new_user_dialog import NewUserDialog
 from storymaster.view.common.open_storyline_dialog import OpenStorylineDialog
 from storymaster.view.common.plot_manager_dialog import PlotManagerDialog
+from storymaster.view.common.setting_manager_dialog import SettingManagerDialog
 from storymaster.view.common.setting_switcher_dialog import SettingSwitcherDialog
+from storymaster.view.common.storyline_manager_dialog import StorylineManagerDialog
 from storymaster.view.common.storyline_switcher_dialog import StorylineSwitcherDialog
 from storymaster.view.common.theme import (
     COLORS,
@@ -2106,10 +2108,12 @@ class MainWindowController:
         # --- Storyline Menu ---
         self.view.ui.actionNewStoryline.triggered.connect(self.on_new_storyline_clicked)
         self.view.ui.actionSwitchStoryline.triggered.connect(self.on_switch_storyline_clicked)
+        self.view.ui.actionEditStorylines.triggered.connect(self.on_edit_storylines_clicked)
 
         # --- Setting Menu ---
         self.view.ui.actionNewSetting.triggered.connect(self.on_new_setting_clicked)
         self.view.ui.actionSwitchSetting.triggered.connect(self.on_switch_setting_clicked)
+        self.view.ui.actionEditSettings.triggered.connect(self.on_edit_settings_clicked)
         self.view.ui.actionManageSetting.triggered.connect(self.on_manage_setting_clicked)
 
         # Add storyline settings management action programmatically if it doesn't exist
@@ -2863,6 +2867,186 @@ class MainWindowController:
                 f"Failed to open storyline settings dialog: {str(e)}",
             )
 
+    def on_edit_storylines_clicked(self):
+        """Opens the storyline manager dialog to create, edit, switch, or delete storylines."""
+        try:
+            dialog = StorylineManagerDialog(self.model, self.current_storyline_id, self.view)
+
+            if dialog.exec() == QDialog.DialogCode.Accepted:
+                action = dialog.action
+
+                if action == "create":
+                    # Create new storyline
+                    storyline_data = {
+                        "name": dialog.new_storyline_name,
+                        "description": dialog.new_storyline_description,
+                        "user_id": self.model.user_id,
+                    }
+                    self.model.add_row("storyline", storyline_data)
+
+                    # Get the newly created storyline
+                    storylines = self.model.get_all_storylines()
+                    new_storyline = next(
+                        (s for s in storylines if s.name == dialog.new_storyline_name),
+                        None
+                    )
+
+                    if new_storyline:
+                        # Link to setting if one was selected
+                        if dialog.new_storyline_setting_id is not None:
+                            try:
+                                success = self.model.link_storyline_to_setting(
+                                    new_storyline.id, dialog.new_storyline_setting_id
+                                )
+                                if success:
+                                    self.current_setting_id = dialog.new_storyline_setting_id
+                            except Exception as e:
+                                print(f"Error linking storyline to setting: {e}")
+
+                        self.view.ui.statusbar.showMessage(
+                            f"Created new storyline: {dialog.new_storyline_name}", 5000
+                        )
+
+                elif action == "update":
+                    # Update existing storyline
+                    success = self.model.update_storyline(
+                        dialog.selected_storyline_id,
+                        name=dialog.updated_name,
+                        description=dialog.updated_description
+                    )
+
+                    if success:
+                        # Update setting link if changed
+                        if dialog.updated_setting_id is not None:
+                            # First, unlink from all settings
+                            current_settings = self.model.get_settings_for_storyline(
+                                dialog.selected_storyline_id
+                            )
+                            for setting in current_settings:
+                                self.model.unlink_storyline_from_setting(
+                                    dialog.selected_storyline_id, setting.id
+                                )
+
+                            # Link to new setting
+                            self.model.link_storyline_to_setting(
+                                dialog.selected_storyline_id,
+                                dialog.updated_setting_id
+                            )
+
+                        self.view.ui.statusbar.showMessage(
+                            f"Updated storyline: {dialog.updated_name}", 5000
+                        )
+                        self.update_status_indicators()
+                    else:
+                        QMessageBox.warning(
+                            self.view,
+                            "Update Failed",
+                            "Failed to update the storyline.",
+                        )
+
+                elif action == "switch":
+                    # Switch to selected storyline
+                    new_storyline_id = dialog.selected_storyline_id
+                    if new_storyline_id:
+                        self.current_storyline_id = new_storyline_id
+
+                        # Get storyline name for status message
+                        storylines = self.model.get_all_storylines()
+                        storyline_name = next(
+                            (s.name for s in storylines if s.id == new_storyline_id),
+                            "Unknown"
+                        )
+
+                        # Update setting to match the storyline's associated setting
+                        with Session(self.model.engine) as session:
+                            storyline_setting = (
+                                session.query(StorylineToSetting)
+                                .filter_by(storyline_id=new_storyline_id)
+                                .first()
+                            )
+                            if storyline_setting:
+                                self.current_setting_id = storyline_setting.setting_id
+                            else:
+                                # No setting linked - keep current setting or use first available
+                                if self.current_setting_id is None:
+                                    settings = self.model.get_all_settings()
+                                    if settings:
+                                        self.current_setting_id = settings[0].id
+
+                        self.view.ui.statusbar.showMessage(
+                            f"Switched to storyline: {storyline_name}", 5000
+                        )
+
+                        # Reset to first plot and refresh views
+                        self._switch_to_first_plot_of_storyline()
+                        self._refresh_views_after_storyline_switch()
+                        self.update_status_indicators()
+
+                elif action == "delete":
+                    # Delete storyline
+                    success = self.model.delete_storyline(dialog.selected_storyline_id)
+
+                    if success:
+                        self.view.ui.statusbar.showMessage(
+                            "Storyline deleted successfully", 5000
+                        )
+                    else:
+                        QMessageBox.warning(
+                            self.view,
+                            "Delete Failed",
+                            "Failed to delete the storyline.",
+                        )
+
+        except Exception as e:
+            QMessageBox.critical(
+                self.view,
+                "Error Managing Storylines",
+                f"Failed to manage storylines: {str(e)}",
+            )
+
+    def _refresh_views_after_storyline_switch(self):
+        """Refresh all views after switching to a new storyline."""
+        current_page_index = self.view.ui.pageStack.currentIndex()
+
+        if current_page_index == 0:
+            # Litographer view - reload plot sections and nodes
+            self.load_plot_sections()
+            self.load_and_draw_nodes()
+        elif current_page_index == 1:
+            # Lorekeeper view - refresh table view
+            self._refresh_current_table_view()
+        elif current_page_index == 2:
+            # Character Arcs view - refresh arcs for current storyline
+            self.character_arc_page.refresh_arcs(self.current_storyline_id)
+        elif current_page_index == 3:
+            # Storyweaver view - update project context and refresh entities
+            if self.current_setting_id is not None:
+                self.storyweaver_widget.update_project_context(
+                    self.current_storyline_id,
+                    self.current_setting_id
+                )
+
+        # Reinitialize Lorekeeper widget if needed
+        if self.new_lorekeeper_widget is not None and self.current_setting_id is not None:
+            self.view.ui.newLorekeeperPage.layout().removeWidget(
+                self.new_lorekeeper_widget
+            )
+            self.new_lorekeeper_widget.deleteLater()
+            self.new_lorekeeper_widget = None
+
+            self.new_lorekeeper_widget = LorekeeperPage(
+                self.model, self.current_setting_id
+            )
+            self.new_lorekeeper_widget.entity_saved_signal.connect(self._on_lorekeeper_entity_saved)
+
+            if self.view.ui.newLorekeeperPage.layout() is None:
+                new_lorekeeper_layout = QVBoxLayout(self.view.ui.newLorekeeperPage)
+                new_lorekeeper_layout.setContentsMargins(0, 0, 0, 0)
+            else:
+                new_lorekeeper_layout = self.view.ui.newLorekeeperPage.layout()
+
+            new_lorekeeper_layout.addWidget(self.new_lorekeeper_widget)
+
     def on_switch_setting_clicked(self):
         """Opens a dialog to switch between settings."""
         dialog = SettingSwitcherDialog(self.model, self.current_setting_id, self.view)
@@ -2984,6 +3168,169 @@ class MainWindowController:
                 "Error",
                 f"Failed to open import lore packages dialog: {str(e)}",
             )
+
+    def on_edit_settings_clicked(self):
+        """Opens the setting manager dialog to create, edit, switch, or delete settings."""
+        try:
+            dialog = SettingManagerDialog(self.model, self.current_setting_id, self.view)
+
+            if dialog.exec() == QDialog.DialogCode.Accepted:
+                action = dialog.action
+
+                if action == "create":
+                    # Create new setting
+                    setting_data = {
+                        "name": dialog.new_setting_name,
+                        "description": dialog.new_setting_description,
+                        "user_id": self.model.user_id,
+                    }
+                    self.model.add_row("setting", setting_data)
+
+                    # Get the newly created setting
+                    settings = self.model.get_all_settings()
+                    new_setting = next(
+                        (s for s in settings if s.name == dialog.new_setting_name),
+                        None
+                    )
+
+                    if new_setting:
+                        self.view.ui.statusbar.showMessage(
+                            f"Created new setting: {dialog.new_setting_name}", 5000
+                        )
+
+                        # Ask if user wants to create a storyline for this setting
+                        reply = QMessageBox.question(
+                            self.view,
+                            "Create Storyline?",
+                            f"Would you like to create a new storyline for the setting '{dialog.new_setting_name}'?",
+                            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                            QMessageBox.StandardButton.Yes,
+                        )
+
+                        if reply == QMessageBox.StandardButton.Yes:
+                            self._create_and_switch_to_new_storyline(
+                                new_setting.id, self.model.user_id
+                            )
+
+                elif action == "update":
+                    # Update existing setting
+                    success = self.model.update_setting(
+                        dialog.selected_setting_id,
+                        name=dialog.updated_name,
+                        description=dialog.updated_description
+                    )
+
+                    if success:
+                        self.view.ui.statusbar.showMessage(
+                            f"Updated setting: {dialog.updated_name}", 5000
+                        )
+                        self.update_status_indicators()
+                    else:
+                        QMessageBox.warning(
+                            self.view,
+                            "Update Failed",
+                            "Failed to update the setting.",
+                        )
+
+                elif action == "switch":
+                    # Switch to selected setting (reuse existing logic)
+                    new_setting_id = dialog.selected_setting_id
+                    if new_setting_id:
+                        self.current_setting_id = new_setting_id
+
+                        # Get setting name for status message
+                        settings = self.model.get_all_settings()
+                        setting_name = next(
+                            (s.name for s in settings if s.id == new_setting_id), "Unknown"
+                        )
+
+                        # Switch to the first storyline in this setting
+                        with Session(self.model.engine) as session:
+                            first_storyline_link = (
+                                session.query(StorylineToSetting)
+                                .filter_by(setting_id=new_setting_id)
+                                .first()
+                            )
+
+                            if first_storyline_link:
+                                self.current_storyline_id = first_storyline_link.storyline_id
+                                self._switch_to_first_plot_of_storyline()
+                            else:
+                                self.current_storyline_id = None
+                                self.current_plot_id = None
+                                self.current_plot_section_id = None
+
+                        self.view.ui.statusbar.showMessage(
+                            f"Switched to setting: {setting_name}", 5000
+                        )
+
+                        # Refresh views
+                        self._refresh_views_after_setting_switch(new_setting_id)
+                        self.update_status_indicators()
+
+                elif action == "delete":
+                    # Delete setting
+                    success = self.model.delete_setting(dialog.selected_setting_id)
+
+                    if success:
+                        self.view.ui.statusbar.showMessage(
+                            "Setting deleted successfully", 5000
+                        )
+                    else:
+                        QMessageBox.warning(
+                            self.view,
+                            "Delete Failed",
+                            "Failed to delete the setting.",
+                        )
+
+        except Exception as e:
+            QMessageBox.critical(
+                self.view,
+                "Error Managing Settings",
+                f"Failed to manage settings: {str(e)}",
+            )
+
+    def _refresh_views_after_setting_switch(self, new_setting_id: int):
+        """Refresh all views after switching to a new setting."""
+        current_page_index = self.view.ui.pageStack.currentIndex()
+
+        if current_page_index == 0:
+            # Litographer view - reload plot sections and nodes
+            self.load_plot_sections()
+            self.load_and_draw_nodes()
+        elif current_page_index == 1:
+            # Lorekeeper view - refresh table view
+            self._refresh_current_table_view()
+        elif current_page_index == 2:
+            # Character Arcs view - refresh arcs for current storyline
+            self.character_arc_page.refresh_arcs(self.current_storyline_id)
+        elif current_page_index == 3:
+            # Storyweaver view - update project context and refresh entities
+            if self.current_storyline_id is not None:
+                self.storyweaver_widget.update_project_context(
+                    self.current_storyline_id,
+                    self.current_setting_id
+                )
+
+        # Reinitialize Lorekeeper widget with new setting
+        if self.new_lorekeeper_widget is not None:
+            self.view.ui.newLorekeeperPage.layout().removeWidget(
+                self.new_lorekeeper_widget
+            )
+            self.new_lorekeeper_widget.deleteLater()
+            self.new_lorekeeper_widget = None
+
+        if new_setting_id is not None:
+            self.new_lorekeeper_widget = LorekeeperPage(self.model, new_setting_id)
+            self.new_lorekeeper_widget.entity_saved_signal.connect(self._on_lorekeeper_entity_saved)
+
+            if self.view.ui.newLorekeeperPage.layout() is None:
+                new_lorekeeper_layout = QVBoxLayout(self.view.ui.newLorekeeperPage)
+                new_lorekeeper_layout.setContentsMargins(0, 0, 0, 0)
+            else:
+                new_lorekeeper_layout = self.view.ui.newLorekeeperPage.layout()
+
+            new_lorekeeper_layout.addWidget(self.new_lorekeeper_widget)
 
     # --- User Management Methods ---
 

@@ -323,6 +323,32 @@ async def list_devices(db: Session = Depends(get_db)):
     }
 
 
+@app.delete("/api/devices/{device_id}")
+async def remove_device(device_id: str, db: Session = Depends(get_db)):
+    """Remove/deactivate a synced device"""
+    # Find the device by device_id
+    stmt = select(SyncDevice).where(SyncDevice.device_id == device_id)
+    device = db.execute(stmt).scalar_one_or_none()
+
+    if not device:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Device with ID {device_id} not found",
+        )
+
+    # Deactivate the device instead of deleting it (soft delete)
+    device.is_active = False
+    db.commit()
+
+    logger.info(f"Device removed: {device.device_name} ({device_id})")
+
+    return {
+        "message": "Device removed successfully",
+        "device_id": device_id,
+        "device_name": device.device_name,
+    }
+
+
 # === Startup/Shutdown Events ===
 
 

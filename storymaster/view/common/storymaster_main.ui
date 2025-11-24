@@ -321,6 +321,7 @@
     </property>
     <addaction name="actionNewStoryline"/>
     <addaction name="actionSwitchStoryline"/>
+    <addaction name="actionEditStorylines"/>
    </widget>
    <widget class="QMenu" name="menuSetting">
     <property name="title">
@@ -328,6 +329,7 @@
     </property>
     <addaction name="actionNewSetting"/>
     <addaction name="actionSwitchSetting"/>
+    <addaction name="actionEditSettings"/>
     <addaction name="separator"/>
     <addaction name="actionManageSetting"/>
    </widget>
@@ -507,6 +509,22 @@
    </property>
    <property name="toolTip">
     <string>Import storyline data from JSON file</string>
+   </property>
+  </action>
+  <action name="actionEditSettings">
+   <property name="text">
+    <string>Edit Settings</string>
+   </property>
+   <property name="toolTip">
+    <string>Create, edit, switch, or delete settings</string>
+   </property>
+  </action>
+  <action name="actionEditStorylines">
+   <property name="text">
+    <string>Edit Storylines</string>
+   </property>
+   <property name="toolTip">
+    <string>Create, edit, switch, or delete storylines</string>
    </property>
   </action>
  </widget>

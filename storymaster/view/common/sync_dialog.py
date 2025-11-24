@@ -83,11 +83,17 @@ class SyncDialog(QDialog):
         devices_layout = QVBoxLayout()
 
         self.devices_table = QTableWidget()
-        self.devices_table.setColumnCount(4)
+        self.devices_table.setColumnCount(5)
         self.devices_table.setHorizontalHeaderLabels(
-            ["Device Name", "Device ID", "Last Sync", "Status"]
+            ["Device Name", "Device ID", "Last Sync", "Status", "Actions"]
         )
-        self.devices_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        # Stretch first 3 columns, fixed size for Status and Actions
+        header = self.devices_table.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.Stretch)  # Device Name
+        header.setSectionResizeMode(1, QHeaderView.Stretch)  # Device ID
+        header.setSectionResizeMode(2, QHeaderView.Stretch)  # Last Sync
+        header.setSectionResizeMode(3, QHeaderView.ResizeToContents)  # Status
+        header.setSectionResizeMode(4, QHeaderView.ResizeToContents)  # Actions
         self.devices_table.setSelectionBehavior(QTableWidget.SelectRows)
         self.devices_table.setEditTriggers(QTableWidget.NoEditTriggers)
         devices_layout.addWidget(self.devices_table)
@@ -239,14 +245,87 @@ http://{local_ip}:8765
                     status_item.setForeground(Qt.darkGreen)
                     self.devices_table.setItem(row, 3, status_item)
 
+                    # Actions - Remove button
+                    remove_btn = QPushButton("🗑️ Remove")
+                    remove_btn.setStyleSheet(
+                        "QPushButton { background-color: #f44336; color: white; "
+                        "padding: 5px 10px; border-radius: 3px; }"
+                        "QPushButton:hover { background-color: #d32f2f; }"
+                    )
+                    # Store device_id as property for the button
+                    remove_btn.setProperty("device_id", device.get("device_id"))
+                    remove_btn.setProperty("device_name", device.get("device_name"))
+                    remove_btn.clicked.connect(self.remove_device)
+                    self.devices_table.setCellWidget(row, 4, remove_btn)
+
                 if len(devices) == 0:
                     self.devices_table.setRowCount(1)
                     no_devices_item = QTableWidgetItem("No devices paired yet")
                     no_devices_item.setForeground(Qt.gray)
                     self.devices_table.setItem(0, 0, no_devices_item)
-                    self.devices_table.setSpan(0, 0, 1, 4)
+                    self.devices_table.setSpan(0, 0, 1, 5)
 
         except Exception as e:
             QMessageBox.warning(
                 self, "Error", f"Failed to load devices: {str(e)}"
             )
+
+    def remove_device(self):
+        """Remove a synced device"""
+        # Get the button that was clicked
+        sender = self.sender()
+        if not sender:
+            return
+
+        device_id = sender.property("device_id")
+        device_name = sender.property("device_name")
+
+        if not device_id:
+            return
+
+        # Confirm deletion
+        reply = QMessageBox.question(
+            self,
+            "Remove Device",
+            f"Are you sure you want to remove device '{device_name}'?\n\n"
+            f"This device will no longer be able to sync until it is paired again.",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
+
+        if reply != QMessageBox.Yes:
+            return
+
+        # Call API to remove the device
+        try:
+            response = requests.delete(
+                f"{self.server_url}/api/devices/{device_id}", timeout=5
+            )
+
+            if response.status_code == 200:
+                QMessageBox.information(
+                    self,
+                    "Success",
+                    f"Device '{device_name}' has been removed successfully.",
+                )
+                # Reload the devices list
+                self.load_devices()
+            elif response.status_code == 404:
+                QMessageBox.warning(
+                    self, "Error", f"Device not found on server."
+                )
+            else:
+                QMessageBox.warning(
+                    self,
+                    "Error",
+                    f"Failed to remove device: HTTP {response.status_code}\n{response.text}",
+                )
+
+        except requests.exceptions.ConnectionError:
+            QMessageBox.warning(
+                self,
+                "Connection Error",
+                "Cannot connect to sync server. Make sure Storymaster is running.",
+            )
+        except Exception as e:
+            QMessageBox.warning(self, "Error", f"Failed to remove device: {str(e)}")
