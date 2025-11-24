@@ -65,6 +65,7 @@ from storymaster.model.database.schema.base import (
     Storyline,
     StorylineToSetting,
     SubRace,
+    SyncPairingToken,
     User,
     WorldData,
     NodeConnection,
@@ -138,4 +139,5 @@ __all__ = [
     "ArcPoint",
     "LitographyArc",
     "NodeConnection",
+    "SyncPairingToken",
 ]

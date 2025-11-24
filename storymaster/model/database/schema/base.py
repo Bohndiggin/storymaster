@@ -4,6 +4,8 @@ import enum
 
 from datetime import datetime
 
+from datetime import timedelta
+from datetime import timedelta
 from sqlalchemy import (
     Boolean,
     Column,
@@ -1690,3 +1692,19 @@ class SyncLog(BaseTable):
     )
 
     device: Mapped["SyncDevice"] = relationship(back_populates="sync_logs")
+
+
+class SyncPairingToken(BaseTable):
+    """Represents temporary pairing tokens for device registration"""
+
+    __tablename__ = "sync_pairing_tokens"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, name="id")
+    token: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, name="token")
+    expires_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, name="expires_at"
+    )
+
+
+
+

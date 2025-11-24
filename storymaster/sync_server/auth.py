@@ -10,7 +10,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from storymaster.model.database.schema.base import SyncDevice
+from storymaster.model.database.schema.base import SyncDevice, SyncPairingToken
 from storymaster.sync_server.database import get_db
 
 # Security scheme
@@ -78,3 +78,42 @@ def update_last_sync(db: Session, device: SyncDevice) -> None:
     """Update the last_sync_at timestamp for a device"""
     device.last_sync_at = datetime.now()
     db.commit()
+
+def create_pairing_token(db: Session, expires_in_minutes: int = 15) -> SyncPairingToken:
+    """Create and store a new pairing token in the database"""
+    from datetime import timedelta, timezone
+
+    token = generate_auth_token()
+    # Use UTC timezone-aware datetime for consistency
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=expires_in_minutes)
+
+    pairing_token = SyncPairingToken(token=token, expires_at=expires_at)
+    db.add(pairing_token)
+    db.commit()
+    db.refresh(pairing_token)
+    return pairing_token
+
+
+def consume_pairing_token(db: Session, token: str) -> bool:
+    """
+    Validate and consume a pairing token.
+    Returns True if the token is valid and consumed, False otherwise.
+    """
+    from datetime import timezone
+
+    # Use UTC timezone-aware datetime for consistency
+    now = datetime.now(timezone.utc)
+
+    stmt = select(SyncPairingToken).where(
+        SyncPairingToken.token == token,
+        SyncPairingToken.expires_at > now,
+    )
+    pairing_token = db.execute(stmt).scalar_one_or_none()
+
+    if pairing_token:
+        db.delete(pairing_token)
+        db.commit()
+        return True
+
+    return False
+

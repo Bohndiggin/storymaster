@@ -18,9 +18,11 @@ from sqlalchemy.orm import Session
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-from storymaster.model.database.schema.base import SyncDevice, SyncLog
+from storymaster.model.database.schema.base import SyncDevice, SyncLog, SyncPairingToken
 from storymaster.sync_server.auth import (
+    consume_pairing_token,
     create_device,
+    create_pairing_token,
     generate_auth_token,
     get_current_device,
     get_device_by_id,
@@ -112,8 +114,7 @@ def get_local_ip() -> str:
         return "127.0.0.1"
 
 
-# Store temporary pairing tokens (in production, use Redis or database)
-_pairing_tokens: dict[str, dict] = {}
+
 
 
 # === Health Check ===
@@ -134,44 +135,30 @@ async def health_check(db: Session = Depends(get_db)):
 
 
 @app.get("/api/pair/qr-data", response_model=QRCodeResponse)
-async def get_qr_data():
+async def get_qr_data(db: Session = Depends(get_db)):
     """
     Get QR code data for device pairing.
     Returns JSON with server IP, port, and a temporary pairing token.
     """
-    # Generate temporary pairing token
-    pairing_token = generate_auth_token()
+    # Generate and store a new pairing token in the database
+    pairing_token = create_pairing_token(db)
     local_ip = get_local_ip()
 
-    # Store pairing token temporarily (expires in 5 minutes)
-    _pairing_tokens[pairing_token] = {
-        "created_at": datetime.now(),
-        "ip": local_ip,
-        "port": config.PORT,
-    }
-
-    return QRCodeResponse(ip=local_ip, port=config.PORT, token=pairing_token)
+    return QRCodeResponse(ip=local_ip, port=config.PORT, token=pairing_token.token)
 
 
 @app.get("/api/pair/qr-image")
-async def get_qr_image():
+async def get_qr_image(db: Session = Depends(get_db)):
     """
     Generate a QR code image for device pairing.
     Returns a PNG image that can be scanned by the mobile app.
     """
     # Get QR data
-    pairing_token = generate_auth_token()
+    pairing_token = create_pairing_token(db)
     local_ip = get_local_ip()
 
-    # Store pairing token
-    _pairing_tokens[pairing_token] = {
-        "created_at": datetime.now(),
-        "ip": local_ip,
-        "port": config.PORT,
-    }
-
     # Create QR code data (JSON string)
-    qr_data = f'{{"ip": "{local_ip}", "port": {config.PORT}, "token": "{pairing_token}"}}'
+    qr_data = f'{{"ip": "{local_ip}", "port": {config.PORT}, "token": "{pairing_token.token}"}}'
 
     # Generate QR code image
     qr = qrcode.QRCode(version=1, box_size=10, border=5)
@@ -194,15 +181,12 @@ async def register_device(request: DevicePairRequest, db: Session = Depends(get_
     Register a new device for syncing.
     Mobile app calls this after scanning QR code.
     """
-    # Validate pairing token
-    if request.pairing_token not in _pairing_tokens:
+    # Validate and consume the pairing token
+    if not consume_pairing_token(db, request.pairing_token):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired pairing token",
         )
-
-    # Remove used pairing token
-    del _pairing_tokens[request.pairing_token]
 
     # Check if device already exists
     existing_device = get_device_by_id(db, request.device_id)

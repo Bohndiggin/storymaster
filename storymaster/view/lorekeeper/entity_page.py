@@ -189,13 +189,13 @@ class SectionWidget(QGroupBox):
 
         # Connect widget changes to trigger autosave
         if isinstance(widget, QLineEdit):
-            widget.textChanged.connect(self.field_changed.emit)
+            widget.textChanged.connect(lambda: self.field_changed.emit())
         elif isinstance(widget, QTextEdit):
-            widget.textChanged.connect(self.field_changed.emit)
+            widget.textChanged.connect(lambda: self.field_changed.emit())
         elif isinstance(widget, QComboBox):
-            widget.currentIndexChanged.connect(self.field_changed.emit)
+            widget.currentIndexChanged.connect(lambda: self.field_changed.emit())
         elif isinstance(widget, QCheckBox):
-            widget.stateChanged.connect(self.field_changed.emit)
+            widget.stateChanged.connect(lambda: self.field_changed.emit())
 
         return widget
 
