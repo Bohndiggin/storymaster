@@ -142,13 +142,15 @@ class ConflictInfo(BaseModel):
     desktop_version: int
     mobile_updated_at: datetime
     desktop_updated_at: datetime
-    mobile_data: dict[str, Any]
-    desktop_data: dict[str, Any]
+    mobile_data: Optional[dict[str, Any]] = Field(None, description="Mobile data (None for delete operations)")
+    desktop_data: Optional[dict[str, Any]] = Field(None, description="Desktop data (None for delete operations)")
     resolution: str = Field(..., description="'merge', 'mobile_wins', or 'desktop_wins'")
 
     @field_serializer('mobile_data', 'desktop_data')
-    def serialize_data(self, value: dict[str, Any], _info) -> dict[str, Any]:
+    def serialize_data(self, value: Optional[dict[str, Any]], _info) -> Optional[dict[str, Any]]:
         """Ensure data dicts are JSON-serializable"""
+        if value is None:
+            return None
         return self._make_serializable(value)
 
     def _make_serializable(self, obj):

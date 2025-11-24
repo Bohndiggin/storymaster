@@ -3,7 +3,7 @@
 from datetime import datetime, timezone
 from typing import Any, Optional
 
-from sqlalchemy import DateTime, inspect, select, text
+from sqlalchemy import DateTime, func, inspect, select, text
 from sqlalchemy.orm import Session
 
 from storymaster.model.database.schema.base import (
@@ -207,7 +207,7 @@ class SyncEngine:
                     entity_type=entity_type,
                     entity_id=int(entity.id),
                     operation=operation,
-                    data=data,
+                    entity_data=data,
                     version=int(entity.version),
                     updated_at=entity_updated_at,
                 )
@@ -220,26 +220,22 @@ class SyncEngine:
         # Ensure since_timestamp is timezone-aware for comparisons
         since_timestamp = self._ensure_timezone_aware(since_timestamp)
 
-        if since_timestamp is None:
-            # Count all entities for full sync
-            total = 0
-            for model_class in ENTITY_TYPE_MAP.values():
-                if model_class is None:
-                    continue
-                stmt = select(model_class)
-                count = len(self.db.execute(stmt).scalars().all())
-                total += count
-            return total
-        else:
-            # Count changed entities
-            total = 0
-            for model_class in ENTITY_TYPE_MAP.values():
-                if model_class is None:
-                    continue
-                stmt = select(model_class).where(model_class.updated_at > since_timestamp)
-                count = len(self.db.execute(stmt).scalars().all())
-                total += count
-            return total
+        total = 0
+        for model_class in ENTITY_TYPE_MAP.values():
+            if model_class is None:
+                continue
+
+            # Use SQL COUNT for efficiency
+            stmt = select(func.count()).select_from(model_class)
+
+            # Filter by timestamp if provided (incremental sync)
+            if since_timestamp is not None:
+                stmt = stmt.where(model_class.updated_at > since_timestamp)
+
+            count = self.db.execute(stmt).scalar() or 0
+            total += count
+
+        return total
 
     def apply_changes(
         self, device: SyncDevice, changes: list[EntityChange]
@@ -286,6 +282,10 @@ class SyncEngine:
         self, device: SyncDevice, model_class, change: EntityChange
     ) -> dict[str, Any]:
         """Apply a create operation"""
+        # Validate required fields for conflict detection
+        if change.version is None or change.updated_at is None:
+            return {"status": "rejected"}
+
         # Check if entity already exists
         existing = self.db.get(model_class, change.entity_id)
         if existing:
@@ -306,6 +306,9 @@ class SyncEngine:
             }
 
         # Create new entity - convert values to appropriate types
+        if change.data is None:
+            return {"status": "rejected"}
+
         converted_data = {}
         for key, value in change.data.items():
             converted_data[key] = self._convert_value_for_column(model_class, key, value)
@@ -323,6 +326,10 @@ class SyncEngine:
         self, device: SyncDevice, model_class, change: EntityChange
     ) -> dict[str, Any]:
         """Apply an update operation with conflict detection"""
+        # Validate required fields for conflict detection
+        if change.version is None or change.updated_at is None:
+            return {"status": "rejected"}
+
         # Get existing entity
         existing = self.db.get(model_class, change.entity_id)
         if not existing:
@@ -348,17 +355,31 @@ class SyncEngine:
             }
 
         # No conflict - apply update
+        if change.data is None:
+            print(f"⚠️  Rejecting update: change.data is None")
+            return {"status": "rejected"}
+
+        print(f"✅ Applying update to {change.entity_type} #{change.entity_id}")
+        print(f"   Incoming data keys: {list(change.data.keys())}")
+        print(f"   Incoming version: {change.version}, Existing version: {existing.version}")
+
         for key, value in change.data.items():
             if hasattr(existing, key):
                 # Convert value to appropriate type for the column
                 converted_value = self._convert_value_for_column(model_class, key, value)
+                old_value = getattr(existing, key)
                 setattr(existing, key, converted_value)
+                if old_value != converted_value:
+                    print(f"   Updated {key}: {repr(old_value)} → {repr(converted_value)}")
 
         # Increment version
         existing.version += 1
         existing.updated_at = datetime.now(timezone.utc)
 
+        print(f"   New version: {existing.version}")
+        print(f"   Committing changes...")
         self.db.commit()
+        print(f"   ✓ Committed!")
 
         # Log sync operation
         self._log_sync(device, change.entity_type, change.entity_id, "update")
@@ -375,7 +396,7 @@ class SyncEngine:
             return {"status": "accepted"}
 
         # Soft delete
-        existing.deleted_at = datetime.now()
+        existing.deleted_at = datetime.now(timezone.utc)
         existing.version += 1
         self.db.commit()
 
