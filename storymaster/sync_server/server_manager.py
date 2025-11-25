@@ -1,5 +1,6 @@
 """Server manager for controlling the sync server lifecycle"""
 
+import sys
 import threading
 import time
 from typing import Optional
@@ -25,14 +26,28 @@ class SyncServerManager:
             return False
 
         try:
-            # Create uvicorn config
-            config = uvicorn.Config(
-                "storymaster.sync_server.main:app",
-                host=host,
-                port=port,
-                log_level="info",
-                access_log=False,  # Reduce noise in logs
-            )
+            # When frozen (bundled), import the app directly
+            # Otherwise use string-based import for development
+            if getattr(sys, "frozen", False):
+                # Running in bundled mode - import app directly
+                from storymaster.sync_server.main import app
+
+                config = uvicorn.Config(
+                    app,  # Pass app object directly
+                    host=host,
+                    port=port,
+                    log_level="info",
+                    access_log=False,  # Reduce noise in logs
+                )
+            else:
+                # Running in development mode - use string import
+                config = uvicorn.Config(
+                    "storymaster.sync_server.main:app",  # String-based import
+                    host=host,
+                    port=port,
+                    log_level="info",
+                    access_log=False,  # Reduce noise in logs
+                )
 
             # Create server instance
             self.server = uvicorn.Server(config)
@@ -52,6 +67,8 @@ class SyncServerManager:
 
         except Exception as e:
             print(f"❌ Failed to start sync server: {e}")
+            import traceback
+            traceback.print_exc()  # Print full traceback for debugging
             return False
 
     def _run_server(self):
