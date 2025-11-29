@@ -2,35 +2,57 @@
 Custom text editor with entity linking support.
 Integrated version for Storymaster - uses direct database access instead of IPC.
 """
-from typing import Optional, List, Dict, Any, Tuple
-import re
-from PySide6.QtWidgets import QPlainTextEdit, QCompleter, QTextEdit, QLabel, QVBoxLayout, QFrame, QMenu, QInputDialog, QMessageBox
-from PySide6.QtCore import Qt, Signal, QStringListModel, QRect, QTimer, QPoint, QEvent
-from PySide6.QtGui import (
-    QTextCursor, QKeyEvent, QTextCharFormat, QColor, QFont,
-    QSyntaxHighlighter, QTextDocument, QPainter, QAbstractTextDocumentLayout,
-    QMouseEvent, QAction, QContextMenuEvent, QCursor
-)
-from PySide6.QtWidgets import QApplication
+
 import datetime
+import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple
 
+from PySide6.QtCore import QEvent, QPoint, QRect, QStringListModel, Qt, QTimer, Signal
+from PySide6.QtGui import (
+    QAbstractTextDocumentLayout,
+    QAction,
+    QColor,
+    QContextMenuEvent,
+    QCursor,
+    QFont,
+    QKeyEvent,
+    QMouseEvent,
+    QPainter,
+    QSyntaxHighlighter,
+    QTextCharFormat,
+    QTextCursor,
+    QTextDocument,
+)
+from PySide6.QtWidgets import (
+    QApplication,
+    QCompleter,
+    QFrame,
+    QInputDialog,
+    QLabel,
+    QMenu,
+    QMessageBox,
+    QPlainTextEdit,
+    QTextEdit,
+    QVBoxLayout,
+)
 
 # Compiled regex patterns (compile once at module load for performance)
-CODE_PATTERN = re.compile(r'(`)([^`]+?)(`)')
-BOLD_PATTERN = re.compile(r'(\*\*)([^*]+?)(\*\*)')
-UNDERLINE_PATTERN = re.compile(r'(__)([^_]+?)(__)')
-STRIKETHROUGH_PATTERN = re.compile(r'(~~)([^~]+?)(~~)')
-ITALIC_ASTERISK_PATTERN = re.compile(r'(?<!\*)(\*)(?!\*)([^*]+?)(?<!\*)(\*)(?!\*)')
-ITALIC_UNDERSCORE_PATTERN = re.compile(r'(?<!_)(_)(?!_)([^_]+?)(?<!_)(_)(?!_)')
-LINK_PATTERN = re.compile(r'(\[)([^\]]+?)(\]\()([^\)]+?)(\))')
-IMAGE_PATTERN = re.compile(r'(!\[)([^\]]*?)(\]\()([^\)]+?)(\))')
+CODE_PATTERN = re.compile(r"(`)([^`]+?)(`)")
+BOLD_PATTERN = re.compile(r"(\*\*)([^*]+?)(\*\*)")
+UNDERLINE_PATTERN = re.compile(r"(__)([^_]+?)(__)")
+STRIKETHROUGH_PATTERN = re.compile(r"(~~)([^~]+?)(~~)")
+ITALIC_ASTERISK_PATTERN = re.compile(r"(?<!\*)(\*)(?!\*)([^*]+?)(?<!\*)(\*)(?!\*)")
+ITALIC_UNDERSCORE_PATTERN = re.compile(r"(?<!_)(_)(?!_)([^_]+?)(?<!_)(_)(?!_)")
+LINK_PATTERN = re.compile(r"(\[)([^\]]+?)(\]\()([^\)]+?)(\))")
+IMAGE_PATTERN = re.compile(r"(!\[)([^\]]*?)(\]\()([^\)]+?)(\))")
 
 
 @dataclass
 class BlockData:
     """Data for a text block to be highlighted in a worker thread."""
+
     block_number: int
     text: str
     position: int
@@ -39,6 +61,7 @@ class BlockData:
 @dataclass
 class FormatInstruction:
     """A single formatting instruction (position, length, format_type)."""
+
     position: int
     length: int
     format_type: str  # e.g., 'entity', 'bold', 'italic', 'code', etc.
@@ -46,6 +69,7 @@ class FormatInstruction:
 
 class ClickableLabel(QLabel):
     """Label that emits a signal when clicked."""
+
     clicked = Signal()
 
     def __init__(self, parent=None):
@@ -78,7 +102,9 @@ class EntityInfoCard(QFrame):
 
         # Title label (entity name) - now clickable
         self.title_label = ClickableLabel()
-        self.title_label.setStyleSheet("font-weight: bold; font-size: 12pt; color: #4A9EFF; text-decoration: underline;")
+        self.title_label.setStyleSheet(
+            "font-weight: bold; font-size: 12pt; color: #4A9EFF; text-decoration: underline;"
+        )
         self.title_label.setToolTip("Click to view in Lorekeeper")
         self.title_label.clicked.connect(self._on_title_clicked)
         layout.addWidget(self.title_label)
@@ -95,13 +121,15 @@ class EntityInfoCard(QFrame):
         layout.addWidget(self.details_label)
 
         # Style the card
-        self.setStyleSheet("""
+        self.setStyleSheet(
+            """
             EntityInfoCard {
                 background-color: #2C2C2C;
                 border: 1px solid #4A9EFF;
                 border-radius: 4px;
             }
-        """)
+        """
+        )
 
         self.hide()
 
@@ -154,21 +182,21 @@ class MarkdownHighlighter(QSyntaxHighlighter):
 
         # Performance profiling counters for FORMATTING (not regex)
         self._format_perf = {
-            'entity': 0.0,
-            'entity_hidden': 0.0,
-            'code': 0.0,
-            'code_block': 0.0,
-            'bold': 0.0,
-            'italic': 0.0,
-            'underline': 0.0,
-            'strikethrough': 0.0,
-            'links': 0.0,
-            'headings': 0.0,
-            'lists': 0.0,
-            'blockquote': 0.0,
-            'other': 0.0,
-            'total_blocks': 0,
-            'total_setformat_calls': 0
+            "entity": 0.0,
+            "entity_hidden": 0.0,
+            "code": 0.0,
+            "code_block": 0.0,
+            "bold": 0.0,
+            "italic": 0.0,
+            "underline": 0.0,
+            "strikethrough": 0.0,
+            "links": 0.0,
+            "headings": 0.0,
+            "lists": 0.0,
+            "blockquote": 0.0,
+            "other": 0.0,
+            "total_blocks": 0,
+            "total_setformat_calls": 0,
         }
 
         # Counter for highlightBlock() calls
@@ -276,12 +304,11 @@ class MarkdownHighlighter(QSyntaxHighlighter):
                 # Escape special regex characters
                 escaped_name = re.escape(name)
                 # Pattern: \bEntityName('s)?\b (with optional possessive)
-                pattern_str = r'\b' + escaped_name + r"(?:'s)?\b"
+                pattern_str = r"\b" + escaped_name + r"(?:'s)?\b"
                 pattern = re.compile(pattern_str, re.IGNORECASE)
                 self._entity_patterns.append(pattern)
         else:
             self._entity_patterns = []
-
 
     def _is_inside_entity_link(self, start: int, end: int, entity_ranges: list) -> bool:
         """Check if a range overlaps with any entity link."""
@@ -293,8 +320,8 @@ class MarkdownHighlighter(QSyntaxHighlighter):
 
     def _print_performance_summary(self):
         """Print a summary of formatting performance."""
-        total_blocks = self._format_perf['total_blocks']
-        total_calls = self._format_perf['total_setformat_calls']
+        total_blocks = self._format_perf["total_blocks"]
+        total_calls = self._format_perf["total_setformat_calls"]
         if total_blocks == 0:
             return
 
@@ -306,22 +333,30 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         print(f"{'='*70}")
 
         # Calculate total time spent in formatting
-        total_time = sum(v for k, v in self._format_perf.items()
-                        if k not in ['total_blocks', 'total_setformat_calls'])
+        total_time = sum(
+            v
+            for k, v in self._format_perf.items()
+            if k not in ["total_blocks", "total_setformat_calls"]
+        )
 
         # Sort by time spent (descending)
         sorted_counters = sorted(
-            [(k, v) for k, v in self._format_perf.items()
-             if k not in ['total_blocks', 'total_setformat_calls']],
+            [
+                (k, v)
+                for k, v in self._format_perf.items()
+                if k not in ["total_blocks", "total_setformat_calls"]
+            ],
             key=lambda x: x[1],
-            reverse=True
+            reverse=True,
         )
 
         for format_type, time_ms in sorted_counters:
             if time_ms > 0:
                 pct = (time_ms / total_time * 100) if total_time > 0 else 0
                 avg_per_block = time_ms / total_blocks
-                print(f"  {format_type:20s}: {time_ms:8.1f}ms total | {avg_per_block:6.3f}ms/block | {pct:5.1f}%")
+                print(
+                    f"  {format_type:20s}: {time_ms:8.1f}ms total | {avg_per_block:6.3f}ms/block | {pct:5.1f}%"
+                )
 
         print(f"{'-'*70}")
         print(f"  {'TOTAL':20s}: {total_time:8.1f}ms")
@@ -335,7 +370,9 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         Populate the format cache by processing all blocks in parallel.
         This is a synchronous operation that prepares the cache before highlighting.
         """
-        print(f"[{datetime.datetime.now()}]     Populating cache for {document.blockCount()} blocks...")
+        print(
+            f"[{datetime.datetime.now()}]     Populating cache for {document.blockCount()} blocks..."
+        )
 
         # Reset performance counters
         for key in self._format_perf:
@@ -349,11 +386,11 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         block_data = []
         block = document.firstBlock()
         while block.isValid():
-            block_data.append(BlockData(
-                block_number=block.blockNumber(),
-                text=block.text(),
-                position=block.position()
-            ))
+            block_data.append(
+                BlockData(
+                    block_number=block.blockNumber(), text=block.text(), position=block.position()
+                )
+            )
             block = block.next()
 
         # Process blocks in parallel
@@ -366,7 +403,9 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         # Store block data for cache validation
         self._block_data = block_data
 
-        print(f"[{datetime.datetime.now()}]     Cache populated with {len(self._format_cache)} blocks")
+        print(
+            f"[{datetime.datetime.now()}]     Cache populated with {len(self._format_cache)} blocks"
+        )
 
     def start_progressive_rehighlight(self):
         """Start progressive multithreaded rehighlighting (non-blocking)."""
@@ -375,7 +414,9 @@ class MarkdownHighlighter(QSyntaxHighlighter):
             self._format_perf[key] = 0
         self._highlight_block_call_count = 0
 
-        print(f"[{datetime.datetime.now()}]     MarkdownHighlighter: Starting multithreaded progressive rehighlight...")
+        print(
+            f"[{datetime.datetime.now()}]     MarkdownHighlighter: Starting multithreaded progressive rehighlight..."
+        )
 
         # Cancel any existing progressive highlighting
         if self._progressive_active:
@@ -396,18 +437,24 @@ class MarkdownHighlighter(QSyntaxHighlighter):
             self._progressive_active = True
 
             # Extract all block data (thread-safe copy of text content)
-            print(f"[{datetime.datetime.now()}]     MarkdownHighlighter: Extracting {self._progressive_total_blocks} blocks for multithreaded processing...")
+            print(
+                f"[{datetime.datetime.now()}]     MarkdownHighlighter: Extracting {self._progressive_total_blocks} blocks for multithreaded processing..."
+            )
             self._block_data = []
             block = doc.firstBlock()
             while block.isValid():
-                self._block_data.append(BlockData(
-                    block_number=block.blockNumber(),
-                    text=block.text(),
-                    position=block.position()
-                ))
+                self._block_data.append(
+                    BlockData(
+                        block_number=block.blockNumber(),
+                        text=block.text(),
+                        position=block.position(),
+                    )
+                )
                 block = block.next()
 
-            print(f"[{datetime.datetime.now()}]     MarkdownHighlighter: Starting multithreaded highlighting...")
+            print(
+                f"[{datetime.datetime.now()}]     MarkdownHighlighter: Starting multithreaded highlighting..."
+            )
             # Start highlighting the first chunk
             self._highlight_next_chunk()
 
@@ -425,18 +472,22 @@ class MarkdownHighlighter(QSyntaxHighlighter):
 
         # Use smaller chunks (50 blocks) to yield to event loop more frequently
         chunk_size = 50
-        end_block = min(self._progressive_current_block + chunk_size, self._progressive_total_blocks)
+        end_block = min(
+            self._progressive_current_block + chunk_size, self._progressive_total_blocks
+        )
 
         # Get block data for this chunk
-        chunk_blocks = self._block_data[self._progressive_current_block:end_block]
+        chunk_blocks = self._block_data[self._progressive_current_block : end_block]
 
         # Process blocks in parallel (CPU-bound regex work in threads)
         # Use 4 workers for good parallelism without overwhelming the system
         regex_start = datetime.datetime.now()
         with ThreadPoolExecutor(max_workers=4) as executor:
             # Submit all blocks in the chunk to be processed in parallel
-            futures = [executor.submit(self._process_block_in_thread, block_data)
-                      for block_data in chunk_blocks]
+            futures = [
+                executor.submit(self._process_block_in_thread, block_data)
+                for block_data in chunk_blocks
+            ]
 
             # Collect results and apply formats immediately as they complete
             # This allows UI to remain responsive
@@ -460,8 +511,10 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         self._progressive_current_block = end_block
 
         chunk_duration = (datetime.datetime.now() - chunk_start_time).total_seconds() * 1000
-        print(f"[{datetime.datetime.now()}]     Chunk {self._progressive_current_block}/{self._progressive_total_blocks}: "
-              f"regex={regex_duration:.1f}ms, format={format_duration:.1f}ms, total={chunk_duration:.1f}ms")
+        print(
+            f"[{datetime.datetime.now()}]     Chunk {self._progressive_current_block}/{self._progressive_total_blocks}: "
+            f"regex={regex_duration:.1f}ms, format={format_duration:.1f}ms, total={chunk_duration:.1f}ms"
+        )
 
         # Process events to keep UI responsive
         QApplication.processEvents()
@@ -471,7 +524,9 @@ class MarkdownHighlighter(QSyntaxHighlighter):
             self._progressive_active = False
 
             # Cache is fully populated! Now format the entire document
-            print(f"[{datetime.datetime.now()}]     Cache fully populated. Formatting entire document...")
+            print(
+                f"[{datetime.datetime.now()}]     Cache fully populated. Formatting entire document..."
+            )
 
             # Format the entire document to get full performance data
             format_start = datetime.datetime.now()
@@ -531,7 +586,9 @@ class MarkdownHighlighter(QSyntaxHighlighter):
                         if fmt:
                             # Set cursor to the position and select the text
                             cursor.setPosition(abs_position)
-                            cursor.setPosition(abs_position + instruction.length, QTextCursor.KeepAnchor)
+                            cursor.setPosition(
+                                abs_position + instruction.length, QTextCursor.KeepAnchor
+                            )
 
                             # Apply the format
                             cursor.setCharFormat(fmt)
@@ -559,69 +616,73 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         entity_ranges = []
 
         # Code blocks (```...```) - must be checked before other patterns
-        if text.strip().startswith('```'):
-            instructions.append(FormatInstruction(0, len(text), 'code_block'))
+        if text.strip().startswith("```"):
+            instructions.append(FormatInstruction(0, len(text), "code_block"))
             return instructions
 
         # Horizontal rules (---, ***, ___)
-        hr_patterns = [r'^---+$', r'^\*\*\*+$', r'^___+$']
+        hr_patterns = [r"^---+$", r"^\*\*\*+$", r"^___+$"]
         for pattern in hr_patterns:
             if re.match(pattern, text.strip()):
-                instructions.append(FormatInstruction(0, len(text), 'hr'))
+                instructions.append(FormatInstruction(0, len(text), "hr"))
                 return instructions
 
         # Headings
-        if text.startswith('###### '):
-            instructions.append(FormatInstruction(0, 7, 'heading_syntax'))
-            instructions.append(FormatInstruction(7, len(text) - 7, 'heading6'))
+        if text.startswith("###### "):
+            instructions.append(FormatInstruction(0, 7, "heading_syntax"))
+            instructions.append(FormatInstruction(7, len(text) - 7, "heading6"))
             return instructions
-        elif text.startswith('##### '):
-            instructions.append(FormatInstruction(0, 6, 'heading_syntax'))
-            instructions.append(FormatInstruction(6, len(text) - 6, 'heading5'))
+        elif text.startswith("##### "):
+            instructions.append(FormatInstruction(0, 6, "heading_syntax"))
+            instructions.append(FormatInstruction(6, len(text) - 6, "heading5"))
             return instructions
-        elif text.startswith('#### '):
-            instructions.append(FormatInstruction(0, 5, 'heading_syntax'))
-            instructions.append(FormatInstruction(5, len(text) - 5, 'heading4'))
+        elif text.startswith("#### "):
+            instructions.append(FormatInstruction(0, 5, "heading_syntax"))
+            instructions.append(FormatInstruction(5, len(text) - 5, "heading4"))
             return instructions
-        elif text.startswith('### '):
-            instructions.append(FormatInstruction(0, 4, 'heading_syntax'))
-            instructions.append(FormatInstruction(4, len(text) - 4, 'heading3'))
+        elif text.startswith("### "):
+            instructions.append(FormatInstruction(0, 4, "heading_syntax"))
+            instructions.append(FormatInstruction(4, len(text) - 4, "heading3"))
             return instructions
-        elif text.startswith('## '):
-            instructions.append(FormatInstruction(0, 3, 'heading_syntax'))
-            instructions.append(FormatInstruction(3, len(text) - 3, 'heading2'))
+        elif text.startswith("## "):
+            instructions.append(FormatInstruction(0, 3, "heading_syntax"))
+            instructions.append(FormatInstruction(3, len(text) - 3, "heading2"))
             return instructions
-        elif text.startswith('# '):
-            instructions.append(FormatInstruction(0, 2, 'heading_syntax'))
-            instructions.append(FormatInstruction(2, len(text) - 2, 'heading1'))
+        elif text.startswith("# "):
+            instructions.append(FormatInstruction(0, 2, "heading_syntax"))
+            instructions.append(FormatInstruction(2, len(text) - 2, "heading1"))
             return instructions
 
         # Blockquote
-        if text.startswith('> '):
-            instructions.append(FormatInstruction(0, 2, 'blockquote_syntax'))
-            instructions.append(FormatInstruction(2, len(text) - 2, 'blockquote'))
+        if text.startswith("> "):
+            instructions.append(FormatInstruction(0, 2, "blockquote_syntax"))
+            instructions.append(FormatInstruction(2, len(text) - 2, "blockquote"))
             return instructions
 
         # Task lists
-        task_unchecked = re.match(r'^(\s*-\s+\[\s\])\s+(.*)$', text)
-        task_checked = re.match(r'^(\s*-\s+\[x\])\s+(.*)$', text, re.IGNORECASE)
+        task_unchecked = re.match(r"^(\s*-\s+\[\s\])\s+(.*)$", text)
+        task_checked = re.match(r"^(\s*-\s+\[x\])\s+(.*)$", text, re.IGNORECASE)
         if task_unchecked:
-            instructions.append(FormatInstruction(0, len(task_unchecked.group(1)), 'task_checkbox'))
+            instructions.append(FormatInstruction(0, len(task_unchecked.group(1)), "task_checkbox"))
             return instructions
         elif task_checked:
-            instructions.append(FormatInstruction(0, len(task_checked.group(1)), 'task_checkbox'))
-            instructions.append(FormatInstruction(len(task_checked.group(1)) + 1, len(task_checked.group(2)), 'strikethrough'))
+            instructions.append(FormatInstruction(0, len(task_checked.group(1)), "task_checkbox"))
+            instructions.append(
+                FormatInstruction(
+                    len(task_checked.group(1)) + 1, len(task_checked.group(2)), "strikethrough"
+                )
+            )
             return instructions
 
         # Unordered lists
-        list_match = re.match(r'^(\s*[-*+]\s+)', text)
+        list_match = re.match(r"^(\s*[-*+]\s+)", text)
         if list_match:
-            instructions.append(FormatInstruction(0, len(list_match.group(1)), 'list'))
+            instructions.append(FormatInstruction(0, len(list_match.group(1)), "list"))
 
         # Ordered lists
-        ordered_list_match = re.match(r'^(\s*\d+\.\s+)', text)
+        ordered_list_match = re.match(r"^(\s*\d+\.\s+)", text)
         if ordered_list_match:
-            instructions.append(FormatInstruction(0, len(ordered_list_match.group(1)), 'list'))
+            instructions.append(FormatInstruction(0, len(ordered_list_match.group(1)), "list"))
 
         # Helper to check if range overlaps with entity links
         def is_inside_entity(start: int, end: int) -> bool:
@@ -634,73 +695,81 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         for match in CODE_PATTERN.finditer(text):
             if is_inside_entity(match.start(), match.end()):
                 continue
-            instructions.append(FormatInstruction(match.start(1), 1, 'code_syntax'))
-            instructions.append(FormatInstruction(match.start(2), len(match.group(2)), 'code'))
-            instructions.append(FormatInstruction(match.start(3), 1, 'code_syntax'))
+            instructions.append(FormatInstruction(match.start(1), 1, "code_syntax"))
+            instructions.append(FormatInstruction(match.start(2), len(match.group(2)), "code"))
+            instructions.append(FormatInstruction(match.start(3), 1, "code_syntax"))
 
         # Bold
         for match in BOLD_PATTERN.finditer(text):
             if is_inside_entity(match.start(), match.end()):
                 continue
-            instructions.append(FormatInstruction(match.start(1), 2, 'bold_syntax'))
-            instructions.append(FormatInstruction(match.start(2), len(match.group(2)), 'bold'))
-            instructions.append(FormatInstruction(match.start(3), 2, 'bold_syntax'))
+            instructions.append(FormatInstruction(match.start(1), 2, "bold_syntax"))
+            instructions.append(FormatInstruction(match.start(2), len(match.group(2)), "bold"))
+            instructions.append(FormatInstruction(match.start(3), 2, "bold_syntax"))
 
         # Underline
         for match in UNDERLINE_PATTERN.finditer(text):
             if is_inside_entity(match.start(), match.end()):
                 continue
-            instructions.append(FormatInstruction(match.start(1), 2, 'underline_syntax'))
-            instructions.append(FormatInstruction(match.start(2), len(match.group(2)), 'underline'))
-            instructions.append(FormatInstruction(match.start(3), 2, 'underline_syntax'))
+            instructions.append(FormatInstruction(match.start(1), 2, "underline_syntax"))
+            instructions.append(FormatInstruction(match.start(2), len(match.group(2)), "underline"))
+            instructions.append(FormatInstruction(match.start(3), 2, "underline_syntax"))
 
         # Strikethrough
         for match in STRIKETHROUGH_PATTERN.finditer(text):
             if is_inside_entity(match.start(), match.end()):
                 continue
-            instructions.append(FormatInstruction(match.start(1), 2, 'strikethrough_syntax'))
-            instructions.append(FormatInstruction(match.start(2), len(match.group(2)), 'strikethrough'))
-            instructions.append(FormatInstruction(match.start(3), 2, 'strikethrough_syntax'))
+            instructions.append(FormatInstruction(match.start(1), 2, "strikethrough_syntax"))
+            instructions.append(
+                FormatInstruction(match.start(2), len(match.group(2)), "strikethrough")
+            )
+            instructions.append(FormatInstruction(match.start(3), 2, "strikethrough_syntax"))
 
         # Italic (asterisk)
         for match in ITALIC_ASTERISK_PATTERN.finditer(text):
             if is_inside_entity(match.start(), match.end()):
                 continue
-            instructions.append(FormatInstruction(match.start(1), 1, 'italic_syntax'))
-            instructions.append(FormatInstruction(match.start(2), len(match.group(2)), 'italic'))
-            instructions.append(FormatInstruction(match.start(3), 1, 'italic_syntax'))
+            instructions.append(FormatInstruction(match.start(1), 1, "italic_syntax"))
+            instructions.append(FormatInstruction(match.start(2), len(match.group(2)), "italic"))
+            instructions.append(FormatInstruction(match.start(3), 1, "italic_syntax"))
 
         # Italic (underscore)
         for match in ITALIC_UNDERSCORE_PATTERN.finditer(text):
             if is_inside_entity(match.start(), match.end()):
                 continue
-            instructions.append(FormatInstruction(match.start(1), 1, 'italic_syntax'))
-            instructions.append(FormatInstruction(match.start(2), len(match.group(2)), 'italic'))
-            instructions.append(FormatInstruction(match.start(3), 1, 'italic_syntax'))
+            instructions.append(FormatInstruction(match.start(1), 1, "italic_syntax"))
+            instructions.append(FormatInstruction(match.start(2), len(match.group(2)), "italic"))
+            instructions.append(FormatInstruction(match.start(3), 1, "italic_syntax"))
 
         # Links
         for match in LINK_PATTERN.finditer(text):
             if is_inside_entity(match.start(), match.end()):
                 continue
-            instructions.append(FormatInstruction(match.start(1), 1, 'link_syntax'))
-            instructions.append(FormatInstruction(match.start(2), len(match.group(2)), 'link'))
-            instructions.append(FormatInstruction(match.start(3), 2, 'link_syntax'))
-            instructions.append(FormatInstruction(match.start(4), len(match.group(4)), 'link_syntax'))
-            instructions.append(FormatInstruction(match.start(5), 1, 'link_syntax'))
+            instructions.append(FormatInstruction(match.start(1), 1, "link_syntax"))
+            instructions.append(FormatInstruction(match.start(2), len(match.group(2)), "link"))
+            instructions.append(FormatInstruction(match.start(3), 2, "link_syntax"))
+            instructions.append(
+                FormatInstruction(match.start(4), len(match.group(4)), "link_syntax")
+            )
+            instructions.append(FormatInstruction(match.start(5), 1, "link_syntax"))
 
         # Images
         for match in IMAGE_PATTERN.finditer(text):
             if is_inside_entity(match.start(), match.end()):
                 continue
-            instructions.append(FormatInstruction(match.start(1), 2, 'image_syntax'))
-            instructions.append(FormatInstruction(match.start(2), len(match.group(2)), 'link'))
-            instructions.append(FormatInstruction(match.start(3), 2, 'image_syntax'))
-            instructions.append(FormatInstruction(match.start(4), len(match.group(4)), 'image_syntax'))
-            instructions.append(FormatInstruction(match.start(5), 1, 'image_syntax'))
+            instructions.append(FormatInstruction(match.start(1), 2, "image_syntax"))
+            instructions.append(FormatInstruction(match.start(2), len(match.group(2)), "link"))
+            instructions.append(FormatInstruction(match.start(3), 2, "image_syntax"))
+            instructions.append(
+                FormatInstruction(match.start(4), len(match.group(4)), "image_syntax")
+            )
+            instructions.append(FormatInstruction(match.start(5), 1, "image_syntax"))
 
         return instructions
 
-    def _process_block_in_thread(self, block_data: BlockData) -> Tuple[int, List[FormatInstruction]]:
+    def _process_block_in_thread(
+        self, block_data: BlockData
+    ) -> Tuple[int, List[FormatInstruction]]:
         """
         Process a block's text in a worker thread (thread-safe, no GUI access).
 
@@ -713,7 +782,9 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         instructions = self._extract_format_instructions(block_data.text)
         return (block_data.block_number, instructions)
 
-    def _get_format_for_type(self, format_type: str, show_syntax: bool) -> Optional[QTextCharFormat]:
+    def _get_format_for_type(
+        self, format_type: str, show_syntax: bool
+    ) -> Optional[QTextCharFormat]:
         """
         Get the QTextCharFormat for a given format type.
 
@@ -725,34 +796,43 @@ class MarkdownHighlighter(QSyntaxHighlighter):
             QTextCharFormat or None if syntax should be hidden
         """
         # Syntax formats (hidden unless cursor is in block)
-        syntax_types = ['heading_syntax', 'blockquote_syntax', 'code_syntax', 'bold_syntax',
-                       'underline_syntax', 'strikethrough_syntax', 'italic_syntax',
-                       'link_syntax', 'image_syntax', 'entity_hidden']
+        syntax_types = [
+            "heading_syntax",
+            "blockquote_syntax",
+            "code_syntax",
+            "bold_syntax",
+            "underline_syntax",
+            "strikethrough_syntax",
+            "italic_syntax",
+            "link_syntax",
+            "image_syntax",
+            "entity_hidden",
+        ]
 
         if format_type in syntax_types and not show_syntax:
             return self.hidden_format
 
         # Content formats
         format_map = {
-            'entity': self.entity_format,
-            'entity_hidden': self.hidden_format,
-            'code_block': self.code_block_format,
-            'hr': self.hr_format,
-            'heading1': self.heading1_format,
-            'heading2': self.heading2_format,
-            'heading3': self.heading3_format,
-            'heading4': self.heading4_format,
-            'heading5': self.heading5_format,
-            'heading6': self.heading6_format,
-            'blockquote': self.blockquote_format,
-            'task_checkbox': self.task_checkbox_format,
-            'strikethrough': self.strikethrough_format,
-            'list': self.list_format,
-            'code': self.code_format,
-            'bold': self.bold_format,
-            'underline': self.underline_format,
-            'italic': self.italic_format,
-            'link': self.link_format,
+            "entity": self.entity_format,
+            "entity_hidden": self.hidden_format,
+            "code_block": self.code_block_format,
+            "hr": self.hr_format,
+            "heading1": self.heading1_format,
+            "heading2": self.heading2_format,
+            "heading3": self.heading3_format,
+            "heading4": self.heading4_format,
+            "heading5": self.heading5_format,
+            "heading6": self.heading6_format,
+            "blockquote": self.blockquote_format,
+            "task_checkbox": self.task_checkbox_format,
+            "strikethrough": self.strikethrough_format,
+            "list": self.list_format,
+            "code": self.code_format,
+            "bold": self.bold_format,
+            "underline": self.underline_format,
+            "italic": self.italic_format,
+            "link": self.link_format,
         }
 
         return format_map.get(format_type)
@@ -778,20 +858,28 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         duration_ms = (datetime.datetime.now() - t_start).total_seconds() * 1000
 
         # Track by general category
-        category = format_type.replace('_syntax', '').replace('1', '').replace('2', '').replace('3', '').replace('4', '').replace('5', '').replace('6', '')
-        if category.startswith('heading'):
-            category = 'headings'
-        elif category in ['link', 'image']:
-            category = 'links'
-        elif category in ['list', 'task_checkbox', 'hr']:
-            category = 'lists'
+        category = (
+            format_type.replace("_syntax", "")
+            .replace("1", "")
+            .replace("2", "")
+            .replace("3", "")
+            .replace("4", "")
+            .replace("5", "")
+            .replace("6", "")
+        )
+        if category.startswith("heading"):
+            category = "headings"
+        elif category in ["link", "image"]:
+            category = "links"
+        elif category in ["list", "task_checkbox", "hr"]:
+            category = "lists"
 
         if category in self._format_perf:
             self._format_perf[category] += duration_ms
         else:
-            self._format_perf['other'] += duration_ms
+            self._format_perf["other"] += duration_ms
 
-        self._format_perf['total_setformat_calls'] += 1
+        self._format_perf["total_setformat_calls"] += 1
 
     def highlightBlock(self, text: str):
         """Apply highlighting to markdown and entity links."""
@@ -802,16 +890,16 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         block_start = datetime.datetime.now()
 
         self._highlight_block_call_count += 1
-        self._format_perf['total_blocks'] += 1
+        self._format_perf["total_blocks"] += 1
         block_number = self.currentBlock().blockNumber()
 
         # Check if cursor is in this block to show/hide markdown syntax
         cursor_block = self.editor.textCursor().block()
-        show_syntax = (cursor_block == self.currentBlock())
+        show_syntax = cursor_block == self.currentBlock()
 
         # Debug: track cache usage
         use_cache = block_number in self._format_cache
-        if not hasattr(self, '_cache_hits'):
+        if not hasattr(self, "_cache_hits"):
             self._cache_hits = 0
             self._cache_misses = 0
 
@@ -824,7 +912,7 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         if block_number in self._format_cache:
             # Check if cached data is still valid by comparing text
             cached_block_data = None
-            if hasattr(self, '_block_data') and block_number < len(self._block_data):
+            if hasattr(self, "_block_data") and block_number < len(self._block_data):
                 cached_block_data = self._block_data[block_number]
 
             # If text has changed, invalidate cache and recompute
@@ -843,7 +931,9 @@ class MarkdownHighlighter(QSyntaxHighlighter):
                 for instruction in instructions:
                     fmt = self._get_format_for_type(instruction.format_type, show_syntax)
                     if fmt:
-                        self._timed_setFormat(instruction.position, instruction.length, fmt, instruction.format_type)
+                        self._timed_setFormat(
+                            instruction.position, instruction.length, fmt, instruction.format_type
+                        )
 
                 # Still need to apply entity highlighting (not cached because entity list loads after cache)
                 # Track entity ranges to avoid conflicts
@@ -851,7 +941,9 @@ class MarkdownHighlighter(QSyntaxHighlighter):
                 if self._entity_patterns:
                     for pattern in self._entity_patterns:
                         for match in pattern.finditer(text):
-                            if self._is_inside_entity_link(match.start(), match.end(), entity_ranges):
+                            if self._is_inside_entity_link(
+                                match.start(), match.end(), entity_ranges
+                            ):
                                 continue
                             self.setFormat(match.start(), len(match.group(0)), self.entity_format)
                 return
@@ -868,75 +960,79 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         entity_ranges = []
 
         # Code blocks (```...```) - must be checked before other patterns
-        if text.strip().startswith('```'):
+        if text.strip().startswith("```"):
             self.setFormat(0, len(text), self.code_block_format)
             return  # Don't apply other formatting inside code blocks
 
         # Horizontal rules (---, ***, ___)
-        hr_patterns = [r'^---+$', r'^\*\*\*+$', r'^___+$']
+        hr_patterns = [r"^---+$", r"^\*\*\*+$", r"^___+$"]
         for pattern in hr_patterns:
             if re.match(pattern, text.strip()):
                 self.setFormat(0, len(text), self.hr_format)
                 return  # Don't apply other formatting to horizontal rules
 
         # Headings (must be checked before other patterns to avoid conflicts)
-        if text.startswith('###### '):
+        if text.startswith("###### "):
             if not show_syntax:
                 self.setFormat(0, 7, self.hidden_format)
             self.setFormat(7, len(text) - 7, self.heading6_format)
             return
-        elif text.startswith('##### '):
+        elif text.startswith("##### "):
             if not show_syntax:
                 self.setFormat(0, 6, self.hidden_format)
             self.setFormat(6, len(text) - 6, self.heading5_format)
             return
-        elif text.startswith('#### '):
+        elif text.startswith("#### "):
             if not show_syntax:
                 self.setFormat(0, 5, self.hidden_format)
             self.setFormat(5, len(text) - 5, self.heading4_format)
             return
-        elif text.startswith('### '):
+        elif text.startswith("### "):
             if not show_syntax:
                 self.setFormat(0, 4, self.hidden_format)
             self.setFormat(4, len(text) - 4, self.heading3_format)
             return
-        elif text.startswith('## '):
+        elif text.startswith("## "):
             if not show_syntax:
                 self.setFormat(0, 3, self.hidden_format)
             self.setFormat(3, len(text) - 3, self.heading2_format)
             return
-        elif text.startswith('# '):
+        elif text.startswith("# "):
             if not show_syntax:
                 self.setFormat(0, 2, self.hidden_format)
             self.setFormat(2, len(text) - 2, self.heading1_format)
             return
 
         # Blockquote
-        if text.startswith('> '):
+        if text.startswith("> "):
             if not show_syntax:
                 self.setFormat(0, 2, self.hidden_format)
             self.setFormat(2, len(text) - 2, self.blockquote_format)
             return
 
         # Task lists (- [ ] or - [x])
-        task_unchecked = re.match(r'^(\s*-\s+\[\s\])\s+(.*)$', text)
-        task_checked = re.match(r'^(\s*-\s+\[x\])\s+(.*)$', text, re.IGNORECASE)
+        task_unchecked = re.match(r"^(\s*-\s+\[\s\])\s+(.*)$", text)
+        task_checked = re.match(r"^(\s*-\s+\[x\])\s+(.*)$", text, re.IGNORECASE)
         if task_unchecked:
             self.setFormat(0, len(task_unchecked.group(1)), self.task_checkbox_format)
             return
         elif task_checked:
             self.setFormat(0, len(task_checked.group(1)), self.task_checkbox_format)
             # Strike through the task text
-            self.setFormat(len(task_checked.group(1)) + 1, len(task_checked.group(2)), self.strikethrough_format)
+            self.setFormat(
+                len(task_checked.group(1)) + 1,
+                len(task_checked.group(2)),
+                self.strikethrough_format,
+            )
             return
 
         # Unordered lists (-, *, +)
-        list_match = re.match(r'^(\s*[-*+]\s+)', text)
+        list_match = re.match(r"^(\s*[-*+]\s+)", text)
         if list_match:
             self.setFormat(0, len(list_match.group(1)), self.list_format)
 
         # Ordered lists (1., 2., etc.)
-        ordered_list_match = re.match(r'^(\s*\d+\.\s+)', text)
+        ordered_list_match = re.match(r"^(\s*\d+\.\s+)", text)
         if ordered_list_match:
             self.setFormat(0, len(ordered_list_match.group(1)), self.list_format)
 
@@ -1050,7 +1146,9 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         # Debug: Log if this block took more than 100ms
         block_duration = (datetime.datetime.now() - block_start).total_seconds() * 1000
         if block_duration > 100:
-            print(f"[{datetime.datetime.now()}] ⚠️ SLOW highlightBlock: block {block_number} took {block_duration:.1f}ms")
+            print(
+                f"[{datetime.datetime.now()}] ⚠️ SLOW highlightBlock: block {block_number} took {block_duration:.1f}ms"
+            )
 
 
 class EntityTextEditor(QTextEdit):
@@ -1059,10 +1157,16 @@ class EntityTextEditor(QTextEdit):
     entity_requested = Signal(str)  # Emitted when user wants to search for entities (search query)
     entity_selected = Signal(str, str)  # (entity_id, entity_name) - emitted when entity inserted
     entity_hover = Signal(str, str)  # (entity_id, entity_type) - emitted when hovering over entity
-    entity_navigation_requested = Signal(str, str)  # (entity_id, entity_type) - emitted when user clicks to navigate to entity
-    alias_add_requested = Signal(str, str, str)  # (entity_id, entity_name, current_display_text) - request to add alias
+    entity_navigation_requested = Signal(
+        str, str
+    )  # (entity_id, entity_type) - emitted when user clicks to navigate to entity
+    alias_add_requested = Signal(
+        str, str, str
+    )  # (entity_id, entity_name, current_display_text) - request to add alias
     alias_use_requested = Signal(str)  # (alias) - request to replace current entity link with alias
-    entity_create_requested = Signal(str, str)  # (entity_name, entity_type) - request to create new entity
+    entity_create_requested = Signal(
+        str, str
+    )  # (entity_name, entity_type) - request to create new entity
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -1097,7 +1201,6 @@ class EntityTextEditor(QTextEdit):
         self._update_timer = QTimer(self)
         self._update_timer.setSingleShot(True)
         self._update_timer.timeout.connect(self._update_entity_display)
-
 
         # Connect to text changes
         self.textChanged.connect(self._on_text_changed)
@@ -1179,24 +1282,185 @@ class EntityTextEditor(QTextEdit):
 
             # If highlighter is ready but not yet activated, activate it now
             if self._highlighter_ready:
-                print(f"[{datetime.datetime.now()}]   Entity list loaded - activating highlighter...")
+                print(
+                    f"[{datetime.datetime.now()}]   Entity list loaded - activating highlighter..."
+                )
                 self._activate_highlighter_if_ready()
             # Otherwise, if highlighter is already active, trigger rehighlight
             # (This ensures aliases show up immediately when added)
             elif self._highlighter and self._highlighter.document():
                 self._highlighter.rehighlight()
 
+    # ============================================================================
+    # MARKDOWN FORMATTING METHODS
+    # ============================================================================
+
+    def _wrap_selection_with_markdown(self, prefix: str, suffix: str = None) -> bool:
+        """
+        Wrap the currently selected text with markdown syntax.
+
+        Args:
+            prefix: Markdown syntax to add before selection (e.g., "**", "#", "-")
+            suffix: Markdown syntax to add after selection (defaults to prefix)
+
+        Returns:
+            True if text was wrapped, False if no selection
+
+        Example:
+            _wrap_selection_with_markdown("**")  # Makes "text" -> "**text**"
+            _wrap_selection_with_markdown("# ", "")  # Makes "text" -> "# text"
+        """
+        if suffix is None:
+            suffix = prefix
+
+        cursor = self.textCursor()
+
+        # Check if there's a selection
+        if not cursor.hasSelection():
+            return False
+
+        # Get the selected text
+        selected_text = cursor.selectedText()
+
+        # Wrap with markdown syntax
+        wrapped_text = f"{prefix}{selected_text}{suffix}"
+
+        # Replace selection with wrapped text
+        cursor.insertText(wrapped_text)
+
+        # Keep the wrapped text selected for visual feedback
+        cursor.setPosition(cursor.position() - len(wrapped_text))
+        cursor.setPosition(cursor.position() + len(wrapped_text), QTextCursor.KeepAnchor)
+        self.setTextCursor(cursor)
+
+        return True
+
+    def format_bold(self):
+        """Apply bold formatting to selected text (**text**)."""
+        if not self._wrap_selection_with_markdown("**"):
+            # No selection - insert template and position cursor
+            cursor = self.textCursor()
+            cursor.insertText("****")
+            cursor.setPosition(cursor.position() - 2)
+            self.setTextCursor(cursor)
+
+    def format_italic(self):
+        """Apply italic formatting to selected text (*text*)."""
+        if not self._wrap_selection_with_markdown("*"):
+            # No selection - insert template and position cursor
+            cursor = self.textCursor()
+            cursor.insertText("**")
+            cursor.setPosition(cursor.position() - 1)
+            self.setTextCursor(cursor)
+
+    def format_underline(self):
+        """Apply underline formatting to selected text (__text__)."""
+        if not self._wrap_selection_with_markdown("__"):
+            # No selection - insert template and position cursor
+            cursor = self.textCursor()
+            cursor.insertText("____")
+            cursor.setPosition(cursor.position() - 2)
+            self.setTextCursor(cursor)
+
+    def format_strikethrough(self):
+        """Apply strikethrough formatting to selected text (~~text~~)."""
+        if not self._wrap_selection_with_markdown("~~"):
+            # No selection - insert template and position cursor
+            cursor = self.textCursor()
+            cursor.insertText("~~~~")
+            cursor.setPosition(cursor.position() - 2)
+            self.setTextCursor(cursor)
+
+    def format_heading(self, level: int):
+        """
+        Apply heading formatting to selected text or current line.
+
+        Args:
+            level: Heading level (1-6)
+        """
+        if level < 1 or level > 6:
+            return
+
+        prefix = "#" * level + " "
+        cursor = self.textCursor()
+
+        # If there's a selection, wrap it
+        if cursor.hasSelection():
+            self._wrap_selection_with_markdown(prefix, "")
+        else:
+            # No selection - add heading to current line
+            # Move to start of line
+            cursor.movePosition(QTextCursor.StartOfBlock)
+            # Insert heading prefix
+            cursor.insertText(prefix)
+            # Move cursor to end of prefix
+            self.setTextCursor(cursor)
+
+    def format_bullet_list(self):
+        """Apply bullet list formatting to selected text or current line."""
+        cursor = self.textCursor()
+
+        if cursor.hasSelection():
+            # Multi-line selection - add bullet to each line
+            selected_text = cursor.selectedText()
+            # Qt uses U+2029 for paragraph separator in selectedText()
+            lines = selected_text.split("\u2029")
+            formatted_lines = ["- " + line if line.strip() else line for line in lines]
+            cursor.insertText("\u2029".join(formatted_lines))
+        else:
+            # No selection - add bullet to current line
+            cursor.movePosition(QTextCursor.StartOfBlock)
+            cursor.insertText("- ")
+            self.setTextCursor(cursor)
+
+    def format_numbered_list(self):
+        """Apply numbered list formatting to selected text or current line."""
+        cursor = self.textCursor()
+
+        if cursor.hasSelection():
+            # Multi-line selection - add numbers to each line
+            selected_text = cursor.selectedText()
+            lines = selected_text.split("\u2029")
+            formatted_lines = [
+                f"{i+1}. {line}" if line.strip() else line for i, line in enumerate(lines)
+            ]
+            cursor.insertText("\u2029".join(formatted_lines))
+        else:
+            # No selection - add number to current line
+            cursor.movePosition(QTextCursor.StartOfBlock)
+            cursor.insertText("1. ")
+            self.setTextCursor(cursor)
+
+    def format_task_list(self):
+        """Apply task list formatting to selected text or current line."""
+        cursor = self.textCursor()
+
+        if cursor.hasSelection():
+            # Multi-line selection - add checkboxes to each line
+            selected_text = cursor.selectedText()
+            lines = selected_text.split("\u2029")
+            formatted_lines = ["- [ ] " + line if line.strip() else line for line in lines]
+            cursor.insertText("\u2029".join(formatted_lines))
+        else:
+            # No selection - add checkbox to current line
+            cursor.movePosition(QTextCursor.StartOfBlock)
+            cursor.insertText("- [ ] ")
+            self.setTextCursor(cursor)
 
     def _activate_highlighter_if_ready(self):
         """Activate highlighter on first user interaction if cache is ready."""
         if self._highlighter_ready and self._highlighter:
-            print(f"[{datetime.datetime.now()}]   First user interaction - activating highlighter...")
+            print(
+                f"[{datetime.datetime.now()}]   First user interaction - activating highlighter..."
+            )
             activate_start = datetime.datetime.now()
             self._highlighter.setDocument(self.document())
             # Explicitly trigger rehighlight to apply cached formatting
             self._highlighter.rehighlight()
             activate_duration = (datetime.datetime.now() - activate_start).total_seconds() * 1000
-            print(f"[{datetime.datetime.now()}]   Highlighter activated in {activate_duration:.1f}ms")
+            print(
+                f"[{datetime.datetime.now()}]   Highlighter activated in {activate_duration:.1f}ms"
+            )
             self._highlighter_ready = False
 
     def keyPressEvent(self, event: QKeyEvent):
@@ -1207,8 +1471,9 @@ class EntityTextEditor(QTextEdit):
         if event.text() == "\r":
             pass
         # Debug: Print timestamp when 'P' is pressed
-        if event.text().upper() == 'P':
+        if event.text().upper() == "P":
             import datetime
+
             print(f"[{datetime.datetime.now()}] *** USER PRESSED 'P' - UI IS RESPONSIVE ***")
 
         # Handle completer popup
@@ -1225,10 +1490,10 @@ class EntityTextEditor(QTextEdit):
                 return
 
         # Check for [[ trigger
-        if event.text() == '[':
+        if event.text() == "[":
             cursor = self.textCursor()
             cursor.movePosition(QTextCursor.Left, QTextCursor.KeepAnchor, 1)
-            if cursor.selectedText() == '[':
+            if cursor.selectedText() == "[":
                 # User typed [[, trigger entity autocomplete
                 self._trigger_entity_autocomplete()
                 super().keyPressEvent(event)
@@ -1257,7 +1522,8 @@ class EntityTextEditor(QTextEdit):
         if len(current_word) >= 2 and current_word[0].isupper():
             # Check if this matches any entity names
             matching_entities = [
-                entity for entity in self._entity_list
+                entity
+                for entity in self._entity_list
                 if entity.get("name", "").lower().startswith(current_word.lower())
             ]
 
@@ -1320,14 +1586,14 @@ class EntityTextEditor(QTextEdit):
         # Check exit conditions based on mode
         if self._inline_mode:
             # In inline mode, exit on space or newline
-            if ' ' in search_text or '\n' in search_text:
+            if " " in search_text or "\n" in search_text:
                 self._completion_active = False
                 self._inline_mode = False
                 self._completer.popup().hide()
                 return
         else:
             # In [[ mode, exit on ]] or newline
-            if ']]' in search_text or '\n' in search_text:
+            if "]]" in search_text or "\n" in search_text:
                 self._completion_active = False
                 self._completer.popup().hide()
                 return
@@ -1361,7 +1627,7 @@ class EntityTextEditor(QTextEdit):
         alias_match = re.match(r"^(.+?)\s+→\s+(.+?)\s+\((.+?)\)$", completion)
         if alias_match:
             display_text = alias_match.group(1)  # The alias
-            entity_name = alias_match.group(2)   # The canonical name
+            entity_name = alias_match.group(2)  # The canonical name
             entity_type = alias_match.group(3)
         else:
             # Standard format: "EntityName (type)" or "EntityName (type) [aliases]"
@@ -1459,8 +1725,9 @@ class EntityTextEditor(QTextEdit):
                     name = entity.get("name", "")
                     aliases = entity.get("aliases", [])
 
-                    if (name.lower() == candidate.lower() or
-                        any(alias.lower() == candidate.lower() for alias in aliases)):
+                    if name.lower() == candidate.lower() or any(
+                        alias.lower() == candidate.lower() for alias in aliases
+                    ):
                         return candidate
 
         return None
@@ -1485,8 +1752,9 @@ class EntityTextEditor(QTextEdit):
                     aliases = entity.get("aliases", [])
 
                     # Check if clicked text matches entity name or any alias
-                    if (name.lower() == clicked_text.lower() or
-                        any(alias.lower() == clicked_text.lower() for alias in aliases)):
+                    if name.lower() == clicked_text.lower() or any(
+                        alias.lower() == clicked_text.lower() for alias in aliases
+                    ):
                         matching_entities.append(entity)
 
                 if matching_entities:
@@ -1528,8 +1796,9 @@ class EntityTextEditor(QTextEdit):
 
             action = QAction(f"{name} ({entity_type})", self)
             action.triggered.connect(
-                lambda checked=False, eid=entity_id, etype=entity_type, pos=pos:
-                self._show_entity_from_menu(eid, etype, pos)
+                lambda checked=False, eid=entity_id, etype=entity_type, pos=pos: self._show_entity_from_menu(
+                    eid, etype, pos
+                )
             )
             menu.addAction(action)
 
@@ -1566,10 +1835,10 @@ class EntityTextEditor(QTextEdit):
             details: Details text to display
             entity_id: Entity ID (optional, defaults to last clicked entity)
         """
-        if hasattr(self, '_click_pos') and self._click_pos:
+        if hasattr(self, "_click_pos") and self._click_pos:
             # Use provided entity_id or fall back to last clicked entity
             if entity_id is None:
-                entity_id = getattr(self, '_last_clicked_entity', None)
+                entity_id = getattr(self, "_last_clicked_entity", None)
             self._info_card.set_entity_info(name, entity_type, details, entity_id)
             self._info_card.show_at_position(self._click_pos)
 
@@ -1595,7 +1864,7 @@ class EntityTextEditor(QTextEdit):
         self._highlighter.rehighlightBlock(current_block)
 
         # Also rehighlight previous block in case we moved away from it
-        if hasattr(self, '_last_cursor_block') and self._last_cursor_block != current_block:
+        if hasattr(self, "_last_cursor_block") and self._last_cursor_block != current_block:
             self._highlighter.rehighlightBlock(self._last_cursor_block)
 
         self._last_cursor_block = current_block
@@ -1626,7 +1895,9 @@ class EntityTextEditor(QTextEdit):
             # DON'T reattach highlighter yet! This would trigger expensive rehighlight.
             # Instead, mark as ready and reattach on first user interaction.
             self._highlighter_ready = True
-            print(f"[{datetime.datetime.now()}]   Highlighter ready (will activate on first interaction)")
+            print(
+                f"[{datetime.datetime.now()}]   Highlighter ready (will activate on first interaction)"
+            )
             print(f"[{datetime.datetime.now()}] *** DOCUMENT IS NOW EDITABLE ***")
 
     def set_text(self, text: str, defer_highlight: bool = True):
@@ -1658,12 +1929,16 @@ class EntityTextEditor(QTextEdit):
         # Schedule progressive rehighlight if requested
         if self._highlighter:
             if defer_highlight:
-                print(f"[{datetime.datetime.now()}]   set_text: Deferring rehighlight (will happen after document fully loads)")
+                print(
+                    f"[{datetime.datetime.now()}]   set_text: Deferring rehighlight (will happen after document fully loads)"
+                )
                 # Store flag to rehighlight later - don't schedule it now
                 # This prevents QApplication.processEvents() from triggering it immediately
                 self._pending_highlight = True
             else:
-                print(f"[{datetime.datetime.now()}]   set_text: Reattaching highlighter and scheduling immediate rehighlight")
+                print(
+                    f"[{datetime.datetime.now()}]   set_text: Reattaching highlighter and scheduling immediate rehighlight"
+                )
                 self._highlighter.setDocument(self.document())
                 QTimer.singleShot(0, self._highlighter.rehighlight)
 
@@ -1703,8 +1978,9 @@ class EntityTextEditor(QTextEdit):
             for entity in self._entity_list:
                 name = entity.get("name", "")
                 aliases = entity.get("aliases", [])
-                if (name.lower() == selected_text.lower() or
-                    any(alias.lower() == selected_text.lower() for alias in aliases)):
+                if name.lower() == selected_text.lower() or any(
+                    alias.lower() == selected_text.lower() for alias in aliases
+                ):
                     is_entity_or_alias = True
                     break
 
@@ -1730,20 +2006,23 @@ class EntityTextEditor(QTextEdit):
                     "location": "Locations",
                     "faction": "Factions",
                     "object": "Objects",
-                    "worlddata": "World Data"
+                    "worlddata": "World Data",
                 }
                 for entity_type in sorted(entities_by_type.keys()):
                     # Use plural label if available, otherwise capitalize and add 's'
                     label = type_labels.get(entity_type.lower(), f"{entity_type.capitalize()}s")
                     type_menu = alias_menu.addMenu(label)
-                    for entity in sorted(entities_by_type[entity_type], key=lambda e: e.get("name", "")):
+                    for entity in sorted(
+                        entities_by_type[entity_type], key=lambda e: e.get("name", "")
+                    ):
                         entity_name = entity.get("name", "")
                         entity_id = entity.get("id", "")
 
                         action = QAction(entity_name, self)
                         action.triggered.connect(
-                            lambda checked=False, eid=entity_id, ename=entity_name, alias=selected_text:
-                            self._add_alias_for_entity(eid, ename, alias)
+                            lambda checked=False, eid=entity_id, ename=entity_name, alias=selected_text: self._add_alias_for_entity(
+                                eid, ename, alias
+                            )
                         )
                         type_menu.addAction(action)
 
@@ -1760,14 +2039,15 @@ class EntityTextEditor(QTextEdit):
                 ("Location", "location"),
                 ("Faction", "faction"),
                 ("Object", "object"),
-                ("World Data", "worlddata")
+                ("World Data", "worlddata"),
             ]
 
             for label, entity_type in entity_types:
                 action = QAction(label, self)
                 action.triggered.connect(
-                    lambda checked=False, name=selected_text, etype=entity_type:
-                    self.entity_create_requested.emit(name, etype)
+                    lambda checked=False, name=selected_text, etype=entity_type: self.entity_create_requested.emit(
+                        name, etype
+                    )
                 )
                 lorekeeper_menu.addAction(action)
 
@@ -1807,7 +2087,7 @@ class EntityTextEditor(QTextEdit):
                 "Add as Alias?",
                 f"'{selected_text}' differs from the canonical name '{entity_name}'.\n\n"
                 f"Would you like to add '{selected_text}' as an alias?",
-                QMessageBox.Yes | QMessageBox.No
+                QMessageBox.Yes | QMessageBox.No,
             )
 
             if reply == QMessageBox.Yes:
@@ -1823,7 +2103,7 @@ class EntityTextEditor(QTextEdit):
             self,
             "Add Alias",
             f"Add alias for '{entity_name}':\n(Current display: '{current_display}')",
-            text=current_display
+            text=current_display,
         )
 
         if ok and alias and alias.strip():
@@ -1838,16 +2118,18 @@ class EntityTextEditor(QTextEdit):
         Args:
             new_display_text: New text to display for the entity
         """
-        if not hasattr(self, '_context_menu_cursor_pos'):
+        if not hasattr(self, "_context_menu_cursor_pos"):
             return
 
         cursor = self.textCursor()
         cursor.setPosition(self._context_menu_cursor_pos)
-        cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor, self._context_menu_match_length)
+        cursor.movePosition(
+            QTextCursor.Right, QTextCursor.KeepAnchor, self._context_menu_match_length
+        )
 
         # Get the entity ID from the selected text
         selected = cursor.selectedText()
-        match = re.match(r'\[\[([^\|]+?)\|([^\]]+?)\]\]', selected)
+        match = re.match(r"\[\[([^\|]+?)\|([^\]]+?)\]\]", selected)
         if match:
             entity_id = match.group(2)
             new_link = f"[[{new_display_text}|{entity_id}]]"

@@ -1,27 +1,36 @@
 """
 Main Storyweaver widget - integrated writing interface for Storymaster.
 """
-import datetime
-from typing import Optional, List, Dict, Any, TYPE_CHECKING
-import re
-from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QSplitter, QListWidget,
-    QLabel, QToolBar, QPushButton, QFileDialog, QMessageBox,
-    QListWidgetItem, QDialog
-)
-from PySide6.QtCore import Qt, Signal, QTimer, QThread, QObject, QPoint
-from PySide6.QtGui import QAction, QIcon, QTextCursor
 
-from storymaster.view.storyweaver.text_editor import EntityTextEditor
-from storymaster.view.storyweaver.auto_tag_dialog import AutoTagDialog
-from storymaster.view.storyweaver.loading_dialog import LoadingDialog
-from storymaster.view.storyweaver.heading_navigator import HeadingNavigator
+import datetime
+import re
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
+
+from PySide6.QtCore import QObject, QPoint, Qt, QThread, QTimer, Signal
+from PySide6.QtGui import QAction, QFont, QIcon, QTextCursor
+from PySide6.QtWidgets import (
+    QDialog,
+    QFileDialog,
+    QHBoxLayout,
+    QLabel,
+    QListWidget,
+    QListWidgetItem,
+    QMessageBox,
+    QPushButton,
+    QSplitter,
+    QToolBar,
+    QVBoxLayout,
+    QWidget,
+)
+
 from storymaster.models.document import StoryDocument
+from storymaster.view.storyweaver.auto_tag_dialog import AutoTagDialog
+from storymaster.view.storyweaver.heading_navigator import HeadingNavigator
+from storymaster.view.storyweaver.loading_dialog import LoadingDialog
+from storymaster.view.storyweaver.text_editor import EntityTextEditor
 
 if TYPE_CHECKING:
     from storymaster.model.database.database_model import Model
-
-
 
 
 class StoryweaverWidget(QWidget):
@@ -36,12 +45,20 @@ class StoryweaverWidget(QWidget):
     """
 
     entity_search_requested = Signal(str, int, int)  # (query, storyline_id, setting_id)
-    entity_hover_requested = Signal(str, str, int, int)  # (entity_id, entity_type, storyline_id, setting_id)
-    entity_navigation_requested = Signal(str, str, int, int)  # (entity_id, entity_type, storyline_id, setting_id)
-    entity_create_requested = Signal(str, str, int, int)  # (entity_name, entity_type, storyline_id, setting_id)
+    entity_hover_requested = Signal(
+        str, str, int, int
+    )  # (entity_id, entity_type, storyline_id, setting_id)
+    entity_navigation_requested = Signal(
+        str, str, int, int
+    )  # (entity_id, entity_type, storyline_id, setting_id)
+    entity_create_requested = Signal(
+        str, str, int, int
+    )  # (entity_name, entity_type, storyline_id, setting_id)
     document_modified = Signal(bool)  # is_modified
 
-    def __init__(self, model: "Model", current_storyline_id: int, current_setting_id: int, parent=None):
+    def __init__(
+        self, model: "Model", current_storyline_id: int, current_setting_id: int, parent=None
+    ):
         super().__init__(parent)
 
         self.model = model
@@ -96,6 +113,10 @@ class StoryweaverWidget(QWidget):
         self.editor = EntityTextEditor()
         editor_layout.addWidget(self.editor)
 
+        # Formatting toolbar (added after editor is created)
+        self.formatting_toolbar = self._create_formatting_toolbar()
+        layout.insertWidget(1, self.formatting_toolbar)  # Insert after main toolbar
+
         # Word count label
         self.word_count_label = QLabel("Words: 0")
         editor_layout.addWidget(self.word_count_label)
@@ -143,6 +164,86 @@ class StoryweaverWidget(QWidget):
         # Document title label
         self.document_label = QLabel("No document open")
         toolbar.addWidget(self.document_label)
+
+        return toolbar
+
+    def _create_formatting_toolbar(self) -> QToolBar:
+        """Create the markdown formatting toolbar."""
+        toolbar = QToolBar("Formatting")
+        toolbar.setMovable(False)
+
+        # Bold button
+        bold_action = QAction("B", self)
+        bold_action.setShortcut("Ctrl+B")
+        bold_action.setToolTip("Bold (Ctrl+B)")
+        bold_action.setFont(QFont("", -1, QFont.Bold))
+        bold_action.triggered.connect(self.editor.format_bold)
+        toolbar.addAction(bold_action)
+
+        # Italic button
+        italic_action = QAction("I", self)
+        italic_action.setShortcut("Ctrl+I")
+        italic_action.setToolTip("Italic (Ctrl+I)")
+        font = QFont()
+        font.setItalic(True)
+        italic_action.setFont(font)
+        italic_action.triggered.connect(self.editor.format_italic)
+        toolbar.addAction(italic_action)
+
+        # Underline button
+        underline_action = QAction("U", self)
+        underline_action.setShortcut("Ctrl+U")
+        underline_action.setToolTip("Underline (Ctrl+U)")
+        font = QFont()
+        font.setUnderline(True)
+        underline_action.setFont(font)
+        underline_action.triggered.connect(self.editor.format_underline)
+        toolbar.addAction(underline_action)
+
+        # Strikethrough button
+        strike_action = QAction("S", self)
+        strike_action.setShortcut("Ctrl+Shift+S")
+        strike_action.setToolTip("Strikethrough (Ctrl+Shift+S)")
+        font = QFont()
+        font.setStrikeOut(True)
+        strike_action.setFont(font)
+        strike_action.triggered.connect(self.editor.format_strikethrough)
+        toolbar.addAction(strike_action)
+
+        toolbar.addSeparator()
+
+        # Heading buttons (H1-H6)
+        for level in range(1, 7):
+            heading_action = QAction(f"H{level}", self)
+            heading_action.setShortcut(f"Ctrl+{level}")
+            heading_action.setToolTip(f"Heading {level} (Ctrl+{level})")
+            heading_action.triggered.connect(
+                lambda checked=False, lvl=level: self.editor.format_heading(lvl)
+            )
+            toolbar.addAction(heading_action)
+
+        toolbar.addSeparator()
+
+        # Bullet list button
+        bullet_action = QAction("• List", self)
+        bullet_action.setShortcut("Ctrl+Shift+U")
+        bullet_action.setToolTip("Bullet List (Ctrl+Shift+U)")
+        bullet_action.triggered.connect(self.editor.format_bullet_list)
+        toolbar.addAction(bullet_action)
+
+        # Numbered list button
+        numbered_action = QAction("1. List", self)
+        numbered_action.setShortcut("Ctrl+Shift+O")
+        numbered_action.setToolTip("Numbered List (Ctrl+Shift+O)")
+        numbered_action.triggered.connect(self.editor.format_numbered_list)
+        toolbar.addAction(numbered_action)
+
+        # Task list button
+        task_action = QAction("☑ Task", self)
+        task_action.setShortcut("Ctrl+Shift+T")
+        task_action.setToolTip("Task List (Ctrl+Shift+T)")
+        task_action.triggered.connect(self.editor.format_task_list)
+        toolbar.addAction(task_action)
 
         return toolbar
 
@@ -200,17 +301,23 @@ class StoryweaverWidget(QWidget):
     def _on_entity_hover(self, entity_id: str, entity_type: str):
         """Handle entity hover event from editor."""
         # Emit signal to controller to fetch entity details
-        self.entity_hover_requested.emit(entity_id, entity_type, self.current_storyline_id, self.current_setting_id)
+        self.entity_hover_requested.emit(
+            entity_id, entity_type, self.current_storyline_id, self.current_setting_id
+        )
 
     def _on_entity_navigation_requested(self, entity_id: str, entity_type: str):
         """Handle entity navigation request from editor (user clicked on entity in info card)."""
         # Emit signal to controller to navigate to entity in Lorekeeper
-        self.entity_navigation_requested.emit(entity_id, entity_type, self.current_storyline_id, self.current_setting_id)
+        self.entity_navigation_requested.emit(
+            entity_id, entity_type, self.current_storyline_id, self.current_setting_id
+        )
 
     def _on_entity_create_requested(self, entity_name: str, entity_type: str):
         """Handle entity creation request from editor (user wants to create new entity)."""
         # Emit signal to controller to create entity in Lorekeeper
-        self.entity_create_requested.emit(entity_name, entity_type, self.current_storyline_id, self.current_setting_id)
+        self.entity_create_requested.emit(
+            entity_name, entity_type, self.current_storyline_id, self.current_setting_id
+        )
 
     def _on_entity_selected(self, entity_id: str, entity_name: str):
         """Handle entity selection from autocomplete."""
@@ -268,7 +375,11 @@ class StoryweaverWidget(QWidget):
 
     def _autosave(self):
         """Auto-save the current document if modified."""
-        if self.current_document and self.current_document.is_modified and self.current_document.path:
+        if (
+            self.current_document
+            and self.current_document.is_modified
+            and self.current_document.path
+        ):
             self.current_document.save()
             self.document_modified.emit(False)
 
@@ -353,9 +464,10 @@ class StoryweaverWidget(QWidget):
         # Check for unsaved changes
         if self.current_document and self.current_document.is_modified:
             reply = QMessageBox.question(
-                self, "Unsaved Changes",
+                self,
+                "Unsaved Changes",
                 "Save changes to current document?",
-                QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel
+                QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel,
             )
 
             if reply == QMessageBox.Save:
@@ -365,9 +477,7 @@ class StoryweaverWidget(QWidget):
 
         # Get save location (file path)
         file_path = QFileDialog.getSaveFileName(
-            self, "Create New Document",
-            "",
-            "Storyweaver Documents (*.storyweaver)"
+            self, "Create New Document", "", "Storyweaver Documents (*.storyweaver)"
         )[0]
 
         if not file_path:
@@ -395,9 +505,10 @@ class StoryweaverWidget(QWidget):
         # Check for unsaved changes
         if self.current_document and self.current_document.is_modified:
             reply = QMessageBox.question(
-                self, "Unsaved Changes",
+                self,
+                "Unsaved Changes",
                 "Save changes to current document?",
-                QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel
+                QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel,
             )
 
             if reply == QMessageBox.Save:
@@ -407,9 +518,7 @@ class StoryweaverWidget(QWidget):
 
         # Get file to open (.storyweaver ZIP file)
         file_path = QFileDialog.getOpenFileName(
-            self, "Open Storyweaver Document",
-            "",
-            "Storyweaver Documents (*.storyweaver)"
+            self, "Open Storyweaver Document", "", "Storyweaver Documents (*.storyweaver)"
         )[0]
 
         if not file_path:
@@ -418,8 +527,7 @@ class StoryweaverWidget(QWidget):
         # Validate it's a .storyweaver file
         if not file_path.endswith(".storyweaver"):
             QMessageBox.warning(
-                self, "Invalid Document",
-                "Please select a .storyweaver document file"
+                self, "Invalid Document", "Please select a .storyweaver document file"
             )
             return
 
@@ -432,6 +540,7 @@ class StoryweaverWidget(QWidget):
 
         # Force process events to show dialog
         from PySide6.QtWidgets import QApplication
+
         QApplication.processEvents()
 
         # Use QTimer to load after dialog is visible
@@ -462,7 +571,9 @@ class StoryweaverWidget(QWidget):
                 QMessageBox.warning(self, "Error", "Failed to load document")
                 self.current_document = None
                 return
-            print(f"[{datetime.datetime.now()}] Document loaded. Size: {len(self.current_document.content)} chars")
+            print(
+                f"[{datetime.datetime.now()}] Document loaded. Size: {len(self.current_document.content)} chars"
+            )
 
             # Set editor content
             self.loading_dialog.set_message("Rendering content...")
@@ -495,6 +606,7 @@ class StoryweaverWidget(QWidget):
 
         except Exception as e:
             import traceback
+
             traceback.print_exc()
             self.loading_dialog.close()
             QMessageBox.warning(self, "Error", f"Failed to load document: {e}")
@@ -509,9 +621,7 @@ class StoryweaverWidget(QWidget):
         if not self.current_document.path:
             # No path set, do Save As
             file_path, _ = QFileDialog.getSaveFileName(
-                self, "Save Document",
-                "",
-                "Storyweaver Documents (*.storyweaver)"
+                self, "Save Document", "", "Storyweaver Documents (*.storyweaver)"
             )
 
             if not file_path:
@@ -541,8 +651,9 @@ class StoryweaverWidget(QWidget):
 
         if not self._entity_list:
             QMessageBox.warning(
-                self, "No Entities",
-                "No entities available. Make sure you're in a project with entities."
+                self,
+                "No Entities",
+                "No entities available. Make sure you're in a project with entities.",
             )
             return
 
@@ -557,10 +668,7 @@ class StoryweaverWidget(QWidget):
         matches = self._find_entity_matches(text)
 
         if not matches:
-            QMessageBox.information(
-                self, "No Matches",
-                "No entity names found in the document"
-            )
+            QMessageBox.information(self, "No Matches", "No entity names found in the document")
             return
 
         # Show dialog for user to select which entities to tag
@@ -600,30 +708,34 @@ class StoryweaverWidget(QWidget):
 
             for name in names_to_search:
                 # Find all occurrences (case-insensitive, word boundaries)
-                pattern = r'\b' + re.escape(name) + r'\b'
+                pattern = r"\b" + re.escape(name) + r"\b"
                 found = list(re.finditer(pattern, text, re.IGNORECASE))
 
                 for match in found:
                     # Store the actual text found (preserves case and alias used)
-                    match_texts[match.start()] = text[match.start():match.end()]
+                    match_texts[match.start()] = text[match.start() : match.end()]
                     all_found_matches.append(match)
 
             if all_found_matches:
                 # Check if any occurrence is already tagged
                 already_tagged = any(
-                    self._is_already_tagged(text, match.start(), match_texts.get(match.start(), entity_name))
+                    self._is_already_tagged(
+                        text, match.start(), match_texts.get(match.start(), entity_name)
+                    )
                     for match in all_found_matches
                 )
 
                 if not already_tagged:
-                    matches.append({
-                        "entity_name": entity_name,
-                        "entity_id": entity_id,
-                        "entity_type": entity_type,
-                        "count": len(all_found_matches),
-                        "positions": [(m.start(), m.end()) for m in all_found_matches],
-                        "match_texts": match_texts  # Store which text was found at each position
-                    })
+                    matches.append(
+                        {
+                            "entity_name": entity_name,
+                            "entity_id": entity_id,
+                            "entity_type": entity_type,
+                            "count": len(all_found_matches),
+                            "positions": [(m.start(), m.end()) for m in all_found_matches],
+                            "match_texts": match_texts,  # Store which text was found at each position
+                        }
+                    )
 
         # Sort by occurrence count (most common first)
         matches.sort(key=lambda x: x["count"], reverse=True)
@@ -646,9 +758,11 @@ class StoryweaverWidget(QWidget):
         search_start = max(0, position - 10)
         prefix = text[search_start:position]
 
-        return '[[' in prefix
+        return "[[" in prefix
 
-    def _apply_entity_tags(self, original_text: str, matches: List[Dict[str, Any]], selected_entities: set):
+    def _apply_entity_tags(
+        self, original_text: str, matches: List[Dict[str, Any]], selected_entities: set
+    ):
         """
         Apply entity tags to the document, preserving aliases.
 
@@ -670,13 +784,15 @@ class StoryweaverWidget(QWidget):
             for start, end in match["positions"]:
                 # Get the actual text found at this position (alias or canonical name)
                 actual_text = match_texts.get(start, original_text[start:end])
-                replacements.append({
-                    "start": start,
-                    "end": end,
-                    "entity_name": match["entity_name"],
-                    "entity_id": match["entity_id"],
-                    "actual_text": actual_text
-                })
+                replacements.append(
+                    {
+                        "start": start,
+                        "end": end,
+                        "entity_name": match["entity_name"],
+                        "entity_id": match["entity_id"],
+                        "actual_text": actual_text,
+                    }
+                )
 
         # Sort by position (reverse) to replace from end to start
         replacements.sort(key=lambda x: x["start"], reverse=True)
@@ -700,7 +816,7 @@ class StoryweaverWidget(QWidget):
             tagged_text = f"[[{actual_text}|{entity_id}]]"
 
             # Replace in the text
-            new_text = new_text[:repl["start"]] + tagged_text + new_text[repl["end"]:]
+            new_text = new_text[: repl["start"]] + tagged_text + new_text[repl["end"] :]
 
         # Update the editor (defer_highlight=False to immediately reattach highlighter)
         self.editor.set_text(new_text, defer_highlight=False)
