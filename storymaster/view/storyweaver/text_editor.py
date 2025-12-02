@@ -38,6 +38,9 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
+# Import spell checking
+from storymaster.view.common.spellcheck import SpellChecker
+
 # Compiled regex patterns (compile once at module load for performance)
 CODE_PATTERN = re.compile(r"(`)([^`]+?)(`)")
 BOLD_PATTERN = re.compile(r"(\*\*)([^*]+?)(\*\*)")
@@ -169,6 +172,10 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         # Track first slow setFormat call for debugging
         self._first_slow_format_logged = False
 
+        # Spell checking
+        self.spell_checker = SpellChecker()
+        self.spell_check_enabled = True
+
         # Progressive highlighting state
         self._progressive_timer = QTimer()
         self._progressive_timer.setSingleShot(True)
@@ -288,6 +295,13 @@ class MarkdownHighlighter(QSyntaxHighlighter):
         self.hr_format = QTextCharFormat()
         self.hr_format.setForeground(QColor("#555555"))
         self.hr_format.setFontWeight(QFont.Bold)
+
+        # Spell check format (red wavy underline)
+        self.spell_check_format = QTextCharFormat()
+        self.spell_check_format.setUnderlineColor(QColor(255, 0, 0))
+        self.spell_check_format.setUnderlineStyle(
+            QTextCharFormat.UnderlineStyle.SpellCheckUnderline
+        )
 
         # Entity highlighting for plain text approach (multipass)
         self._entity_names: List[str] = []
@@ -1143,6 +1157,16 @@ class MarkdownHighlighter(QSyntaxHighlighter):
                     # Highlight the entity name
                     self.setFormat(match.start(), len(match.group(0)), self.entity_format)
 
+        # Spell checking (applies red underline to misspelled words)
+        if self.spell_check_enabled and self.spell_checker:
+            # Find all words in the text
+            word_pattern = re.compile(r"\b[a-zA-Z]+\b")
+            for match in word_pattern.finditer(text):
+                word = match.group()
+                if not self.spell_checker.is_word_correct(word):
+                    # Apply spell check underline (merges with existing formatting)
+                    self.setFormat(match.start(), len(word), self.spell_check_format)
+
         # Debug: Log if this block took more than 100ms
         block_duration = (datetime.datetime.now() - block_start).total_seconds() * 1000
         if block_duration > 100:
@@ -1959,7 +1983,7 @@ class EntityTextEditor(QTextEdit):
         return None
 
     def contextMenuEvent(self, event: QContextMenuEvent):
-        """Show context menu with alias management."""
+        """Show context menu with alias management and spell checking."""
         # Refresh entity list to ensure we have all entities (not just filtered ones from autocomplete)
         self.entity_requested.emit("")
         # Process events to allow the entity list to be updated before showing menu
@@ -1967,6 +1991,53 @@ class EntityTextEditor(QTextEdit):
 
         # Create standard context menu
         menu = self.createStandardContextMenu()
+
+        # Get word under cursor for spell checking
+        cursor = self.textCursor()
+        cursor.select(QTextCursor.SelectionType.WordUnderCursor)
+        word = cursor.selectedText()
+
+        # Add spell check suggestions if word is misspelled
+        if (
+            word
+            and self._highlighter.spell_check_enabled
+            and self._highlighter.spell_checker
+            and not self._highlighter.spell_checker.is_word_correct(word)
+        ):
+            menu.addSeparator()
+
+            suggestions = self._highlighter.spell_checker.get_suggestions(word)
+            if suggestions:
+                for suggestion in suggestions[:8]:  # Show top 8 suggestions
+                    action = QAction(suggestion, self)
+                    action.triggered.connect(
+                        lambda checked, s=suggestion: self._replace_current_word(s)
+                    )
+                    menu.addAction(action)
+                menu.addSeparator()
+
+            # Add to dictionary option
+            add_action = QAction(f"Add '{word}' to dictionary", self)
+            add_action.triggered.connect(lambda: self._add_word_to_dictionary(word))
+            menu.addAction(add_action)
+
+            # Ignore word option
+            ignore_action = QAction(f"Ignore '{word}'", self)
+            ignore_action.triggered.connect(lambda: self._ignore_word(word))
+            menu.addAction(ignore_action)
+
+        # Add spell check toggle
+        menu.addSeparator()
+        toggle_action = QAction(
+            (
+                "Enable Spell Check"
+                if not self._highlighter.spell_check_enabled
+                else "Disable Spell Check"
+            ),
+            self,
+        )
+        toggle_action.triggered.connect(self._toggle_spell_check)
+        menu.addAction(toggle_action)
 
         # Check if there's selected text
         cursor = self.textCursor()
@@ -2134,3 +2205,37 @@ class EntityTextEditor(QTextEdit):
             entity_id = match.group(2)
             new_link = f"[[{new_display_text}|{entity_id}]]"
             cursor.insertText(new_link)
+
+    # ============================================================================
+    # SPELL CHECK METHODS
+    # ============================================================================
+
+    def _replace_current_word(self, replacement: str):
+        """Replace the word under cursor with a spelling suggestion."""
+        cursor = self.textCursor()
+        cursor.select(QTextCursor.SelectionType.WordUnderCursor)
+        cursor.insertText(replacement)
+
+    def _add_word_to_dictionary(self, word: str):
+        """Add word to custom dictionary."""
+        if self._highlighter and self._highlighter.spell_checker:
+            self._highlighter.spell_checker.add_word(word)
+            self._highlighter.rehighlight()
+
+    def _ignore_word(self, word: str):
+        """Ignore word for this session."""
+        if self._highlighter and self._highlighter.spell_checker:
+            self._highlighter.spell_checker.ignore_word(word)
+            self._highlighter.rehighlight()
+
+    def _toggle_spell_check(self):
+        """Toggle spell checking on/off."""
+        if self._highlighter:
+            self._highlighter.spell_check_enabled = not self._highlighter.spell_check_enabled
+            self._highlighter.rehighlight()
+
+    def set_spell_check_enabled(self, enabled: bool):
+        """Enable or disable spell checking."""
+        if self._highlighter:
+            self._highlighter.spell_check_enabled = enabled
+            self._highlighter.rehighlight()
