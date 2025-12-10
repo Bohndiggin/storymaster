@@ -226,6 +226,57 @@ jobs:
         ls -la *.AppImage 2>/dev/null || echo "No AppImage files found"
       env:
         DISPLAY: :99
+
+    - name: Create AppImage installation bundle
+      run: |
+        echo "=== Creating AppImage installation bundle ==="
+
+        # Find the AppImage file
+        APPIMAGE=$(ls Storymaster-*.AppImage 2>/dev/null | head -1)
+
+        if [ -z "$APPIMAGE" ]; then
+          echo "WARNING: No AppImage found, skipping bundle creation"
+          exit 0
+        fi
+
+        echo "Found AppImage: $APPIMAGE"
+
+        # Create bundle directory
+        BUNDLE_DIR="storymaster-appimage-bundle"
+        mkdir -p "$BUNDLE_DIR"
+
+        # Copy AppImage
+        cp "$APPIMAGE" "$BUNDLE_DIR/"
+
+        # Copy installation scripts
+        cp install_appimage.sh "$BUNDLE_DIR/"
+        cp uninstall_appimage.sh "$BUNDLE_DIR/"
+
+        # Copy documentation
+        cp LINUX_APPIMAGE_INSTALL.md "$BUNDLE_DIR/"
+        if [ -f "GUIDE.pdf" ]; then
+          cp GUIDE.pdf "$BUNDLE_DIR/"
+        fi
+
+        # Copy assets folder (icons and desktop file)
+        cp -r assets "$BUNDLE_DIR/"
+
+        # Make scripts executable
+        chmod +x "$BUNDLE_DIR/install_appimage.sh"
+        chmod +x "$BUNDLE_DIR/uninstall_appimage.sh"
+        chmod +x "$BUNDLE_DIR/$APPIMAGE"
+
+        # Create tar.gz bundle
+        BUNDLE_NAME="storymaster-appimage-$(basename $APPIMAGE .AppImage)-bundle.tar.gz"
+        tar -czf "$BUNDLE_NAME" "$BUNDLE_DIR"
+
+        echo "=== Bundle created: $BUNDLE_NAME ==="
+        ls -lh "$BUNDLE_NAME"
+
+        echo "=== Bundle contents ==="
+        tar -tzf "$BUNDLE_NAME" | head -20
+      env:
+        DISPLAY: :99
     
     - name: Build RPM (if rpmbuild available)
       run: |
@@ -246,6 +297,7 @@ jobs:
           dist/storymaster_portable/
           storymaster-linux-*.tar.gz
           *.AppImage
+          storymaster-appimage-*-bundle.tar.gz
           ~/rpmbuild/RPMS/noarch/*.rpm
 
   create-release:
@@ -350,7 +402,8 @@ jobs:
           - `Storymaster-macOS.tar.gz` - Archive version (includes GUIDE.pdf)
 
           **Linux:**
-          - `Storymaster-x86_64.AppImage` - Universal binary (recommended)
+          - `storymaster-appimage-x86_64-bundle.tar.gz` - **Recommended**: Complete installation bundle with AppImage, installer scripts, icons, and documentation
+          - `Storymaster-x86_64.AppImage` - Standalone AppImage (manual installation)
           - `storymaster-linux.tar.gz` - Portable executable (includes GUIDE.pdf)
           - `storymaster-*.rpm` - RPM package for Red Hat-based distributions
 
@@ -361,7 +414,8 @@ jobs:
           3. **Run the application**:
              - **Windows**: Extract zip and run `storymaster.exe`
              - **macOS**: Open DMG and drag to Applications, or extract tar.gz
-             - **Linux**: Make AppImage executable and run, or extract tar.gz
+             - **Linux (bundle)**: Extract tar.gz and run `./install_appimage.sh` (adds to application menu)
+             - **Linux (standalone)**: Make AppImage executable with `chmod +x` and run, or extract tar.gz
 
           ### ✨ Features:
 
