@@ -6,7 +6,7 @@ import datetime
 import re
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-from PySide6.QtCore import QObject, QPoint, Qt, QThread, QTimer, Signal
+from PySide6.QtCore import QMarginsF, QObject, QPoint, Qt, QThread, QTimer, Signal
 from PySide6.QtGui import QAction, QFont, QIcon, QTextCursor
 from PySide6.QtWidgets import (
     QDialog,
@@ -924,6 +924,8 @@ class StoryweaverWidget(QWidget):
         try:
             # Convert markdown to HTML
             import markdown
+            from PySide6.QtGui import QPageLayout, QPageSize, QTextDocument
+            from PySide6.QtPrintSupport import QPrinter
 
             html_content = markdown.markdown(
                 content,
@@ -941,10 +943,6 @@ class StoryweaverWidget(QWidget):
 <head>
     <meta charset="utf-8">
     <style>
-        @page {{
-            size: A4;
-            margin: 2.5cm;
-        }}
         body {{
             font-family: 'Georgia', 'Times New Roman', serif;
             font-size: 12pt;
@@ -956,43 +954,35 @@ class StoryweaverWidget(QWidget):
             font-size: 24pt;
             margin-top: 0.5em;
             margin-bottom: 0.5em;
-            page-break-after: avoid;
         }}
         h2 {{
             font-size: 20pt;
             margin-top: 0.5em;
             margin-bottom: 0.4em;
-            page-break-after: avoid;
         }}
         h3 {{
             font-size: 16pt;
             margin-top: 0.4em;
             margin-bottom: 0.3em;
-            page-break-after: avoid;
         }}
         h4, h5, h6 {{
             font-size: 14pt;
             margin-top: 0.3em;
             margin-bottom: 0.2em;
-            page-break-after: avoid;
         }}
         p {{
             margin-top: 0;
             margin-bottom: 0.8em;
-            text-align: justify;
         }}
         code {{
             font-family: 'Courier New', monospace;
             background-color: #f4f4f4;
             padding: 2px 4px;
-            border-radius: 3px;
         }}
         pre {{
             background-color: #f4f4f4;
             padding: 10px;
-            border-radius: 5px;
             overflow-x: auto;
-            page-break-inside: avoid;
         }}
         pre code {{
             background-color: transparent;
@@ -1031,14 +1021,6 @@ class StoryweaverWidget(QWidget):
             border-top: 1px solid #ccc;
             margin: 2em 0;
         }}
-        /* Avoid page breaks inside these elements */
-        h1, h2, h3, h4, h5, h6, p, li {{
-            page-break-inside: avoid;
-        }}
-        /* Keep headings with following content */
-        h1, h2, h3, h4, h5, h6 {{
-            page-break-after: avoid;
-        }}
     </style>
 </head>
 <body>
@@ -1047,10 +1029,25 @@ class StoryweaverWidget(QWidget):
 </html>
 """
 
-            # Convert HTML to PDF using weasyprint
-            from weasyprint import HTML
+            # Create a QPrinter for PDF output
+            printer = QPrinter(QPrinter.HighResolution)
+            printer.setOutputFormat(QPrinter.PdfFormat)
+            printer.setOutputFileName(file_path)
 
-            HTML(string=styled_html).write_pdf(file_path)
+            # Set page size and margins (A4 with 2.5cm margins)
+            page_layout = QPageLayout()
+            page_layout.setPageSize(QPageSize(QPageSize.A4))
+            page_layout.setUnits(QPageLayout.Millimeter)
+            page_layout.setMargins(QMarginsF(25, 25, 25, 25))
+            printer.setPageLayout(page_layout)
+
+            # Create QTextDocument and set HTML content
+            doc = QTextDocument()
+            doc.setHtml(styled_html)
+            doc.setDocumentMargin(0)  # We handle margins via page layout
+
+            # Print to PDF
+            doc.print_(printer)
 
             QMessageBox.information(
                 self,
@@ -1062,9 +1059,9 @@ class StoryweaverWidget(QWidget):
             QMessageBox.critical(
                 self,
                 "Missing Dependencies",
-                f"PDF export requires additional libraries.\n"
-                f"Please install them with:\n\n"
-                f"pip install markdown weasyprint\n\n"
+                f"PDF export requires markdown library.\n"
+                f"Please install it with:\n\n"
+                f"pip install markdown\n\n"
                 f"Error: {e}",
             )
         except Exception as e:

@@ -17,7 +17,6 @@ pyenchant==3.2.2
 
 # PDF export support for Storyweaver
 markdown>=3.4.0
-weasyprint>=60.0
 
 # Development and testing dependencies (optional)
 pytest==8.4.1
