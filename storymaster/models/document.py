@@ -19,7 +19,9 @@ class StoryDocument:
         self.metadata = {
             "storymaster_db": "",
             "last_sync": datetime.now().isoformat(),
-            "entity_map": {}
+            "entity_map": {},
+            "storyline_id": None,
+            "setting_id": None
         }
         self._is_modified = False
 
@@ -178,6 +180,26 @@ class StoryDocument:
         self.metadata["storymaster_db"] = db_path
         self._is_modified = True
 
+    def set_storyline(self, storyline_id: Optional[int], setting_id: Optional[int]) -> None:
+        """
+        Associate this document with a specific storyline and setting.
+
+        Args:
+            storyline_id: The storyline ID to associate with this document
+            setting_id: The setting ID to associate with this document
+        """
+        self.metadata["storyline_id"] = storyline_id
+        self.metadata["setting_id"] = setting_id
+        self._is_modified = True
+
+    def get_storyline_id(self) -> Optional[int]:
+        """Get the associated storyline ID."""
+        return self.metadata.get("storyline_id")
+
+    def get_setting_id(self) -> Optional[int]:
+        """Get the associated setting ID."""
+        return self.metadata.get("setting_id")
+
     def create_new(self, path: str) -> None:
         """Create a new document at the specified path."""
         self.path = path
@@ -185,7 +207,9 @@ class StoryDocument:
         self.metadata = {
             "storymaster_db": "",
             "last_sync": datetime.now().isoformat(),
-            "entity_map": {}
+            "entity_map": {},
+            "storyline_id": None,
+            "setting_id": None
         }
         self._is_modified = True
         self.save()
@@ -248,11 +272,18 @@ class StoryDocument:
                 try:
                     metadata_bytes = zf.read('metadata.json')
                     self.metadata = json.loads(metadata_bytes.decode('utf-8'))
+                    # Ensure storyline_id and setting_id exist (for backwards compatibility)
+                    if "storyline_id" not in self.metadata:
+                        self.metadata["storyline_id"] = None
+                    if "setting_id" not in self.metadata:
+                        self.metadata["setting_id"] = None
                 except KeyError:
                     self.metadata = {
                         "storymaster_db": "",
                         "last_sync": datetime.now().isoformat(),
-                        "entity_map": {}
+                        "entity_map": {},
+                        "storyline_id": None,
+                        "setting_id": None
                     }
 
             self._is_modified = False

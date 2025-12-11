@@ -25,6 +25,7 @@ from PySide6.QtWidgets import (
 
 from storymaster.models.document import StoryDocument
 from storymaster.view.storyweaver.auto_tag_dialog import AutoTagDialog
+from storymaster.view.storyweaver.document_storyline_dialog import DocumentStorylineDialog
 from storymaster.view.storyweaver.heading_navigator import HeadingNavigator
 from storymaster.view.storyweaver.loading_dialog import LoadingDialog
 from storymaster.view.storyweaver.text_editor import EntityTextEditor
@@ -55,6 +56,7 @@ class StoryweaverWidget(QWidget):
         str, str, int, int
     )  # (entity_name, entity_type, storyline_id, setting_id)
     document_modified = Signal(bool)  # is_modified
+    storyline_switch_requested = Signal(int, int)  # (storyline_id, setting_id)
 
     def __init__(
         self, model: "Model", current_storyline_id: int, current_setting_id: int, parent=None
@@ -151,6 +153,13 @@ class StoryweaverWidget(QWidget):
         save_action.triggered.connect(self.save_document)
         toolbar.addAction(save_action)
 
+        # Print/Export to PDF
+        print_action = QAction("Print to PDF", self)
+        print_action.setShortcut("Ctrl+P")
+        print_action.setToolTip("Export document to PDF")
+        print_action.triggered.connect(self.print_document)
+        toolbar.addAction(print_action)
+
         toolbar.addSeparator()
 
         # Auto-tag entities
@@ -158,6 +167,14 @@ class StoryweaverWidget(QWidget):
         auto_tag_action.setToolTip("Automatically find and tag entities in the document")
         auto_tag_action.triggered.connect(self.auto_tag_entities)
         toolbar.addAction(auto_tag_action)
+
+        toolbar.addSeparator()
+
+        # Associate with storyline
+        associate_action = QAction("Associate with Storyline", self)
+        associate_action.setToolTip("Associate this document with a specific storyline and setting")
+        associate_action.triggered.connect(self.associate_with_storyline)
+        toolbar.addAction(associate_action)
 
         toolbar.addSeparator()
 
@@ -491,6 +508,9 @@ class StoryweaverWidget(QWidget):
         self.current_document = StoryDocument()
         self.current_document.create_new(file_path)
 
+        # Associate with current storyline and setting
+        self.current_document.set_storyline(self.current_storyline_id, self.current_setting_id)
+
         # Clear editor (defer_highlight=False for immediate reattachment)
         self.editor.set_text("", defer_highlight=False)
 
@@ -599,6 +619,21 @@ class StoryweaverWidget(QWidget):
             self._update_word_count()
             self._do_update_heading_navigation()  # Update headings immediately
             self.document_modified.emit(False)
+
+            # Check if document has an associated storyline/setting and switch to it
+            doc_storyline_id = self.current_document.get_storyline_id()
+            doc_setting_id = self.current_document.get_setting_id()
+
+            if doc_storyline_id and doc_setting_id:
+                # Check if we need to switch
+                if (
+                    doc_storyline_id != self.current_storyline_id
+                    or doc_setting_id != self.current_setting_id
+                ):
+                    print(
+                        f"Document has associated storyline ({doc_storyline_id}) and setting ({doc_setting_id}), switching..."
+                    )
+                    self.storyline_switch_requested.emit(doc_storyline_id, doc_setting_id)
 
             # Close loading dialog
             self.loading_dialog.close()
@@ -838,6 +873,205 @@ class StoryweaverWidget(QWidget):
         if alias_count > 0:
             message += f"\nDiscovered and saved {alias_count} alias(es)"
         QMessageBox.information(self, "Tagging Complete", message)
+
+    def associate_with_storyline(self):
+        """Associate the current document with a storyline and setting."""
+        if not self.current_document:
+            return
+
+        # Get current association from document
+        current_storyline_id = self.current_document.get_storyline_id()
+        current_setting_id = self.current_document.get_setting_id()
+
+        # Open dialog
+        dialog = DocumentStorylineDialog(
+            self.model, current_storyline_id, current_setting_id, self
+        )
+        if dialog.exec() == QDialog.Accepted:
+            storyline_id, setting_id = dialog.get_selected_ids()
+            if storyline_id and setting_id:
+                # Update document association
+                self.current_document.set_storyline(storyline_id, setting_id)
+                self.document_modified.emit(True)
+
+                # Automatically switch to the selected storyline/setting
+                self.storyline_switch_requested.emit(storyline_id, setting_id)
+
+    def print_document(self):
+        """Export the current document to PDF."""
+        if not self.current_document:
+            QMessageBox.warning(self, "No Document", "No document is currently open")
+            return
+
+        # Get document content
+        content = self.editor.get_text()
+        if not content.strip():
+            QMessageBox.warning(self, "Empty Document", "The document is empty")
+            return
+
+        # Get save location for PDF
+        file_path, _ = QFileDialog.getSaveFileName(
+            self, "Export to PDF", "", "PDF Documents (*.pdf)"
+        )
+
+        if not file_path:
+            return
+
+        # Ensure .pdf extension
+        if not file_path.endswith(".pdf"):
+            file_path += ".pdf"
+
+        try:
+            # Convert markdown to HTML
+            import markdown
+
+            html_content = markdown.markdown(
+                content,
+                extensions=[
+                    "extra",  # Includes tables, fenced code blocks, etc.
+                    "nl2br",  # Convert newlines to <br>
+                    "sane_lists",  # Better list handling
+                ],
+            )
+
+            # Create styled HTML document
+            styled_html = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        @page {{
+            size: A4;
+            margin: 2.5cm;
+        }}
+        body {{
+            font-family: 'Georgia', 'Times New Roman', serif;
+            font-size: 12pt;
+            line-height: 1.6;
+            color: #333;
+            max-width: 100%;
+        }}
+        h1 {{
+            font-size: 24pt;
+            margin-top: 0.5em;
+            margin-bottom: 0.5em;
+            page-break-after: avoid;
+        }}
+        h2 {{
+            font-size: 20pt;
+            margin-top: 0.5em;
+            margin-bottom: 0.4em;
+            page-break-after: avoid;
+        }}
+        h3 {{
+            font-size: 16pt;
+            margin-top: 0.4em;
+            margin-bottom: 0.3em;
+            page-break-after: avoid;
+        }}
+        h4, h5, h6 {{
+            font-size: 14pt;
+            margin-top: 0.3em;
+            margin-bottom: 0.2em;
+            page-break-after: avoid;
+        }}
+        p {{
+            margin-top: 0;
+            margin-bottom: 0.8em;
+            text-align: justify;
+        }}
+        code {{
+            font-family: 'Courier New', monospace;
+            background-color: #f4f4f4;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }}
+        pre {{
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            page-break-inside: avoid;
+        }}
+        pre code {{
+            background-color: transparent;
+            padding: 0;
+        }}
+        blockquote {{
+            border-left: 4px solid #ccc;
+            margin-left: 0;
+            padding-left: 1em;
+            color: #666;
+            font-style: italic;
+        }}
+        table {{
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 1em;
+        }}
+        th, td {{
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }}
+        th {{
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }}
+        ul, ol {{
+            margin-top: 0;
+            margin-bottom: 0.8em;
+        }}
+        li {{
+            margin-bottom: 0.3em;
+        }}
+        hr {{
+            border: none;
+            border-top: 1px solid #ccc;
+            margin: 2em 0;
+        }}
+        /* Avoid page breaks inside these elements */
+        h1, h2, h3, h4, h5, h6, p, li {{
+            page-break-inside: avoid;
+        }}
+        /* Keep headings with following content */
+        h1, h2, h3, h4, h5, h6 {{
+            page-break-after: avoid;
+        }}
+    </style>
+</head>
+<body>
+{html_content}
+</body>
+</html>
+"""
+
+            # Convert HTML to PDF using weasyprint
+            from weasyprint import HTML
+
+            HTML(string=styled_html).write_pdf(file_path)
+
+            QMessageBox.information(
+                self,
+                "Export Successful",
+                f"Document exported to PDF successfully:\n{file_path}",
+            )
+
+        except ImportError as e:
+            QMessageBox.critical(
+                self,
+                "Missing Dependencies",
+                f"PDF export requires additional libraries.\n"
+                f"Please install them with:\n\n"
+                f"pip install markdown weasyprint\n\n"
+                f"Error: {e}",
+            )
+        except Exception as e:
+            import traceback
+
+            traceback.print_exc()
+            QMessageBox.critical(self, "Export Failed", f"Failed to export PDF:\n{e}")
 
     def cleanup(self):
         """Cleanup resources."""

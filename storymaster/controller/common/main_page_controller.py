@@ -849,6 +849,7 @@ class MainWindowController:
         self.storyweaver_widget.entity_navigation_requested.connect(self._on_entity_card_clicked)
         self.storyweaver_widget.entity_create_requested.connect(self._on_storyweaver_entity_create)
         self.storyweaver_widget.editor.alias_add_requested.connect(self._on_alias_add_requested)
+        self.storyweaver_widget.storyline_switch_requested.connect(self._on_storyweaver_storyline_switch)
 
         self.connect_signals()
         self.on_litographer_selected()  # Start on the litographer page
@@ -4803,6 +4804,51 @@ class MainWindowController:
 
         except Exception as e:
             print(f"[Storyweaver] Error fetching entity details: {e}")
+            import traceback
+            traceback.print_exc()
+
+    def _on_storyweaver_storyline_switch(self, storyline_id: int, setting_id: int):
+        """
+        Handle storyline/setting switch request from Storyweaver widget.
+
+        Args:
+            storyline_id: Storyline ID to switch to
+            setting_id: Setting ID to switch to
+        """
+        try:
+            # Validate storyline and setting exist
+            storylines = self.model.get_all_storylines()
+            settings = self.model.get_all_settings()
+
+            storyline_exists = any(s.id == storyline_id for s in storylines)
+            setting_exists = any(s.id == setting_id for s in settings)
+
+            if not storyline_exists or not setting_exists:
+                print(f"[Storyweaver] Invalid storyline ({storyline_id}) or setting ({setting_id})")
+                return
+
+            # Switch storyline and setting
+            self.current_storyline_id = storyline_id
+            self.current_setting_id = setting_id
+
+            # Update UI components
+            self._switch_to_first_plot_of_storyline()
+            self.load_and_draw_nodes()
+            self.update_status_indicators()
+
+            # Update storyweaver context
+            self.storyweaver_widget.update_project_context(storyline_id, setting_id)
+
+            # Get storyline and setting names for status message
+            storyline_name = next((s.name for s in storylines if s.id == storyline_id), "Unknown")
+            setting_name = next((s.name for s in settings if s.id == setting_id), "Unknown")
+
+            self.view.ui.statusbar.showMessage(
+                f"Switched to storyline '{storyline_name}' in setting '{setting_name}'", 3000
+            )
+
+        except Exception as e:
+            print(f"[Storyweaver] Error switching storyline/setting: {e}")
             import traceback
             traceback.print_exc()
 
