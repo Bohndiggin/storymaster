@@ -1034,9 +1034,10 @@ class StoryweaverWidget(QWidget):
             printer.setOutputFormat(QPrinter.PdfFormat)
             printer.setOutputFileName(file_path)
 
-            # Set page size and margins (A4 with 2.5cm margins)
+            # Set page size and margins (A4 portrait with 2.5cm margins)
             page_layout = QPageLayout()
             page_layout.setPageSize(QPageSize(QPageSize.A4))
+            page_layout.setOrientation(QPageLayout.Portrait)
             page_layout.setUnits(QPageLayout.Millimeter)
             page_layout.setMargins(QMarginsF(25, 25, 25, 25))
             printer.setPageLayout(page_layout)
