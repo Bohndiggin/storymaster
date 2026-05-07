@@ -10,6 +10,50 @@ This setup assumes:
 - **Single user** (the device-token auth model in the codebase has no concept
   of distinct human users).
 
+## Quickstart: automated install
+
+Clone the repo on the host, then run:
+
+```bash
+sudo deploy/install_sync_server.sh
+```
+
+This handles everything in the manual sections below: creates a system user,
+syncs the repo to `/opt/storymaster`, sets up a virtualenv, initializes (or
+migrates) the database, installs the systemd unit, and starts the service.
+
+The script requires Python 3.11. Set `PYTHON_BIN` to your interpreter path
+(e.g. via pyenv):
+
+```bash
+sudo PYTHON_BIN="$(pyenv prefix 3.11.9)/bin/python" deploy/install_sync_server.sh
+```
+
+Override other defaults via env, e.g.:
+
+```bash
+sudo SYNC_USER=storyhost \
+     DATA_DIR=/srv/storymaster \
+     PORT=9001 \
+     SEED_DB=/home/me/storymaster.db \
+     PYTHON_BIN="$(pyenv prefix 3.11.9)/bin/python" \
+     deploy/install_sync_server.sh
+```
+
+`SEED_DB` (optional) copies an existing DB into the data dir before running
+the sync_uuid migration — handy when bootstrapping the host from a desktop's
+local DB.
+
+Notes on `PYTHON_BIN`:
+- Defaults to `python3.11` on `$PATH`.
+- Resolved to its absolute, real path via `readlink -f`, so pyenv shims work.
+- The resolved binary must be readable by the `storymaster` system user
+  (pyenv's installed CPython binaries usually are; shim wrappers under
+  `~/.pyenv/shims` may not be — point at `~/.pyenv/versions/X/bin/python`
+  instead if `sudo` strips your env or readability fails).
+
+If you'd rather do it by hand, the steps below cover the same ground.
+
 ## 1. Prepare the host
 
 ```bash

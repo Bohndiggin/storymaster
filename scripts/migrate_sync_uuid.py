@@ -18,6 +18,9 @@ from datetime import datetime
 
 
 def get_db_path() -> str:
+    env_path = os.getenv("STORYMASTER_DB_PATH")
+    if env_path:
+        return env_path
     home_dir = os.path.expanduser("~")
     db_dir = os.path.join(home_dir, ".local", "share", "storymaster")
     return os.path.join(db_dir, "storymaster.db")

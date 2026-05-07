@@ -6,6 +6,12 @@ This script initializes a new SQLite database with the proper schema.
 Run this before using the application for the first time.
 """
 
+import sys
+from pathlib import Path
+
+# Allow running this script directly from the repo without PYTHONPATH set.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from sqlalchemy import create_engine
 
 from storymaster.model.database.schema.base import BaseTable
@@ -13,14 +19,20 @@ from storymaster.model.database.schema.base import BaseTable
 
 def init_database():
     """Initialize SQLite database with schema"""
-    # Use SQLite database in user's home directory for AppImage compatibility
     import os
 
-    home_dir = os.path.expanduser("~")
-    db_dir = os.path.join(home_dir, ".local", "share", "storymaster")
-    os.makedirs(db_dir, exist_ok=True)
+    # Honor STORYMASTER_DB_PATH for self-hosted deployments; fall back to the
+    # user-local path used by the desktop app.
+    env_path = os.getenv("STORYMASTER_DB_PATH")
+    if env_path:
+        db_path = env_path
+    else:
+        home_dir = os.path.expanduser("~")
+        db_dir = os.path.join(home_dir, ".local", "share", "storymaster")
+        os.makedirs(db_dir, exist_ok=True)
+        db_path = os.path.join(db_dir, "storymaster.db")
 
-    db_path = os.path.join(db_dir, "storymaster.db")
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
     db_connection = f"sqlite:///{db_path}"
 
     print(f"Initializing database: {db_connection}")
