@@ -17,7 +17,8 @@ from storymaster.sync_client.config import (
 )
 
 PersistFn = Callable[[SyncClientConfig], None]
-from storymaster.sync_server.models import EntityChange
+from storymaster.sync_client.conflicts import record_conflict
+from storymaster.sync_server.models import ConflictInfo, EntityChange
 from storymaster.sync_server.sync_engine import SyncEngine
 
 logger = logging.getLogger(__name__)
@@ -120,6 +121,8 @@ class SyncClient:
                     changes=changes,
                     bump_versions=False,  # mirror server's authoritative versions
                 )
+                for conflict in result["conflicts"]:
+                    record_conflict(session, conflict, source="pull")
                 applied = {
                     "accepted": result["accepted"],
                     "rejected": result["rejected"],
@@ -156,11 +159,23 @@ class SyncClient:
         r = self._post(url, json=body)
         payload = r.json()
 
+        raw_conflicts = payload.get("conflicts", [])
+        if raw_conflicts:
+            with self._session() as session:
+                for raw in raw_conflicts:
+                    try:
+                        info = ConflictInfo.model_validate(raw)
+                        record_conflict(session, info, source="push")
+                    except Exception:
+                        logger.exception(
+                            "Failed to record push conflict: %r", raw
+                        )
+
         summary = {
             "sent": len(changes),
             "accepted": payload.get("accepted", 0),
             "rejected": payload.get("rejected", 0),
-            "conflicts": len(payload.get("conflicts", [])),
+            "conflicts": len(raw_conflicts),
         }
 
         # Only advance the watermark if everything was accepted, otherwise we

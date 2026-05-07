@@ -23,6 +23,13 @@ if not os.path.exists(db_path):
 engine = create_engine(f"sqlite:///{db_path}")
 test_engine = create_engine(f"sqlite:///{test_db_path}")
 
+# Idempotently create any tables introduced after the DB was first
+# initialized (e.g. SyncConflict). create_all skips existing tables, so this
+# is safe to run on every startup.
+from storymaster.model.database.schema.base import BaseTable as _BaseTable  # noqa: E402
+
+_BaseTable.metadata.create_all(engine)
+
 
 def get_test_engine(_) -> Engine:
     """returns the test engine"""

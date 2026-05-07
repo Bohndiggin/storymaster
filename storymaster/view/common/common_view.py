@@ -49,6 +49,7 @@ class MainView(BaseView):
     def _setup_sync_menu(self):
         """Add Sync menu to menubar"""
         tools_menu = self.ui.menubar.addMenu("Tools")
+        self._tools_menu = tools_menu
 
         sync_action = QAction("Mobile Sync Settings", self)
         sync_action.setStatusTip("Manage mobile device synchronization")
@@ -67,6 +68,16 @@ class MainView(BaseView):
         sync_now_action.triggered.connect(self.run_sync_now)
         tools_menu.addAction(sync_now_action)
 
+        # Conflict resolution. Label updates with pending count when shown.
+        self._conflicts_action = QAction("Resolve Sync Conflicts", self)
+        self._conflicts_action.setStatusTip(
+            "Review and resolve rows that diverged between this device and the server"
+        )
+        self._conflicts_action.triggered.connect(self.show_conflicts_dialog)
+        tools_menu.addAction(self._conflicts_action)
+        # Refresh the count whenever the user opens the menu.
+        tools_menu.aboutToShow.connect(self._refresh_conflicts_label)
+
     def show_sync_dialog(self):
         """Show the sync management dialog"""
         from storymaster.view.common.sync_dialog import SyncDialog
@@ -79,6 +90,33 @@ class MainView(BaseView):
 
         dialog = RemoteSyncDialog(self)
         dialog.exec()
+
+    def show_conflicts_dialog(self):
+        from storymaster.view.common.conflicts_dialog import ConflictsDialog
+
+        dialog = ConflictsDialog(self)
+        dialog.exec()
+        self._refresh_conflicts_label()
+
+    def _refresh_conflicts_label(self):
+        """Update the menu label with the current pending-conflict count."""
+        try:
+            from sqlalchemy.orm import sessionmaker
+
+            from storymaster.model.database.base_connection import engine
+            from storymaster.sync_client.conflicts import list_pending
+
+            session = sessionmaker(bind=engine)()
+            try:
+                count = len(list_pending(session))
+            finally:
+                session.close()
+        except Exception:
+            count = 0
+        label = "Resolve Sync Conflicts"
+        if count:
+            label = f"Resolve Sync Conflicts ({count})"
+        self._conflicts_action.setText(label)
 
     def run_sync_now(self):
         from PySide6.QtWidgets import QMessageBox

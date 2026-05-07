@@ -1718,5 +1718,34 @@ class SyncPairingToken(BaseTable):
     )
 
 
+class SyncConflict(BaseTable):
+    """Unresolved sync conflicts the user needs to review.
+
+    Stored client-side only — not part of the synced entity set. Each row
+    records a (entity_type, target_sync_uuid) where local and remote diverged
+    so the UI can present a side-by-side resolution.
+    """
+
+    __tablename__ = "sync_conflict"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    entity_type: Mapped[str] = mapped_column(String(100), nullable=False)
+    target_sync_uuid: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+    mine_data: Mapped[str] = mapped_column(Text, nullable=False)  # JSON
+    theirs_data: Mapped[str] = mapped_column(Text, nullable=False)  # JSON
+    mine_version: Mapped[int] = mapped_column(Integer, nullable=False)
+    theirs_version: Mapped[int] = mapped_column(Integer, nullable=False)
+    source: Mapped[str] = mapped_column(String(10), nullable=False)  # 'push' | 'pull'
+    detected_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    resolved_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, default=None
+    )
+    resolution: Mapped[str | None] = mapped_column(
+        String(20), nullable=True, default=None
+    )  # 'mine' | 'theirs' | 'merged' | 'discarded'
+
+
 
 
