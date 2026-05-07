@@ -50,7 +50,35 @@ from storymaster.controller.common.main_page_controller import MainWindowControl
 from storymaster.controller.common.user_startup import get_startup_user_id
 from storymaster.model.common.common_model import BaseModel
 from storymaster.view.common.common_view import MainView
+from storymaster.sync_client.client import SyncClient, SyncError
 from storymaster.sync_server.server_manager import start_sync_server, stop_sync_server
+
+
+def _attempt_remote_sync(label: str) -> None:
+    """Best-effort pull/push against a configured remote sync server.
+
+    Logs and swallows SyncError so a missing/unreachable server doesn't block
+    app startup or shutdown.
+    """
+    try:
+        client = SyncClient()
+    except Exception as e:
+        print(f"⚠️  Could not initialize sync client: {e}")
+        return
+    if not client.is_configured():
+        return
+    print(f"🔄 Remote sync ({label})...")
+    try:
+        if label == "startup":
+            result = client.pull()
+            print(f"   pulled: {result}")
+        else:
+            result = client.push()
+            print(f"   pushed: {result}")
+    except SyncError as e:
+        print(f"⚠️  Remote sync ({label}) failed: {e}")
+    except Exception as e:
+        print(f"⚠️  Unexpected error during remote sync ({label}): {e}")
 
 
 def debug_environment():
@@ -295,6 +323,30 @@ def check_and_run_migrations():
                 else:
                     print(f"❌ Sync migration failed: {result.stderr}")
 
+        # Check for sync_uuid migration (multi-device sync support)
+        needs_uuid_migration = False
+        if "user" in inspector.get_table_names():
+            columns = [col["name"] for col in inspector.get_columns("user")]
+            if "sync_uuid" not in columns:
+                needs_uuid_migration = True
+
+        if needs_uuid_migration:
+            print("🔄 Database needs sync_uuid migration...")
+            print("   (Adding cross-device row identity for multi-device sync)")
+            migration_script = Path(__file__).parent.parent / "scripts" / "migrate_sync_uuid.py"
+            if migration_script.exists():
+                import subprocess
+
+                result = subprocess.run(
+                    [sys.executable, str(migration_script)],
+                    capture_output=True,
+                    text=True,
+                )
+                if result.returncode == 0:
+                    print("✅ sync_uuid migration completed.")
+                else:
+                    print(f"❌ sync_uuid migration failed: {result.stderr}")
+
     except Exception as e:
         print(f"⚠️  Migration check failed: {e}")
         # Continue anyway - don't block startup
@@ -333,6 +385,9 @@ def main():
     else:
         print("⚠️  Sync server failed to start (app will continue without sync)")
 
+    # Pull from remote sync server (if configured) before showing UI.
+    _attempt_remote_sync("startup")
+
     # Get the user ID to use for startup (creates user if none exist)
     user_id = get_startup_user_id()
 
@@ -345,6 +400,9 @@ def main():
     try:
         exit_code = app.exec()
     finally:
+        # Push local changes upstream before shutdown.
+        _attempt_remote_sync("shutdown")
+
         # Ensure sync server is stopped on exit
         print("\n🛑 Shutting down sync server...")
         stop_sync_server()

@@ -1,0 +1,28 @@
+[Unit]
+Description=Storymaster Sync Server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=storymaster
+Group=storymaster
+WorkingDirectory=/opt/storymaster
+Environment=STORYMASTER_DB_PATH=/var/lib/storymaster/storymaster.db
+Environment=STORYMASTER_SYNC_HOST=0.0.0.0
+Environment=STORYMASTER_SYNC_PORT=8765
+# Optional: rotate this if you suspect the secret leaked.
+Environment=SYNC_SECRET_KEY=change-me-to-something-long-and-random
+ExecStart=/opt/storymaster/.venv/bin/python -m storymaster.sync_server
+Restart=on-failure
+RestartSec=5
+
+# Hardening — drop these if they cause trouble on your distro.
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/storymaster
+
+[Install]
+WantedBy=multi-user.target

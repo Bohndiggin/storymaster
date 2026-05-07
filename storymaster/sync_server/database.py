@@ -7,10 +7,13 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from storymaster.sync_server.config import config
 
-# Create engine
+# `check_same_thread=False` is SQLite-only; skip it for other dialects.
+_db_url = config.get_database_url()
+_connect_args = {"check_same_thread": False} if _db_url.startswith("sqlite") else {}
+
 engine = create_engine(
-    config.get_database_url(),
-    connect_args={"check_same_thread": False},  # Needed for SQLite
+    _db_url,
+    connect_args=_connect_args,
     echo=False,  # Set to True for SQL query logging
 )
 

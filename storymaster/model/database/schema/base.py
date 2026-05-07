@@ -1,6 +1,7 @@
 """Holds base database datatypes for Lorekeeper"""
 
 import enum
+import uuid
 
 from datetime import datetime
 
@@ -22,10 +23,21 @@ from sqlalchemy.sql import func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
+def _new_sync_uuid() -> str:
+    return str(uuid.uuid4())
+
+
 class BaseTable(DeclarativeBase):
     __abstract__ = True
 
     # Sync tracking fields
+    sync_uuid: Mapped[str] = mapped_column(
+        String(36),
+        unique=True,
+        index=True,
+        nullable=False,
+        default=_new_sync_uuid,
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

@@ -22,6 +22,10 @@ class SyncServerConfig:
     @staticmethod
     def get_database_path() -> str:
         """Get the path to the Storymaster database"""
+        # Allow override for self-hosted deployments.
+        env_path = os.getenv("STORYMASTER_DB_PATH")
+        if env_path:
+            return env_path
         home_dir = os.path.expanduser("~")
         db_dir = os.path.join(home_dir, ".local", "share", "storymaster")
         db_path = os.path.join(db_dir, "storymaster.db")
@@ -29,7 +33,14 @@ class SyncServerConfig:
 
     @staticmethod
     def get_database_url() -> str:
-        """Get SQLAlchemy database URL"""
+        """Get SQLAlchemy database URL.
+
+        Honors STORYMASTER_DB_URL (full SQLAlchemy URL) first, then
+        STORYMASTER_DB_PATH (SQLite file path), finally the default user-local file.
+        """
+        env_url = os.getenv("STORYMASTER_DB_URL")
+        if env_url:
+            return env_url
         db_path = SyncServerConfig.get_database_path()
         return f"sqlite:///{db_path}"
 

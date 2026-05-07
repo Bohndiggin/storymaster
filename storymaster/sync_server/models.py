@@ -47,7 +47,11 @@ class EntityChange(BaseModel):
     )
 
     entity_type: str = Field(..., description="Table name (e.g., 'actor', 'location')")
-    entity_id: int = Field(..., description="Primary key of the entity")
+    entity_id: int = Field(..., description="Sender's local primary key (informational only)")
+    sync_uuid: Optional[str] = Field(
+        None,
+        description="Canonical cross-device identity. Required for create/update/delete on multi-master sync.",
+    )
     operation: str = Field(..., description="'create', 'update', or 'delete')")
     data: Optional[dict[str, Any]] = Field(
         None,
@@ -60,7 +64,7 @@ class EntityChange(BaseModel):
     @model_validator(mode='before')
     @classmethod
     def extract_version_and_timestamp(cls, values):
-        """Extract version and updated_at from entity_data if not at top level"""
+        """Extract version, sync_uuid, and updated_at from entity_data if not at top level"""
         if isinstance(values, dict):
             # Handle both "data" and "entity_data" field names
             entity_data = values.get('data') or values.get('entity_data')
@@ -69,6 +73,10 @@ class EntityChange(BaseModel):
                 # Extract version if not at top level
                 if 'version' not in values and 'version' in entity_data:
                     values['version'] = entity_data['version']
+
+                # Extract sync_uuid if not at top level
+                if 'sync_uuid' not in values and 'sync_uuid' in entity_data:
+                    values['sync_uuid'] = entity_data['sync_uuid']
 
                 # Extract updated_at if not at top level
                 if 'updated_at' not in values and 'updated_at' in entity_data:
@@ -138,6 +146,7 @@ class ConflictInfo(BaseModel):
 
     entity_type: str
     entity_id: int
+    sync_uuid: Optional[str] = None
     mobile_version: int
     desktop_version: int
     mobile_updated_at: datetime
