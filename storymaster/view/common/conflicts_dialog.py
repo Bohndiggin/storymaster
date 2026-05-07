@@ -166,6 +166,12 @@ class ConflictsDialog(QDialog):
 
         # Bulk action buttons
         bulk_row = QHBoxLayout()
+        self.btn_accept_all = QPushButton("Accept All Incoming")
+        self.btn_accept_all.setToolTip(
+            "Apply 'theirs' (server's version) to every pending conflict. "
+            "Right choice for a fresh device where the server is canonical."
+        )
+        self.btn_accept_all.clicked.connect(self._action_accept_all)
         self.btn_discard_all = QPushButton("Discard All Pending")
         self.btn_discard_all.setToolTip(
             "Mark every pending conflict resolved without changing local data. "
@@ -173,6 +179,7 @@ class ConflictsDialog(QDialog):
         )
         self.btn_discard_all.clicked.connect(self._action_discard_all)
         bulk_row.addStretch(1)
+        bulk_row.addWidget(self.btn_accept_all)
         bulk_row.addWidget(self.btn_discard_all)
         right_layout.addLayout(bulk_row)
 
@@ -357,6 +364,35 @@ class ConflictsDialog(QDialog):
         except Exception as e:
             QMessageBox.critical(self, "Resolution failed", str(e))
             return
+        self.refresh()
+
+    def _action_accept_all(self) -> None:
+        n = len(self._conflicts)
+        if n == 0:
+            return
+        confirm = QMessageBox.question(
+            self,
+            "Accept all incoming?",
+            f"Replace your local data with the server's version for all {n} "
+            "pending conflicts. This will overwrite any unsynced local edits "
+            "on those rows. Continue?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if confirm != QMessageBox.StandardButton.Yes:
+            return
+        try:
+            resolved, failed = conflicts_api.accept_all_incoming(self._session)
+        except Exception as e:
+            QMessageBox.critical(self, "Bulk accept failed", str(e))
+            return
+        if failed:
+            QMessageBox.warning(
+                self,
+                "Some couldn't be applied",
+                f"Resolved {resolved}. {failed} could not be applied "
+                "(usually missing FK targets — pull again and retry).",
+            )
         self.refresh()
 
     def _action_discard_all(self) -> None:

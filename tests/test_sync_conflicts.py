@@ -230,6 +230,41 @@ def test_discard_all_clears_pending(db, setting):
     assert actor.first_name == "A"  # not touched
 
 
+def test_accept_all_incoming_applies_theirs_to_each(db, setting):
+    a1 = Actor(first_name="LocalA", setting_id=setting.id)
+    a2 = Actor(first_name="LocalB", setting_id=setting.id)
+    db.add(a1)
+    db.add(a2)
+    db.commit()
+
+    for actor, theirs_name in ((a1, "ServerA"), (a2, "ServerB")):
+        info = _make_conflict_info(
+            actor.sync_uuid,
+            mine={
+                "first_name": actor.first_name,
+                "setting_id_sync_uuid": setting.sync_uuid,
+                "version": 1,
+            },
+            theirs={
+                "first_name": theirs_name,
+                "setting_id_sync_uuid": setting.sync_uuid,
+                "version": 2,
+            },
+            mv=1, tv=2,
+        )
+        conflicts_api.record_conflict(db, info, source="push")
+
+    resolved, failed = conflicts_api.accept_all_incoming(db)
+    assert resolved == 2
+    assert failed == 0
+
+    db.refresh(a1)
+    db.refresh(a2)
+    assert a1.first_name == "ServerA"
+    assert a2.first_name == "ServerB"
+    assert conflicts_api.list_pending(db) == []
+
+
 def test_pull_records_conflicts(db, setting):
     """SyncEngine.apply_changes returns conflicts; sync_client should record them."""
     actor = Actor(first_name="LocalEdit", setting_id=setting.id)

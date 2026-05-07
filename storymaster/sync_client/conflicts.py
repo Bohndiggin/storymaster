@@ -169,6 +169,35 @@ def discard_all(session: Session) -> int:
     return len(pending)
 
 
+def accept_all_incoming(session: Session) -> tuple[int, int]:
+    """Apply 'theirs' to every pending conflict. Returns (resolved, failed).
+
+    Best-effort: if one conflict can't be applied (missing FK target etc.),
+    log it and keep going on the rest. The failed ones stay pending for the
+    user to inspect manually.
+    """
+    pending = list_pending(session)
+    resolved = 0
+    failed = 0
+    for c in pending:
+        try:
+            resolve_use_theirs(session, c.id)
+            resolved += 1
+        except ConflictResolutionError as e:
+            logger.warning(
+                "Could not auto-accept conflict id=%s (%s sync_uuid=%s): %s",
+                c.id, c.entity_type, c.target_sync_uuid, e,
+            )
+            failed += 1
+            # resolve_use_theirs raises before commit on failure, but the
+            # session may need a clean state for the next iteration.
+            try:
+                session.rollback()
+            except Exception:
+                pass
+    return resolved, failed
+
+
 # ---- internals ----
 
 
