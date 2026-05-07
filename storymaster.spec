@@ -372,6 +372,12 @@ a = Analysis(
         'PySide6.QtBluetooth',
         'PySide6.QtPositioning',
         'PySide6.QtSerialPort',
+        # Spell checking - optional at runtime, excluded to avoid PyInstaller
+        # hook-enchant.py crashing when the enchant C library isn't in the
+        # subprocess search path during analysis
+        'enchant',
+        'enchant.checker',
+        'enchant.tokenize',
         # Test modules
         'pytest',
         'unittest',

@@ -80,11 +80,6 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: Install system dependencies
-      run: |
-        # enchant C library required by pyenchant (spell checking)
-        brew install enchant
-
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
