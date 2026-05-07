@@ -142,7 +142,11 @@ def client(running_server, paired_device, client_engine):
         device_id="desktop-A",
         device_name="Desktop A",
     )
-    return SyncClient(config=config, engine=client_engine)
+    # Pass a no-op persist so tests never write the user's real
+    # ~/.config/storymaster/sync.json.
+    return SyncClient(
+        config=config, engine=client_engine, persist=lambda _cfg: None
+    )
 
 
 def _client_session(client_engine):

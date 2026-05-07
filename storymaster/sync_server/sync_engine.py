@@ -199,9 +199,16 @@ class SyncEngine:
             if uuid_key not in translated:
                 continue
             target_uuid = translated.pop(uuid_key)
+            column = model_class.__table__.columns.get(col_name)
+            col_nullable = bool(column.nullable) if column is not None else True
+
             if target_uuid is None:
-                # FK is null — preserve as null
-                translated[col_name] = None
+                if col_nullable:
+                    translated[col_name] = None
+                else:
+                    # Sender has a NULL in a NOT NULL FK — corrupt source row.
+                    # Reject so we don't crash the whole batch on the INSERT.
+                    missing.append(f"{target_table}:<null on NOT NULL {col_name}>")
                 continue
             local_id = self._lookup_local_id_by_sync_uuid(target_table, target_uuid)
             if local_id is None:
@@ -392,6 +399,12 @@ class SyncEngine:
                     "Error applying %s change for %s sync_uuid=%s: %s",
                     change.operation, change.entity_type, change.sync_uuid, e,
                 )
+                # Roll back so subsequent changes (and the caller's commit, e.g.
+                # update_last_sync) can run on a clean session.
+                try:
+                    self.db.rollback()
+                except Exception:
+                    logger.exception("Rollback after apply error also failed")
                 rejected += 1
 
         return {"accepted": accepted, "conflicts": conflicts, "rejected": rejected}

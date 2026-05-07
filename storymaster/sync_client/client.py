@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Callable, Optional
 
 import requests
 from sqlalchemy.engine import Engine
@@ -15,6 +15,8 @@ from storymaster.sync_client.config import (
     load_config,
     save_config,
 )
+
+PersistFn = Callable[[SyncClientConfig], None]
 from storymaster.sync_server.models import EntityChange
 from storymaster.sync_server.sync_engine import SyncEngine
 
@@ -43,9 +45,13 @@ class SyncClient:
         config: Optional[SyncClientConfig] = None,
         timeout: int = 30,
         engine: Optional[Engine] = None,
+        persist: Optional[PersistFn] = None,
     ):
         self.config = config or load_config()
         self.timeout = timeout
+        # `persist` lets tests pass a no-op so they don't write the user's
+        # ~/.config/storymaster/sync.json. Default writes the real file.
+        self._persist: PersistFn = persist if persist is not None else save_config
         if engine is None:
             # Imported lazily so importing sync_client doesn't force the local
             # DB engine to spin up (helpful for tests and tooling).
@@ -81,7 +87,7 @@ class SyncClient:
         self.config.auth_token = body["auth_token"]
         if device_name:
             self.config.device_name = device_name
-        save_config(self.config)
+        self._persist(self.config)
 
     def sync_now(self) -> dict:
         """Push then pull. Returns a summary dict for status display."""
@@ -124,7 +130,7 @@ class SyncClient:
         server_ts = payload.get("sync_timestamp")
         if server_ts:
             self.config.last_pulled_at = server_ts
-            save_config(self.config)
+            self._persist(self.config)
 
         logger.info("Pull: %s", applied)
         return applied
@@ -141,7 +147,7 @@ class SyncClient:
 
         if not changes:
             self.config.last_pushed_at = datetime.now(timezone.utc).isoformat()
-            save_config(self.config)
+            self._persist(self.config)
             return {"sent": 0, "accepted": 0, "rejected": 0, "conflicts": 0}
 
         url = self.config.server_url + self.PUSH_PATH
@@ -161,7 +167,7 @@ class SyncClient:
         # need the rejected rows to be considered again next push.
         if summary["rejected"] == 0 and summary["conflicts"] == 0:
             self.config.last_pushed_at = datetime.now(timezone.utc).isoformat()
-            save_config(self.config)
+            self._persist(self.config)
 
         logger.info("Push: %s", summary)
         return summary

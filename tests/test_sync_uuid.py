@@ -195,6 +195,48 @@ def test_pull_includes_fk_sync_uuids(db, setting):
     assert actor_change.data["setting_id_sync_uuid"] == setting.sync_uuid
 
 
+def test_null_fk_on_not_null_column_rejects_cleanly(db, device, setting):
+    """
+    A push carrying NULL for a NOT NULL FK should be rejected, not crash the
+    batch. Reproduces a real-world case where corrupt source data had
+    plot_id=NULL on litography_plot_section.
+    """
+    from storymaster.model.database.schema.base import Actor
+
+    # Two changes: first one is broken (NULL on NOT NULL FK), second is valid.
+    # If rejection isn't clean, the second change errors with PendingRollbackError.
+    bad = EntityChange(
+        entity_type="actor",
+        entity_id=1,
+        sync_uuid=str(uuid.uuid4()),
+        operation="create",
+        entity_data={
+            "first_name": "Broken",
+            "setting_id_sync_uuid": None,  # NULL on NOT NULL setting_id
+            "version": 1,
+        },
+        version=1,
+        updated_at=None,
+    )
+    good = EntityChange(
+        entity_type="actor",
+        entity_id=2,
+        sync_uuid=str(uuid.uuid4()),
+        operation="create",
+        entity_data={
+            "first_name": "Fine",
+            "setting_id_sync_uuid": setting.sync_uuid,
+            "version": 1,
+        },
+        version=1,
+        updated_at=None,
+    )
+    engine = SyncEngine(db)
+    result = engine.apply_changes(device, [bad, good])
+    assert result["rejected"] == 1
+    assert result["accepted"] == 1
+
+
 def test_delete_by_sync_uuid(db, device, setting):
     actor = Actor(first_name="Doomed", setting_id=setting.id)
     db.add(actor)
