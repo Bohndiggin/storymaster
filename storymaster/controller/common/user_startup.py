@@ -179,6 +179,7 @@ def create_first_user(model: BaseModel) -> bool:
         return True
 
     try:
+        storyline_data.pop("_selected_setting_id", None)
         user_model.add_row("storyline", storyline_data)
 
         # Get the newly created storyline
