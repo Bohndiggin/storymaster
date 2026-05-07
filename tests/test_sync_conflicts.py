@@ -207,6 +207,29 @@ def test_discard_marks_resolved_no_data_change(db, setting):
     assert conflicts_api.list_pending(db) == []
 
 
+def test_discard_all_clears_pending(db, setting):
+    actor = Actor(first_name="A", setting_id=setting.id)
+    db.add(actor)
+    db.commit()
+    for i in range(3):
+        info = _make_conflict_info(
+            actor.sync_uuid,
+            mine={"first_name": f"m{i}", "setting_id_sync_uuid": setting.sync_uuid},
+            theirs={"first_name": f"t{i}", "setting_id_sync_uuid": setting.sync_uuid},
+            mv=1, tv=2 + i,
+        )
+        # Different sync_uuid each time so they don't dedupe
+        info.sync_uuid = str(uuid.uuid4())
+        conflicts_api.record_conflict(db, info, source="push")
+    assert len(conflicts_api.list_pending(db)) == 3
+
+    n = conflicts_api.discard_all(db)
+    assert n == 3
+    assert conflicts_api.list_pending(db) == []
+    db.refresh(actor)
+    assert actor.first_name == "A"  # not touched
+
+
 def test_pull_records_conflicts(db, setting):
     """SyncEngine.apply_changes returns conflicts; sync_client should record them."""
     actor = Actor(first_name="LocalEdit", setting_id=setting.id)

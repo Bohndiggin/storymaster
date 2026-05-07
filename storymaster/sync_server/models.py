@@ -179,10 +179,28 @@ class ConflictInfo(BaseModel):
             return str(obj)
 
 
+class AcceptedState(BaseModel):
+    """Authoritative state of a row after the server applied a pushed change.
+
+    Returned in SyncPushResponse so the client can update its local row's
+    version/updated_at to match — without this, the next pull re-fetches the
+    just-pushed row at server's bumped version and the client treats it as a
+    conflict.
+    """
+
+    sync_uuid: str
+    version: int
+    updated_at: datetime
+
+
 class SyncPushResponse(BaseModel):
     """Response after pushing changes"""
 
     accepted: int = Field(..., description="Number of changes accepted")
+    accepted_states: list[AcceptedState] = Field(
+        default_factory=list,
+        description="New state of each accepted row — client should mirror.",
+    )
     conflicts: list[ConflictInfo] = Field([], description="Conflicts that need resolution")
     rejected: int = Field(0, description="Number of changes rejected")
     message: str = "Sync completed"

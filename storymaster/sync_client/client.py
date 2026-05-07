@@ -18,8 +18,12 @@ from storymaster.sync_client.config import (
 
 PersistFn = Callable[[SyncClientConfig], None]
 from storymaster.sync_client.conflicts import record_conflict
-from storymaster.sync_server.models import ConflictInfo, EntityChange
-from storymaster.sync_server.sync_engine import SyncEngine
+from storymaster.sync_server.models import (
+    AcceptedState,
+    ConflictInfo,
+    EntityChange,
+)
+from storymaster.sync_server.sync_engine import ENTITY_TYPE_MAP, SyncEngine
 
 logger = logging.getLogger(__name__)
 
@@ -156,10 +160,33 @@ class SyncClient:
         url = self.config.server_url + self.PUSH_PATH
         # Pydantic .model_dump() with mode='json' produces JSON-serializable types.
         body = {"changes": [c.model_dump(mode="json", by_alias=False) for c in changes]}
+        # Index sent changes by sync_uuid so we can match accepted_states back
+        # to the entity_type (the response only carries sync_uuid).
+        type_by_uuid: dict[str, str] = {
+            c.sync_uuid: c.entity_type for c in changes if c.sync_uuid
+        }
         r = self._post(url, json=body)
         payload = r.json()
 
         raw_conflicts = payload.get("conflicts", [])
+        raw_states = payload.get("accepted_states", [])
+
+        # Apply server's authoritative version/updated_at to local rows so the
+        # next pull doesn't re-fetch them as version-mismatch conflicts.
+        if raw_states:
+            with self._session() as session:
+                for raw in raw_states:
+                    try:
+                        state = AcceptedState.model_validate(raw)
+                    except Exception:
+                        logger.exception("Bad accepted_state in response: %r", raw)
+                        continue
+                    entity_type = type_by_uuid.get(state.sync_uuid)
+                    if entity_type is None:
+                        continue
+                    self._apply_accepted_state(session, entity_type, state)
+                session.commit()
+
         if raw_conflicts:
             with self._session() as session:
                 for raw in raw_conflicts:
@@ -188,6 +215,25 @@ class SyncClient:
         return summary
 
     # ---- internals ----
+
+    def _apply_accepted_state(
+        self, session: Session, entity_type: str, state: AcceptedState
+    ) -> None:
+        """Mirror the server's post-push state (version, updated_at) on the
+        matching local row. No-op if the row doesn't exist locally (someone
+        deleted it between push and apply, very unlikely)."""
+        from sqlalchemy import select
+
+        model = ENTITY_TYPE_MAP.get(entity_type)
+        if model is None:
+            return
+        row = session.execute(
+            select(model).where(model.sync_uuid == state.sync_uuid)
+        ).scalar_one_or_none()
+        if row is None:
+            return
+        row.version = state.version
+        row.updated_at = state.updated_at
 
     def _post(self, url: str, *, json: dict) -> requests.Response:
         headers = {"Authorization": f"Bearer {self.config.auth_token}"}

@@ -154,6 +154,21 @@ def discard(session: Session, conflict_id: int) -> None:
     _mark_resolved(session, conflict, "discarded")
 
 
+def discard_all(session: Session) -> int:
+    """Mark every pending conflict as discarded. Returns count discarded.
+
+    Does not change any entity rows — only the SyncConflict ledger. Useful
+    when a software bug created spurious conflicts and you want a clean slate.
+    """
+    pending = list_pending(session)
+    now = datetime.now(timezone.utc)
+    for c in pending:
+        c.resolution = "discarded"
+        c.resolved_at = now
+    session.commit()
+    return len(pending)
+
+
 # ---- internals ----
 
 

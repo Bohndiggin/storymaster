@@ -57,7 +57,7 @@ from storymaster.model.database.schema.base import (
     SyncLog,
     WorldData,
 )
-from storymaster.sync_server.models import ConflictInfo, EntityChange
+from storymaster.sync_server.models import AcceptedState, ConflictInfo, EntityChange
 
 from storymaster.model.database.schema.base import User
 
@@ -371,6 +371,7 @@ class SyncEngine:
         accepted = 0
         rejected = 0
         conflicts: list[ConflictInfo] = []
+        accepted_states: list[AcceptedState] = []
 
         for change in changes:
             model_class = ENTITY_TYPE_MAP.get(change.entity_type)
@@ -389,6 +390,9 @@ class SyncEngine:
 
                 if result["status"] == "accepted":
                     accepted += 1
+                    state = result.get("state")
+                    if state is not None:
+                        accepted_states.append(state)
                 elif result["status"] == "conflict":
                     conflicts.append(result["conflict"])
                 else:
@@ -407,7 +411,12 @@ class SyncEngine:
                     logger.exception("Rollback after apply error also failed")
                 rejected += 1
 
-        return {"accepted": accepted, "conflicts": conflicts, "rejected": rejected}
+        return {
+            "accepted": accepted,
+            "accepted_states": accepted_states,
+            "conflicts": conflicts,
+            "rejected": rejected,
+        }
 
     def _find_by_sync_uuid(self, model_class, sync_uuid: str):
         """Look up a single row by sync_uuid, or None."""
@@ -472,7 +481,15 @@ class SyncEngine:
         self.db.commit()
 
         self._log_sync(device, change.entity_type, new_entity.id, "create")
-        return {"status": "accepted"}
+        return {
+            "status": "accepted",
+            "state": AcceptedState(
+                sync_uuid=new_entity.sync_uuid,
+                version=new_entity.version,
+                updated_at=self._ensure_timezone_aware(new_entity.updated_at)
+                or datetime.now(timezone.utc),
+            ),
+        }
 
     def _update_existing(
         self,
@@ -520,7 +537,15 @@ class SyncEngine:
         self.db.commit()
 
         self._log_sync(device, change.entity_type, existing.id, "update")
-        return {"status": "accepted"}
+        return {
+            "status": "accepted",
+            "state": AcceptedState(
+                sync_uuid=existing.sync_uuid,
+                version=existing.version,
+                updated_at=self._ensure_timezone_aware(existing.updated_at)
+                or datetime.now(timezone.utc),
+            ),
+        }
 
     def _apply_delete(
         self,
@@ -543,7 +568,15 @@ class SyncEngine:
         self.db.commit()
 
         self._log_sync(device, change.entity_type, existing.id, "delete")
-        return {"status": "accepted"}
+        return {
+            "status": "accepted",
+            "state": AcceptedState(
+                sync_uuid=existing.sync_uuid,
+                version=existing.version,
+                updated_at=self._ensure_timezone_aware(existing.updated_at)
+                or datetime.now(timezone.utc),
+            ),
+        }
 
     def _log_sync(
         self,

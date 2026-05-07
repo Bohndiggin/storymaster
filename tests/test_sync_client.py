@@ -213,6 +213,35 @@ def test_push_propagates_local_creates(
         server_db.close()
 
 
+def test_push_then_pull_does_not_storm_conflicts(
+    client, client_engine, server_session_factory, server_seed
+):
+    """Regression: after a successful push, the immediately-following pull
+    must not re-fetch our own pushed rows as version-mismatch conflicts."""
+    # Pull seed rows so the client has them locally.
+    client.pull()
+
+    # Make a local edit and push.
+    db = _client_session(client_engine)
+    try:
+        actor = db.execute(
+            select(Actor).where(Actor.sync_uuid == server_seed["actor_uuid"])
+        ).scalar_one()
+        actor.first_name = "Edited"
+        db.commit()
+    finally:
+        db.close()
+
+    push_summary = client.push()
+    assert push_summary["accepted"] >= 1
+    assert push_summary["conflicts"] == 0
+
+    # The immediate post-push pull should NOT generate conflicts, because the
+    # client's local row should already mirror server's bumped version.
+    pull_summary = client.pull()
+    assert pull_summary["conflicts"] == 0
+
+
 def test_pull_does_not_bump_version(client, client_engine, server_seed):
     """Client-side apply must mirror server's version, not bump it."""
     client.pull()

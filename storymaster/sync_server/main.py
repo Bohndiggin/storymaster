@@ -259,6 +259,7 @@ async def sync_push(
 
     return SyncPushResponse(
         accepted=result["accepted"],
+        accepted_states=result.get("accepted_states", []),
         conflicts=result["conflicts"],
         rejected=result["rejected"],
         message=f"Processed {len(request.changes)} changes",

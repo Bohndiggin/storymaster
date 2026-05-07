@@ -142,7 +142,7 @@ class ConflictsDialog(QDialog):
         )
         right_layout.addWidget(self.diff_table, 1)
 
-        # Action buttons
+        # Per-conflict action buttons
         button_row = QHBoxLayout()
         self.btn_use_mine = QPushButton("Use All Mine")
         self.btn_use_theirs = QPushButton("Use All Theirs")
@@ -163,6 +163,18 @@ class ConflictsDialog(QDialog):
         self.btn_use_theirs.clicked.connect(self._action_use_theirs)
         self.btn_save_merged.clicked.connect(self._action_save_merged)
         self.btn_discard.clicked.connect(self._action_discard)
+
+        # Bulk action buttons
+        bulk_row = QHBoxLayout()
+        self.btn_discard_all = QPushButton("Discard All Pending")
+        self.btn_discard_all.setToolTip(
+            "Mark every pending conflict resolved without changing local data. "
+            "Useful when conflicts are spurious."
+        )
+        self.btn_discard_all.clicked.connect(self._action_discard_all)
+        bulk_row.addStretch(1)
+        bulk_row.addWidget(self.btn_discard_all)
+        right_layout.addLayout(bulk_row)
 
         splitter.addWidget(left)
         splitter.addWidget(right)
@@ -344,6 +356,28 @@ class ConflictsDialog(QDialog):
             conflicts_api.discard(self._session, self._current.id)
         except Exception as e:
             QMessageBox.critical(self, "Resolution failed", str(e))
+            return
+        self.refresh()
+
+    def _action_discard_all(self) -> None:
+        n = len(self._conflicts)
+        if n == 0:
+            return
+        confirm = QMessageBox.question(
+            self,
+            "Discard all conflicts?",
+            f"Mark all {n} pending conflicts as resolved without changing any "
+            "local data. This is non-destructive — your rows aren't touched. "
+            "Continue?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        if confirm != QMessageBox.StandardButton.Yes:
+            return
+        try:
+            conflicts_api.discard_all(self._session)
+        except Exception as e:
+            QMessageBox.critical(self, "Bulk discard failed", str(e))
             return
         self.refresh()
 
