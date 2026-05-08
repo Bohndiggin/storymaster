@@ -1,7 +1,7 @@
 """Navigation interface for user-friendly Lorekeeper"""
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QFont, QIcon
+from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
     QComboBox,
     QFrame,
@@ -11,8 +11,6 @@ from PySide6.QtWidgets import (
     QListWidget,
     QListWidgetItem,
     QPushButton,
-    QSplitter,
-    QStackedWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -20,7 +18,6 @@ from PySide6.QtWidgets import (
 from storymaster.model.lorekeeper.entity_mappings import (
     ENTITY_MAPPINGS,
     MAIN_CATEGORIES,
-    SUPPORTING_CATEGORIES,
     get_entity_icon,
     get_entity_mapping,
     get_plural_name,
@@ -32,7 +29,6 @@ from storymaster.view.common.theme import (
     get_button_style,
     get_label_style,
     get_list_style,
-    get_splitter_style,
 )
 from storymaster.view.common.tooltips import (
     apply_general_tooltips,
@@ -177,31 +173,9 @@ class LorekeeperNavigation(QWidget):
         header.setStyleSheet(get_label_style("header"))
         layout.addWidget(header)
 
-        # Create vertical splitter for the two category sections
-        categories_splitter = QSplitter(Qt.Orientation.Vertical)
-        categories_splitter.setHandleWidth(2)
-        categories_splitter.setStyleSheet(get_splitter_style())
-
-        # Main categories section
-        main_section = self.create_category_section("Main Categories", MAIN_CATEGORIES)
-        main_section.setMinimumHeight(80)  # Minimum height for main categories
-        categories_splitter.addWidget(main_section)
-
-        # Supporting categories section
-        supporting_section = self.create_category_section(
-            "Supporting", SUPPORTING_CATEGORIES
-        )
-        supporting_section.setMinimumHeight(
-            80
-        )  # Minimum height for supporting categories
-        categories_splitter.addWidget(supporting_section)
-
-        # Set initial sizes for the category sections
-        categories_splitter.setSizes(
-            [120, 100]
-        )  # Main gets slightly more space initially
-
-        layout.addWidget(categories_splitter)
+        # Single combined category list
+        all_section = self.create_category_section("Categories", MAIN_CATEGORIES)
+        layout.addWidget(all_section)
         self.setLayout(layout)
 
         # Don't select automatically - let parent handle initial selection after signal connection

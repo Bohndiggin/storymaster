@@ -4945,6 +4945,13 @@ class MainWindowController:
 
     def cleanup(self):
         """Clean up resources before shutdown."""
+        lorekeeper = getattr(self, "new_lorekeeper_widget", None)
+        if lorekeeper is not None and hasattr(lorekeeper, "flush_pending_save"):
+            try:
+                lorekeeper.flush_pending_save()
+            except Exception as e:
+                print(f"⚠️  Failed to flush pending Lorekeeper save: {e}")
+
         if hasattr(self, "backup_manager") and self.backup_manager:
             self.backup_manager.stop_automatic_backups()
 

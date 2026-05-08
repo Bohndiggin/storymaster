@@ -480,6 +480,16 @@ class LorekeeperPage(QWidget):
         """Delete entity from model"""
         return self.model_adapter.delete_entity(entity)
 
+    def flush_pending_save(self):
+        """Flush any pending autosave synchronously (e.g. on app close)."""
+        if not self.current_entity or self.current_table_name not in self.detail_pages:
+            return
+        detail_page = self.detail_pages[self.current_table_name]
+        timer = getattr(detail_page, "autosave_timer", None)
+        if timer is not None and timer.isActive():
+            timer.stop()
+        self.auto_save_current_entity()
+
     def auto_save_current_entity(self):
         """Auto-save the currently displayed entity"""
         if not self.current_entity or self.current_table_name not in self.detail_pages:

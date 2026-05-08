@@ -345,7 +345,7 @@ SUPPORTING_MAPPINGS = {
     ),
 }
 
-# Main navigation categories
+# Navigation categories (combined)
 MAIN_CATEGORIES = [
     "actor",
     "faction",
@@ -354,8 +354,12 @@ MAIN_CATEGORIES = [
     "history",
     "world_data",
     "litography_notes",
+    "background",
+    "race",
+    "class",
+    "skills",
 ]
-SUPPORTING_CATEGORIES = ["background", "race", "class", "skills"]
+SUPPORTING_CATEGORIES = []  # kept for import compatibility
 
 
 def get_entity_mapping(table_name: str) -> Optional[EntityMapping]:

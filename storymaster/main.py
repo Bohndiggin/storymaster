@@ -70,8 +70,12 @@ def _attempt_remote_sync(label: str) -> None:
     print(f"🔄 Remote sync ({label})...")
     try:
         if label == "startup":
-            result = client.pull()
-            print(f"   pulled: {result}")
+            # Push first so any local changes stranded by a failed prior
+            # shutdown push aren't clobbered by the subsequent pull.
+            push_result = client.push()
+            print(f"   pushed: {push_result}")
+            pull_result = client.pull()
+            print(f"   pulled: {pull_result}")
         else:
             result = client.push()
             print(f"   pushed: {result}")
